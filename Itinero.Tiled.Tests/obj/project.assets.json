@@ -1,0 +1,261 @@
+{
+  "version": 2,
+  "targets": {
+    ".NETFramework,Version=v4.5.1": {
+      "Itinero/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Reminiscence": "1.0.5"
+        },
+        "frameworkAssemblies": [
+          "System.Xml"
+        ],
+        "compile": {
+          "lib/net45/Itinero.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Itinero.dll": {}
+        }
+      },
+      "Itinero.IO.Osm/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Itinero": "1.2.0",
+          "OsmSharp": "[5.0.7, 6.0.0)"
+        },
+        "compile": {
+          "lib/net45/Itinero.IO.Osm.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Itinero.IO.Osm.dll": {}
+        }
+      },
+      "NUnit/3.6.1": {
+        "type": "package",
+        "compile": {
+          "lib/net45/nunit.framework.dll": {}
+        },
+        "runtime": {
+          "lib/net45/nunit.framework.dll": {}
+        }
+      },
+      "OsmSharp/5.0.7": {
+        "type": "package",
+        "dependencies": {
+          "protobuf-net": "2.0.0.668"
+        },
+        "compile": {
+          "lib/net45/OsmSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net45/OsmSharp.dll": {}
+        }
+      },
+      "protobuf-net/2.0.0.668": {
+        "type": "package",
+        "compile": {
+          "lib/net40/protobuf-net.dll": {}
+        },
+        "runtime": {
+          "lib/net40/protobuf-net.dll": {}
+        }
+      },
+      "Reminiscence/1.0.5": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Reminiscence.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Reminiscence.dll": {}
+        }
+      },
+      "Itinero.Tiled/1.0.0": {
+        "type": "project",
+        "framework": ".NETFramework,Version=v4.5",
+        "dependencies": {
+          "Itinero.IO.Osm": "1.2.0",
+          "Reminiscence": "1.0.5"
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Itinero/1.2.0": {
+      "sha512": "jeAbs/nWbsSiHyn5hUCOu8BBLbFF+fb4MUWL04+qZnmp8dV/KSWb+Z+BseTwGeDVIKTsZvkWc3daE4sBZ4AlRw==",
+      "type": "package",
+      "path": "itinero/1.2.0",
+      "files": [
+        "itinero.1.2.0.nupkg.sha512",
+        "itinero.nuspec",
+        "lib/net40/Itinero.dll",
+        "lib/net45/Itinero.dll",
+        "lib/netstandard1.3/Itinero.dll",
+        "lib/portable-net40+sl4+win8+wp7/Itinero.dll"
+      ]
+    },
+    "Itinero.IO.Osm/1.2.0": {
+      "sha512": "5pPmk58oUoZy/ExDUmmJEFDKPVQNk1iYjmvP/NLlmU3ESiHZ8CaAFdDKSgmeM5GnCdDheZbpGqwY0ORvby6ZGg==",
+      "type": "package",
+      "path": "itinero.io.osm/1.2.0",
+      "files": [
+        "itinero.io.osm.1.2.0.nupkg.sha512",
+        "itinero.io.osm.nuspec",
+        "lib/net40/Itinero.IO.Osm.dll",
+        "lib/net45/Itinero.IO.Osm.dll",
+        "lib/netstandard1.6/Itinero.IO.Osm.dll",
+        "lib/portable-net40+sl4+win8+wp7/Itinero.IO.Osm.dll"
+      ]
+    },
+    "NUnit/3.6.1": {
+      "sha512": "0FPgTzx3+8HQsQLv85IRXuQVlc53whh1gWQkYL2sqQu7sj9cCiNTgiv0SCTut7lvRX/fXyBIS954VJEjxtL5gw==",
+      "type": "package",
+      "path": "nunit/3.6.1",
+      "files": [
+        "CHANGES.txt",
+        "LICENSE.txt",
+        "NOTICES.txt",
+        "lib/MonoAndroid/nunit.framework.dll",
+        "lib/MonoAndroid/nunit.framework.xml",
+        "lib/Xamarin.iOS10/nunit.framework.dll",
+        "lib/Xamarin.iOS10/nunit.framework.xml",
+        "lib/net20/NUnit.System.Linq.dll",
+        "lib/net20/nunit.framework.dll",
+        "lib/net20/nunit.framework.xml",
+        "lib/net35/nunit.framework.dll",
+        "lib/net35/nunit.framework.xml",
+        "lib/net40/nunit.framework.dll",
+        "lib/net40/nunit.framework.xml",
+        "lib/net45/nunit.framework.dll",
+        "lib/net45/nunit.framework.xml",
+        "lib/netstandard1.6/nunit.framework.dll",
+        "lib/netstandard1.6/nunit.framework.xml",
+        "lib/portable-net45+win8+wp8+wpa81/nunit.framework.dll",
+        "lib/portable-net45+win8+wp8+wpa81/nunit.framework.xml",
+        "nunit.3.6.1.nupkg.sha512",
+        "nunit.nuspec"
+      ]
+    },
+    "OsmSharp/5.0.7": {
+      "sha512": "aVOfdlh9CUFHyMVcZppQECiGPvs/TiCEWua71XdGdiQ2pYIjH9UADdIzkyuas7698Jt8AWNC51+3i/Jx7d3aaQ==",
+      "type": "package",
+      "path": "osmsharp/5.0.7",
+      "files": [
+        "OsmSharp.5.0.7.nupkg.sha512",
+        "OsmSharp.nuspec",
+        "lib/net40/OsmSharp.dll",
+        "lib/net45/OsmSharp.dll",
+        "lib/netstandard1.3/OsmSharp.dll",
+        "lib/portable-net403+sl50+win+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10/OsmSharp.dll"
+      ]
+    },
+    "protobuf-net/2.0.0.668": {
+      "sha512": "Lgj+Kf1+RV0utKxX9u1WEcymPGrbWrj/AwFmFADFLLa/LLdc1ji2MIGcecFRAGUu6UO8BRbdjZAIYWvLlN1B/A==",
+      "type": "package",
+      "path": "protobuf-net/2.0.0.668",
+      "files": [
+        "lib/net20-cf/protobuf-net.dll",
+        "lib/net20-cf/protobuf-net.pdb",
+        "lib/net20-cf/protobuf-net.xml",
+        "lib/net20/protobuf-net.dll",
+        "lib/net20/protobuf-net.pdb",
+        "lib/net20/protobuf-net.xml",
+        "lib/net30/protobuf-net.dll",
+        "lib/net30/protobuf-net.pdb",
+        "lib/net30/protobuf-net.xml",
+        "lib/net35-cf/protobuf-net.dll",
+        "lib/net35-cf/protobuf-net.pdb",
+        "lib/net35-cf/protobuf-net.xml",
+        "lib/net35/protobuf-net.dll",
+        "lib/net35/protobuf-net.pdb",
+        "lib/net35/protobuf-net.xml",
+        "lib/net40-cf/protobuf-net.dll",
+        "lib/net40-cf/protobuf-net.pdb",
+        "lib/net40-cf/protobuf-net.xml",
+        "lib/net40/protobuf-net.dll",
+        "lib/net40/protobuf-net.pdb",
+        "lib/net40/protobuf-net.xml",
+        "lib/netcore45/protobuf-net.XML",
+        "lib/netcore45/protobuf-net.dll",
+        "lib/netcore45/protobuf-net.pdb",
+        "lib/netcore45/protobuf-net.pri",
+        "lib/portable-sl4+net40+wp7+windows8/protobuf-net.dll",
+        "lib/portable-sl4+net40+wp7+windows8/protobuf-net.pdb",
+        "lib/portable-sl4+net40+wp7+windows8/protobuf-net.xml",
+        "lib/sl3-wp/protobuf-net.dll",
+        "lib/sl3-wp/protobuf-net.pdb",
+        "lib/sl3-wp/protobuf-net.xml",
+        "lib/sl4-windowsphone71/protobuf-net.dll",
+        "lib/sl4-windowsphone71/protobuf-net.pdb",
+        "lib/sl4-windowsphone71/protobuf-net.xml",
+        "lib/sl4/protobuf-net.dll",
+        "lib/sl4/protobuf-net.pdb",
+        "lib/sl4/protobuf-net.xml",
+        "lib/windowsphone8/protobuf-net.dll",
+        "lib/windowsphone8/protobuf-net.pdb",
+        "lib/windowsphone8/protobuf-net.xml",
+        "protobuf-net.2.0.0.668.nupkg.sha512",
+        "protobuf-net.nuspec"
+      ]
+    },
+    "Reminiscence/1.0.5": {
+      "sha512": "PrjrLzIAT1fWIQLv7Bz3KDrQ3fvsqqafOPtiSpQ5K3UVMjvmO8c2T/yFpqO85SV97RH8XTc9f8V/KtTj+Sgsvw==",
+      "type": "package",
+      "path": "reminiscence/1.0.5",
+      "files": [
+        "Reminiscence.1.0.5.nupkg.sha512",
+        "Reminiscence.nuspec",
+        "lib/net40/Reminiscence.dll",
+        "lib/net45/Reminiscence.dll",
+        "lib/netstandard1.3/Reminiscence.dll",
+        "lib/portable-net403+sl50+win+wp80+Xamarin.iOS10+MonoAndroid10+MonoTouch10/Reminiscence.dll",
+        "lib/portable-net45+win8+wpa81+wp8/Reminiscence.dll"
+      ]
+    },
+    "Itinero.Tiled/1.0.0": {
+      "type": "project",
+      "path": "../src/Itinero.Tiled/Itinero.Tiled.csproj",
+      "msbuildProject": "../src/Itinero.Tiled/Itinero.Tiled.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETFramework,Version=v4.5.1": [
+      "Itinero.Tiled >= 1.0.0",
+      "NUnit >= 3.6.1"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\benab\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\work\\itinero\\routing2\\Itinero.Tiled.Tests\\Itinero.Tiled.Tests.csproj",
+      "projectName": "Itinero.Tiled.Tests",
+      "projectPath": "C:\\work\\itinero\\routing2\\Itinero.Tiled.Tests\\Itinero.Tiled.Tests.csproj",
+      "outputPath": "C:\\work\\itinero\\routing2\\Itinero.Tiled.Tests\\obj\\",
+      "projectStyle": "PackageReference",
+      "originalTargetFrameworks": [
+        "net451"
+      ],
+      "frameworks": {
+        "net451": {
+          "projectReferences": {
+            "C:\\work\\itinero\\routing2\\src\\Itinero.Tiled\\Itinero.Tiled.csproj": {
+              "projectPath": "C:\\work\\itinero\\routing2\\src\\Itinero.Tiled\\Itinero.Tiled.csproj"
+            }
+          }
+        }
+      }
+    },
+    "frameworks": {
+      "net451": {
+        "dependencies": {
+          "NUnit": {
+            "target": "Package",
+            "version": "3.6.1"
+          }
+        }
+      }
+    }
+  }
+}

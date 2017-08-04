@@ -1,0 +1,16 @@
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.Tiled.Test.runtimeconfig.json
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.Tiled.Test.runtimeconfig.dev.json
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.Tiled.Test.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.Tiled.Test.pdb
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.IO.Osm.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\nunit.framework.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\OsmSharp.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\protobuf-net.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Reminiscence.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.Tiled.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\bin\Debug\net451\Itinero.Tiled.pdb
+C:\work\itinero\routing2\Itinero.Tiled.Tests\obj\Debug\net451\Itinero.Tiled.Tests.csprojResolveAssemblyReference.cache
+C:\work\itinero\routing2\Itinero.Tiled.Tests\obj\Debug\net451\Itinero.Tiled.Tests.AssemblyInfo.cs
+C:\work\itinero\routing2\Itinero.Tiled.Tests\obj\Debug\net451\Itinero.Tiled.Test.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests\obj\Debug\net451\Itinero.Tiled.Test.pdb

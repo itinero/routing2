@@ -1,0 +1,11 @@
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.deps.json
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.runtimeconfig.json
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.runtimeconfig.dev.json
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.pdb
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\x64\Debug\netcoreapp1.1\Itinero.Tiled.pdb
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.csprojResolveAssemblyReference.cache
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.AssemblyInfo.cs
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.dll
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\x64\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.pdb
