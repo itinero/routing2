@@ -22,7 +22,11 @@ namespace Itinero.Tiled.Tests.Functional
             progress.RegisterSource(source);
 
             var db = new RouterDbTiled(11);
-            var target = new IO.RouterDbTiledStreamTarget(db, new Profiles.Vehicle[] { Itinero.Osm.Vehicles.Vehicle.Car });
+            var target = new IO.RouterDbTiledStreamTarget(db, new Profiles.Vehicle[] {
+                Itinero.Osm.Vehicles.Vehicle.Car,
+                Itinero.Osm.Vehicles.Vehicle.Bicycle,
+                Itinero.Osm.Vehicles.Vehicle.Pedestrian
+            });
             target.RegisterSource(progress);
             target.Pull();
 

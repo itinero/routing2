@@ -31,6 +31,14 @@ namespace Itinero.Tiled
             }
         }
 
+        public uint Zoom
+        {
+            get
+            {
+                return _zoom;
+            }
+        }
+
         public VertexTile GetTile(uint tileId)
         {
             return _tiles[tileId];

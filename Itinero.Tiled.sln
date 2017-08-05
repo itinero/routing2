@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Tiled.Tests.Functio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Tiled.Tests", "Itinero.Tiled.Tests\Itinero.Tiled.Tests.csproj", "{84D3C991-935F-4886-9540-E42AA612E88F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Tiled.Processor", "Itinero.Tiled.Processor\Itinero.Tiled.Processor.csproj", "{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,14 @@ Global
 		{84D3C991-935F-4886-9540-E42AA612E88F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{84D3C991-935F-4886-9540-E42AA612E88F}.Release|x64.ActiveCfg = Release|x64
 		{84D3C991-935F-4886-9540-E42AA612E88F}.Release|x64.Build.0 = Release|x64
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Debug|x64.Build.0 = Debug|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Release|x64.ActiveCfg = Release|Any CPU
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,5 +63,6 @@ Global
 		{CBBB08B2-0C1D-4C06-86DC-BEC9CB0866F3} = {4B330D21-2EE5-4C34-B716-0DB1FBC58E29}
 		{1CD0AB3C-10B8-4C6B-8975-3953E5E9061B} = {7E594B3F-4CA9-4198-B90D-DD16972D0481}
 		{84D3C991-935F-4886-9540-E42AA612E88F} = {7E594B3F-4CA9-4198-B90D-DD16972D0481}
+		{1A8C0CA7-1B3E-455D-883D-8B1BF4EB3085} = {4B330D21-2EE5-4C34-B716-0DB1FBC58E29}
 	EndGlobalSection
 EndGlobal
