@@ -1,5 +1,7 @@
 using Itinero.LocalGeo;
 using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Itinero.Tiled.Tiles
 {
@@ -21,6 +23,61 @@ namespace Itinero.Tiled.Tiles
             }
         }
 
+        public Tile[] Subtiles
+        {
+            get
+            {
+                var x = this.X * 2;
+                var y = this.Y * 2;
+                return new Tile[]
+                {
+                    new Tile()
+                    {
+                        Zoom = this.Zoom + 1,
+                        X = x,
+                        Y = y
+                    },
+                    new Tile()
+                    {
+                        Zoom = this.Zoom + 1,
+                        X = x + 1,
+                        Y = y
+                    },
+                    new Tile()
+                    {
+                        Zoom = this.Zoom + 1,
+                        X = x,
+                        Y = y + 1
+                    },
+                    new Tile()
+                    {
+                        Zoom = this.Zoom + 1,
+                        X = x + 1,
+                        Y = y + 1
+                    }
+                };
+            }
+        }
+        
+        public List<Tile> GetSubtilesAt(uint zoom)
+        {
+            var tiles = new List<Tile>();
+
+            if (this.Zoom + 1 == zoom)
+            {
+                tiles.AddRange(this.Subtiles);
+            }
+            else
+            {
+                foreach(var tile in this.Subtiles)
+                {
+                    tiles.AddRange(tile.GetSubtilesAt(zoom));
+                }
+            }
+
+            return tiles;
+        }
+
         public static Tile FromLocalId(uint zoom, uint localId)
         {
             ulong xMax = (ulong)(1 << (int)zoom);
@@ -31,6 +88,32 @@ namespace Itinero.Tiled.Tiles
                 Y = (uint)(localId / xMax),
                 Zoom = zoom
             };
+        }
+
+        public void ToPoly(TextWriter stream)
+        {
+            stream.WriteLine(string.Format("{0}_{1}_{2}",
+                this.Zoom, this.X, this.Y));
+            stream.WriteLine("1");
+            
+            var c = Tiles.Tile.TileIndexToWorld(this.X, this.Y, this.Zoom);
+            stream.Write(c.Longitude.ToInvariantString());
+            stream.Write(' ');
+            stream.WriteLine(c.Latitude.ToInvariantString());
+            c = Tiles.Tile.TileIndexToWorld(this.X + 1, this.Y, this.Zoom);
+            stream.Write(c.Longitude.ToInvariantString());
+            stream.Write(' ');
+            stream.WriteLine(c.Latitude.ToInvariantString());
+            c = Tiles.Tile.TileIndexToWorld(this.X + 1, this.Y + 1, this.Zoom);
+            stream.Write(c.Longitude.ToInvariantString());
+            stream.Write(' ');
+            stream.WriteLine(c.Latitude.ToInvariantString());
+            c = Tiles.Tile.TileIndexToWorld(this.X, this.Y + 1, this.Zoom);
+            stream.Write(c.Longitude.ToInvariantString());
+            stream.Write(' ');
+            stream.WriteLine(c.Latitude.ToInvariantString());
+            stream.WriteLine("END");
+            stream.WriteLine("END");
         }
 
         /// <summary>
