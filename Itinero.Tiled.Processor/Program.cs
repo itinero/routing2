@@ -1,5 +1,6 @@
 ﻿using OsmSharp.Streams;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Itinero.Tiled.Processor
@@ -18,13 +19,14 @@ namespace Itinero.Tiled.Processor
             };
 
             var zoom = uint.Parse(args[0]);
-            var zoomDir = Path.Combine(args[1], zoom.ToInvariantString());
+            var zoomSource = uint.Parse(args[1]);
+            var zoomDir = Path.Combine(args[2], zoomSource.ToInvariantString());
 
             foreach (var xDir in Directory.EnumerateDirectories(zoomDir))
             {
                 var xDirInfo = new DirectoryInfo(xDir);
                 var x = uint.Parse(xDirInfo.Name);
-                foreach (var yFile in Directory.EnumerateFiles(xDir, "*.osm.bin"))
+                foreach (var yFile in Directory.EnumerateFiles(xDir, "*.osm.pbf"))
                 {
                     var yFileInfo = new FileInfo(yFile);
                     var y = uint.Parse(yFileInfo.Name.Substring(0, yFileInfo.Name.IndexOf(".")));
@@ -33,22 +35,28 @@ namespace Itinero.Tiled.Processor
                     {
                         X = x,
                         Y = y,
-                        Zoom = zoom
+                        Zoom = zoomSource
                     };
 
                     Console.WriteLine("File found: {0}: {1} - processing", yFile, tile.LocalId);
 
                     using (var stream = File.OpenRead(yFile))
                     {
-                        var source = new OsmSharp.IO.Binary.BinaryOsmStreamSource(stream);
+                        var source = new OsmSharp.Streams.PBFOsmStreamSource(stream);
 
-                        Process(source, tile.LocalId, args[2]);
+                        var tileIds = new HashSet<ulong>();
+                        foreach(var st in tile.GetSubtilesAt(zoom))
+                        {
+                            tileIds.Add(st.LocalId);
+                        }
+
+                        Process(source, tileIds, args[3]);
                     }
                 }
             }
         }
 
-        static void Process(OsmStreamSource source, ulong currentTileId, string outputPath)
+        static void Process(OsmStreamSource source, HashSet<ulong> tileIds, string outputPath)
         {
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             progress.RegisterSource(source);
@@ -64,7 +72,7 @@ namespace Itinero.Tiled.Processor
             
             foreach (var tileId in db.Graph.TileIds)
             {
-                if (currentTileId == tileId)
+                if (tileIds.Contains(tileId))
                 {
                     var tile = db.Graph.GetTile(tileId);
                     var tileObject = Itinero.Tiled.Tiles.Tile.FromLocalId(db.Graph.Zoom, tileId);

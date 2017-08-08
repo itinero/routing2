@@ -80,7 +80,7 @@ namespace Itinero.Tiled.Tests.Functional
                 Y = 0,
                 Zoom = 0
             });
-            for (uint zoom = 3; zoom < 7; zoom++)
+            for (uint zoom = 1; zoom < 7; zoom++)
             {
                 var splitBat = new StringBuilder();
                 foreach (var tile in tiles[0].GetSubtilesAt(zoom))
