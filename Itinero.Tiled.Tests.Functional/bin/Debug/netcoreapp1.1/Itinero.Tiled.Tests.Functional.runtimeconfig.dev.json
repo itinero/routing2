@@ -1,6 +1,7 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
+      "C:\\Users\\benab\\.dotnet\\store\\|arch|\\|tfm|",
       "C:\\Users\\benab\\.nuget\\packages"
     ]
   }

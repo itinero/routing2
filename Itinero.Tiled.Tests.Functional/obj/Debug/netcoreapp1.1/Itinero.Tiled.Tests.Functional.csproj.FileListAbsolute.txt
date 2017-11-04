@@ -9,3 +9,5 @@ C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\Debug\netcoreapp1.1\
 C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\bin\Debug\netcoreapp1.1\Itinero.Tiled.pdb
 C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.dll
 C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.pdb
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.csproj.CoreCompileInputs.cache
+C:\work\itinero\routing2\Itinero.Tiled.Tests.Functional\obj\Debug\netcoreapp1.1\Itinero.Tiled.Tests.Functional.AssemblyInfoInputs.cache

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "targets": {
     ".NETFramework,Version=v4.5.1": {
       "Itinero/1.2.0": {
@@ -75,6 +75,12 @@
         "dependencies": {
           "Itinero.IO.Osm": "1.2.0",
           "Reminiscence": "1.0.5"
+        },
+        "compile": {
+          "bin/placeholder/Itinero.Tiled.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Itinero.Tiled.dll": {}
         }
       }
     }
@@ -224,19 +230,36 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\benab\\.nuget\\packages\\": {}
+    "C:\\Users\\benab\\.nuget\\packages\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
+    "restoreSettings": {
+      "hideWarningsAndErrors": true
+    },
     "restore": {
       "projectUniqueName": "C:\\work\\itinero\\routing2\\Itinero.Tiled.Tests\\Itinero.Tiled.Tests.csproj",
       "projectName": "Itinero.Tiled.Tests",
       "projectPath": "C:\\work\\itinero\\routing2\\Itinero.Tiled.Tests\\Itinero.Tiled.Tests.csproj",
+      "packagesPath": "C:\\Users\\benab\\.nuget\\packages\\",
       "outputPath": "C:\\work\\itinero\\routing2\\Itinero.Tiled.Tests\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\benab\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
       "originalTargetFrameworks": [
         "net451"
       ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\work\\tools\\local-nuget": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
       "frameworks": {
         "net451": {
           "projectReferences": {
@@ -245,6 +268,11 @@
             }
           }
         }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
       }
     },
     "frameworks": {

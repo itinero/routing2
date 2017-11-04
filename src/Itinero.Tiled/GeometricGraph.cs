@@ -3,6 +3,7 @@ using Reminiscence;
 using Itinero.Attributes;
 using Itinero.LocalGeo;
 using System;
+using System.Collections;
 
 namespace Itinero.Tiled
 {
@@ -102,6 +103,70 @@ namespace Itinero.Tiled
             }
         }
 
+        public VertexEnumerator GetVertexEnumerator()
+        {
+            return new VertexEnumerator(this);
+        }
+
+        public class VertexEnumerator : IEnumerator<ulong>
+        {
+            private readonly GeometricGraph _graph;
+
+            public VertexEnumerator(GeometricGraph graph)
+            {
+                _graph = graph;
+            }
+
+            private IEnumerator<uint> _tiles = null;
+            private VertexTile _tile = null;
+            private uint _vertex = Constants.NO_VERTEX;
+
+            public ulong Current => VertexTile.BuildGlobalId(_tile.Id, _vertex);
+
+            object IEnumerator.Current => this._vertex;
+
+            public void Dispose()
+            {
+
+            }
+
+            public bool MoveNext()
+            {
+                if (_tiles == null)
+                {
+                    _tiles = _graph.TileIds.GetEnumerator();
+                }
+                if (_vertex == Constants.NO_VERTEX)
+                {
+                    while (_tiles.MoveNext())
+                    {
+                        _tile = _graph.GetTile(_tiles.Current);
+                        if (_tile.VertexCount > 0)
+                        {
+                            _vertex = 0;
+                            return true;
+                        }
+                    }
+                    if (_vertex == Constants.NO_VERTEX)
+                    {
+                        return false;
+                    }
+                }
+                _vertex++;
+                if (_vertex >= _tile.VertexCount)
+                {
+                    _vertex = Constants.NO_VERTEX;
+                    return this.MoveNext();
+                }
+                return true;
+            }
+
+            public void Reset()
+            {
+                _tiles = null;
+            }
+        }
+
         public class Edge
         {
             /// <summary>
@@ -164,6 +229,19 @@ namespace Itinero.Tiled
                 }
             }
 
+            public long IdDirected
+            {
+                get
+                {
+                    var directedId = (long)(this.Id + 1);
+                    if (this.DataInverted)
+                    {
+                        return -directedId;
+                    }
+                    return directedId;
+                }
+            }
+
             /// <summary>
             /// Returns the vertex at the beginning.
             /// </summary>
@@ -184,6 +262,47 @@ namespace Itinero.Tiled
                 {
                     return VertexTile.BuildGlobalId(_tileId, _enumerator.To);
                 }
+            }
+
+            /// <summary>
+            /// Returns the edge data.
+            /// </summary>
+            public uint[] Data
+            {
+                get
+                {
+                    return _enumerator.Data;
+                }
+            }
+
+            /// <summary>
+            /// Returns the first data element.
+            /// </summary>
+            public uint Data0
+            {
+                get
+                {
+                    return _enumerator.Data0;
+                }
+            }
+
+            /// <summary>
+            /// Returns the second data element.
+            /// </summary>
+            public uint Data1
+            {
+                get
+                {
+                    return _enumerator.Data1;
+                }
+            }
+
+            /// <summary>
+            /// Returns true if the edge data is inverted by default.
+            /// </summary>
+            public bool DataInverted
+            {
+                get { return _enumerator.DataInverted; }
             }
 
             /// <summary>
