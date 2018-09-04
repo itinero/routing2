@@ -17,6 +17,10 @@ The main thing is tiled-routing and thus distributed preprocessing. It would be 
 
 - Live load updates, meaning we can have immidate updates to the routing graph.
   - Even more awesome if we could do this contracted but for now we should only allow this on uncontracted graphs.
+- We can add any data to the edges:
+  - Distance.
+  - Custom costs.
+  - 
 
 ## Basic concepts
 
