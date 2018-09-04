@@ -43,3 +43,4 @@ TestResult*.xml
 *.shp
 *.dbf
 *.shx
+.idea/*

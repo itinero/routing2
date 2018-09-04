@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Itinero.Tiled.Processor": {
-      "commandName": "Project",
-      "commandLineArgs": "11 6 C:\\work\\anyways\\data\\tiled-db-tests\\output C:\\work\\anyways\\data\\tiled-db-tests\\routing-tiles"
-    }
-  }
-}
