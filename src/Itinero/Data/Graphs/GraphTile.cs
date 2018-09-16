@@ -1,7 +1,7 @@
-﻿namespace Itinero.Data.Graphs
-{
-    public class GraphTile
-    {
-        
-    }
-}
+﻿//namespace Itinero.Data.Graphs
+//{
+//    public class GraphTile
+//    {
+//        
+//    }
+//}

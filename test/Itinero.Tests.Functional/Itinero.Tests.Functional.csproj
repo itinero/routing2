@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OsmSharp" Version="6.0.2-pre03" />
+  </ItemGroup>
+</Project>
