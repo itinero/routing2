@@ -8,8 +8,14 @@ This is part of the work done by the awesome [open planner team](https://openpla
 
 ## Goals of this project
 
+To consume routable tiles:
+
+![Image of tiles for ghent](./docs/routable-tiles-ghent.png)
+
+More detailed goals are:
+
 - Experiment with tiled-routing.
-- Build a fully functioning prototype of what Itinero 2 should be:
+- Build a fully functioning prototype of what Itinero 2 should be and:
   - Merge this with the current routing core when finished.
   - Or transplant the most valuable concepts over to the current routing core without breaking too much.
 - Experiment to see if all the current features of the routing core can be implemented using Itinero 2's new concepts.
