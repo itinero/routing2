@@ -1,5 +1,7 @@
 # routing2
 
+**this is ongoing work on the next version of Itinero, if you want routing right now, please go [here](https://github.com/itinero/routing)**
+
 A new temporary repository for v2 routing core, being tile-based.
 
 This is part of the work done by the awesome [open planner team](https://openplanner.team/).
