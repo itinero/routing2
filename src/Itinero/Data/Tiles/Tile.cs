@@ -102,7 +102,7 @@ namespace Itinero.Data.Tiles
             var top = this.Top;
             var left = this.Left;
 
-            return (left + (lonStep * x), top - (y * latStep));
+            return (top - (y * latStep), left + (lonStep * x));
         }
         
         /// <summary>
