@@ -1,10 +1,11 @@
 ﻿using System;
+using Itinero.LocalGeo;
 
 namespace Itinero.Data.Tiles
 {
     public class Tile
     {
-        public Tile(uint x, uint y, uint zoom)
+        public Tile(uint x, uint y, int zoom)
         {
             this.X = x;
             this.Y = y;
@@ -37,7 +38,7 @@ namespace Itinero.Data.Tiles
         /// <summary>
         /// Gets the zoom level.
         /// </summary>
-        public uint Zoom { get; private set; }
+        public int Zoom { get; private set; }
         
         /// <summary>
         /// Gets the top.
@@ -63,12 +64,52 @@ namespace Itinero.Data.Tiles
         /// Updates the data in this tile to correspond with the given local tile id.
         /// </summary>
         /// <param name="localId">The local tile id.</param>
-        public void UpdateToLocalId(uint localId)
+        public void UpdateToLocalId(ulong localId)
         {
             var xMax = (ulong) (1 << (int) this.Zoom);
 
             this.X = (uint) (localId % xMax);
             this.Y = (uint) (localId / xMax);
+        }
+
+        /// <summary>
+        /// Gets the local tile id.
+        /// </summary>
+        /// <remarks>This is the id relative to the zoom level.</remarks>
+        public uint LocalId
+        {
+            get
+            {
+                var xMax = (1 << (int) this.Zoom);
+
+                return (uint)(this.Y * xMax + this.X);
+            }
+        }
+
+        /// <summary>
+        /// Returns the tile for the given local id and zoom level.
+        /// </summary>
+        /// <param name="localId">The local id.</param>
+        /// <param name="zoom">The zoom level.</param>
+        /// <returns>The tile.</returns>
+        public static Tile FromLocalId(ulong localId, int zoom)
+        {
+            var xMax = (ulong) (1 << zoom);
+
+            return new Tile((uint) (localId % xMax), 
+                (uint) (localId / xMax), zoom);
+        }
+
+        /// <summary>
+        /// Calculates the maximum local id for the given zoom level.
+        /// </summary>
+        /// <param name="zoom">The zoom level.</param>
+        /// <returns>The maximum local id for the given zoom level</returns>
+        public static ulong MaxLocalId(int zoom)
+        {
+            var xMax = (ulong) (1 << zoom);
+
+            return xMax * xMax;
         }
 
         /// <summary>
@@ -95,14 +136,14 @@ namespace Itinero.Data.Tiles
         /// <param name="y"></param>
         /// <param name="resolution"></param>
         /// <returns>A global coordinate pair.</returns>
-        public (double latitude, double longitude) FromLocalCoordinates(int x, int y, int resolution)
+        public Coordinate FromLocalCoordinates(int x, int y, int resolution)
         {
             var latStep = (this.Top - this.Bottom) / resolution;
             var lonStep = (this.Right - this.Left) / resolution;
             var top = this.Top;
             var left = this.Left;
 
-            return (top - (y * latStep), left + (lonStep * x));
+            return new Coordinate(top - (y * latStep), left + (lonStep * x));
         }
         
         /// <summary>
@@ -112,9 +153,9 @@ namespace Itinero.Data.Tiles
         /// <param name="longitude">The longitude.</param>
         /// <param name="zoom">The zoom level.</param>
         /// <returns>The tile a the given coordinates.</returns>
-        public static Tile WorldToTile(double latitude, double longitude, uint zoom)
+        public static Tile WorldToTile(double longitude, double latitude, int zoom)
         {
-            var n = (int) Math.Floor(Math.Pow(2, zoom));
+            var n = (int) Math.Floor(Math.Pow(2, zoom)); // replace by bitshifting?
 
             var rad = (latitude / 180d) * System.Math.PI;
 
