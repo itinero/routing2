@@ -119,7 +119,7 @@ namespace Itinero.Data.Tiles
         /// <param name="longitude">The longitude.</param>
         /// <param name="resolution">The resolution.</param>
         /// <returns>A local coordinate pair.</returns>
-        public (int x, int y) ToLocalCoordinates(double latitude, double longitude, int resolution)
+        public (int x, int y) ToLocalCoordinates(double longitude, double latitude, int resolution)
         {
             var latStep = (this.Top - this.Bottom) / resolution;
             var lonStep = (this.Right - this.Left) / resolution;
@@ -165,6 +165,11 @@ namespace Itinero.Data.Tiles
                  / Math.PI) / 2f * n);
 
             return new Tile (x, y, zoom);
+        }
+
+        public override string ToString()
+        {
+            return $"{this.X},{this.Y}@{this.Zoom}";
         }
     }
 }

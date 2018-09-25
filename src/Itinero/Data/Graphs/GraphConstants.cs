@@ -13,9 +13,14 @@
         public const uint TileEmpty = uint.MaxValue - 1;
 
         /// <summary>
+        /// A status to indicate there is no vertex set.
+        /// </summary>
+        public const uint NoVertex = uint.MaxValue;
+
+        /// <summary>
         /// A status to indicate there are no edge associated with this vertex.
         /// </summary>
-        public const uint NoEdges = uint.MaxValue;
+        public const uint NoEdges = uint.MaxValue - 1;
     }
 }
 
