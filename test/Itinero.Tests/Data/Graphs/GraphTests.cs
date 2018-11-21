@@ -62,5 +62,45 @@ namespace Itinero.Tests.Data.Graphs
             var edgeId2 = graph.AddEdge(vertex1, vertex3);
             Assert.AreEqual(1, edgeId2);
         }
+
+        [Test]
+        public void GraphEdgeEnumerator_ShouldMoveToVertexEvenWhenNoEdges()
+        {
+            var graph = new Graph();
+            var vertex = graph.AddVertex(4.792613983154297, 51.26535213392538);
+
+            var enumerator = graph.GetEdgeEnumerator();
+            Assert.IsTrue(enumerator.MoveTo(vertex));
+        }
+
+        [Test]
+        public void GraphEdgeEnumerator_MoveToShouldReturnFalseWhenNoEdges()
+        {
+            var graph = new Graph();
+            var vertex = graph.AddVertex(4.792613983154297, 51.26535213392538);
+
+            var enumerator = graph.GetEdgeEnumerator();
+            enumerator.MoveTo(vertex);
+            Assert.IsFalse(enumerator.MoveNext());
+        }
+
+        [Test]
+        public void GraphEdgeEnumerator_MoveToShouldMoveToFirstEdge()
+        {
+            var graph = new Graph();
+            var vertex1 = graph.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
+
+            var edgeId = graph.AddEdge(vertex1, vertex2);
+
+            var enumerator = graph.GetEdgeEnumerator();
+            enumerator.MoveTo(vertex1);
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(vertex1, enumerator.From);
+            Assert.AreEqual(vertex2, enumerator.To);
+            Assert.AreEqual(true, enumerator.Forward);
+            Assert.AreEqual(0, enumerator.CopyDataTo(new byte[10]));
+            Assert.AreEqual(0, enumerator.Data.Length);
+        }
     }
 }

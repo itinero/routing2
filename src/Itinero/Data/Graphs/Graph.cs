@@ -323,6 +323,26 @@ namespace Itinero.Data.Graphs
             return length - start;
         }
 
+        private VertexId ReadFromEdgeVertexId(long pointer)
+        {
+            return new VertexId()
+            {
+                TileId = ReadFromEdgeUInt32(pointer),
+                LocalId = ReadFromEdgeUInt32(pointer + 4)
+            };
+        }
+
+        private uint ReadFromEdgeUInt32(long pointer)
+        {
+            var bytes = new byte[4];
+            bytes[0] = _edges[pointer + 0];
+            bytes[1] = _edges[pointer + 1];
+            bytes[2] = _edges[pointer + 2];
+            bytes[3] = _edges[pointer + 3];
+
+            return BitConverter.ToUInt32(bytes, 0);
+        }
+
         /// <summary>
         /// Adds a new edge and it's inline data.
         /// </summary>
@@ -389,6 +409,180 @@ namespace Itinero.Data.Graphs
             _edgePointer += 1;
 
             return edgePointer1;
+        }
+
+        /// <summary>
+        /// Gets an edge enumerator.
+        /// </summary>
+        /// <returns></returns>
+        public EdgeEnumerator GetEdgeEnumerator()
+        {
+            return new EdgeEnumerator(this);
+        }
+
+        public struct EdgeEnumerator
+        {
+            private VertexId _vertex;
+            private long _rawPointer;
+            private long _nextRawPointer;
+            private bool _forward;
+            private readonly Graph _graph;
+
+            internal EdgeEnumerator(Graph graph)
+            {
+                _forward = false;
+                _vertex = VertexId.Empty;
+                _rawPointer = -1;
+                _nextRawPointer = -1;
+                _graph = graph;
+
+                this.To = VertexId.Empty;
+            }
+            
+            /// <summary>
+            /// Moves the enumerator to the first edge of the given vertex.
+            /// </summary>
+            /// <param name="vertex">The vertex.</param>
+            /// <returns>True if the vertex exists.</returns>
+            public bool MoveTo(VertexId vertex)
+            {            
+                _forward = false;
+                _vertex = vertex;
+                _rawPointer = -1;
+                _nextRawPointer = -1;
+                
+                // try to find vertex.
+                var (vertex1Pointer, _, capacity1) =  _graph.FindTile(vertex.TileId);
+                if (vertex1Pointer == GraphConstants.TileNotLoaded ||
+                    vertex.LocalId >= capacity1)
+                {
+                    return false;
+                }
+                
+                // get edge pointer.
+                var edgePointer = _graph._edgePointers[vertex1Pointer + vertex.LocalId];
+                
+                // set the raw pointer but flip the sign.
+                if (edgePointer == GraphConstants.NoEdges)
+                {
+                    _rawPointer = -GraphConstants.NoEdges;
+                }
+                else
+                { // apply the 1-shift also present in the edges list.
+                    _rawPointer = -edgePointer - 1; 
+                }
+
+                return true;
+            }
+
+            /// <summary>
+            /// Resets this enumerator to the first edge of the last vertex that was moved to if any.
+            /// </summary>
+            public void Reset()
+            {
+                if (_vertex.IsEmpty()) return;
+
+                this.MoveTo(_vertex);
+            }
+
+            /// <summary>
+            /// Moves this enumerator to the next edge.
+            /// </summary>
+            /// <returns>True if there is data available.</returns>
+            public bool MoveNext()
+            {
+                if (_rawPointer < 0)
+                { // move to first edge.
+                    if (_vertex.IsEmpty())
+                    {
+                        return false;
+                    }
+
+                    _rawPointer = -_rawPointer;
+
+                    if (_rawPointer == GraphConstants.NoEdges)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (_nextRawPointer < 0)
+                    {
+                        return false;
+                    }
+
+                    _rawPointer = _nextRawPointer;
+                }
+                    
+                // get details, determine direction, and get the pointer to next.
+                var vertex1 = _graph.ReadFromEdgeVertexId(_rawPointer - 1);
+                var vertex2 = _graph.ReadFromEdgeVertexId(_rawPointer - 1 + 8);
+                if (vertex1 == _vertex)
+                {
+                    _forward = true;
+                    this.To = vertex2;
+                    _nextRawPointer = _graph.ReadFromEdgeUInt32(_rawPointer - 1 + 16);
+                }
+                else
+                {
+                    _forward = false;
+                    this.To = vertex1;
+                    _nextRawPointer = _graph.ReadFromEdgeUInt32(_rawPointer - 1 + 16 + 4);
+                }
+                
+                return true;
+            }
+
+            /// <summary>
+            /// Returns true if the edge is from -> to, false otherwise.
+            /// </summary>
+            public bool Forward => _forward;
+
+            /// <summary>
+            /// Gets the source vertex.
+            /// </summary>
+            public VertexId From => _vertex;
+            
+            /// <summary>
+            /// Gets the target vertex.
+            /// </summary>
+            public VertexId To { get; private set; }
+
+            /// <summary>
+            /// Copies the data to the given array.
+            /// </summary>
+            /// <param name="data">The target array.</param>
+            /// <param name="start">The position to start copying in the given array.</param>
+            /// <returns>The # of bytes copied.</returns>
+            public int CopyDataTo(byte[] data, int start = 0)
+            {
+                if (_rawPointer < 0) return 0;
+
+                var count = _graph._edgeDataSize;
+                if (data.Length - start < count) count = data.Length - start;
+                for (var i = 0; i < count; i++)
+                {
+                    data[start + i] =  _graph._edges[_rawPointer - 1 + 24 + i];
+                }
+
+                return count;
+            }
+
+            /// <summary>
+            /// Gets the data on the current edge.
+            /// </summary>
+            public byte[] Data
+            {
+                get
+                {
+                    if (_rawPointer < 0) return new byte[0];
+                    
+                    var data = new byte[_graph._edgeDataSize];
+                    this.CopyDataTo(data);
+                    return data;
+                }
+            }
         }
     }
 }
