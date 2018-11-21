@@ -29,10 +29,10 @@ namespace Itinero.Tests.Functional
 
                 var distance = Coordinate.DistanceEstimateInMeter(vertex.Latitude, vertex.Longitude,
                     node.Latitude.Value, node.Longitude.Value);
-                // Console.WriteLine($"Distance {distance}");
-                //Console.WriteLine($"{vertex} created for {node}");
+                Console.WriteLine($"{vertex} created for {node}: Distance {distance}");
             }
-            // DetermineWorstOffsetForGraph(@"/home/xivk/work/data/OSM/brussels.osm.pbf");
+            
+            
         }
         
 //        static void DetermineWorstOffsetForGraph(string osmPbf)

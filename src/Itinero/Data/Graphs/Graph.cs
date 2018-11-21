@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Itinero.Data.Tiles;
 using Itinero.LocalGeo;
+using Reminiscence;
 using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs
@@ -12,6 +14,7 @@ namespace Itinero.Data.Graphs
         
         private readonly int _zoom; // the zoom level.
         private const int CoordinateSizeInBytes = 3; // 3 bytes = 24 bits = 4096 x 4096, the needed resolution depends on the zoom-level, higher, less resolution.
+        const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
         
         // The tile-index.
         // - tile-id (4 bytes): the local tile-id, maximum possible zoom level 16.
@@ -22,13 +25,31 @@ namespace Itinero.Data.Graphs
 
         private readonly ArrayBase<byte> _vertices; // holds the vertex location, encoded relative to a tile.
         private readonly ArrayBase<uint> _edgePointers; // holds edge pointers, points to the first edge for each vertex.
-        private readonly ArrayBase<byte> _edges; // holds the actual edges, in a dual linked-list.
+        
+        // the edges contain per edge at least 6 uint's
+        // ideas for future encodings as follows:
+        // - vertex1: the id of vertex1, we only store the localid if both vertices belong to the same tile.
+        // - vertex2: the id of vertex1, we only store the localid if both vertices belong to the same tile.
+        //   -> we store only the local id if both vertices belong to the same tile.
+        //   -> we know this when both are < uint.maxvalue (TODO: perhaps there is a better way, requiring less storage).
+        //   -> we use the protobuf way of encoding, we use 7 bits for information and bit 8 indicates if another one follows.
+        // - pointer1: the pointer to the next edge for vertex1.
+        // - pointer2: the pointer to the next edge for vertex2.
+        //   -> we store the diff with the current location (the start of vertex1).
+        //   -> we store 0 if there is no next (0 can never be an actual value here).
+        private readonly ArrayBase<byte>_edges; // holds the actual edges, in a dual linked-list.
+        private readonly int _edgeDataSize; // the size of the data package per edge.
+        private readonly int _edgeSize;
         private uint _vertexPointer = 0; // the pointer to the next empty vertex.
         private uint _edgePointer = 0; // the pointer to the next empty edge.
 
-        public Graph(int zoom = 14)
+        public Graph(int zoom = 14, int edgeDataSize = 0)
         {
             _zoom = zoom;
+            _edgeDataSize = edgeDataSize;
+            _edgeSize = 8 * 2 + // the vertices.
+                4 * 2 + // the pointers to previous edges.
+                _edgeDataSize; // the edge data package.
             
             _tiles = new MemoryArray<byte>(0);
             _vertices = new MemoryArray<byte>(CoordinateSizeInBytes);
@@ -40,6 +61,11 @@ namespace Itinero.Data.Graphs
                 _edgePointers[p] = GraphConstants.TileNotLoaded;
             }
         }
+
+        /// <summary>
+        /// Gets the zoom.
+        /// </summary>
+        public int Zoom => _zoom;
 
         /// <summary>
         /// Adds a new vertex and returns it's ID.
@@ -122,9 +148,6 @@ namespace Itinero.Data.Graphs
         
         private void SetEncodedVertex(uint pointer, Tile tile, double longitude, double latitude)
         {
-            // TODO: implement support for a variable resolution.
-            const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
-            
             var localCoordinates = tile.ToLocalCoordinates(longitude, latitude, 1 << TileResolutionInBits);
             var localCoordinatesEncoded = (localCoordinates.x << TileResolutionInBits) + localCoordinates.y;
             var localCoordinatesBits = BitConverter.GetBytes(localCoordinatesEncoded);
@@ -168,6 +191,7 @@ namespace Itinero.Data.Graphs
         {
             // find an allocation-less way of doing this:
             //   this is possible it .NET core 2.1 but not netstandard2.0,
+            //   we can do this in netstandard2.1 normally.
             //   perhaps implement our own version of bitconverter.
             var tileBytes = new byte[4];
             //Span<byte> tileBytes = stackalloc byte[8];
@@ -261,6 +285,110 @@ namespace Itinero.Data.Graphs
             }
 
             return (newVertexPointer, capacity * 2);
+        }
+
+        private int WriteToEdges(long pointer, VertexId vertex)
+        {
+            WriteToEdges(pointer, vertex.TileId);
+            WriteToEdges(pointer + 4, vertex.LocalId);
+
+            return 8;
+        }
+
+        private int WriteToEdges(long pointer, uint data)
+        {
+            // TODO: build an allocation-less version.
+            var bytes = BitConverter.GetBytes(data);
+
+            _edges[pointer + 0] = bytes[0];
+            _edges[pointer + 1] = bytes[1];
+            _edges[pointer + 2] = bytes[2];
+            _edges[pointer + 3] = bytes[3];
+
+            return 4;
+        }
+
+        private int WriteToEdges(long pointer, IReadOnlyList<byte> data, int start = 0, int length = -1)
+        {
+            if (length < 0)
+            {
+                length = data.Count - start;
+            }
+
+            for (var i = start; i < length; i++)
+            {
+                _edges[pointer + i] = data[start + i];
+            }
+
+            return length - start;
+        }
+
+        /// <summary>
+        /// Adds a new edge and it's inline data.
+        /// </summary>
+        /// <param name="vertex1">The first vertex.</param>
+        /// <param name="vertex2">The second vertex.</param>
+        /// <param name="data">The inline data.</param>
+        /// <returns>The edge id.</returns>
+        public uint AddEdge(VertexId vertex1, VertexId vertex2, IReadOnlyList<byte> data = null)
+        {
+            // try to find vertex1.
+            var (vertex1Pointer, _, capacity1) = FindTile(vertex1.TileId);
+            if (vertex1Pointer == GraphConstants.TileNotLoaded ||
+                vertex1.LocalId >= capacity1)
+            {
+                throw new ArgumentException($"{vertex1} does not exist.");
+            }
+            
+            // try to find vertex2.
+            var (vertex2Pointer, _, capacity2) = FindTile(vertex2.TileId);
+            if (vertex2Pointer == GraphConstants.TileNotLoaded ||
+                vertex2.LocalId >= capacity2)
+            {
+                throw new ArgumentException($"{vertex2} does not exist.");
+            }
+            
+            // get edge pointers.
+            var edgePointer1 = _edgePointers[vertex1Pointer + vertex1.LocalId];
+            var edgePointer2 = _edgePointers[vertex2Pointer + vertex2.LocalId];
+            
+            // make sure there is enough space.
+            var rawPointer = (_edgePointer * _edgeSize);
+            if (rawPointer + _edgeSize > _edges.Length)
+            {
+                _edges.EnsureMinimumSize(rawPointer + _edgeSize);
+            }
+            
+            // add edge pointers with new edge.
+            rawPointer += WriteToEdges(rawPointer, vertex1);
+            rawPointer += WriteToEdges(rawPointer, vertex2);
+            // write pointer to previous edge.
+            if (edgePointer1 == GraphConstants.NoEdges)
+            { // if there is no previous edge, write 0
+                rawPointer += WriteToEdges(rawPointer, 0); 
+            }
+            else
+            { // write pointer but offset by 1.
+                rawPointer += WriteToEdges(rawPointer, edgePointer1 + 1);
+            }
+            // write pointer to previous edge.
+            if (edgePointer2 == GraphConstants.NoEdges)
+            { // if there is no previous edge, write 0
+                rawPointer += WriteToEdges(rawPointer, 0); 
+            }
+            else
+            { // write pointer but offset by 1.
+                rawPointer += WriteToEdges(rawPointer, edgePointer2 + 1);
+            }
+            if (data != null) WriteToEdges(rawPointer, data, _edgeDataSize); // write data package.
+            
+            // update edge pointers.
+            edgePointer1 = _edgePointer;
+            _edgePointers[vertex1Pointer + vertex1.LocalId] = edgePointer1; // shift by 1 to make 0 impossible.
+            _edgePointers[vertex2Pointer + vertex2.LocalId] = edgePointer1; // shift by 1 to make 0 impossible.
+            _edgePointer += 1;
+
+            return edgePointer1;
         }
     }
 }

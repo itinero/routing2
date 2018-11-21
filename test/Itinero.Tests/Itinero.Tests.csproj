@@ -11,7 +11,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\Tiles" />
-  </ItemGroup>
 </Project>

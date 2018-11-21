@@ -15,6 +15,10 @@
         /// </summary>
         public uint LocalId { get; set; }
 
+        /// <summary>
+        /// Returns a human readable description.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{this.LocalId} @ {this.TileId}";
