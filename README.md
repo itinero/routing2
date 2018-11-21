@@ -2,6 +2,8 @@
 
 **this is ongoing work on the next version of Itinero, if you want routing right now, please go [here](https://github.com/itinero/routing)**
 
+[![Build status](https://build.anyways.eu/app/rest/builds/buildType:(id:anyways_Openplannerteam_ItineroTiledRouting)/statusIcon)](https://build.anyways.eu/viewType.html?buildTypeId=anyways_Openplannerteam_ItineroTiledRouting)  
+
 A new temporary repository for v2 routing core, being tile-based.
 
 This is part of the work done by the awesome [open planner team](https://openplanner.team/).
