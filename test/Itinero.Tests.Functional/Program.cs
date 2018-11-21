@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
+using Itinero.IO.Osm;
 using Itinero.LocalGeo;
 using OsmSharp;
 
@@ -16,23 +17,15 @@ namespace Itinero.Tests.Functional
             
             var graph = new Graph();
 
-            var source = new OsmSharp.Streams.PBFOsmStreamSource(File.OpenRead(@"/home/xivk/work/data/OSM/brussels.osm.pbf"));
+            var source = new OsmSharp.Streams.PBFOsmStreamSource(File.OpenRead(@"/home/xivk/work/data/OSM/belgium-latest.osm.pbf"));
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             progress.RegisterSource(source);
-            foreach (var osmGeo in progress)
-            {
-                if (!(osmGeo is Node node)) break;
-                
-                //Console.WriteLine($"Adding node {node}");
-                var vertexId = graph.AddVertex(node.Longitude.Value, node.Latitude.Value);
-                var vertex = graph.GetVertex(vertexId);
 
-                var distance = Coordinate.DistanceEstimateInMeter(vertex.Latitude, vertex.Longitude,
-                    node.Latitude.Value, node.Longitude.Value);
-                Console.WriteLine($"{vertex} created for {node}: Distance {distance}");
-            }
+            var target = new RouterDbStreamTarget(graph);
+            target.RegisterSource(progress);
+            target.Initialize();
             
-            
+            target.Pull();
         }
         
 //        static void DetermineWorstOffsetForGraph(string osmPbf)
@@ -153,7 +146,21 @@ namespace Itinero.Tests.Functional
         
         private static void EnableLogging()
         {
+//#if DEBUG
             var loggingBlacklist = new HashSet<string>();
+//#else
+//            var loggingBlacklist = new HashSet<string>(
+//                new string[] { 
+//                    "StreamProgress",
+//                    "RouterDbStreamTarget",
+//                    "RouterBaseExtensions",
+//                    "HierarchyBuilder",
+//                    "RestrictionProcessor",
+//                    "NodeIndex",
+//                    "RouterDb",
+//                    "DuplicateEdgeRemover"
+//                });
+//#endif
             OsmSharp.Logging.Logger.LogAction = (o, level, message, parameters) =>
             {
                 if (loggingBlacklist.Contains(o))
@@ -162,14 +169,14 @@ namespace Itinero.Tests.Functional
                 }
                 Console.WriteLine(string.Format("[{0}] {1} - {2}", o, level, message));
             };
-//            Itinero.Logging.Logger.LogAction = (o, level, message, parameters) =>
-//            {
-//                if (loggingBlacklist.Contains(o))
-//                {
-//                    return;
-//                }
-//                Console.WriteLine(string.Format("[{0}] {1} - {2}", o, level, message));
-//            };
+            Itinero.Logging.Logger.LogAction = (o, level, message, parameters) =>
+            {
+                if (loggingBlacklist.Contains(o))
+                {
+                    return;
+                }
+                Console.WriteLine(string.Format("[{0}] {1} - {2}", o, level, message));
+            };
         }
     }
 }

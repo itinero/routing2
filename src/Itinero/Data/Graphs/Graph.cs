@@ -88,7 +88,8 @@ namespace Itinero.Data.Graphs
             
             // if the tile is at max capacity increase it's capacity.
             long nextEmpty;
-            if (_edgePointers[vertexPointer + capacity - 1] != GraphConstants.NoVertex)
+            if (_edgePointers.Length <= vertexPointer + capacity - 1 ||
+                _edgePointers[vertexPointer + capacity - 1] != GraphConstants.NoVertex)
             { // increase capacity.
                 (vertexPointer, capacity) = IncreaseCapacityForTile(tilePointer, vertexPointer);
                 nextEmpty = (vertexPointer + (capacity / 2));
@@ -194,8 +195,7 @@ namespace Itinero.Data.Graphs
             //   we can do this in netstandard2.1 normally.
             //   perhaps implement our own version of bitconverter.
             var tileBytes = new byte[4];
-            //Span<byte> tileBytes = stackalloc byte[8];
-            for (uint p = 0; p < _tiles.Length; p += 9)
+            for (uint p = 0; p < _tiles.Length - 9; p += 9)
             {
                 for (var b = 0; b < 4; b++)
                 {

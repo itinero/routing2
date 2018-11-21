@@ -5,9 +5,7 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Itinero.IO.Osm\Itinero.IO.Osm.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="OsmSharp" Version="6.0.2-pre03" />
   </ItemGroup>
 </Project>
