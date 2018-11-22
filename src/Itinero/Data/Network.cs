@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
@@ -28,6 +29,21 @@ namespace Itinero.Data
         }
 
         /// <summary>
+        /// Gets the given vertex.
+        /// </summary>
+        /// <param name="vertex">The vertex.</param>
+        /// <returns>The vertex.</returns>
+        public Coordinate GetVertex(VertexId vertex)
+        {
+            return _graph.GetVertex(vertex);
+        }
+
+        /// <summary>
+        /// Gets the number of edges.
+        /// </summary>
+        public uint EdgeCount => _graph.EdgeCount;
+
+        /// <summary>
         /// Adds a new edge and returns its id.
         /// </summary>
         /// <param name="vertex1"></param>
@@ -44,6 +60,10 @@ namespace Itinero.Data
             // add shape if any.
             if (shape != null)
             {
+                if (_shapes.Length <= edgeId)
+                { // TODO: this resizing should be in the shapes array.
+                    _shapes.Resize(edgeId + 1024);
+                }
                 _shapes[edgeId] = new ShapeEnumerable(shape);
             }
             

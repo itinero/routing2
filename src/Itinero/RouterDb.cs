@@ -48,6 +48,21 @@ namespace Itinero
         }
 
         /// <summary>
+        /// Gets the given vertex.
+        /// </summary>
+        /// <param name="vertex">The vertex.</param>
+        /// <returns>The vertex.</returns>
+        public Coordinate GetVertex(VertexId vertex)
+        {
+            return _network.GetVertex(vertex);
+        }
+
+        /// <summary>
+        /// Gets the number of edges.
+        /// </summary>
+        public uint EdgeCount => _network.EdgeCount;
+
+        /// <summary>
         /// Adds a new edge and returns its id.
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>

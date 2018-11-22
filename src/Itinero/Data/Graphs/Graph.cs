@@ -43,6 +43,11 @@ namespace Itinero.Data.Graphs
         private uint _vertexPointer = 0; // the pointer to the next empty vertex.
         private uint _edgePointer = 0; // the pointer to the next empty edge.
 
+        /// <summary>
+        /// Creates a new graph.
+        /// </summary>
+        /// <param name="zoom">The zoom level.</param>
+        /// <param name="edgeDataSize">The size of the data package per edge.</param>
         public Graph(int zoom = 14, int edgeDataSize = 0)
         {
             _zoom = zoom;
@@ -66,6 +71,11 @@ namespace Itinero.Data.Graphs
         /// Gets the zoom.
         /// </summary>
         public int Zoom => _zoom;
+
+        /// <summary>
+        /// Gets the number of edges in this graph.
+        /// </summary>
+        public uint EdgeCount => _edgePointer;
 
         /// <summary>
         /// Adds a new vertex and returns its ID.
@@ -471,6 +481,35 @@ namespace Itinero.Data.Graphs
                 { // apply the 1-shift also present in the edges list.
                     _rawPointer = -edgePointer - 1; 
                 }
+
+                return true;
+            }
+
+            /// <summary>
+            /// Moves the enumerator to the given edge. The enumerator is in a state as it was enumerated to the edge via it's first vertex.
+            /// </summary>
+            /// <param name="edgeId">The edge id.</param>
+            public bool MoveToEdge(uint edgeId)
+            {
+                _forward = false;
+                _vertex = VertexId.Empty;
+                _rawPointer = -1;
+                _nextRawPointer = -1;
+
+                // build raw edge pointer.
+                _rawPointer = (edgeId * _graph._edgeSize) + 1;
+                if (_graph._edges.Length <= _rawPointer - 1)
+                {
+                    _rawPointer = -1;
+                    return false;
+                }
+
+                // set the state of the enumerator.
+                _vertex = _graph.ReadFromEdgeVertexId(_rawPointer - 1);
+                var vertex2 = _graph.ReadFromEdgeVertexId(_rawPointer - 1 + 8);
+                _forward = true;
+                this.To = vertex2;
+                _nextRawPointer = _graph.ReadFromEdgeUInt32(_rawPointer - 1 + 16);
 
                 return true;
             }

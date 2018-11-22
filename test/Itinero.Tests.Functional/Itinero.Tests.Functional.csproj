@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Itinero.IO.Osm\Itinero.IO.Osm.csproj" />
+    <ProjectReference Include="..\..\src\Itinero.IO.Shape\Itinero.IO.Shape.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
   </ItemGroup>
 </Project>

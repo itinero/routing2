@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Collections;
 using Itinero.Data.Graphs;
+using Itinero.IO.Osm.Collections;
+using Itinero.LocalGeo;
 using Itinero.Logging;
 using OsmSharp;
 using OsmSharp.Streams;
@@ -11,17 +13,15 @@ namespace Itinero.IO.Osm
     public class RouterDbStreamTarget : OsmStreamTarget
     {
         private readonly Dictionary<long, VertexId> _vertexPerNode;
-        private readonly SparseLongIndex _potentialRoutingNodes;
-        private readonly HashSet<long> _routingNodes;
-        private readonly Graph _graph;
+        private readonly NodeIndex _nodeIndex;
+        private readonly RouterDb _routerDb;
 
-        public RouterDbStreamTarget(Graph graph)
+        public RouterDbStreamTarget(RouterDb routerDb)
         {
-            _graph = graph;
+            _routerDb = routerDb;
             
             _vertexPerNode = new Dictionary<long, VertexId>();
-            _routingNodes = new HashSet<long>();
-            _potentialRoutingNodes = new SparseLongIndex(); 
+            _nodeIndex = new NodeIndex();
         }
         
         private bool _firstPass = true;
@@ -38,6 +38,7 @@ namespace Itinero.IO.Osm
             
             // move to second pass.
             _firstPass = false;
+            _nodeIndex.SortAndConvertIndex();
             this.Source.Reset();
             this.DoPull();
 
@@ -50,54 +51,67 @@ namespace Itinero.IO.Osm
 
             if (!node.Id.HasValue) return;
             if (!node.Longitude.HasValue || !node.Latitude.HasValue) return;
-            if (!_routingNodes.Contains(node.Id.Value)) return;
 
-            var vertex = _graph.AddVertex(node.Longitude.Value, node.Latitude.Value);
-            _vertexPerNode[node.Id.Value] = vertex;
-            _routingNodes.Remove(node.Id.Value);
+            // check if the node is a routing node and if yes, store it's coordinate.
+            var index = _nodeIndex.TryGetIndex(node.Id.Value);
+            if (index != long.MaxValue)
+            { // node is a routing node, store it's coordinates.
+                _nodeIndex.SetIndex(index, (float)node.Latitude.Value, (float)node.Longitude.Value);
+            }
         }
 
         public override void AddWay(Way way)
         {
+            if (!way.Tags.ContainsKey("highway")) return;
+            
             if (_firstPass)
             { // keep track of nodes that are used as routing nodes.
-                if (!way.Tags.ContainsKey("highway")) return;
 
-                _routingNodes.Add(way.Nodes[0]);
-                if (way.Nodes.Length <= 1) return;
-                _routingNodes.Add(way.Nodes[way.Nodes.Length - 1]);
-                for (var n = 1; n < way.Nodes.Length - 1; n++)
+                _nodeIndex.AddId(way.Nodes[0]);
+                for (var i = 0; i < way.Nodes.Length; i++)
                 {
-                    if (_potentialRoutingNodes.Contains(way.Nodes[n]))
-                    {
-                        _routingNodes.Add(way.Nodes[n]);
-                        continue;
-                    }
-                    _potentialRoutingNodes.Add(way.Nodes[n]);
+                    _nodeIndex.AddId(way.Nodes[i]);
                 }
+                _nodeIndex.AddId(way.Nodes[way.Nodes.Length - 1]);
             }
             else
             {
-                if (!way.Tags.ContainsKey("highway")) return;
-
                 var vertex1 = VertexId.Empty;
+                var shape = new List<Coordinate>();
                 for (var n = 0; n < way.Nodes.Length; n++)
                 {
-                    if (!_vertexPerNode.TryGetValue(way.Nodes[n], out var vertex2))
-                    {
-                        continue;
+                    var node = way.Nodes[n];
+                    if (!_vertexPerNode.TryGetValue(node, out var vertex2))
+                    { // no already a vertex, get the coordinates and it's status.
+                        if (!_nodeIndex.TryGetValue(node, out var latitude, out var longitude, out var isCore, out _, out _))
+                        { // an incomplete way, node not in source.
+                            isCore = false;
+                            break;
+                        }
+                        
+                        if (!isCore)
+                        { // node is just a shape point, keep it but don't add is as a vertex.
+                            shape.Add(new Coordinate(longitude, latitude));
+                            continue;
+                        }
+                        else
+                        { // node is a core vertex, add it as a vertex.
+                            var vertex = _routerDb.AddVertex(longitude, latitude);
+                            _vertexPerNode[node] = vertex;
+                        }
                     }
-
+                    
                     if (vertex1.IsEmpty())
                     {
                         vertex1 = vertex2;
                         continue;
                     }
 
-                    var edgeId = _graph.AddEdge(vertex1, vertex2);
-                    //Logging.Logger.Log(nameof(RouterDbStreamTarget), TraceEventType.Verbose, 
-                    //    $"New edge {edgeId} added: {vertex1}->{vertex2}");
+                    _routerDb.AddEdge(vertex1, vertex2,
+                        shape: shape,
+                        attributes: new TagAttributeCollection(way.Tags));
                     vertex1 = vertex2;
+                    shape.Clear();
                 }
             }
         }

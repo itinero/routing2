@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Itinero\Itinero.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NetTopologySuite.IO.ShapeFile" Version="1.15.2" />
+    </ItemGroup>
+
+</Project>

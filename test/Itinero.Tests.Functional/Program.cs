@@ -4,6 +4,7 @@ using System.IO;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
 using Itinero.IO.Osm;
+using Itinero.IO.Shape;
 using Itinero.LocalGeo;
 using OsmSharp;
 
@@ -15,17 +16,19 @@ namespace Itinero.Tests.Functional
         {
             EnableLogging();
             
-            var graph = new Graph();
+            var routerDb = new RouterDb();
 
-            var source = new OsmSharp.Streams.PBFOsmStreamSource(File.OpenRead(@"/home/xivk/work/data/OSM/belgium-latest.osm.pbf"));
+            var source = new OsmSharp.Streams.PBFOsmStreamSource(File.OpenRead(@"/home/xivk/work/data/OSM/brussels.osm.pbf"));
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             progress.RegisterSource(source);
 
-            var target = new RouterDbStreamTarget(graph);
+            var target = new RouterDbStreamTarget(routerDb);
             target.RegisterSource(progress);
             target.Initialize();
             
             target.Pull();
+
+            routerDb.WriteToShape("test");
         }
         
 //        static void DetermineWorstOffsetForGraph(string osmPbf)
