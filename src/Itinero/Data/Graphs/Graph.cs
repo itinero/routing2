@@ -68,7 +68,7 @@ namespace Itinero.Data.Graphs
         public int Zoom => _zoom;
 
         /// <summary>
-        /// Adds a new vertex and returns it's ID.
+        /// Adds a new vertex and returns its ID.
         /// </summary>
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>

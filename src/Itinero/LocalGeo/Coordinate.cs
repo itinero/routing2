@@ -31,7 +31,7 @@ namespace Itinero.LocalGeo
         /// <summary>
         /// Creates a new coordinate.
         /// </summary>
-        public Coordinate(double latitude, double longitude)
+        public Coordinate(double longitude, double latitude)
         {
             this.Latitude = latitude;
             this.Longitude = longitude;
@@ -41,7 +41,7 @@ namespace Itinero.LocalGeo
         /// <summary>
         /// Creates a new coordinate.
         /// </summary>
-        public Coordinate(double latitude, double longitude, short elevation)
+        public Coordinate(double longitude, double latitude, short elevation)
         {
             this.Latitude = latitude;
             this.Longitude = longitude;
