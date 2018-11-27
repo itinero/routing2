@@ -151,15 +151,19 @@ namespace Itinero.IO.Shape.Writer
             var attributesTable = new AttributesTable
             {
                 {"vertex1", _edgeEnumerator.From.LocalId},
-                {"vertex1_tile", _edgeEnumerator.From.TileId},
+                {"vertex1_til", _edgeEnumerator.From.TileId},
                 {"vertex2", _edgeEnumerator.To.LocalId},
-                {"vertex2_tile", _edgeEnumerator.To.TileId}
+                {"vertex2_til", _edgeEnumerator.To.TileId}
             };
-            var attributes = _routerDb.GetAttributes(edgeId);
-            foreach (var attribute in attributes)
-            {
-                attributesTable.Add(attribute.Key, attribute.Value);
-            }
+//            var attributes = _routerDb.GetAttributes(edgeId);
+//            foreach (var attribute in attributes)
+//            {
+//                if (attribute.Key == null)
+//                {
+//                    continue;
+//                }
+//                attributesTable.Add(attribute.Key.Substring(0, 11), attribute.Value);
+//            }
             
             return new Feature(geometry, attributesTable);
         }

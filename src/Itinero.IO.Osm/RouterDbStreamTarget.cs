@@ -96,8 +96,8 @@ namespace Itinero.IO.Osm
                         }
                         else
                         { // node is a core vertex, add it as a vertex.
-                            var vertex = _routerDb.AddVertex(longitude, latitude);
-                            _vertexPerNode[node] = vertex;
+                            vertex2 = _routerDb.AddVertex(longitude, latitude);
+                            _vertexPerNode[node] = vertex2;
                         }
                     }
                     

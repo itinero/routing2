@@ -430,7 +430,7 @@ namespace Itinero.Data.Graphs
             return new EdgeEnumerator(this);
         }
 
-        public struct EdgeEnumerator
+        public class EdgeEnumerator
         {
             private VertexId _vertex;
             private long _rawPointer;

@@ -143,7 +143,7 @@ namespace Itinero.Data.Tiles
             var top = this.Top;
             var left = this.Left;
 
-            return new Coordinate(top - (y * latStep), left + (lonStep * x));
+            return new Coordinate(left + (lonStep * x), top - (y * latStep));
         }
         
         /// <summary>
