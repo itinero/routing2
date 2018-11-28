@@ -4,6 +4,7 @@ using System.IO;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
 using Itinero.IO.Osm;
+using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Shape;
 using Itinero.LocalGeo;
 using OsmSharp;
@@ -16,18 +17,15 @@ namespace Itinero.Tests.Functional
         {
             EnableLogging();
             
+            //var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels.osm.pbf");
+            //routerDb.WriteToShape("test");
+
+            var kempen = (4.5366668701171875, 51.179773424875634,
+                4.8017120361328125, 51.29885215199866);
+            var brussel = (4.1143798828125, 50.69471783819287, 
+                4.5977783203125, 50.975723786793324);
             var routerDb = new RouterDb();
-
-            var source = new OsmSharp.Streams.PBFOsmStreamSource(File.OpenRead(@"/home/xivk/work/data/OSM/brussels.osm.pbf"));
-            var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
-            progress.RegisterSource(source);
-
-            var target = new RouterDbStreamTarget(routerDb);
-            target.RegisterSource(progress);
-            target.Initialize();
-            
-            target.Pull();
-
+            routerDb.LoadOsmDataFromTiles(brussel);
             routerDb.WriteToShape("test");
         }
         

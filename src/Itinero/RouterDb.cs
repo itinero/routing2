@@ -63,6 +63,11 @@ namespace Itinero
         public uint EdgeCount => _network.EdgeCount;
 
         /// <summary>
+        /// Gets the zoom.
+        /// </summary>
+        public int Zoom => _network.Zoom;
+
+        /// <summary>
         /// Adds a new edge and returns its id.
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>

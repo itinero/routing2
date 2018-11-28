@@ -13,7 +13,7 @@ namespace Itinero.Data
 
         public Network(int zoom = 14)
         {
-            _graph = new Graph();
+            _graph = new Graph(zoom);
             _shapes = new ShapesArray();
         }
 
@@ -42,6 +42,11 @@ namespace Itinero.Data
         /// Gets the number of edges.
         /// </summary>
         public uint EdgeCount => _graph.EdgeCount;
+
+        /// <summary>
+        /// Gets the zoom.
+        /// </summary>
+        public int Zoom => _graph.Zoom;
 
         /// <summary>
         /// Adds a new edge and returns its id.
