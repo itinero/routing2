@@ -1,4 +1,22 @@
-﻿using System;
+﻿/*
+ *  Licensed to SharpSoftware under one or more contributor
+ *  license agreements. See the NOTICE file distributed with this work for 
+ *  additional information regarding copyright ownership.
+ * 
+ *  SharpSoftware licenses this file to you under the Apache License, 
+ *  Version 2.0 (the "License"); you may not use this file except in 
+ *  compliance with the License. You may obtain a copy of the License at
+ * 
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Itinero.Data.Tiles;
@@ -155,6 +173,35 @@ namespace Itinero.Data.Graphs
 
             var tile = Tile.FromLocalId(localTileId, _zoom);
             return GetEncodedVertex(vertexPointer + vertex.LocalId, tile);
+        }
+
+        /// <summary>
+        /// Tries to get the given vertex.
+        /// </summary>
+        /// <param name="vertex">The vertex.</param>
+        /// <param name="location">The location of the vertex.</param>
+        /// <returns>The vertex.</returns>
+        public bool TryGetVertex(VertexId vertex, out Coordinate location)
+        {
+            var localTileId = vertex.TileId;
+            
+            // try to find the tile.
+            var (vertexPointer, tilePointer, capacity) = FindTile(localTileId);
+            if (vertexPointer == GraphConstants.TileNotLoaded)
+            {
+                location = new Coordinate();
+                return false;
+            }
+
+            if (vertex.LocalId >= capacity)
+            {
+                location = new Coordinate();
+                return false;
+            }
+
+            var tile = Tile.FromLocalId(localTileId, _zoom);
+            location = GetEncodedVertex(vertexPointer + vertex.LocalId, tile);
+            return true;
         }
         
         private void SetEncodedVertex(uint pointer, Tile tile, double longitude, double latitude)
@@ -425,12 +472,12 @@ namespace Itinero.Data.Graphs
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns></returns>
-        public EdgeEnumerator GetEdgeEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return new EdgeEnumerator(this);
+            return new Enumerator(this);
         }
 
-        public class EdgeEnumerator
+        public class Enumerator
         {
             private VertexId _vertex;
             private long _rawPointer;
@@ -438,7 +485,7 @@ namespace Itinero.Data.Graphs
             private bool _forward;
             private readonly Graph _graph;
 
-            internal EdgeEnumerator(Graph graph)
+            internal Enumerator(Graph graph)
             {
                 _forward = false;
                 _vertex = VertexId.Empty;

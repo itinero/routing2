@@ -69,7 +69,7 @@ namespace Itinero.Tests.Data.Graphs
             var graph = new Graph();
             var vertex = graph.AddVertex(4.792613983154297, 51.26535213392538);
 
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = graph.GetEnumerator();
             Assert.IsTrue(enumerator.MoveTo(vertex));
         }
 
@@ -79,7 +79,7 @@ namespace Itinero.Tests.Data.Graphs
             var graph = new Graph();
             var vertex = graph.AddVertex(4.792613983154297, 51.26535213392538);
 
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = graph.GetEnumerator();
             enumerator.MoveTo(vertex);
             Assert.IsFalse(enumerator.MoveNext());
         }
@@ -93,7 +93,7 @@ namespace Itinero.Tests.Data.Graphs
 
             var edgeId = graph.AddEdge(vertex1, vertex2);
 
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = graph.GetEnumerator();
             enumerator.MoveTo(vertex1);
             Assert.IsTrue(enumerator.MoveNext());
             Assert.AreEqual(vertex1, enumerator.From);

@@ -89,7 +89,7 @@ namespace Itinero
         /// Gets the edge enumerator for the graph in this network.
         /// </summary>
         /// <returns>The edge enumerator.</returns>
-        public Graph.EdgeEnumerator GetEdgeEnumerator()
+        public Graph.Enumerator GetEdgeEnumerator()
         {
             return _network.GetEdgeEnumerator();
         }

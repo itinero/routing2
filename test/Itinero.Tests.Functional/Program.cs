@@ -24,8 +24,10 @@ namespace Itinero.Tests.Functional
                 4.8017120361328125, 51.29885215199866);
             var brussel = (4.1143798828125, 50.69471783819287, 
                 4.5977783203125, 50.975723786793324);
+            var brusselBug = (4.354190826416016, 50.84426710838739, 
+                4.371228218078613, 50.85109531786361);
             var routerDb = new RouterDb();
-            routerDb.LoadOsmDataFromTiles(brussel);
+            routerDb.LoadOsmDataFromTiles(brusselBug);
             routerDb.WriteToShape("test");
         }
         

@@ -12,7 +12,7 @@ namespace Itinero.IO.Shape.Writer
     internal class FeaturesList : IList<IFeature>
     {
         private readonly RouterDb _routerDb;
-        private readonly Graph.EdgeEnumerator _edgeEnumerator;
+        private readonly Graph.Enumerator _enumerator;
 
         /// <summary>
         /// Creates a new features list.
@@ -21,7 +21,7 @@ namespace Itinero.IO.Shape.Writer
         {
             _routerDb = routerDb;
 
-            _edgeEnumerator = routerDb.GetEdgeEnumerator();
+            _enumerator = routerDb.GetEdgeEnumerator();
         }
 
         public IFeature this[int index]
@@ -126,12 +126,12 @@ namespace Itinero.IO.Shape.Writer
 
             // get edge details.
             var edgeId = (uint) index;
-            if (!_edgeEnumerator.MoveToEdge(edgeId))
+            if (!_enumerator.MoveToEdge(edgeId))
             {
                 throw new ArgumentException($"Index out of bounds.");
             }
-            var vertex1 = _routerDb.GetVertex(_edgeEnumerator.From);
-            var vertex2 = _routerDb.GetVertex(_edgeEnumerator.To);
+            var vertex1 = _routerDb.GetVertex(_enumerator.From);
+            var vertex2 = _routerDb.GetVertex(_enumerator.To);
 
             // compose geometry.
             var coordinates = new List<Coordinate>();
@@ -150,10 +150,10 @@ namespace Itinero.IO.Shape.Writer
             // compose attributes table.
             var attributesTable = new AttributesTable
             {
-                {"vertex1", _edgeEnumerator.From.LocalId},
-                {"vertex1_til", _edgeEnumerator.From.TileId},
-                {"vertex2", _edgeEnumerator.To.LocalId},
-                {"vertex2_til", _edgeEnumerator.To.TileId}
+                {"vertex1", _enumerator.From.LocalId},
+                {"vertex1_til", _enumerator.From.TileId},
+                {"vertex2", _enumerator.To.LocalId},
+                {"vertex2_til", _enumerator.To.TileId}
             };
 //            var attributes = _routerDb.GetAttributes(edgeId);
 //            foreach (var attribute in attributes)
