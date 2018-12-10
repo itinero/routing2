@@ -14,7 +14,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
         public static IEnumerable<(VertexId vertex, Coordinate location)> SearchVerticesInBox(this Graph graph,
-            (float minLon, float minLat, float maxLon, float maxLat) box)
+            (double minLon, double minLat, double maxLon, double maxLat) box)
         {
             var range = new TileRange(box, graph.Zoom);
             var rangeVertices = new TileRangeVertexEnumerator(range, graph);

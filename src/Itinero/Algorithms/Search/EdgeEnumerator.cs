@@ -30,7 +30,7 @@ namespace Itinero.Algorithms.Search
         {
             if (!_firstEdge)
             {
-                while (!_vertexEnumerator.MoveNext())
+                while (_vertexEnumerator.MoveNext())
                 {
                     while (_graphEnumerator.MoveTo(_vertexEnumerator.Current))
                     {
@@ -50,7 +50,7 @@ namespace Itinero.Algorithms.Search
                 {
                     return true;
                 }
-            } while (!_vertexEnumerator.MoveNext());
+            } while (_vertexEnumerator.MoveNext());
 
             return false;
         }

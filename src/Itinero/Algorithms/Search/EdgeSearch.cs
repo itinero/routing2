@@ -1,6 +1,9 @@
+using System;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
 using System.Linq;
+using Itinero.Data;
+using Itinero.LocalGeo;
 
 namespace Itinero.Algorithms.Search
 {
@@ -12,7 +15,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="graph">The graph.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static EdgeEnumerator SearchEdgesInBox(this Graph graph, (float minLon, float minLat, float maxLon, float maxLat) box)
+        public static EdgeEnumerator SearchEdgesInBox(this Graph graph, (double minLon, double minLat, double maxLon, double maxLat) box)
         {
             var vertices = graph.SearchVerticesInBox(box);
             return new EdgeEnumerator(graph, vertices.Select((i) => i.vertex));
@@ -21,18 +24,115 @@ namespace Itinero.Algorithms.Search
         /// <summary>
         /// Returns the closest edge to the center of the given box that has at least one vertex inside the given box.
         /// </summary>
-        /// <param name="graph">The graph.</param>
+        /// <param name="network">The network.</param>
         /// <param name="box">The box.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
-        public static (uint edgeId, ushort offset) SnapInBox(this Graph graph,
-            (float minLon, float minLat, float maxLon, float maxLat) box)
+        public static SnapPoint SnapInBox(this Network network,
+            (double minLon, double minLat, double maxLon, double maxLat) box)
         {
-            var edges = graph.SearchEdgesInBox(box);
+            var edges = network.Graph.SearchEdgesInBox(box);
+            var center = new Coordinate((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
+
+            var bestDistance = double.MaxValue;
+            (uint edgeId, ushort offset) bestSnapPoint = (uint.MaxValue, ushort.MaxValue);
             while (edges.MoveNext())
             {
-                // TODO: keep the closest edge and offset here per edge.
-                // based on this code: https://github.com/itinero/routing/blob/develop/src/Itinero/Algorithms/Search/Hilbert/HilbertExtensions.cs#L729
+                (uint edgeId, double offset) localSnapPoint = (edges.GraphEnumerator.Id, double.MaxValue);
+                
+                var vertex1 = network.GetVertex(edges.GraphEnumerator.From);
+                var distance = Coordinate.DistanceEstimateInMeter(vertex1, center);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    localSnapPoint = (localSnapPoint.edgeId, 0);
+                }
+
+                var length = 0.0;
+                Coordinate? projected = null;
+                Line line;
+                var segmentLength = 0.0;
+                var previous = vertex1;
+                var shape = network.GetShape(edges.GraphEnumerator.Id);
+                if (shape != null)
+                {
+                    foreach (var shapePoint in shape)
+                    {
+                        segmentLength = Coordinate.DistanceEstimateInMeter(previous, shapePoint);
+                        
+                        // check the segment.
+                        line = new Line(previous, shapePoint);
+                        projected = line.ProjectOn(center);
+                        if (projected.HasValue)
+                        {
+                            distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
+                            if (distance < bestDistance)
+                            {
+                                bestDistance = distance;
+                                localSnapPoint = (localSnapPoint.edgeId, length + 
+                                                                           Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                            }
+                        }
+                        
+                        // add the segment length.
+                        length += segmentLength;
+                        
+                        // check shape point itself.
+                        distance = Coordinate.DistanceEstimateInMeter(shapePoint, center);
+                        if (!(distance < bestDistance)) continue;
+                        
+                        bestDistance = distance;
+                        localSnapPoint = (localSnapPoint.edgeId, length);
+                    }
+                }
+                
+                var vertex2 = network.GetVertex(edges.GraphEnumerator.To);
+                segmentLength = Coordinate.DistanceEstimateInMeter(previous, vertex2);
+                
+                // check the last segment.
+                line = new Line(previous, vertex2);
+                projected = line.ProjectOn(center);
+                if (projected.HasValue)
+                {
+                    distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
+                    if (distance < bestDistance)
+                    {
+                        bestDistance = distance;
+                        localSnapPoint = (localSnapPoint.edgeId, length + 
+                                                                   Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                    }
+                }
+                        
+                // add the segment length.
+                length += segmentLength;
+
+                // check the last vertex.
+                distance = Coordinate.DistanceEstimateInMeter(vertex2, center);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    localSnapPoint = (localSnapPoint.edgeId, length);
+                }
+                
+                if (localSnapPoint.edgeId == uint.MaxValue) continue; // did not find a better snap point.
+                
+                // calculate the actual offset.
+                var offset = ushort.MaxValue;
+                if (localSnapPoint.offset < length)
+                {
+                    if (localSnapPoint.offset <= 0)
+                    {
+                        offset = 0;
+                    }
+                    else
+                    {
+                        offset = (ushort) ((localSnapPoint.offset / length) * ushort.MaxValue);
+                    }
+                }
+
+                bestSnapPoint = (localSnapPoint.edgeId, offset);
             }
+
+            return new SnapPoint(bestSnapPoint.edgeId, bestSnapPoint.offset);
         }
     }
 }

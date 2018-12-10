@@ -33,6 +33,11 @@ namespace Itinero.Data.Tiles
 
         public int Zoom { get; }
 
+        public override string ToString()
+        {
+            return $"[{this.Left},{this.Top},{this.Right},{this.Bottom}]@{this.Zoom}";
+        }
+
         public IEnumerator<Tile> GetEnumerator()
         {
             return new TileRangeEnumerator(this);

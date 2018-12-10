@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Itinero.Data.Graphs;
 using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
 
+[assembly: InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 namespace Itinero.Data
 {
     public class Network
@@ -47,6 +50,11 @@ namespace Itinero.Data
         /// Gets the zoom.
         /// </summary>
         public int Zoom => _graph.Zoom;
+
+        /// <summary>
+        /// Gets the graph.
+        /// </summary>
+        internal Graph Graph => _graph;
 
         /// <summary>
         /// Adds a new edge and returns its id.

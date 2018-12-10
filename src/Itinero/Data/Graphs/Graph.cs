@@ -593,7 +593,7 @@ namespace Itinero.Data.Graphs
                 }
                 else
                 {
-                    if (_nextRawPointer < 0)
+                    if (_nextRawPointer <= 0)
                     {
                         return false;
                     }
@@ -634,6 +634,11 @@ namespace Itinero.Data.Graphs
             /// Gets the target vertex.
             /// </summary>
             public VertexId To { get; private set; }
+
+            /// <summary>
+            /// Gets the edge id.
+            /// </summary>
+            public uint Id => (uint)((_rawPointer - 1) / _graph._edgeSize);
 
             /// <summary>
             /// Copies the data to the given array.

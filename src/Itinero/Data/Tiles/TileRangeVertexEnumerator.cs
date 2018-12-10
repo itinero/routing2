@@ -39,7 +39,7 @@ namespace Itinero.Data.Tiles
         {
             if (_currentTile == uint.MaxValue)
             {
-                while (!_tileEnumerator.MoveNext())
+                while (_tileEnumerator.MoveNext())
                 {
                     _currentTile = _tileEnumerator.Current.LocalId;
                     _currentVertex = 0;
@@ -68,7 +68,7 @@ namespace Itinero.Data.Tiles
                 {
                     return true;
                 }
-            } while (!_tileEnumerator.MoveNext());
+            } while (_tileEnumerator.MoveNext());
 
             return false;
         }
