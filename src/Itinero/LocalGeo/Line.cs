@@ -75,7 +75,7 @@ namespace Itinero.LocalGeo
                 var x = (this.B * line.C - line.B * this.C) / det;
                 var y = (line.A * this.C - this.A * line.C) / det;
 
-                var coordinate = new Coordinate((float)y, (float)x);
+                var coordinate = new Coordinate(x ,y);
 
                 // check if the coordinate is on this line.
                 var dist = this.A * this.A + this.B * this.B;
@@ -138,15 +138,14 @@ namespace Itinero.LocalGeo
             }
 
             // get direction vector.
-            var diffLat = ((double)_coordinate2.Latitude - (double)_coordinate1.Latitude) * 100.0;
-            var diffLon = ((double)_coordinate2.Longitude - (double)_coordinate1.Longitude) * 100.0;
+            var diffLat = (_coordinate2.Latitude - _coordinate1.Latitude) * 100.0;
+            var diffLon = (_coordinate2.Longitude - _coordinate1.Longitude) * 100.0;
 
             // increase this line in length if needed.
             var thisLine = this;
             if (lengthInMeters < 50)
             {
-                thisLine = new Line(_coordinate1, new Coordinate((float)(diffLat + coordinate.Latitude), 
-                    (float)(diffLon + coordinate.Longitude)));
+                thisLine = new Line(_coordinate1, new Coordinate(diffLon + coordinate.Longitude, diffLat + coordinate.Latitude));
             }
 
             // rotate 90°.
@@ -155,7 +154,7 @@ namespace Itinero.LocalGeo
             diffLat = temp;
 
             // create second point from the given coordinate.
-            var second = new Coordinate((float)(diffLat + coordinate.Latitude), (float)(diffLon + coordinate.Longitude));
+            var second = new Coordinate(diffLon + coordinate.Longitude, diffLat + coordinate.Latitude);
 
             // create a second line.
             var line = new Line(coordinate, second);
@@ -199,6 +198,11 @@ namespace Itinero.LocalGeo
                 return Coordinate.DistanceEstimateInMeter(coordinate, projected.Value);
             }
             return null;
+        }
+
+        public override string ToString()
+        {
+            return $"{this._coordinate1}->{this._coordinate2}";
         }
     }
 }

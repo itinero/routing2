@@ -34,7 +34,7 @@ namespace Itinero.Algorithms.Search
                 {
                     while (_graphEnumerator.MoveTo(_vertexEnumerator.Current))
                     {
-                        if (!_graphEnumerator.MoveNext()) continue;
+                        if (!_graphEnumerator.MoveNext()) break;
 
                         _firstEdge = true;
                         return true;

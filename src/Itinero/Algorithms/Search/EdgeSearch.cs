@@ -38,8 +38,17 @@ namespace Itinero.Algorithms.Search
             while (edges.MoveNext())
             {
                 (uint edgeId, double offset) localSnapPoint = (edges.GraphEnumerator.Id, double.MaxValue);
+
+                var from = edges.GraphEnumerator.From;
+                var to = edges.GraphEnumerator.To;
+                if (!edges.GraphEnumerator.Forward)
+                {
+                    var t = from;
+                    from = to;
+                    to = t;
+                }
                 
-                var vertex1 = network.GetVertex(edges.GraphEnumerator.From);
+                var vertex1 = network.GetVertex(from);
                 var distance = Coordinate.DistanceEstimateInMeter(vertex1, center);
                 if (distance < bestDistance)
                 {
@@ -85,7 +94,7 @@ namespace Itinero.Algorithms.Search
                     }
                 }
                 
-                var vertex2 = network.GetVertex(edges.GraphEnumerator.To);
+                var vertex2 = network.GetVertex(to);
                 segmentLength = Coordinate.DistanceEstimateInMeter(previous, vertex2);
                 
                 // check the last segment.

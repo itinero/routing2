@@ -168,9 +168,9 @@ namespace Itinero.LocalGeo
         {
             if (this.Elevation.HasValue)
             {
-                return $"{this.Latitude.ToString(CultureInfo.InvariantCulture)},{this.Longitude.ToString(CultureInfo.InvariantCulture)}@{this.Elevation.Value.ToString()}m";
+                return $"{this.Longitude.ToString(CultureInfo.InvariantCulture)},{this.Latitude.ToString(CultureInfo.InvariantCulture)}@{this.Elevation.Value.ToString()}m";
             }
-            return $"{this.Latitude.ToString(CultureInfo.InvariantCulture)},{this.Longitude.ToString(CultureInfo.InvariantCulture)}";
+            return $"{this.Longitude.ToString(CultureInfo.InvariantCulture)},{this.Latitude.ToString(CultureInfo.InvariantCulture)}";
         }
     }
 }
