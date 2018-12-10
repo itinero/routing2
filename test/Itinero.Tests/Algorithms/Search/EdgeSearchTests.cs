@@ -1,12 +1,12 @@
 using Itinero.Algorithms.Search;
 using Itinero.Data;
-using NUnit.Framework;
+using Xunit;
 
 namespace Itinero.Tests.Algorithms.Search
 {
     public class EdgeSearchTests
     {
-        [Test]
+        [Fact]
         public void EdgeSearch_SearchEdgesInBox_ShouldReturnNothingWhenNoEdges()
         {
             var network = new Network();
@@ -14,11 +14,11 @@ namespace Itinero.Tests.Algorithms.Search
             network.AddVertex(4.797506332397461, 51.26674845584085);
 
             var edges = network.Graph.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
-            Assert.IsNotNull(edges);
-            Assert.IsFalse(edges.MoveNext());
+            Assert.NotNull(edges);
+            Assert.False(edges.MoveNext());
         }
         
-        [Test]
+        [Fact]
         public void EdgeSearch_SearchEdgesInBox_ShouldReturnEdgeWhenOneVertexInBox()
         {
             var network = new Network();
@@ -27,13 +27,13 @@ namespace Itinero.Tests.Algorithms.Search
             var edge = network.AddEdge(vertex1, vertex2);
             
             var edges = network.Graph.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
-            Assert.IsNotNull(edges);
-            Assert.IsTrue(edges.MoveNext());
-            Assert.AreEqual(edge, edges.GraphEnumerator.Id);
-            Assert.IsFalse(edges.MoveNext());
+            Assert.NotNull(edges);
+            Assert.True(edges.MoveNext());
+            Assert.Equal(edge, edges.GraphEnumerator.Id);
+            Assert.False(edges.MoveNext());
         }
 
-        [Test]
+        [Fact]
         public void EdgeSearch_SnapInBox_ShouldSnapToVertex1WhenVertex1Closest()
         {
             var network = new Network();
@@ -43,11 +43,11 @@ namespace Itinero.Tests.Algorithms.Search
             
             var snapPoint = network.SnapInBox((4.792613983154297 - 0.001, 51.26535213392538 - 0.001, 
                 4.792613983154297 + 0.001, 51.26535213392538 + 0.001));
-            Assert.AreEqual(edge, snapPoint.EdgeId);
-            Assert.AreEqual(0, snapPoint.Offset);
+            Assert.Equal(edge, snapPoint.EdgeId);
+            Assert.Equal(0, snapPoint.Offset);
         }
 
-        [Test]
+        [Fact]
         public void EdgeSearch_SnapInBox_ShouldSnapToVertex2WhenVertex2Closest()
         {
             var network = new Network();
@@ -57,12 +57,12 @@ namespace Itinero.Tests.Algorithms.Search
             
             var snapPoint = network.SnapInBox((4.797506332397461 - 0.001, 51.26674845584085 - 0.001, 
                 4.797506332397461 + 0.001, 51.26674845584085 + 0.001));
-            Assert.AreEqual(edge, snapPoint.EdgeId);
+            Assert.Equal(edge, snapPoint.EdgeId);
             // TODO: come up with a way to snap to vertices/shapepoints when they are just too close.
             //Assert.AreEqual(ushort.MaxValue, snapPoint.Offset, 10);
         }
 
-        [Test]
+        [Fact]
         public void EdgeSearch_SnapInBox_ShouldSnapToSegmentWhenMiddleIsClosest()
         {
             var network = new Network();
@@ -73,8 +73,8 @@ namespace Itinero.Tests.Algorithms.Search
             (double lon, double lat) middle = ((4.79261398315429 + 4.797506332397461) / 2,(51.26535213392538 + 51.26674845584085) / 2);
             var snapPoint = network.SnapInBox((middle.lon - 0.01, middle.lat - 0.01, 
                 middle.lon + 0.01, middle.lat + 0.01));
-            Assert.AreEqual(edge, snapPoint.EdgeId);
-            Assert.AreEqual(ushort.MaxValue / 2, snapPoint.Offset, 10);
+            Assert.Equal(edge, snapPoint.EdgeId);
+            Assert.Equal(ushort.MaxValue / 2.0, snapPoint.Offset, 10);
         }
     }
 }

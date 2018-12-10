@@ -1,13 +1,13 @@
 using System.Linq;
 using Itinero.Data;
 using Itinero.LocalGeo;
-using NUnit.Framework;
+using Xunit;
 
 namespace Itinero.Tests.Data
 {
     public class NetworkTests
     {
-        [Test]
+        [Fact]
         public void NetworkGraphEnumerator_ShouldEnumerateEdgesInGraph()
         {
             var network = new Network();
@@ -18,15 +18,15 @@ namespace Itinero.Tests.Data
 
             var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
-            Assert.IsTrue(enumerator.MoveNext());
-            Assert.AreEqual(vertex1, enumerator.From);
-            Assert.AreEqual(vertex2, enumerator.To);
-            Assert.AreEqual(true, enumerator.Forward);
-            Assert.AreEqual(0, enumerator.CopyDataTo(new byte[10]));
-            Assert.AreEqual(0, enumerator.Data.Length);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.From);
+            Assert.Equal(vertex2, enumerator.To);
+            Assert.True(enumerator.Forward);
+            Assert.Equal(0, enumerator.CopyDataTo(new byte[10]));
+            Assert.Empty(enumerator.Data);
         }
 
-        [Test]
+        [Fact]
         public void Network_ShouldStoreShape()
         {
             var network = new Network();
@@ -41,11 +41,11 @@ namespace Itinero.Tests.Data
                 51.26580191532799), });
 
             var shape = network.GetShape(edgeId);
-            Assert.IsNotNull(shape);
+            Assert.NotNull(shape);
             var shapeList = shape.ToList();
-            Assert.AreEqual(1, shapeList.Count);
-            Assert.AreEqual(4.795167446136475, shapeList[0].Longitude);
-            Assert.AreEqual(51.26580191532799, shapeList[0].Latitude);
+            Assert.Single(shapeList);
+            Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+            Assert.Equal(51.26580191532799, shapeList[0].Latitude);
         }
     }
 }

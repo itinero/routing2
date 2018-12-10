@@ -20,13 +20,13 @@ using System.Linq;
 using Itinero.Data;
 using Itinero.Data.Attributes;
 using Itinero.LocalGeo;
-using NUnit.Framework;
+using Xunit;
 
 namespace Itinero.Tests
 {
     public class RouterDbTests
     {
-        [Test]
+        [Fact]
         public void RouterDbGraphEnumerator_ShouldEnumerateEdgesInGraph()
         {
             var routerDb = new RouterDb();
@@ -37,15 +37,15 @@ namespace Itinero.Tests
 
             var enumerator = routerDb.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
-            Assert.IsTrue(enumerator.MoveNext());
-            Assert.AreEqual(vertex1, enumerator.From);
-            Assert.AreEqual(vertex2, enumerator.To);
-            Assert.AreEqual(true, enumerator.Forward);
-            Assert.AreEqual(0, enumerator.CopyDataTo(new byte[10]));
-            Assert.AreEqual(0, enumerator.Data.Length);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.From);
+            Assert.Equal(vertex2, enumerator.To);
+            Assert.True(enumerator.Forward);
+            Assert.Equal(0, enumerator.CopyDataTo(new byte[10]));
+            Assert.Empty(enumerator.Data);
         }
 
-        [Test]
+        [Fact]
         public void RouterDb_ShouldStoreShape()
         {
             var network = new RouterDb();
@@ -60,14 +60,14 @@ namespace Itinero.Tests
                 51.26580191532799), });
 
             var shape = network.GetShape(edgeId);
-            Assert.IsNotNull(shape);
+            Assert.NotNull(shape);
             var shapeList = shape.ToList();
-            Assert.AreEqual(1, shapeList.Count);
-            Assert.AreEqual(4.795167446136475, shapeList[0].Longitude);
-            Assert.AreEqual(51.26580191532799, shapeList[0].Latitude);
+            Assert.Single(shapeList);
+            Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+            Assert.Equal(51.26580191532799, shapeList[0].Latitude);
         }
 
-        [Test]
+        [Fact]
         public void RouterDb_ShouldStoreAttributes()
         {
             var routerDb = new RouterDb();
@@ -81,10 +81,10 @@ namespace Itinero.Tests
             var edgeId = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { new Attribute("highway", "residential"), });
 
             var attributes = routerDb.GetAttributes(edgeId);
-            Assert.IsNotNull(attributes);
-            Assert.AreEqual(1, attributes.Count);
-            Assert.AreEqual("highway", attributes.First().Key);
-            Assert.AreEqual("residential", attributes.First().Value);
+            Assert.NotNull(attributes);
+            Assert.Equal(1, attributes.Count);
+            Assert.Equal("highway", attributes.First().Key);
+            Assert.Equal("residential", attributes.First().Value);
         }
     }
 }

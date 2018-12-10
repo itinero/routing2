@@ -1,13 +1,13 @@
 using System.Linq;
 using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
-using NUnit.Framework;
+using Xunit;
 
 namespace Itinero.Tests.Algorithms.Search
 {
     public class VertexSearchTests
     {
-        [Test]
+        [Fact]
         public void VertexSearch_SearchVertexInBox_ShouldReturnOnlyVertexInBox()
         {
             var graph = new Graph();
@@ -15,11 +15,11 @@ namespace Itinero.Tests.Algorithms.Search
             var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
 
             var vertices = graph.SearchVerticesInBox((4.796, 51.265, 4.798, 51.267));
-            Assert.IsNotNull(vertices);
+            Assert.NotNull(vertices);
 
             var verticesList = vertices.ToList();
-            Assert.AreEqual(1, verticesList.Count);
-            Assert.AreEqual(vertex2, verticesList[0].vertex);
+            Assert.Single(verticesList);
+            Assert.Equal(vertex2, verticesList[0].vertex);
         }
     }
 }
