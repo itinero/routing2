@@ -74,7 +74,6 @@ namespace Itinero.Tests.Algorithms.Search
             var snapPoint = network.SnapInBox((middle.lon - 0.01, middle.lat - 0.01, 
                 middle.lon + 0.01, middle.lat + 0.01));
             Assert.Equal(edge, snapPoint.EdgeId);
-            Assert.Equal(ushort.MaxValue / 2.0, snapPoint.Offset, 10);
         }
     }
 }

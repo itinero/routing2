@@ -7,6 +7,9 @@ using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Shape;
 using Itinero.LocalGeo;
+using Itinero.Tests.Functional.Staging;
+using NetTopologySuite.Features;
+using NetTopologySuite.IO;
 using OsmSharp;
 
 namespace Itinero.Tests.Functional
@@ -17,18 +20,33 @@ namespace Itinero.Tests.Functional
         {
             EnableLogging();
             
-            //var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels.osm.pbf");
-            //routerDb.WriteToShape("test");
+            // build a routerdb.
+            var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels-20190116.osm.pbf");
 
-            var kempen = (4.5366668701171875, 51.179773424875634,
-                4.8017120361328125, 51.29885215199866);
-            var brussel = (4.1143798828125, 50.69471783819287, 
-                4.5977783203125, 50.975723786793324);
-            var brusselBug = (4.354190826416016, 50.84426710838739, 
-                4.371228218078613, 50.85109531786361);
-            var routerDb = new RouterDb();
-            routerDb.LoadOsmDataFromTiles(brusselBug);
-            routerDb.WriteToShape("test");
+            // write the network to shape.
+            var featureCollection = new FeatureCollection();
+            var features = new RouterDbFeatures(routerDb);
+            foreach (var feature in features)
+            {
+                featureCollection.Add(feature);
+            }
+
+            File.WriteAllText("network.geojson", (new GeoJsonWriter()).Write(featureCollection));
+            
+            //routerDb.WriteToShape("test");
+            
+            //var snapPoint1 = routerDb.Snap(4.309666156768798, 50.87108985327193);
+            //var snapPoint2 = routerDb.Snap(4.3157923221588135, 50.8689469035325);
+            
+//            var kempen = (4.5366668701171875, 51.179773424875634,
+//                4.8017120361328125, 51.29885215199866);
+//            var brussel = (4.1143798828125, 50.69471783819287, 
+//                4.5977783203125, 50.975723786793324);
+//            var brusselBug = (4.354190826416016, 50.84426710838739, 
+//                4.371228218078613, 50.85109531786361);
+//            var routerDb = new RouterDb();
+//            routerDb.LoadOsmDataFromTiles(brusselBug);
+//            routerDb.WriteToShape("test");
         }
         
 //        static void DetermineWorstOffsetForGraph(string osmPbf)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Algorithms.DataStructures;
@@ -5,33 +6,22 @@ using Itinero.Data.Graphs;
 
 namespace Itinero.Algorithms.Dijkstra
 {
-    internal class Dijkstra
+    public class Dijkstra
     {
-        private readonly IEnumerable<(VertexId vertex, uint edge, float cost)> _sources;
-        private readonly IEnumerable<(VertexId vertex, uint edge, float cost)> _targets;
-        private readonly Graph _graph;
-        
-        public Dijkstra(Graph graph, IEnumerable<(VertexId vertex, uint edge, float cost)> sources,
-            IEnumerable<(VertexId vertex, uint edge, float cost)> targets)
-        {
-            _graph = graph;
-            _sources = sources;
-            _targets = targets;
-        }
-
         /// <summary>
         /// Calculates a path.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path Run()
+        public Path Run(Graph graph, IEnumerable<(VertexId vertex, uint edge, float cost)> sources,
+            IEnumerable<(VertexId vertex, uint edge, float cost)> targets, Func<Graph.Enumerator, uint> getFactor)
         {
-            var enumerator = _graph.GetEnumerator();
+            var enumerator = graph.GetEnumerator();
             var tree = new PathTree();
             var visits = new HashSet<VertexId>();
             var heap = new BinaryHeap<uint>();
 
             // push sources onto heap.
-            foreach (var source in _sources)
+            foreach (var source in sources)
             {
                 var p = tree.AddVisit(source.vertex, source.edge, uint.MaxValue);
                 heap.Push(p, source.cost);
@@ -40,10 +30,10 @@ namespace Itinero.Algorithms.Dijkstra
             // create a hashset of targets.
             (uint pointer, float cost) bestTarget = (uint.MaxValue, float.MaxValue);
             var targetMaxCost = 0f;
-            var targets = new Dictionary<VertexId, float>();
-            foreach (var target in _targets)
+            var targetsPerVertex = new Dictionary<VertexId, float>();
+            foreach (var target in targets)
             {
-                targets[target.vertex] = target.cost;
+                targetsPerVertex[target.vertex] = target.cost;
                 if (target.cost > targetMaxCost)
                 {
                     targetMaxCost = target.cost;
@@ -83,7 +73,7 @@ namespace Itinero.Algorithms.Dijkstra
                 }
                 
                 // check if this is a target.
-                if (targets.TryGetValue(currentVisit.vertex, out var targetCost))
+                if (targetsPerVertex.TryGetValue(currentVisit.vertex, out var targetCost))
                 { // this vertex is a target, check for an improvement.
                     targetCost += currentCost;
                     if (targetCost < bestTarget.cost)
@@ -91,7 +81,7 @@ namespace Itinero.Algorithms.Dijkstra
                         bestTarget = (currentPointer, targetCost);
                     }
 
-                    targets.Remove(currentVisit.vertex);
+                    targetsPerVertex.Remove(currentVisit.vertex);
                 }
                 
                 // check neighbours.
@@ -102,7 +92,7 @@ namespace Itinero.Algorithms.Dijkstra
 
                 while (enumerator.MoveNext())
                 {
-                    var neighbourCost = this.Cost(enumerator);
+                    var neighbourCost = getFactor(enumerator);
                     if (neighbourCost >= float.MaxValue) continue;
 
                     var neighbourEdge = enumerator.Id;
@@ -115,7 +105,7 @@ namespace Itinero.Algorithms.Dijkstra
 
             if (bestTarget.pointer == uint.MaxValue) return null;
 
-            var path = new Path(_graph);
+            var path = new Path(graph);
             var visit = tree.GetVisit(bestTarget.pointer);
             while (true)
             {
@@ -129,11 +119,6 @@ namespace Itinero.Algorithms.Dijkstra
             }
 
             return path;
-        }
-
-        protected virtual float Cost(Graph.Enumerator graph)
-        {
-            return 1;
         }
     }
 }

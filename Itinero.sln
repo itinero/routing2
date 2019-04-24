@@ -24,6 +24,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.IO.Shape", "src\Iti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.IO.Osm.Tiles", "src\Itinero.IO.Osm.Tiles\Itinero.IO.Osm.Tiles.csproj", "{EBB62F91-B255-4E48-A933-BDA3A5ECAA84}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{06B47317-FE05-4B5E-BC50-47DA1DC8B151}"
+ProjectSection(SolutionItems) = preProject
+	docs\routable-tiles-ghent.png = docs\routable-tiles-ghent.png
+	docs\ROADMAP.md = docs\ROADMAP.md
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -61,6 +61,41 @@ namespace Itinero.Tests.Data.Graphs
             var edgeId2 = graph.AddEdge(vertex1, vertex3);
             Assert.Equal((uint)1, edgeId2);
         }
+        
+        [Fact]
+        public void Graph_ShouldProperlyStoreACompleteGraph()
+        {
+            var graph = new Graph();
+            var vertex1 = graph.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex3 = graph.AddVertex(4.797506332397461, 51.26674845584085);
+            
+            var edgeId1 = graph.AddEdge(vertex1, vertex2);
+            var edgeId2 = graph.AddEdge(vertex1, vertex3);
+            var edgeId3 = graph.AddEdge(vertex2, vertex3);
+
+            var enumerator = graph.GetEnumerator();
+            Assert.True(enumerator.MoveTo(vertex1));
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex3, enumerator.To);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex2, enumerator.To);
+            Assert.False(enumerator.MoveNext());
+            
+            Assert.True(enumerator.MoveTo(vertex2));
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex3, enumerator.To);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.To);
+            Assert.False(enumerator.MoveNext());
+            
+            Assert.True(enumerator.MoveTo(vertex3));
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex2, enumerator.To);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.To);
+            Assert.False(enumerator.MoveNext());
+        }
 
         [Fact]
         public void GraphEdgeEnumerator_ShouldMoveToVertexEvenWhenNoEdges()
@@ -73,7 +108,7 @@ namespace Itinero.Tests.Data.Graphs
         }
 
         [Fact]
-        public void GraphEdgeEnumerator_MoveToShouldReturnFalseWhenNoEdges()
+        public void GraphEdgeEnumerator_MoveNextShouldReturnFalseWhenNoEdges()
         {
             var graph = new Graph();
             var vertex = graph.AddVertex(4.792613983154297, 51.26535213392538);

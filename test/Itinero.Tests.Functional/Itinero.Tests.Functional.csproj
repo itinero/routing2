@@ -10,4 +10,7 @@
     <ProjectReference Include="..\..\src\Itinero.IO.Shape\Itinero.IO.Shape.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.3" />
+  </ItemGroup>
 </Project>

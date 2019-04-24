@@ -460,12 +460,12 @@ namespace Itinero.Data.Graphs
             if (data != null) WriteToEdges(rawPointer, data, _edgeDataSize); // write data package.
             
             // update edge pointers.
-            edgePointer1 = _edgePointer;
-            _edgePointers[vertex1Pointer + vertex1.LocalId] = edgePointer1; // shift by 1 to make 0 impossible.
-            _edgePointers[vertex2Pointer + vertex2.LocalId] = edgePointer1; // shift by 1 to make 0 impossible.
+            var newEdgePointer = _edgePointer;
+            _edgePointers[vertex1Pointer + vertex1.LocalId] = newEdgePointer;
+            _edgePointers[vertex2Pointer + vertex2.LocalId] = newEdgePointer;
             _edgePointer += 1;
 
-            return edgePointer1;
+            return newEdgePointer;
         }
 
         /// <summary>
@@ -480,17 +480,19 @@ namespace Itinero.Data.Graphs
         public class Enumerator
         {
             private VertexId _vertex;
-            private long _rawPointer;
-            private long _nextRawPointer;
+            private bool _firstEdge;
+            private uint _rawPointer;
+            private uint _nextRawPointer;
             private bool _forward;
             private readonly Graph _graph;
 
             internal Enumerator(Graph graph)
             {
                 _forward = false;
+                _firstEdge = true;
                 _vertex = VertexId.Empty;
-                _rawPointer = -1;
-                _nextRawPointer = -1;
+                _rawPointer = uint.MaxValue;
+                _nextRawPointer = uint.MaxValue;
                 _graph = graph;
 
                 this.To = VertexId.Empty;
@@ -502,11 +504,12 @@ namespace Itinero.Data.Graphs
             /// <param name="vertex">The vertex.</param>
             /// <returns>True if the vertex exists.</returns>
             public bool MoveTo(VertexId vertex)
-            {            
+            {
+                _firstEdge = true;
                 _forward = false;
                 _vertex = vertex;
-                _rawPointer = -1;
-                _nextRawPointer = -1;
+                _rawPointer = uint.MaxValue;
+                _nextRawPointer = uint.MaxValue;
                 
                 // try to find vertex.
                 var (vertex1Pointer, _, capacity1) =  _graph.FindTile(vertex.TileId);
@@ -519,44 +522,45 @@ namespace Itinero.Data.Graphs
                 // get edge pointer.
                 var edgePointer = _graph._edgePointers[vertex1Pointer + vertex.LocalId];
                 
-                // set the raw pointer but flip the sign.
+                // set the raw pointer if there is data.
                 if (edgePointer == GraphConstants.NoEdges)
                 {
-                    _rawPointer = -GraphConstants.NoEdges;
+                    _rawPointer = GraphConstants.NoEdges;
                 }
                 else
-                { // apply the 1-shift also present in the edges list.
-                    _rawPointer = -edgePointer - 1; 
+                {
+                    _rawPointer = (uint)(edgePointer * _graph._edgeSize);
                 }
 
                 return true;
             }
 
             /// <summary>
-            /// Moves the enumerator to the given edge. The enumerator is in a state as it was enumerated to the edge via it's first vertex.
+            /// Moves the enumerator to the given edge. The enumerator is in a state as it was enumerated to the edge via its first vertex.
             /// </summary>
             /// <param name="edgeId">The edge id.</param>
             public bool MoveToEdge(uint edgeId)
             {
                 _forward = false;
                 _vertex = VertexId.Empty;
-                _rawPointer = -1;
-                _nextRawPointer = -1;
+                _rawPointer = uint.MaxValue;
+                _nextRawPointer = uint.MaxValue;
 
                 // build raw edge pointer.
-                _rawPointer = (edgeId * _graph._edgeSize) + 1;
-                if (_graph._edges.Length <= _rawPointer - 1)
+                _rawPointer = (uint)(edgeId * _graph._edgeSize);
+                if (_graph._edges.Length <= _rawPointer)
                 {
-                    _rawPointer = -1;
+                    _rawPointer = uint.MaxValue;
                     return false;
                 }
 
                 // set the state of the enumerator.
-                _vertex = _graph.ReadFromEdgeVertexId(_rawPointer - 1);
-                var vertex2 = _graph.ReadFromEdgeVertexId(_rawPointer - 1 + 8);
+                _firstEdge = false;
+                _vertex = _graph.ReadFromEdgeVertexId(_rawPointer);
+                var vertex2 = _graph.ReadFromEdgeVertexId(_rawPointer + 8);
                 _forward = true;
                 this.To = vertex2;
-                _nextRawPointer = _graph.ReadFromEdgeUInt32(_rawPointer - 1 + 16);
+                _nextRawPointer = (uint)((_graph.ReadFromEdgeUInt32(_rawPointer + 16) - 1) * _graph._edgeSize);
 
                 return true;
             }
@@ -577,14 +581,13 @@ namespace Itinero.Data.Graphs
             /// <returns>True if there is data available.</returns>
             public bool MoveNext()
             {
-                if (_rawPointer < 0)
+                if (_firstEdge)
                 { // move to first edge.
+                    _firstEdge = false;
                     if (_vertex.IsEmpty())
                     {
                         return false;
                     }
-
-                    _rawPointer = -_rawPointer;
 
                     if (_rawPointer == GraphConstants.NoEdges)
                     {
@@ -593,7 +596,7 @@ namespace Itinero.Data.Graphs
                 }
                 else
                 {
-                    if (_nextRawPointer <= 0)
+                    if (_nextRawPointer == GraphConstants.NoEdges)
                     {
                         return false;
                     }
@@ -602,20 +605,23 @@ namespace Itinero.Data.Graphs
                 }
                     
                 // get details, determine direction, and get the pointer to next.
-                var vertex1 = _graph.ReadFromEdgeVertexId(_rawPointer - 1);
-                var vertex2 = _graph.ReadFromEdgeVertexId(_rawPointer - 1 + 8);
+                var vertex1 = _graph.ReadFromEdgeVertexId(_rawPointer);
+                var vertex2 = _graph.ReadFromEdgeVertexId(_rawPointer + 8);
+                uint nextEdgePointer;
                 if (vertex1 == _vertex)
                 {
                     _forward = true;
                     this.To = vertex2;
-                    _nextRawPointer = _graph.ReadFromEdgeUInt32(_rawPointer - 1 + 16);
+                    nextEdgePointer = _graph.ReadFromEdgeUInt32(_rawPointer + 16);
                 }
                 else
                 {
                     _forward = false;
                     this.To = vertex1;
-                    _nextRawPointer = _graph.ReadFromEdgeUInt32(_rawPointer - 1 + 16 + 4);
+                    nextEdgePointer = _graph.ReadFromEdgeUInt32(_rawPointer + 16 + 4);
                 }
+                _nextRawPointer = GraphConstants.NoEdges;
+                if (nextEdgePointer != 0) _nextRawPointer = (uint)((nextEdgePointer - 1) * _graph._edgeSize);
                 
                 return true;
             }
@@ -638,7 +644,7 @@ namespace Itinero.Data.Graphs
             /// <summary>
             /// Gets the edge id.
             /// </summary>
-            public uint Id => (uint)((_rawPointer - 1) / _graph._edgeSize);
+            public uint Id => (uint)(_rawPointer / _graph._edgeSize);
 
             /// <summary>
             /// Copies the data to the given array.
@@ -648,7 +654,7 @@ namespace Itinero.Data.Graphs
             /// <returns>The # of bytes copied.</returns>
             public int CopyDataTo(byte[] data, int start = 0)
             {
-                if (_rawPointer < 0) return 0;
+                if (_firstEdge || _rawPointer == GraphConstants.NoEdges) return 0;
 
                 var count = _graph._edgeDataSize;
                 if (data.Length - start < count) count = data.Length - start;
@@ -667,7 +673,7 @@ namespace Itinero.Data.Graphs
             {
                 get
                 {
-                    if (_rawPointer < 0) return new byte[0];
+                    if (_firstEdge || _rawPointer == GraphConstants.NoEdges) return new byte[0];
                     
                     var data = new byte[_graph._edgeDataSize];
                     this.CopyDataTo(data);
