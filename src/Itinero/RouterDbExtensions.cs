@@ -38,7 +38,7 @@ namespace Itinero
             var distance = 0.0;
 
             // compose geometry.
-            var previous = new Coordinate(vertex1.Longitude, vertex1.Latitude));
+            var previous = new Coordinate(vertex1.Longitude, vertex1.Latitude);
             var shape = routerDb.GetShape(edgeId);
             if (shape != null)
             {
@@ -51,7 +51,7 @@ namespace Itinero
             }
             distance += Coordinate.DistanceEstimateInMeter(previous, new Coordinate(vertex2.Longitude, vertex2.Latitude));
 
-            return (uint) System.Math.Round(distance / 10);
+            return (uint) System.Math.Round(distance * 10);
         }
     }
 }

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.Algorithms.Dijkstra;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Shape;
 using Itinero.LocalGeo;
+using Itinero.Profiles;
 using Itinero.Tests.Functional.Staging;
 using NetTopologySuite.Features;
 using NetTopologySuite.IO;
@@ -23,21 +25,41 @@ namespace Itinero.Tests.Functional
             // build a routerdb.
             var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels-20190116.osm.pbf");
 
-            // write the network to shape.
-            var featureCollection = new FeatureCollection();
-            var features = new RouterDbFeatures(routerDb);
-            foreach (var feature in features)
-            {
-                featureCollection.Add(feature);
-            }
-
-            File.WriteAllText("network.geojson", (new GeoJsonWriter()).Write(featureCollection));
+//            // write the network to shape.
+//            var featureCollection = new FeatureCollection();
+//            var features = new RouterDbFeatures(routerDb);
+//            foreach (var feature in features)
+//            {
+//                featureCollection.Add(feature);
+//            }
+//
+//            File.WriteAllText("network.geojson", (new GeoJsonWriter()).Write(featureCollection));
             
             //routerDb.WriteToShape("test");
             
-            //var snapPoint1 = routerDb.Snap(4.309666156768798, 50.87108985327193);
-            //var snapPoint2 = routerDb.Snap(4.3157923221588135, 50.8689469035325);
+            var snapPoint1 = routerDb.Snap(4.309666156768798, 50.87108985327193);
+//            featureCollection = new FeatureCollection();
+//            featureCollection.Add(routerDb.ToFeature(snapPoint1));
+//            var json = (new GeoJsonWriter()).Write(featureCollection);
+            var snapPoint2 = routerDb.Snap(4.3157923221588135, 50.8689469035325);
+//            featureCollection = new FeatureCollection();
+//            featureCollection.Add(routerDb.ToFeature(snapPoint2));
+//            json = (new GeoJsonWriter()).Write(featureCollection);
             
+            var profile = new DefaultProfile();
+
+            var dijkstra = new Dijkstra();
+            var path = dijkstra.Run(routerDb.Network.Graph, new[] {snapPoint1.ToDijkstraLocation(routerDb, profile)},
+                new[] {snapPoint2.ToDijkstraLocation(routerDb, profile)},
+                (e) =>
+                {
+                    var attributes = routerDb.GetAttributes(e.Id);
+                    return profile.Factor(attributes).FactorForward * routerDb.EdgeLength(e.Id);
+                });
+
+            var featureCollection = routerDb.ToFeatureCollection(path);
+            var json = (new GeoJsonWriter()).Write(featureCollection);
+
 //            var kempen = (4.5366668701171875, 51.179773424875634,
 //                4.8017120361328125, 51.29885215199866);
 //            var brussel = (4.1143798828125, 50.69471783819287, 

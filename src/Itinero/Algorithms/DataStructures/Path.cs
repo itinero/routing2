@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Data.Graphs;
@@ -8,7 +9,7 @@ namespace Itinero.Algorithms.DataStructures
     /// <summary>
     /// Represents a path in a graph.
     /// </summary>
-    public class Path
+    public class Path : IEnumerable<(uint edge, bool forward)>
     {
         private readonly List<(uint edge, bool forward)> _edges;
         private readonly Graph _graph;
@@ -172,6 +173,17 @@ namespace Itinero.Algorithms.DataStructures
         internal void PrependInternal(uint edge, bool forward)
         {
             _edges.Add((edge, forward));
+        }
+
+
+        public IEnumerator<(uint edge, bool forward)> GetEnumerator()
+        {
+            return _edges.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

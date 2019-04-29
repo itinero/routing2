@@ -1,10 +1,14 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Itinero.Data;
 using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
 using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
 
+[assembly: InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 namespace Itinero
 {
     public class RouterDb

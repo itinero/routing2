@@ -13,7 +13,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path Run(Graph graph, IEnumerable<(VertexId vertex, uint edge, float cost)> sources,
-            IEnumerable<(VertexId vertex, uint edge, float cost)> targets, Func<Graph.Enumerator, uint> getFactor)
+            IEnumerable<(VertexId vertex, uint edge, float cost)> targets, Func<Graph.Enumerator, uint> getWeight)
         {
             var enumerator = graph.GetEnumerator();
             var tree = new PathTree();
@@ -92,7 +92,7 @@ namespace Itinero.Algorithms.Dijkstra
 
                 while (enumerator.MoveNext())
                 {
-                    var neighbourCost = getFactor(enumerator);
+                    var neighbourCost = getWeight(enumerator);
                     if (neighbourCost >= float.MaxValue) continue;
 
                     var neighbourEdge = enumerator.Id;
