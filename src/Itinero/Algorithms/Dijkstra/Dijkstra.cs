@@ -99,7 +99,7 @@ namespace Itinero.Algorithms.Dijkstra
                     if (neighbourEdge == currentVisit.edge) continue; // don't consider u-turns.
                     
                     var neighbourPointer = tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
-                    heap.Push(neighbourPointer, neighbourCost);
+                    heap.Push(neighbourPointer, neighbourCost + currentCost);
                 }
             }
 
