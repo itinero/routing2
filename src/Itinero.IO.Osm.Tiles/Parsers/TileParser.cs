@@ -23,24 +23,26 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         /// <param name="globalIdMap">The global id map.</param>
         /// <param name="tile">The tile to load.</param>
         /// <param name="baseUrl">The base url of the routeable tile source.</param>
-        internal static void AddOsmTile(this RouterDb routerDb, GlobalIdMap globalIdMap, Tile tile, string baseUrl = BaseUrl)
+        internal static bool AddOsmTile(this RouterDb routerDb, GlobalIdMap globalIdMap, Tile tile, string baseUrl = BaseUrl)
         {
             var url = baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
             var stream = Download.DownloadHelper.Download(url);
             if (stream == null)
             {
-                return;
+                return false;
             }
 
             Logger.Log(nameof(TileParser), Logging.TraceEventType.Information,
                 $"Loading tile: {tile}");
             
             var nodeLocations = new Dictionary<long, Coordinate>();
+            var updated = false;
             using (var textReader = new StreamReader(stream))
             {
-                var jsonObject = JObject.Parse(textReader.ReadToEnd());
+                var json = textReader.ReadToEnd();
+                var jsonObject = JObject.Parse(json);
 
-                if (!(jsonObject["@graph"] is JArray graph)) return;
+                if (!(jsonObject["@graph"] is JArray graph)) return false;
 
                 foreach (var graphObject in graph)
                 {
@@ -61,7 +63,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         if (!(graphObject["geo:lat"] is JToken latToken)) continue;
                         var lat = latToken.Value<double>();
                         
-                        nodeLocations[nodeId] = new Coordinate((float) lat, (float) lon);
+                        nodeLocations[nodeId] = new Coordinate((float) lon, (float) lat);
                     }
                     else if (id.StartsWith("http://www.openstreetmap.org/way/"))
                     {
@@ -111,6 +113,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             }
                             previousVertex = routerDb.AddVertex(nodeLocation.Longitude, nodeLocation.Latitude);
                             globalIdMap.Set(nodeId, previousVertex);
+                            updated = true;
                         }
                         
                         // add last as vertex.
@@ -128,6 +131,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             }
                             vertexId = routerDb.AddVertex(nodeLocation.Longitude, nodeLocation.Latitude);
                             globalIdMap.Set(nodeId, vertexId);
+                            updated = true;
                         }
                         
                         var shape = new List<Coordinate>();
@@ -143,6 +147,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             if (globalIdMap.TryGet(nodeId, out vertexId))
                             {
                                 routerDb.AddEdge(previousVertex, vertexId, attributes, new ShapeEnumerable(shape));
+                                updated = true;
                                 shape.Clear();
 
                                 previousVertex = vertexId;
@@ -162,6 +167,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         Console.WriteLine(id);
                     }
                 }
+
+                return updated;
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Itinero.Data;
 using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
+using Itinero.Data.Providers;
 using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
 
@@ -11,6 +12,9 @@ using Itinero.LocalGeo;
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 namespace Itinero
 {
+    /// <summary>
+    /// Represents a router db.
+    /// </summary>
     public class RouterDb
     {
         private readonly Network _network;
@@ -57,6 +61,11 @@ namespace Itinero
         /// Gets the network.
         /// </summary>
         internal Network Network => _network;
+        
+        /// <summary>
+        /// Gets or sets the data provider.
+        /// </summary>
+        public ILiveDataProvider DataProvider { get; set; }
 
         /// <summary>
         /// Adds a new edge and returns its id.

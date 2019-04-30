@@ -23,7 +23,11 @@ namespace Itinero.Tests.Functional
             EnableLogging();
             
             // build a routerdb.
-            var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels-20190116.osm.pbf");
+            //var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels-20190116.osm.pbf");
+// 4.270634651184082, 50.86964430399289
+            var routerDb = new RouterDb();
+            routerDb.DataProvider = new DataProvider(routerDb);
+            //routerDb.DataProvider.TouchBox((4.270634651184082, 50.86964430399289, 4.309666156768798, 50.87108985327193));
 
 //            // write the network to shape.
 //            var featureCollection = new FeatureCollection();
@@ -35,30 +39,22 @@ namespace Itinero.Tests.Functional
 //
 //            File.WriteAllText("network.geojson", (new GeoJsonWriter()).Write(featureCollection));
             
-            //routerDb.WriteToShape("test");
-            
-            var snapPoint1 = routerDb.Snap(4.309666156768798, 50.87108985327193);
-//            featureCollection = new FeatureCollection();
-//            featureCollection.Add(routerDb.ToFeature(snapPoint1));
-//            var json = (new GeoJsonWriter()).Write(featureCollection);
-            var snapPoint2 = routerDb.Snap(4.3157923221588135, 50.8689469035325);
-//            featureCollection = new FeatureCollection();
-//            featureCollection.Add(routerDb.ToFeature(snapPoint2));
-//            json = (new GeoJsonWriter()).Write(featureCollection);
-            
             var profile = new DefaultProfile();
-
-            var dijkstra = new Dijkstra();
-            var path = dijkstra.Run(routerDb.Network.Graph, new[] {snapPoint1.ToDijkstraLocation(routerDb, profile)},
-                new[] {snapPoint2.ToDijkstraLocation(routerDb, profile)},
-                (e) =>
-                {
-                    var attributes = routerDb.GetAttributes(e.Id);
-                    return profile.Factor(attributes).FactorForward * routerDb.EdgeLength(e.Id);
-                });
+            var path = routerDb.Calculate(profile, 
+                routerDb.Snap(4.309666156768798, 50.87108985327193), 
+                routerDb.Snap(4.270634651184082, 50.86964430399289));
 
             var featureCollection = routerDb.ToFeatureCollection(path);
             var json = (new GeoJsonWriter()).Write(featureCollection);
+            
+            path = routerDb.Calculate(profile, 
+                routerDb.Snap(4.801840782165527, 51.267903074610615), 
+                routerDb.Snap(4.7806620597839355, 51.2609614991932));
+
+            featureCollection = routerDb.ToFeatureCollection(path);
+            json = (new GeoJsonWriter()).Write(featureCollection);
+            
+            routerDb.WriteToShape("test");
 
 //            var kempen = (4.5366668701171875, 51.179773424875634,
 //                4.8017120361328125, 51.29885215199866);

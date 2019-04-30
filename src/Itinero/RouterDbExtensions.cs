@@ -1,5 +1,8 @@
+using Itinero.Algorithms.DataStructures;
+using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Search;
 using Itinero.LocalGeo;
+using Itinero.Profiles;
 
 namespace Itinero
 {
@@ -17,8 +20,11 @@ namespace Itinero
         /// <returns>The snap point.</returns>
         public static SnapPoint Snap(this RouterDb routerDb, double longitude, double latitude)
         {
-            return routerDb.Network.SnapInBox(
-                (longitude - 0.001, latitude - 0.001, longitude + 0.001, latitude + 0.001));
+            var box = (longitude - 0.001, latitude - 0.001, longitude + 0.001, latitude + 0.001);
+            
+            routerDb.DataProvider?.TouchBox(box);
+
+            return routerDb.Network.SnapInBox(box);
         }
 
         /// <summary>
@@ -52,6 +58,23 @@ namespace Itinero
             distance += Coordinate.DistanceEstimateInMeter(previous, new Coordinate(vertex2.Longitude, vertex2.Latitude));
 
             return (uint) System.Math.Round(distance * 10);
+        }
+
+        public static Path Calculate(this RouterDb routerDb, Profile profile, SnapPoint snapPoint1, SnapPoint snapPoint2)
+        {
+            var dijkstra = new Dijkstra();
+            return dijkstra.Run(routerDb.Network.Graph, new[] {snapPoint1.ToDijkstraLocation(routerDb, profile)},
+                new[] {snapPoint2.ToDijkstraLocation(routerDb, profile)},
+                (e) =>
+                {
+                    var attributes = routerDb.GetAttributes(e.Id);
+                    return profile.Factor(attributes).FactorForward * routerDb.EdgeLength(e.Id);
+                }, (v) =>
+                {
+                    routerDb.DataProvider?.TouchVertex(v);
+                    return false;
+                });
+
         }
     }
 }
