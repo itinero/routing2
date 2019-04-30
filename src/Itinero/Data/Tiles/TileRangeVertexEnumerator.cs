@@ -57,7 +57,7 @@ namespace Itinero.Data.Tiles
                 return false;
             }
 
-            do
+            while (true)
             {
                 _currentVertex++;
                 if (_graph.TryGetVertex(new VertexId()
@@ -68,7 +68,17 @@ namespace Itinero.Data.Tiles
                 {
                     return true;
                 }
-            } while (_tileEnumerator.MoveNext());
+                else
+                {
+                    if (!_tileEnumerator.MoveNext())
+                    { 
+                        break;
+                    }
+                    
+                    _currentTile = _tileEnumerator.Current.LocalId;
+                    _currentVertex = 0;
+                }
+            }
 
             return false;
         }

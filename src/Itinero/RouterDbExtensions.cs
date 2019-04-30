@@ -14,7 +14,7 @@ namespace Itinero
         /// <summary>
         /// Snaps to an edge closest to the given coordinates.
         /// </summary>
-        /// <param name="routerDb">The routerdb.</param>
+        /// <param name="routerDb">The router db.</param>
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
         /// <returns>The snap point.</returns>

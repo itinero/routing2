@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using GeoAPI.Geometries;
+using Itinero.Algorithms.Search;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
+using Path = Itinero.Algorithms.DataStructures.Path;
 
 namespace Itinero.Tests.Functional.Staging
 {
@@ -48,6 +51,39 @@ namespace Itinero.Tests.Functional.Staging
             }
 
             return features;
+        }
+
+        public static IEnumerable<Feature> ToFeaturesVertices(this RouterDb routerDb,
+            (double minLon, double minLat, double maxLon, double maxLat) box)
+        {
+            foreach (var vertexAndLocation in routerDb.Network.Graph.SearchVerticesInBox(box))
+            {
+                var attributes = new AttributesTable();
+                attributes.Add("tile_id", vertexAndLocation.vertex.TileId);
+                attributes.Add("vertex_id", vertexAndLocation.vertex.LocalId);
+                var feature = new Feature(new Point(new Coordinate(vertexAndLocation.location.Longitude, vertexAndLocation.location.Latitude)),
+                    attributes);
+
+                yield return feature;
+            }
+        }
+
+        public static string ToGeoJson(this RouterDb routerDb, Path path)
+        {
+            return (routerDb.ToFeatureCollection(path)).ToGeoJson();
+        }
+
+        public static string ToGeoJson(this RouterDb routerDb)
+        {
+            // write the network to shape.
+            var featureCollection = new FeatureCollection();
+            var features = new RouterDbFeatures(routerDb);
+            foreach (var feature in features)
+            {
+                featureCollection.Add(feature);
+            }
+
+            return (new GeoJsonWriter()).Write(featureCollection);
         }
     }
 }

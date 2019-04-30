@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Data.Attributes;
+using Itinero.Data.Graphs;
 using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
 using Itinero.Logging;
@@ -36,6 +37,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 $"Loading tile: {tile}");
             
             var nodeLocations = new Dictionary<long, Coordinate>();
+            var waysData = new Dictionary<long, (List<long> nodes, AttributeCollection attributes)>();
+            var nodes = new HashSet<long>();
+            var coreNodes = new HashSet<long>();
             var updated = false;
             using (var textReader = new StreamReader(stream))
             {
@@ -67,6 +71,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     }
                     else if (id.StartsWith("http://www.openstreetmap.org/way/"))
                     {
+                        var wayId = long.Parse(id.Substring("http://www.openstreetmap.org/way/".Length,
+                            id.Length - "http://www.openstreetmap.org/way/".Length));
+                        
                         var attributes = new AttributeCollection();
                         foreach (var child in graphObject.Children())
                         {
@@ -97,74 +104,86 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             attributes.AddOrReplace(key, value);
                         }
 
-                        if (!(graphObject["osm:nodes"] is JArray nodes)) continue;
-                        
-                        // add first as vertex.
-                        var node = nodes[0];
-                        if (!(node is JToken nodeToken)) continue;
-                        var nodeIdString = nodeToken.Value<string>();
-                        var nodeId = long.Parse(nodeIdString.Substring("http://www.openstreetmap.org/node/".Length,
-                            nodeIdString.Length - "http://www.openstreetmap.org/node/".Length));
-                        if (!globalIdMap.TryGet(nodeId, out var previousVertex))
+                        if (!(graphObject["osm:nodes"] is JArray wayNodes)) continue;
+
+                        var nodeIds = new List<long>();
+                        for (var n = 0; n < wayNodes.Count; n++)
                         {
-                            if (!nodeLocations.TryGetValue(nodeId, out var nodeLocation))
-                            {
-                                throw new Exception($"Could not load tile {tile}: node {nodeId} missing.");
-                            }
-                            previousVertex = routerDb.AddVertex(nodeLocation.Longitude, nodeLocation.Latitude);
-                            globalIdMap.Set(nodeId, previousVertex);
-                            updated = true;
-                        }
-                        
-                        // add last as vertex.
-                        node = nodes[nodes.Count - 1];
-                        nodeToken = (node as JToken);
-                        if (nodeToken == null) continue;
-                        nodeIdString = nodeToken.Value<string>();
-                        nodeId = long.Parse(nodeIdString.Substring("http://www.openstreetmap.org/node/".Length,
-                            nodeIdString.Length - "http://www.openstreetmap.org/node/".Length));
-                        if (!globalIdMap.TryGet(nodeId, out var vertexId))
-                        {
-                            if (!nodeLocations.TryGetValue(nodeId, out var nodeLocation))
-                            {
-                                throw new Exception($"Could not load tile {tile}: node {nodeId} missing.");
-                            }
-                            vertexId = routerDb.AddVertex(nodeLocation.Longitude, nodeLocation.Latitude);
-                            globalIdMap.Set(nodeId, vertexId);
-                            updated = true;
-                        }
-                        
-                        var shape = new List<Coordinate>();
-                        for (var n = 1; n < nodes.Count; n++)
-                        {
-                            node = nodes[n];
-                            nodeToken = node as JToken;
-                            if (node == null) continue;
-                            nodeIdString = nodeToken.Value<string>();
-                            nodeId = long.Parse(nodeIdString.Substring("http://www.openstreetmap.org/node/".Length,
+                            var nodeToken = wayNodes[n];
+                            var nodeIdString = nodeToken.Value<string>();
+                            var nodeId = long.Parse(nodeIdString.Substring("http://www.openstreetmap.org/node/".Length,
                                 nodeIdString.Length - "http://www.openstreetmap.org/node/".Length));
+                            nodeIds.Add(nodeId);
 
-                            if (globalIdMap.TryGet(nodeId, out vertexId))
+                            if (!nodes.Contains(nodeId))
                             {
-                                routerDb.AddEdge(previousVertex, vertexId, attributes, new ShapeEnumerable(shape));
-                                updated = true;
-                                shape.Clear();
-
-                                previousVertex = vertexId;
+                                nodes.Add(nodeId);
+                                
+                                if (n == 0 || n == wayNodes.Count - 1)
+                                {
+                                    coreNodes.Add(nodeId);
+                                }
                             }
                             else
                             {
-                                if (!nodeLocations.TryGetValue(nodeId, out var nodeLocation))
-                                {
-                                    throw new Exception($"Could not load tile {tile}: node {nodeId} missing.");
-                                }
-                                shape.Add(nodeLocation);
+                                coreNodes.Add(nodeId);
                             }
                         }
+
+                        waysData[wayId] = (nodeIds, attributes);
                     }
                     else if (id.StartsWith("http://www.openstreetmap.org/relation/"))
                     {
                         Console.WriteLine(id);
+                    }
+                }
+
+                foreach (var wayPairs in waysData)
+                {
+                    var wayNodes = wayPairs.Value.nodes;
+                    var attributes = wayPairs.Value.attributes;
+
+                    var shape = new List<Coordinate>();
+                    var previousVertex = VertexId.Empty;
+                    for (var n = 0; n < wayNodes.Count; n++)
+                    {
+                        var nodeId = wayNodes[n];
+                        
+                        if (coreNodes.Contains(nodeId))
+                        {      
+                            if (!globalIdMap.TryGet(nodeId, out var vertex))
+                            {
+                                if (!nodeLocations.TryGetValue(nodeId, out var vertexLocation))
+                                {
+                                    Itinero.Logging.Logger.Log(nameof(TileParser), TraceEventType.Warning,
+                                        $"Could not load way {wayPairs.Key} in {tile}: node {nodeId} missing.");
+                                    break;
+                                }
+                                
+                                vertex = routerDb.AddVertex(vertexLocation.Longitude, vertexLocation.Latitude);
+                                globalIdMap.Set(nodeId, vertex);
+                                updated = true;
+                            }
+
+                            if (!previousVertex.IsEmpty())
+                            {
+                                routerDb.AddEdge(previousVertex, vertex, attributes, new ShapeEnumerable(shape));
+                                updated = true;
+                                shape.Clear();
+                            }
+
+                            previousVertex = vertex;
+                            continue;
+                        }
+                        
+                        if (!nodeLocations.TryGetValue(nodeId, out var nodeLocation))
+                        {
+                            Itinero.Logging.Logger.Log(nameof(TileParser), TraceEventType.Warning,
+                                $"Could not load way {wayPairs.Key} in {tile}: node {nodeId} missing.");
+                            break;
+                        }
+
+                        shape.Add(nodeLocation);
                     }
                 }
 

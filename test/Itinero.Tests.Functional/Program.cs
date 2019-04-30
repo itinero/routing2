@@ -22,39 +22,46 @@ namespace Itinero.Tests.Functional
         {
             EnableLogging();
             
-            // build a routerdb.
-            //var routerDb = IO.Osm.RouterDbStreamTargetTests.LoadFrom(@"/home/xivk/work/data/OSM/brussels-20190116.osm.pbf");
-// 4.270634651184082, 50.86964430399289
+            // setup a routerdb with a routeable tiles data provider..
             var routerDb = new RouterDb();
             routerDb.DataProvider = new DataProvider(routerDb);
-            //routerDb.DataProvider.TouchBox((4.270634651184082, 50.86964430399289, 4.309666156768798, 50.87108985327193));
-
-//            // write the network to shape.
-//            var featureCollection = new FeatureCollection();
-//            var features = new RouterDbFeatures(routerDb);
-//            foreach (var feature in features)
-//            {
-//                featureCollection.Add(feature);
-//            }
-//
-//            File.WriteAllText("network.geojson", (new GeoJsonWriter()).Write(featureCollection));
             
             var profile = new DefaultProfile();
             var path = routerDb.Calculate(profile, 
                 routerDb.Snap(4.309666156768798, 50.87108985327193), 
                 routerDb.Snap(4.270634651184082, 50.86964430399289));
+            var json = routerDb.ToGeoJson(path);
 
-            var featureCollection = routerDb.ToFeatureCollection(path);
-            var json = (new GeoJsonWriter()).Write(featureCollection);
-            
-            path = routerDb.Calculate(profile, 
-                routerDb.Snap(4.801840782165527, 51.267903074610615), 
-                routerDb.Snap(4.7806620597839355, 51.2609614991932));
+            var sp1 = routerDb.Snap(4.801840782165527, 51.267903074610615);
+            var sp2 = routerDb.Snap(4.7806620597839355, 51.2609614991932);
+            path = routerDb.Calculate(profile, sp1, sp2);
+            json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
 
-            featureCollection = routerDb.ToFeatureCollection(path);
-            json = (new GeoJsonWriter()).Write(featureCollection);
-            
-            routerDb.WriteToShape("test");
+            sp1 = routerDb.Snap(-68.8235092163086, -32.844836958416735);
+            sp2 = routerDb.Snap(-68.84187698364256, -32.88167751934565);
+            path = routerDb.Calculate(profile, sp1, sp2);
+            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
+            json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
+
+            sp1 = routerDb.Snap(149.19013023376465, -21.12181472572919);
+            sp2 = routerDb.Snap(148.94954681396484, -21.150474965190753);
+            path = routerDb.Calculate(profile, sp1, sp2);
+            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
+            json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
+
+//
+//            var box = (4.7806620597839355 - 0.001, 51.2609614991932 - 0.001,
+//                4.7806620597839355 + 0.001, 51.2609614991932 + 0.001);
+//            routerDb.DataProvider?.TouchBox(box);
+//            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
+//            
+//            var features = new FeatureCollection();
+//            features.AddRange(routerDb.ToFeaturesVertices(box));
+//            var json = features.ToGeoJson();
+//            featureCollection = routerDb.ToFeatureCollection(path);
+//            json = (new GeoJsonWriter()).Write(featureCollection);
+//            
+//            routerDb.WriteToShape("test");
 
 //            var kempen = (4.5366668701171875, 51.179773424875634,
 //                4.8017120361328125, 51.29885215199866);

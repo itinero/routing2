@@ -27,8 +27,7 @@ namespace Itinero.IO.Osm.Tiles
             GlobalIdMap globalIdMap = null, int zoom = 14)
         {
             _routerDb = routerDb;
-            _idMap = globalIdMap;
-            if (_idMap == null) _idMap = new GlobalIdMap();
+            _idMap = globalIdMap ?? new GlobalIdMap();
             _baseUrl = baseUrl;
             _zoom = 14;
             
