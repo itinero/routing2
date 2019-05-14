@@ -44,3 +44,4 @@ TestResult*.xml
 *.dbf
 *.shx
 .idea/*
+*.geojson

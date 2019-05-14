@@ -68,13 +68,18 @@ namespace Itinero
                 (e) =>
                 {
                     var attributes = routerDb.GetAttributes(e.Id);
-                    return profile.Factor(attributes).FactorForward * routerDb.EdgeLength(e.Id);
+                    var edgeFactor = profile.Factor(attributes);
+                    var length = routerDb.EdgeLength(e.Id);
+                    if (e.Forward)
+                    {
+                        return edgeFactor.FactorForward * length;
+                    }
+                    return edgeFactor.FactorBackward * length;
                 }, (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
                     return false;
                 });
-
         }
     }
 }
