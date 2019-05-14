@@ -25,8 +25,8 @@ namespace Itinero.Tests.Functional
             // setup a routerdb with a routeable tiles data provider..
             var routerDb = new RouterDb();
             routerDb.DataProvider = new DataProvider(routerDb);
-            
-            var profile = new DefaultProfile();
+
+            var profile = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle; // new DefaultProfile();
             var path = routerDb.Calculate(profile, 
                 routerDb.Snap(4.309666156768798, 50.87108985327193), 
                 routerDb.Snap(4.270634651184082, 50.86964430399289));
@@ -40,16 +40,15 @@ namespace Itinero.Tests.Functional
             sp1 = routerDb.Snap(-68.8235092163086, -32.844836958416735);
             sp2 = routerDb.Snap(-68.84187698364256, -32.88167751934565);
             path = routerDb.Calculate(profile, sp1, sp2);
-            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
             json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
 
-            sp1 = routerDb.Snap(149.19013023376465, -21.12181472572919);
-            sp2 = routerDb.Snap(148.94954681396484, -21.150474965190753);
-            path = routerDb.Calculate(profile, sp1, sp2);
+//            sp1 = routerDb.Snap(149.19013023376465, -21.12181472572919);
+//            sp2 = routerDb.Snap(148.94954681396484, -21.150474965190753);
+//            path = routerDb.Calculate(profile, sp1, sp2);
+//            json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
+//            
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
-            json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
-
-//
+            
 //            var box = (4.7806620597839355 - 0.001, 51.2609614991932 - 0.001,
 //                4.7806620597839355 + 0.001, 51.2609614991932 + 0.001);
 //            routerDb.DataProvider?.TouchBox(box);

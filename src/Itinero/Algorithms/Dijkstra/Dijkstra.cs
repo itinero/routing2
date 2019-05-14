@@ -99,7 +99,8 @@ namespace Itinero.Algorithms.Dijkstra
                 while (enumerator.MoveNext())
                 {
                     var neighbourCost = getWeight(enumerator);
-                    if (neighbourCost >= float.MaxValue) continue;
+                    if (neighbourCost >= float.MaxValue || 
+                        neighbourCost <= 0) continue;
 
                     var neighbourEdge = enumerator.Id;
                     if (neighbourEdge == currentVisit.edge) continue; // don't consider u-turns.

@@ -10,4 +10,8 @@
   <ItemGroup>
     <Folder Include="Algorithms\PriorityQueues" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Profiles\Lua\Osm\bicycle.lua" />
+    <EmbeddedResource Include="Profiles\Lua\Osm\bicycle.lua" />
+  </ItemGroup>
 </Project>
