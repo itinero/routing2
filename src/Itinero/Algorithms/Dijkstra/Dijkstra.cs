@@ -7,6 +7,9 @@ using Itinero.Data.Graphs;
 
 namespace Itinero.Algorithms.Dijkstra
 {
+    /// <summary>
+    /// A dijkstra implementation.
+    /// </summary>
     public class Dijkstra
     {
         private readonly PathTree _tree = new PathTree();
@@ -47,7 +50,7 @@ namespace Itinero.Algorithms.Dijkstra
             }
             
             // add targets.
-            (uint pointer, float cost) bestTarget = (uint.MaxValue, float.MaxValue);
+            (uint pointer, float cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, float.MaxValue, false, default(SnapPoint));
             var targetMaxCost = 0f;
             var targetsPerVertex = new Dictionary<VertexId, (float cost, bool forward, SnapPoint target)>();
             foreach (var target in targets)
@@ -122,7 +125,7 @@ namespace Itinero.Algorithms.Dijkstra
                     targetCost += currentCost;
                     if (targetCost < bestTarget.cost)
                     {
-                        bestTarget = (currentPointer, targetCost);
+                        bestTarget = (currentPointer, targetCost, targetDetails.forward, targetDetails.target);
                     }
 
                     targetsPerVertex.Remove(currentVisit.vertex);
