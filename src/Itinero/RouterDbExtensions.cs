@@ -63,8 +63,8 @@ namespace Itinero
         public static Path Calculate(this RouterDb routerDb, Profile profile, SnapPoint snapPoint1, SnapPoint snapPoint2)
         {
             var dijkstra = new Dijkstra();
-            return dijkstra.Run(routerDb.Network.Graph, new[] {snapPoint1.ToDijkstraLocation(routerDb, profile)},
-                new[] {snapPoint2.ToDijkstraLocation(routerDb, profile)},
+            return dijkstra.Run(routerDb.Network.Graph, snapPoint1,
+                new[] { snapPoint2 },
                 (e) =>
                 {
                     var attributes = routerDb.GetAttributes(e.Id);
