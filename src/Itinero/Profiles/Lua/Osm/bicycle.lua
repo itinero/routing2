@@ -60,18 +60,14 @@ end
 -- turns a oneway tag value into a direction
 function is_oneway(attributes, name)
     local oneway = attributes[name]
-    if not oneway == nil then
-        if oneway == "yes" or
-                oneway == "true" or
-                oneway == "1" then
-            return 1
-        end
-        if oneway == "-1" then
-            return 2
-        end
-        if oneway == "no" then
-            return 0
-        end
+    if oneway == "yes" or oneway == "true" or oneway == "1" then
+        return 1
+    end
+    if oneway == "-1" then
+        return 2
+    end
+    if oneway == "no" then
+        return 0
     end
     return nil
 end
@@ -120,14 +116,17 @@ function factor(attributes, result)
     if junction == "roundabout" then
         result.direction = 1
     end
-    result.direction = is_oneway(attributes, "oneway")
+    local direction = is_oneway(attributes, "oneway")
+    if direction != nil then
+        result.direction = direction
+    end
     local direction = is_oneway(attributes, "oneway:bicycle")
-    if direction then
+    if direction != nil then
         result.direction = direction
     end
         
     if result.direction == 1 then
-        result.backwards = 0
+        result.backward = 0
     elseif result.direction == 2 then
         result.forward = 0
     end    

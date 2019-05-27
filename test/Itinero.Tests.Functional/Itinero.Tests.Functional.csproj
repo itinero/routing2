@@ -13,4 +13,7 @@
   <ItemGroup>
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.3" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="cache" />
+  </ItemGroup>
 </Project>

@@ -18,6 +18,11 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         public const string BaseUrl = "https://tiles.openplanner.team/planet";
 
         /// <summary>
+        /// The function to download from a given url.
+        /// </summary>
+        public static Func<string, Stream> DownloadFunc = Download.DownloadHelper.Download;
+
+        /// <summary>
         /// Adds data from an individual tile.
         /// </summary>
         /// <param name="routerDb">The router db to fill.</param>
@@ -27,7 +32,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         internal static bool AddOsmTile(this RouterDb routerDb, GlobalIdMap globalIdMap, Tile tile, string baseUrl = BaseUrl)
         {
             var url = baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
-            var stream = Download.DownloadHelper.Download(url);
+            var stream = DownloadFunc(url);
             if (stream == null)
             {
                 return false;

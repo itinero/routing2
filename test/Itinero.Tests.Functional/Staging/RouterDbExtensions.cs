@@ -32,12 +32,28 @@ namespace Itinero.Tests.Functional.Staging
             }
             coordinates.Add(new Coordinate(vertex2.Longitude, vertex2.Latitude));
 
-            return new Feature(new LineString(coordinates.ToArray()), new AttributesTable());
+            var attributes = new AttributesTable();
+            var tags = routerDb.GetAttributes(edgeId);
+            foreach (var tag in tags)
+            {
+                attributes.Add(tag.Key, tag.Value);
+            }
+
+            return new Feature(new LineString(coordinates.ToArray()), attributes);
         }
         
         public static Feature ToFeature(this RouterDb routerDb, SnapPoint snapPoint)
         {
             return routerDb.ToFeature(snapPoint.EdgeId);
+        }
+
+        public static FeatureCollection ToFeatureCollection(this RouterDb routerDb, SnapPoint snapPoint)
+        {
+            var features = new FeatureCollection();
+
+            features.Add(routerDb.ToFeature(snapPoint));
+
+            return features;
         }
 
         public static FeatureCollection ToFeatureCollection(this RouterDb routerDb,

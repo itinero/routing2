@@ -50,7 +50,8 @@ namespace Itinero.Algorithms.Dijkstra
             }
             
             // add targets.
-            (uint pointer, float cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, float.MaxValue, false, default(SnapPoint));
+            (uint pointer, float cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, float.MaxValue, false, 
+                default(SnapPoint));
             var targetMaxCost = 0f;
             var targetsPerVertex = new Dictionary<VertexId, (float cost, bool forward, SnapPoint target)>();
             foreach (var target in targets)
@@ -155,6 +156,9 @@ namespace Itinero.Algorithms.Dijkstra
 
             var path = new Path(graph);
             var visit = _tree.GetVisit(bestTarget.pointer);
+            
+            if (!enumerator.MoveToEdge(bestTarget.target.EdgeId, bestTarget.forward)) throw new Exception($"Edge in bestTarget {bestTarget} not found!");
+            path.Prepend(bestTarget.target.EdgeId, enumerator.To);
             while (true)
             {
                 path.Prepend(visit.edge, visit.vertex);
@@ -168,7 +172,7 @@ namespace Itinero.Algorithms.Dijkstra
 
             return path;
         }
-        
+
         private static readonly ThreadLocal<Dijkstra> DefaultLazy = new ThreadLocal<Dijkstra>(() => new Dijkstra());
         
         /// <summary>
