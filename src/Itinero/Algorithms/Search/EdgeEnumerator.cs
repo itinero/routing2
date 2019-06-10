@@ -57,9 +57,7 @@ namespace Itinero.Algorithms.Search
                     if (_graphEnumerator.MoveNext()) return true;
                     if (!_vertexEnumerator.MoveNext()) return false;
                 }
-            } 
-
-            return false;
+            }
         }
 
         public Graph.Enumerator GraphEnumerator => _graphEnumerator;
