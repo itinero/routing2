@@ -4,6 +4,7 @@ using System.IO;
 using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
 using Itinero.Data.Shapes;
+using Itinero.IO.Osm.Tiles.Parsers.Semantics;
 using Itinero.LocalGeo;
 using Itinero.Logging;
 using Newtonsoft.Json.Linq;
@@ -21,6 +22,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         /// The function to download from a given url.
         /// </summary>
         public static Func<string, Stream> DownloadFunc = Download.DownloadHelper.Download;
+        
+        private static readonly Lazy<Dictionary<string, TagMapperConfig>> ReverseMappingLazy = new Lazy<Dictionary<string, TagMapperConfig>>(
+            () => TagMapperConfigParser.Parse(Extensions.LoadEmbeddedResourceStream("Itinero.IO.Osm.Tiles.ontology.mapping_config.json")));
 
         /// <summary>
         /// Adds data from an individual tile.
@@ -61,11 +65,11 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     if (id == null) continue;
 
                     if (id.StartsWith("http://www.openstreetmap.org/node/"))
-                    {
+                    { // parse as a node.
                         var nodeId = long.Parse(id.Substring("http://www.openstreetmap.org/node/".Length,
                             id.Length - "http://www.openstreetmap.org/node/".Length));
 
-                        if (globalIdMap.TryGet(nodeId, out var vertexId)) continue;
+                        if (globalIdMap.TryGet(nodeId, out var _)) continue;
 
                         if (!(graphObject["geo:long"] is JToken longToken)) continue;
                         var lon = longToken.Value<double>();
@@ -75,41 +79,31 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         nodeLocations[nodeId] = new Coordinate((float) lon, (float) lat);
                     }
                     else if (id.StartsWith("http://www.openstreetmap.org/way/"))
-                    {
+                    { // parse as a way.
                         var wayId = long.Parse(id.Substring("http://www.openstreetmap.org/way/".Length,
                             id.Length - "http://www.openstreetmap.org/way/".Length));
                         
-                        var attributes = new AttributeCollection();
-                        foreach (var child in graphObject.Children())
+                        // interpret all tags with defined semantics.
+                        var attributes = GetTags(graphObject ,ReverseMappingLazy.Value);
+                        
+                        // include all raw tags (if any).
+                        if ((graphObject["osm:hasTag"] is JArray rawTags))
                         {
-                            if (!(child is JProperty property)) continue;
-
-                            if (property.Name == "@id" ||
-                                property.Name == "osm:nodes" ||
-                                property.Name == "@type") continue;
-
-                            if (property.Name == "rdfs:label")
+                            for (var n = 0; n < rawTags.Count; n++)
                             {
-                                attributes.AddOrReplace("name", property.Value.Value<string>());
-                                continue;
-                            }
+                                var rawTag = rawTags[n];
+                                if (!(rawTag is JValue rawTagValue)) continue;
 
-                            var key = property.Name;
-                            if (key.StartsWith("osm:"))
-                            {
-                                key = key.Substring(4, key.Length - 4);
+                                var keyValue = rawTagValue.Value<string>();
+                                var keyValueSplit = keyValue.Split('=');
+                                if (keyValueSplit.Length != 2) continue;
+                                
+                                attributes.AddOrReplace(keyValueSplit[0], keyValueSplit[1]);
                             }
-
-                            var value = property.Value.Value<string>();
-                            if (value.StartsWith("osm:"))
-                            {
-                                value = value.Substring(4, value.Length - 4);
-                            }
-
-                            attributes.AddOrReplace(key, value);
                         }
 
-                        if (!(graphObject["osm:nodes"] is JArray wayNodes)) continue;
+                        // parse nodes.
+                        if (!(graphObject["osm:hasNodes"] is JArray wayNodes)) continue;
 
                         var nodeIds = new List<long>();
                         for (var n = 0; n < wayNodes.Count; n++)
@@ -138,8 +132,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         waysData[wayId] = (nodeIds, attributes);
                     }
                     else if (id.StartsWith("http://www.openstreetmap.org/relation/"))
-                    {
-                        Console.WriteLine(id);
+                    { // parse as a relation.
+                        // TODO: parse as a relation.
                     }
                 }
 
@@ -194,6 +188,34 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
                 return updated;
             }
+        }
+
+        /// <summary>
+        /// Gets the OSM tags from the given node/way or relation.
+        /// </summary>
+        /// <param name="osmGeo">The node, way or relation json-ld part.</param>
+        /// <param name="reverseMappings">The reverse mappings.</param>
+        /// <returns>The tags.</returns>
+        private static AttributeCollection GetTags(JToken osmGeo, Dictionary<string, TagMapperConfig> reverseMappings)
+        {
+            var attributes = new AttributeCollection();
+                        
+            // interpret all tags with defined semantics.
+            foreach (var child in osmGeo.Children())
+            {
+                if (!(child is JProperty property)) continue;
+
+                if (property.Name == "@id" ||
+                    property.Name == "@type") continue;
+                if (property.Value is JArray) continue;
+
+                var attribute = property.Map(reverseMappings);
+                if (attribute == null) continue;
+
+                attributes.AddOrReplace(attribute.Value.Key, attribute.Value.Value);
+            }
+
+            return attributes;
         }
     }
 }

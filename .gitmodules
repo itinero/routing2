@@ -1,0 +1,3 @@
+[submodule "src/Itinero.IO.Osm.Tiles/ontology"]
+	path = src/Itinero.IO.Osm.Tiles/ontology
+	url = git@github.com:openplannerteam/routable-tiles-ontology.git

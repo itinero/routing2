@@ -44,13 +44,20 @@ namespace Itinero.Algorithms.Search
                 return false;
             }
 
-            do
+            while (true)
             {
                 if (_graphEnumerator.MoveNext())
                 {
                     return true;
                 }
-            } while (_vertexEnumerator.MoveNext());
+
+                if (!_vertexEnumerator.MoveNext()) return false;
+                while (_graphEnumerator.MoveTo(_vertexEnumerator.Current))
+                {
+                    if (_graphEnumerator.MoveNext()) return true;
+                    if (!_vertexEnumerator.MoveNext()) return false;
+                }
+            } 
 
             return false;
         }

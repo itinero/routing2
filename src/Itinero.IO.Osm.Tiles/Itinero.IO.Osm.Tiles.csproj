@@ -11,5 +11,9 @@
     <ItemGroup>
       <ProjectReference Include="..\Itinero\Itinero.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <None Remove="ontology\mapping_config.json" />
+        <EmbeddedResource Include="ontology\mapping_config.json" />
+    </ItemGroup>
 
 </Project>
