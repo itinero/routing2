@@ -1,3 +1,4 @@
+using Itinero.Algorithms;
 using Itinero.Algorithms.DataStructures;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Search;
@@ -18,7 +19,7 @@ namespace Itinero
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
         /// <returns>The snap point.</returns>
-        public static SnapPoint Snap(this RouterDb routerDb, double longitude, double latitude)
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude)
         {
             var box = (longitude - 0.001, latitude - 0.001, longitude + 0.001, latitude + 0.001);
             
@@ -62,8 +63,7 @@ namespace Itinero
 
         public static Path Calculate(this RouterDb routerDb, Profile profile, SnapPoint snapPoint1, SnapPoint snapPoint2)
         {
-            var dijkstra = new Dijkstra();
-            return dijkstra.Run(routerDb.Network.Graph, snapPoint1,
+            return Dijkstra.Default.Run(routerDb.Network.Graph, snapPoint1,
                 new[] { snapPoint2 },
                 (e) =>
                 {

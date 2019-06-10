@@ -75,6 +75,16 @@ namespace Itinero.Algorithms
         {
             return result.Value;
         }
+        
+        /// <summary>
+        /// Implicit conversion from the result object type.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns>The result object.</returns>
+        public static implicit operator Result<T>(T result)
+        {
+            return new Result<T>(result);;
+        }
 
         /// <summary>
         /// Gets the status.
