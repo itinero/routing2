@@ -38,17 +38,23 @@ namespace Itinero.Algorithms.Search
             while (edges.MoveNext())
             {
                 var edgeId = edges.GraphEnumerator.Id;
-                (uint edgeId, double offset) localSnapPoint = (uint.MaxValue, double.MaxValue);
 
+                // get edge details.
                 var from = edges.GraphEnumerator.From;
                 var to = edges.GraphEnumerator.To;
+                var shape = network.GetShape(edges.GraphEnumerator.Id);
                 if (!edges.GraphEnumerator.Forward)
                 {
                     var t = from;
                     from = to;
                     to = t;
+                    shape = shape?.Reverse();
                 }
                 
+                // search for closest point along edge.
+                (uint edgeId, double offset) localSnapPoint = (uint.MaxValue, double.MaxValue);
+                
+                // try vertex1.
                 var vertex1 = network.GetVertex(from);
                 var distance = Coordinate.DistanceEstimateInMeter(vertex1, center);
                 if (distance < bestDistance)
@@ -57,14 +63,15 @@ namespace Itinero.Algorithms.Search
                     localSnapPoint = (edgeId, 0);
                 }
 
+                // try the shape points and it's segments.
                 var length = 0.0;
                 Coordinate? projected = null;
                 Line line;
                 var segmentLength = 0.0;
                 var previous = vertex1;
-                var shape = network.GetShape(edges.GraphEnumerator.Id);
                 if (shape != null)
                 {
+                    if (!edges.GraphEnumerator.Forward) shape.Reverse();
                     foreach (var shapePoint in shape)
                     {
                         segmentLength = Coordinate.DistanceEstimateInMeter(previous, shapePoint);
@@ -78,8 +85,7 @@ namespace Itinero.Algorithms.Search
                             if (distance < bestDistance)
                             {
                                 bestDistance = distance;
-                                localSnapPoint = (edgeId, length + 
-                                                                           Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                                localSnapPoint = (edgeId, length + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
                             }
                         }
                         
@@ -107,8 +113,7 @@ namespace Itinero.Algorithms.Search
                     if (distance < bestDistance)
                     {
                         bestDistance = distance;
-                        localSnapPoint = (edgeId, length + 
-                                                                   Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                        localSnapPoint = (edgeId, length + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
                     }
                 }
                         

@@ -98,10 +98,13 @@ namespace Itinero
         /// Gets the shape for the given edge, if any.
         /// </summary>
         /// <param name="edgeId">The edge id.</param>
+        /// <param name="forward">The direction of the edge.</param>
         /// <returns>The shape.</returns>
-        public ShapeBase GetShape(uint edgeId)
+        public ShapeBase GetShape(uint edgeId, bool forward = true)
         {
-            return _network.GetShape(edgeId);
+            var shape = _network.GetShape(edgeId);
+            if (!forward) shape = shape.Reverse();
+            return shape;
         }
 
         /// <summary>

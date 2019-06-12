@@ -161,22 +161,27 @@ namespace Itinero.Algorithms.Dijkstra
             if (!enumerator.MoveToEdge(bestTarget.target.EdgeId, bestTarget.forward)) throw new Exception($"Edge in bestTarget {bestTarget} not found!");
             if (bestTarget.target.EdgeId == source.EdgeId)
             { // path is just inside one edge.
-                path.Prepend(bestTarget.target.EdgeId, enumerator.To, bestTarget.target.Offset, source.Offset);
+                path.Prepend(bestTarget.target.EdgeId, enumerator.To);
             }
             else
             { // path is at least two edges.
-                path.Prepend(bestTarget.target.EdgeId, enumerator.To, null, bestTarget.target.Offset);
+                path.Prepend(bestTarget.target.EdgeId, enumerator.To);
                 while (true)
                 {
                     if (visit.previousPointer == uint.MaxValue)
                     {
-                        path.Prepend(visit.edge, visit.vertex, source.Offset, null);
+                        enumerator.MoveToEdge(visit.edge);
+                        path.Prepend(visit.edge, visit.vertex);
                         break;
                     }
                     path.Prepend(visit.edge, visit.vertex);
                     visit = _tree.GetVisit(visit.previousPointer);
                 }
             }
+            
+            // add the offsets.
+            path.Offset1 = path[0].forward ? source.Offset : (ushort)(ushort.MaxValue - source.Offset);
+            path.Offset2 = path[path.Count - 1].forward ? bestTarget.target.Offset  : (ushort)(ushort.MaxValue - bestTarget.target.Offset);
 
             return path;
         }

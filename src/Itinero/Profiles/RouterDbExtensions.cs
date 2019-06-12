@@ -10,10 +10,10 @@ namespace Itinero.Profiles
             
             if (forward)
             {
-                return length * factor.FactorForward;
+                return (uint)(length * factor.FactorForward);
             }
 
-            return length * factor.FactorBackward;
+            return (uint)(length * factor.FactorBackward);
         }
     }
 }

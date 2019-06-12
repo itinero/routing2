@@ -8,9 +8,6 @@
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Algorithms\PriorityQueues" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Profiles\Lua\Osm\bicycle.lua" />
     <EmbeddedResource Include="Profiles\Lua\Osm\bicycle.lua" />
   </ItemGroup>

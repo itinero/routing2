@@ -42,17 +42,12 @@ namespace Itinero.Tests.Functional.Staging
             return new Feature(new LineString(coordinates.ToArray()), attributes);
         }
         
-        public static Feature ToFeature(this RouterDb routerDb, SnapPoint snapPoint)
-        {
-            return routerDb.ToFeature(snapPoint.EdgeId);
-        }
-
         public static FeatureCollection ToFeatureCollection(this RouterDb routerDb, SnapPoint snapPoint)
         {
             var features = new FeatureCollection();
-
-            features.Add(routerDb.ToFeature(snapPoint));
-
+            features.Add(routerDb.ToFeature(snapPoint.EdgeId));
+            var locationOnNetwork = routerDb.LocationOnNetwork((snapPoint.EdgeId, true), snapPoint.Offset);
+            features.Add(new Feature(new Point(new Coordinate(locationOnNetwork.Longitude, locationOnNetwork.Latitude)), new AttributesTable()));
             return features;
         }
 
@@ -100,6 +95,25 @@ namespace Itinero.Tests.Functional.Staging
             }
 
             return (new GeoJsonWriter()).Write(featureCollection);
+        }
+
+        public static FeatureCollection ToFeatureCollection(this RouterDb routerDb, Route route)
+        {
+            var features = new FeatureCollection();
+
+            var coordinates = new List<Coordinate>();
+            foreach (var e in route.Shape)
+            {
+                coordinates.Add(new Coordinate(e.Longitude, e.Latitude));
+            }
+            features.Add(new Feature(new LineString(coordinates.ToArray()), new AttributesTable()));
+
+            return features;
+        }
+
+        public static string ToGeoJson(this RouterDb routerDb, Route route)
+        {
+            return (routerDb.ToFeatureCollection(route)).ToGeoJson();
         }
     }
 }

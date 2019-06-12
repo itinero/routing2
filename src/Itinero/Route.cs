@@ -15,7 +15,7 @@ namespace Itinero
         /// <summary>
         /// Gets or sets the shape.
         /// </summary>
-        public Coordinate[] Shape { get; set; }
+        public List<Coordinate> Shape { get; set; } = new List<Coordinate>();
 
         /// <summary>
         /// Gets or sets the attributes.
@@ -25,12 +25,12 @@ namespace Itinero
         /// <summary>
         /// Gets or sets the stops.
         /// </summary>
-        public Stop[] Stops { get; set; }
+        public List<Stop> Stops { get; set; } = new List<Stop>();
 
         /// <summary>
         /// Gets or sets the meta data.
         /// </summary>
-        public Meta[] ShapeMeta { get; set; }
+        public List<Meta> ShapeMeta { get; set; } = new List<Meta>();
 
         /// <summary>
         /// Represents a stop.
@@ -339,7 +339,7 @@ namespace Itinero
         {
             this.Shape++;
             if (this.Route.Shape == null ||
-                this.Shape >= this.Route.Shape.Length)
+                this.Shape >= this.Route.Shape.Count)
             {
                 return false;
             }
@@ -352,7 +352,7 @@ namespace Itinero
                 }
                 else
                 {
-                    while (this.StopIndex < this.Route.Stops.Length &&
+                    while (this.StopIndex < this.Route.Stops.Count &&
                         this.Route.Stops[this.StopIndex].Shape < this.Shape)
                     {
                         this.StopIndex++;
@@ -368,7 +368,7 @@ namespace Itinero
                 }
                 else
                 {
-                    while (this.MetaIndex < this.Route.ShapeMeta.Length &&
+                    while (this.MetaIndex < this.Route.ShapeMeta.Count &&
                         this.Route.ShapeMeta[this.MetaIndex].Shape < this.Shape)
                     {
                         this.MetaIndex++;
@@ -402,14 +402,14 @@ namespace Itinero
             this.Shape--;
             if (this.Route.Shape == null ||
                 this.Shape < 0 ||
-                this.Shape >= this.Route.Shape.Length)
+                this.Shape >= this.Route.Shape.Count)
             {
                 return false;
             }
 
             while (this.Route.Stops != null &&
                 this.StopIndex > 0 &&
-                this.StopIndex < this.Route.Stops.Length &&
+                this.StopIndex < this.Route.Stops.Count &&
                 this.Route.Stops[this.StopIndex].Shape > this.Shape)
             {
                 this.StopIndex--;
@@ -417,7 +417,7 @@ namespace Itinero
 
             while (this.Route.ShapeMeta != null &&
                 this.MetaIndex > 0 &&
-                this.MetaIndex < this.Route.ShapeMeta.Length &&
+                this.MetaIndex < this.Route.ShapeMeta.Count &&
                 this.Route.ShapeMeta[this.MetaIndex].Shape > this.Shape)
             {
                 this.MetaIndex--;
@@ -445,7 +445,7 @@ namespace Itinero
         public static bool HasStops(this RoutePosition position)
         {
             return position.Route.Stops != null &&
-                position.Route.Stops.Length > position.StopIndex &&
+                position.Route.Stops.Count > position.StopIndex &&
                 position.Route.Stops[position.StopIndex].Shape == position.Shape;
         }
 
@@ -494,7 +494,7 @@ namespace Itinero
         public static bool HasCurrentMeta(this RoutePosition position)
         {
             return position.Route.ShapeMeta != null &&
-                position.Route.ShapeMeta.Length > position.MetaIndex &&
+                position.Route.ShapeMeta.Count > position.MetaIndex &&
                 position.Route.ShapeMeta[position.MetaIndex].Shape == position.Shape;
         }
 
@@ -516,7 +516,7 @@ namespace Itinero
         public static Route.Meta Meta(this RoutePosition position)
         {
             if (position.Route.ShapeMeta != null &&
-                position.Route.ShapeMeta.Length > position.MetaIndex)
+                position.Route.ShapeMeta.Count > position.MetaIndex)
             {
                 return position.Route.ShapeMeta[position.MetaIndex];
             }
@@ -536,7 +536,7 @@ namespace Itinero
         /// </summary>
         public static bool IsLast(this RoutePosition position)
         {
-            return position.Route.Shape.Length - 1 == position.Shape;
+            return position.Route.Shape.Count - 1 == position.Shape;
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Algorithms;
 using Itinero.Data.Attributes;
 using Itinero.LocalGeo;
@@ -27,29 +28,29 @@ namespace Itinero
         {
             if (route1 == null) return route2;
             if (route2 == null) return route1;
-            if (route1.Shape == null || route1.Shape.Length == 0) return route2;
-            if (route2.Shape == null || route2.Shape.Length == 0) return route1;
+            if (route1.Shape == null || route1.Shape.Count == 0) return route2;
+            if (route2.Shape == null || route2.Shape.Count == 0) return route1;
 
             var timeoffset = route1.TotalTime;
             var distanceoffset = route1.TotalDistance;
-            var shapeoffset = route1.Shape.Length - 1;
+            var shapeoffset = route1.Shape.Count - 1;
 
             // merge shape.
-            var shapeLength = route1.Shape.Length + route2.Shape.Length - 1;
-            var shape = new Coordinate[route1.Shape.Length + route2.Shape.Length - 1];
+            var shapeLength = route1.Shape.Count + route2.Shape.Count - 1;
+            var shape = new Coordinate[route1.Shape.Count + route2.Shape.Count - 1];
             route1.Shape.CopyTo(shape, 0);
-            route2.Shape.CopyTo(shape, route1.Shape.Length - 1);
+            route2.Shape.CopyTo(shape, route1.Shape.Count - 1);
 
             // merge metas.
-            var metas1 = route1.ShapeMeta?.Length ?? 0;
-            var metas2 = route2.ShapeMeta?.Length ?? 0;
+            var metas1 = route1.ShapeMeta?.Count ?? 0;
+            var metas2 = route2.ShapeMeta?.Count ?? 0;
             Route.Meta[] metas = null;
             if (metas1 + metas2 - 1 > 0)
             {
                 metas = new Route.Meta[metas1 + metas2 - 1];
                 if (route1.ShapeMeta != null)
                 {
-                    for (var i = 0; i < route1.ShapeMeta.Length; i++)
+                    for (var i = 0; i < route1.ShapeMeta.Count; i++)
                     {
                         metas[i] = new Route.Meta()
                         {
@@ -60,7 +61,7 @@ namespace Itinero
                 }
                 if (route2.ShapeMeta != null)
                 {
-                    for (var i = 1; i < route2.ShapeMeta.Length; i++)
+                    for (var i = 1; i < route2.ShapeMeta.Count; i++)
                     {
                         metas[metas1 + i - 1] = new Route.Meta()
                         {
@@ -77,7 +78,7 @@ namespace Itinero
             var stops = new List<Route.Stop>();
             if (route1.Stops != null)
             {
-                for (var i = 0; i < route1.Stops.Length; i++)
+                for (var i = 0; i < route1.Stops.Count; i++)
                 {
                     var stop = route1.Stops[i];
                     stops.Add(new Route.Stop()
@@ -90,13 +91,13 @@ namespace Itinero
             }
             if (route2.Stops != null)
             {
-                for (var i = 0; i < route2.Stops.Length; i++)
+                for (var i = 0; i < route2.Stops.Count; i++)
                 {
                     var stop = route2.Stops[i];
                     if (i == 0 && stops.Count > 0)
                     { // compare with last stop to remove duplicates.
                         var existing = stops[stops.Count - 1];
-                        if (existing.Shape == route1.Shape.Length - 1 &&
+                        if (existing.Shape == route1.Shape.Count - 1 &&
                             Math.Abs(existing.Coordinate.Latitude - stop.Coordinate.Latitude) < double.Epsilon &&
                             Math.Abs(existing.Coordinate.Longitude - stop.Coordinate.Longitude) < double.Epsilon &&
                             existing.Attributes.ContainsSame(stop.Attributes, "time", "distance"))
@@ -163,9 +164,9 @@ namespace Itinero
             {
                 Attributes = attributes,
                 Branches = branches,
-                Shape = shape,
-                ShapeMeta = metas,
-                Stops = stops.ToArray(),
+                Shape = shape.ToList(),
+                ShapeMeta = metas.ToList(),
+                Stops = stops,
                 TotalDistance = route1.TotalDistance + route2.TotalDistance,
                 TotalTime = route1.TotalTime + route2.TotalTime
             };
@@ -205,7 +206,7 @@ namespace Itinero
                 return null;
             }
 
-            for (var i = 0; i < route.Shape.Length - 1; i++)
+            for (var i = 0; i < route.Shape.Count - 1; i++)
             {
                 var currentDistance = Coordinate.DistanceEstimateInMeter(route.Shape[i], route.Shape[i + 1]);
                 if (distanceMeter + currentDistance >= distanceInMeter)
@@ -253,7 +254,7 @@ namespace Itinero
             }
             if (shape == segmentEnd)
             {
-                if (shape == route.Shape.Length - 1)
+                if (shape == route.Shape.Count - 1)
                 {
                     distance = route.TotalDistance;
                     time = route.TotalTime;
@@ -282,7 +283,7 @@ namespace Itinero
             }
             var endDistance = 0.0;
             var endTime = 0.0;
-            if (segmentEnd == route.Shape.Length - 1)
+            if (segmentEnd == route.Shape.Count - 1)
             {
                 endDistance = route.TotalDistance;
                 endTime = route.TotalTime;
@@ -331,18 +332,18 @@ namespace Itinero
         public static void SegmentFor(this Route route, int shape, out int segmentStart, out int segmentEnd)
         {
             segmentStart = 0;
-            segmentEnd = route.Shape.Length - 1;
+            segmentEnd = route.Shape.Count - 1;
             if (route.ShapeMeta == null)
             {
                 return;
             }
 
-            for (var i = 0; i < route.ShapeMeta.Length; i++)
+            for (var i = 0; i < route.ShapeMeta.Count; i++)
             {
                 if (route.ShapeMeta[i].Shape <= shape)
                 {
                     if (segmentStart <= route.ShapeMeta[i].Shape &&
-                        route.ShapeMeta[i].Shape < route.Shape.Length - 1)
+                        route.ShapeMeta[i].Shape < route.Shape.Count - 1)
                     {
                         segmentStart = route.ShapeMeta[i].Shape;
                     }
@@ -383,7 +384,7 @@ namespace Itinero
             Coordinate currentProjected;
             var currentDistanceFromStart = 0.0;
             var currentDistance = 0.0;
-            for (var i = startShape; i < route.Shape.Length - 1; i++)
+            for (var i = startShape; i < route.Shape.Count - 1; i++)
             {
                 // project on shape and save distance and such.
                 var line = new Line(route.Shape[i], route.Shape[i + 1]);
@@ -420,19 +421,19 @@ namespace Itinero
             }
 
             // check last point.
-            currentProjected = route.Shape[route.Shape.Length - 1];
+            currentProjected = route.Shape[route.Shape.Count - 1];
             currentDistance = Coordinate.DistanceEstimateInMeter(coordinate, currentProjected);
             if (currentDistance < distance)
             { // this point is closer.
                 projected = currentProjected;
-                shape = route.Shape.Length - 1;
+                shape = route.Shape.Count - 1;
                 distance = currentDistance;
                 distanceFromStartInMeter = currentDistanceFromStart;
             }
 
             // calculate time.
             if (route.ShapeMeta == null) return true;
-            for (var metaIdx = 0; metaIdx < route.ShapeMeta.Length; metaIdx++)
+            for (var metaIdx = 0; metaIdx < route.ShapeMeta.Count; metaIdx++)
             {
                 var meta = route.ShapeMeta[metaIdx];
                 if (meta == null || meta.Shape < shape + 1) continue;
@@ -476,9 +477,9 @@ namespace Itinero
         /// </summary>
         public static RelativeDirection RelativeDirectionAt(this Route route, int i, float toleranceInMeters = 1)
         {
-            if (i < 0 || i >= route.Shape.Length) { throw new ArgumentOutOfRangeException(nameof(i)); }
+            if (i < 0 || i >= route.Shape.Count) { throw new ArgumentOutOfRangeException(nameof(i)); }
 
-            if (i == 0 || i == route.Shape.Length - 1)
+            if (i == 0 || i == route.Shape.Count - 1)
             { // not possible to calculate a relative direction for the first or last segment.
                 throw new ArgumentOutOfRangeException(nameof(i), "It's not possible to calculate a relative direction for the first or last segment.");
             }
@@ -490,7 +491,7 @@ namespace Itinero
                 h--;
             }
             var j = i + 1;
-            while (j < route.Shape.Length - 1 && Coordinate.DistanceEstimateInMeter(route.Shape[j].Latitude, route.Shape[j].Longitude,
+            while (j < route.Shape.Count - 1 && Coordinate.DistanceEstimateInMeter(route.Shape[j].Latitude, route.Shape[j].Longitude,
                     route.Shape[i].Latitude, route.Shape[i].Longitude) < toleranceInMeters)
             { // work forward from i to make sure we don't use an identical coordinate or one that's too close to be useful.
                 j++;
@@ -512,7 +513,7 @@ namespace Itinero
         /// </summary>
         public static DirectionEnum DirectionToNext(this Route route, int i)
         {
-            if (i < 0 || i >= route.Shape.Length - 1) { throw new ArgumentOutOfRangeException(nameof(i)); }
+            if (i < 0 || i >= route.Shape.Count - 1) { throw new ArgumentOutOfRangeException(nameof(i)); }
 
             return DirectionCalculator.Calculate(
                 new Coordinate(route.Shape[i].Latitude, route.Shape[i].Longitude),

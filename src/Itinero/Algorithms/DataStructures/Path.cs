@@ -8,9 +8,9 @@ using Itinero.Data.Graphs;
 namespace Itinero.Algorithms.DataStructures
 {
     /// <summary>
-    /// Represents a path in a graph.
+    /// Represents a path in a graph as a collection of edges.
     /// </summary>
-    public class Path : IEnumerable<(uint edge, bool forward)>
+    public class Path : IReadOnlyList<(uint edge, bool forward)>
     {
         private readonly List<(uint edge, bool forward)> _edges;
         private readonly Graph.Enumerator _graphEnumerator;
@@ -27,23 +27,32 @@ namespace Itinero.Algorithms.DataStructures
         }
 
         /// <summary>
-        /// Gets the offset at the start of the path.
+        /// Gets the offset at the start of the path, relative to the direction of the edge.
         /// </summary>
-        public ushort Offset1 { get; private set; } = 0;
+        public ushort Offset1 { get; set; } = 0;
 
         /// <summary>
-        /// Gets the offset at the end of the path.
+        /// Gets the offset at the end of the path, relative to the direction of the edge.
         /// </summary>
-        public ushort Offset2 { get; private set; } = 0;
+        public ushort Offset2 { get; set; } = 0;
+
+        /// <summary>
+        /// Gets the edge at the given index.
+        /// </summary>
+        /// <param name="i"></param>
+        public (uint edge, bool forward) this[int i] => _edges[i];
+
+        /// <summary>
+        /// Returns the number of edges.
+        /// </summary>
+        public int Count => _edges.Count;
 
         /// <summary>
         /// Appends the given edge and calculates the proper direction.
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="first">The vertex that should occur first.</param>
-        /// <param name="offset1">The offset at the start.</param>
-        /// <param name="offset2">The offset at the end.</param>
-        public void Append(uint edge, VertexId first, ushort? offset1 = null, ushort? offset2 = null)
+        public void Append(uint edge, VertexId first)
         {
             if (!_graphEnumerator.MoveToEdge(edge))
                 throw new Exception($"Edge does not exist.");
@@ -51,14 +60,10 @@ namespace Itinero.Algorithms.DataStructures
             if (_graphEnumerator.From == first)
             {
                 _edges.Insert(0, (edge, true));
-                if (offset1 != null) this.Offset1 = offset1.Value;
-                if (offset2 != null) this.Offset2 = offset2.Value;
             }
             else if (_graphEnumerator.To == first)
             {
                 _edges.Insert(0, (edge, false));
-                if (offset1 != null) this.Offset1 = (ushort)(ushort.MaxValue - offset1.Value);
-                if (offset2 != null) this.Offset2 = (ushort)(ushort.MaxValue - offset2.Value);
             }
             else
             {
@@ -71,9 +76,7 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="last">The vertex that should occur last.</param>
-        /// <param name="offset1">The offset at the start.</param>
-        /// <param name="offset2">The offset at the end.</param>
-        public void Prepend(uint edge, VertexId last, ushort? offset1 = null, ushort? offset2 = null)
+        public void Prepend(uint edge, VertexId last)
         {
             if (!_graphEnumerator.MoveToEdge(edge)) 
                 throw new Exception($"Edge does not exist.");
@@ -81,14 +84,10 @@ namespace Itinero.Algorithms.DataStructures
             if (_graphEnumerator.From == last)
             {
                 _edges.Insert(0, (edge, false));
-                if (offset1 != null) this.Offset1 = (ushort)(ushort.MaxValue - offset1.Value);
-                if (offset2 != null) this.Offset2 = (ushort)(ushort.MaxValue - offset2.Value);
             }
             else if (_graphEnumerator.To == last)
             {
                 _edges.Insert(0, (edge, true));
-                if (offset1 != null) this.Offset1 = offset1.Value;
-                if (offset2 != null) this.Offset2 = offset2.Value;
             }
             else
             {

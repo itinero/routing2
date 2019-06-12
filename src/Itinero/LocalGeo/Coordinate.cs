@@ -31,17 +31,7 @@ namespace Itinero.LocalGeo
         /// <summary>
         /// Creates a new coordinate.
         /// </summary>
-        public Coordinate(double longitude, double latitude)
-        {
-            this.Latitude = latitude;
-            this.Longitude = longitude;
-            this.Elevation = null;
-        }
-
-        /// <summary>
-        /// Creates a new coordinate.
-        /// </summary>
-        public Coordinate(double longitude, double latitude, short elevation)
+        public Coordinate(double longitude, double latitude, short? elevation = null)
         {
             this.Latitude = latitude;
             this.Longitude = longitude;
@@ -105,7 +95,7 @@ namespace Itinero.LocalGeo
         /// <summary>
         /// Returns an estimate of the distance between the two given coordinates.
         /// </summary>
-        /// <remarks>Accuraccy decreases with distance.</remarks>
+        /// <remarks>Accuracy decreases with distance.</remarks>
         public static double DistanceEstimateInMeter(Coordinate coordinate1, Coordinate coordinate2)
         {
             return Coordinate.DistanceEstimateInMeter(coordinate1.Latitude, coordinate1.Longitude,
@@ -115,7 +105,7 @@ namespace Itinero.LocalGeo
         /// <summary>
         /// Returns an estimate of the distance between the two given coordinates.
         /// </summary>
-        /// <remarks>Accuraccy decreases with distance.</remarks>
+        /// <remarks>Accuracy decreases with distance.</remarks>
         public static double DistanceEstimateInMeter(double latitude1, double longitude1, double latitude2, double longitude2)
         {
             var lat1Rad = (latitude1 / 180d) * System.Math.PI;
@@ -131,34 +121,55 @@ namespace Itinero.LocalGeo
             return m;
         }
 
+//        /// <summary>
+//        /// Returns an estimate of the distance between the given sequence of coordinates.
+//        /// </summary>
+//        public static double DistanceEstimateInMeter(System.Collections.Generic.List<Coordinate> coordinates)
+//        {
+//            var length = 0.0;
+//            for(var i = 1; i < coordinates.Count; i++)
+//            {
+//                length += Coordinate.DistanceEstimateInMeter(coordinates[i - 1].Latitude, coordinates[i - 1].Longitude,
+//                    coordinates[i].Latitude, coordinates[i].Longitude);
+//            }
+//            return length;
+//        }
+
+//        /// <summary>
+//        /// Offsets this coordinate with a given distance.
+//        /// </summary>
+//        public Coordinate OffsetWithDistances(double meter)
+//        {
+//            var offsetLat = new Coordinate(
+//                this.Latitude + 0.1f, this.Longitude);
+//            var offsetLon = new Coordinate(
+//                this.Latitude, this.Longitude + 0.1f);
+//            var latDistance = Coordinate.DistanceEstimateInMeter(offsetLat, this);
+//            var lonDistance = Coordinate.DistanceEstimateInMeter(offsetLon, this);
+//
+//            return new Coordinate(this.Latitude + (meter / latDistance) * 0.1,
+//                this.Longitude + (meter / lonDistance) * 0.1);
+//        }
+
         /// <summary>
-        /// Returns an estimate of the distance between the given sequence of coordinates.
+        /// Calculates an offset position along the line formed by the two coordinates.
         /// </summary>
-        public static double DistanceEstimateInMeter(System.Collections.Generic.List<Coordinate> coordinates)
+        /// <param name="coordinate1">The first coordinate.</param>
+        /// <param name="coordinate2">The last coordinate.</param>
+        /// <param name="offset">The offset [0,1].</param>
+        /// <returns>The offset coordinate.</returns>
+        public static Coordinate PositionAlongLine(Coordinate coordinate1, Coordinate coordinate2, double offset)
         {
-            var length = 0.0;
-            for(var i = 1; i < coordinates.Count; i++)
+            var latitude = coordinate1.Latitude + ((coordinate2.Latitude - coordinate1.Latitude) * offset);
+            var longitude = coordinate1.Longitude + ((coordinate2.Longitude - coordinate1.Longitude) * offset);
+            short? elevation = null;
+            if (coordinate1.Elevation.HasValue &&
+                coordinate2.Elevation.HasValue)
             {
-                length += Coordinate.DistanceEstimateInMeter(coordinates[i - 1].Latitude, coordinates[i - 1].Longitude,
-                    coordinates[i].Latitude, coordinates[i].Longitude);
+                elevation = (short)(coordinate1.Elevation.Value - ((coordinate2.Elevation.Value - coordinate1.Elevation.Value) * offset));
             }
-            return length;
-        }
-
-        /// <summary>
-        /// Offsets this coordinate with a given distance.
-        /// </summary>
-        public Coordinate OffsetWithDistances(double meter)
-        {
-            var offsetLat = new Coordinate(
-                this.Latitude + 0.1f, this.Longitude);
-            var offsetLon = new Coordinate(
-                this.Latitude, this.Longitude + 0.1f);
-            var latDistance = Coordinate.DistanceEstimateInMeter(offsetLat, this);
-            var lonDistance = Coordinate.DistanceEstimateInMeter(offsetLon, this);
-
-            return new Coordinate(this.Latitude + (meter / latDistance) * 0.1,
-                this.Longitude + (meter / lonDistance) * 0.1);
+            
+            return new Coordinate(longitude, latitude, elevation);
         }
         
         /// <summary>
@@ -168,7 +179,7 @@ namespace Itinero.LocalGeo
         {
             if (this.Elevation.HasValue)
             {
-                return $"{this.Longitude.ToString(CultureInfo.InvariantCulture)},{this.Latitude.ToString(CultureInfo.InvariantCulture)}@{this.Elevation.Value.ToString()}m";
+                return $"{this.Longitude.ToString(CultureInfo.InvariantCulture)},{this.Latitude.ToString(CultureInfo.InvariantCulture)}@{this.Elevation.Value.ToString(CultureInfo.InvariantCulture)}m";
             }
             return $"{this.Longitude.ToString(CultureInfo.InvariantCulture)},{this.Latitude.ToString(CultureInfo.InvariantCulture)}";
         }
