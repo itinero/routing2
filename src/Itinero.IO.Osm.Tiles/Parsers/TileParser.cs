@@ -89,6 +89,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         
                         // interpret all tags with defined semantics.
                         var attributes = GetTags(graphObject ,ReverseMappingLazy.Value);
+                        attributes.AddOrReplace("way_id", wayId.ToInvariantString());
+                        attributes.AddOrReplace("tile_x", tile.X.ToInvariantString());
+                        attributes.AddOrReplace("tile_y", tile.Y.ToInvariantString());
                         
                         // include all raw tags (if any).
                         if ((graphObject["osm:hasTag"] is JArray rawTags))
@@ -117,20 +120,16 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             var nodeId = long.Parse(nodeIdString.Substring("http://www.openstreetmap.org/node/".Length,
                                 nodeIdString.Length - "http://www.openstreetmap.org/node/".Length));
                             nodeIds.Add(nodeId);
-
-                            if (!nodes.Contains(nodeId))
-                            {
-                                nodes.Add(nodeId);
                                 
-                                if (n == 0 || n == wayNodes.Count - 1)
-                                {
-                                    coreNodes.Add(nodeId);
-                                }
-                            }
-                            else
-                            {
+                            if (n == 0 || n == wayNodes.Count - 1)
+                            { // first and last nodes always core.
                                 coreNodes.Add(nodeId);
                             }
+                            else if (nodes.Contains(nodeId))
+                            { // second time this node was hit.
+                                coreNodes.Add(nodeId);
+                            }
+                            nodes.Add(nodeId);
                         }
 
                         waysData[wayId] = (nodeIds, attributes);

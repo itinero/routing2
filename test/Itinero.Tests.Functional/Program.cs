@@ -68,9 +68,10 @@ namespace Itinero.Tests.Functional
             File.WriteAllText("route4.geojson",routerDb.ToGeoJson(path));
 
             sp1 = routerDb.Snap(149.19013023376465, -21.12181472572919);
-            sp2 = routerDb.Snap(148.94954681396484, -21.150474965190753);
+            sp2 = routerDb.Snap(148.94960045814514, -21.14731300412497);
             path = routerDb.Calculate(profile, sp1, sp2);
             var json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
+            File.WriteAllText("route5.geojson",json);
             
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
             
