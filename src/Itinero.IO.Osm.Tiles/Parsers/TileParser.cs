@@ -69,7 +69,11 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         var nodeId = long.Parse(id.Substring("http://www.openstreetmap.org/node/".Length,
                             id.Length - "http://www.openstreetmap.org/node/".Length));
 
-                        if (globalIdMap.TryGet(nodeId, out var _)) continue;
+                        if (globalIdMap.TryGet(nodeId, out var _))
+                        { // this node was marked core in another tile, make sure it's core here too. 
+                            coreNodes.Add(nodeId);
+                            continue;
+                        }
 
                         if (!(graphObject["geo:long"] is JToken longToken)) continue;
                         var lon = longToken.Value<double>();

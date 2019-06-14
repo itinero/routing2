@@ -29,6 +29,8 @@ namespace Itinero.Tests.Functional
             // setup a routerdb with a routeable tiles data provider..
             var routerDb = new RouterDb();
             routerDb.DataProvider = new DataProvider(routerDb);
+//            routerDb.DataProvider.TouchBox(( 4.2847530, 50.8725690,  4.2847530, 50.8725690));
+//            return;
 
             var profile = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle; // new DefaultProfile();
 
