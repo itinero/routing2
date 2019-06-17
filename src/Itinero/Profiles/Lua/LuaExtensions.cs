@@ -8,6 +8,22 @@ namespace Itinero.Profiles.Lua
     internal static class LuaExtensions
     {
         /// <summary>
+        /// Tries to get a number as a double for the given key.
+        /// </summary>
+        internal static bool TryGetDouble(this Table table, string key, out double value)
+        {
+            var dynValue = table.Get(key);
+            var number = dynValue?.CastToNumber();
+            if (number.HasValue)
+            {
+                value = number.Value;
+                return true;
+            }
+            value = double.MaxValue;
+            return false;
+        }
+        
+        /// <summary>
         /// Tries to get a number as a float for the given key.
         /// </summary>
         internal static bool TryGetFloat(this Table table, string key, out float value)

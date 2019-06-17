@@ -91,7 +91,7 @@ function factor(attributes, result)
     -- get speed and access per highway type.
     local highway_speed = speed_profile[highway]
     if highway_speed then
-        result.forward = 1 / highway_speed.speed / 3.6
+        result.forward = 1 / (highway_speed.speed / 3.6)
         result.backward = result.forward
         result.access = highway_speed.access
     else

@@ -75,12 +75,12 @@ namespace Itinero
             /// <summary>
             /// The distance in meter.
             /// </summary>
-            public float Distance { get; set; }
+            public double Distance { get; set; }
 
             /// <summary>
             /// The time in seconds.
             /// </summary>
-            public float Time { get; set; }
+            public double Time { get; set; }
 
             /// <summary>
             /// Returns a description of this stop.
@@ -140,12 +140,12 @@ namespace Itinero
             /// <summary>
             /// The distance in meter.
             /// </summary>
-            public float Distance { get; set; }
+            public double Distance { get; set; }
 
             /// <summary>
             /// The time in seconds.
             /// </summary>
-            public float Time { get; set; }
+            public double Time { get; set; }
         }
 
         /// <summary>
@@ -200,18 +200,17 @@ namespace Itinero
         /// <summary>
         /// The distance in meter.
         /// </summary>
-        public float TotalDistance { get; set; }
+        public double TotalDistance { get; set; }
 
         /// <summary>
         /// The time in seconds.
         /// </summary>
-        public float TotalTime { get; set; }
+        public double TotalTime { get; set; }
 
         /// <summary>
         /// Gets or sets the profile.
         /// </summary>
         public string Profile { get; set; }
-
 
         /// <summary>
         /// Gets the enumerator.

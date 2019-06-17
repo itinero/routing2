@@ -59,11 +59,11 @@ namespace Itinero.Profiles.Lua
                 _script.Call(_script.Globals["factor"], _attributesTable, _resultsTable);
 
                 // get the results.
-                if (!_resultsTable.TryGetFloat("forward", out var forwardFactor))
+                if (!_resultsTable.TryGetDouble("forward", out var forwardFactor))
                 {
                     forwardFactor = 0;
                 }
-                if (!_resultsTable.TryGetFloat("backward", out var backwardFactor))
+                if (!_resultsTable.TryGetDouble("backward", out var backwardFactor))
                 {
                     backwardFactor = 0;
                 }
@@ -71,21 +71,31 @@ namespace Itinero.Profiles.Lua
                 {
                     canstop = true;
                 }
-                if (!_resultsTable.TryGetFloat("forward_speed", out var speedForward))
-                {
+                
+                // the speeds are supposed to be in m/s.
+                if (!_resultsTable.TryGetDouble("forward_speed", out var speedForward))
+                { // when forward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
                     speedForward = 0;
                     if (forwardFactor > 0)
-                    {
-                        speedForward =  1.0f / (forwardFactor / 3.6f); // 1/m/s
+                    { // convert to m/s.
+                        speedForward =  1.0 / forwardFactor;
                     }
                 }
-                if (!_resultsTable.TryGetFloat("backward_speed", out var speedBackward))
-                {
+                else
+                { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
+                    speedForward /= 3.6;
+                }
+                if (!_resultsTable.TryGetDouble("backward_speed", out var speedBackward))
+                { // when backward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
                     speedBackward = 0;
                     if (backwardFactor > 0)
-                    {
-                        speedBackward = 1.0f / (backwardFactor / 3.6f); // 1/m/s
+                    { // convert to m/s.
+                        speedBackward = 1.0 / backwardFactor;
                     }
+                }
+                else
+                { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
+                    speedBackward /= 3.6;
                 }
 
                 return new EdgeFactor((uint)(forwardFactor * 100), (uint)(backwardFactor * 100), 

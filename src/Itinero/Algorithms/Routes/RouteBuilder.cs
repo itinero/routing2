@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Threading;
 using Itinero.Algorithms.DataStructures;
-using Itinero.Data.Graphs;
-using Itinero.LocalGeo;
 using Itinero.Profiles;
 
 namespace Itinero.Algorithms.Routes
@@ -23,6 +20,7 @@ namespace Itinero.Algorithms.Routes
         {
             var edgeEnumerator = db.GetEdgeEnumerator();
             var route = new Route();
+            route.Profile = profile.Name;
 
             for (var i = 0; i < path.Count; i++)
             {
@@ -43,10 +41,30 @@ namespace Itinero.Algorithms.Routes
                 {
                     offset2 = path.Offset2;
                 }
+
+                var attributes = db.GetAttributes(segment.edge);
+                var factor = profile.Factor(attributes);
+                var distance = db.EdgeLength(segment.edge);
+                distance = ((offset2 - offset1) / (double)ushort.MaxValue) * distance;
+                route.TotalDistance += distance;
+                if (segment.forward)
+                {
+                    if (factor.SpeedBackward > 0)
+                    { // ok factor makes sense.
+                        route.TotalTime += distance / factor.SpeedForward;
+                    }
+                }
+                else
+                {
+                    if (factor.SpeedBackward > 0)
+                    { // ok factor makes sense.
+                        route.TotalTime += distance / factor.SpeedBackward;
+                    }
+                }
                 
                 route.Shape.AddRange(db.GetShapeBetween(segment, offset1, offset2));
             }
-
+            
             return route;
         }
         private static readonly ThreadLocal<RouteBuilder> DefaultLazy = new ThreadLocal<RouteBuilder>(() => new RouteBuilder());

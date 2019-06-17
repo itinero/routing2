@@ -37,6 +37,7 @@ namespace Itinero
         /// </summary>
         /// <param name="routerDb">The router db.</param>
         /// <param name="edge">The edge.</param>
+        /// <param name="edgeLength">The edge length.</param>
         /// <param name="offset1">The start offset.</param>
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
