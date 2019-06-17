@@ -22,10 +22,14 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
+        /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude)
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 500)
         {
-            var box = (longitude - 0.001, latitude - 0.001, longitude + 0.001, latitude + 0.001);
+            var offsets = (new Coordinate(longitude, latitude)).OffsetWithDistances(maxOffsetInMeter);
+            var latitudeOffset = System.Math.Abs(latitude - offsets.Latitude);
+            var longitudeOffset = System.Math.Abs(longitude - offsets.Longitude);
+            var box = (longitude - longitudeOffset, latitude - latitudeOffset, longitude + longitudeOffset, latitude + latitudeOffset);
             
             routerDb.DataProvider?.TouchBox(box);
 
@@ -37,7 +41,6 @@ namespace Itinero
         /// </summary>
         /// <param name="routerDb">The router db.</param>
         /// <param name="edge">The edge.</param>
-        /// <param name="edgeLength">The edge length.</param>
         /// <param name="offset1">The start offset.</param>
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>

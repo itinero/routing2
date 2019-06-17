@@ -135,21 +135,21 @@ namespace Itinero.LocalGeo
 //            return length;
 //        }
 
-//        /// <summary>
-//        /// Offsets this coordinate with a given distance.
-//        /// </summary>
-//        public Coordinate OffsetWithDistances(double meter)
-//        {
-//            var offsetLat = new Coordinate(
-//                this.Latitude + 0.1f, this.Longitude);
-//            var offsetLon = new Coordinate(
-//                this.Latitude, this.Longitude + 0.1f);
-//            var latDistance = Coordinate.DistanceEstimateInMeter(offsetLat, this);
-//            var lonDistance = Coordinate.DistanceEstimateInMeter(offsetLon, this);
-//
-//            return new Coordinate(this.Latitude + (meter / latDistance) * 0.1,
-//                this.Longitude + (meter / lonDistance) * 0.1);
-//        }
+        /// <summary>
+        /// Offsets this coordinate with a given distance.
+        /// </summary>
+        public Coordinate OffsetWithDistances(double meter)
+        {
+            var offsetLat = new Coordinate(
+                this.Latitude + 0.1, this.Longitude);
+            var offsetLon = new Coordinate(
+                this.Latitude, this.Longitude + 0.1);
+            var latDistance = Coordinate.DistanceEstimateInMeter(offsetLat, this);
+            var lonDistance = Coordinate.DistanceEstimateInMeter(offsetLon, this);
+
+            return new Coordinate(this.Latitude + (meter / latDistance) * 0.1,
+                this.Longitude + (meter / lonDistance) * 0.1);
+        }
 
         /// <summary>
         /// Calculates an offset position along the line formed by the two coordinates.
