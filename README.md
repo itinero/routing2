@@ -40,10 +40,10 @@ The main thing is to build a tile-based datastructure that replaces (or expands)
 
 ## Status
 
-- [ ] Build a basic data structures in tiled form.
-  - [ ] Get this done for vertices.
-  - [ ] Get this done for edges.
+- [x] Build a basic data structures in tiled form.
+  - [x] Get this done for vertices.
+  - [x] Get this done for edges.
   - [ ] Add support for turn-restrictions.
-  - [ ] Load tiles on demand.
-- [ ] Experment with routing algorithms on top of this.
-- [ ] Build a proper resolving algorithm and verify performance.
+  - [x] Load tiles on demand.
+- [x] Experiment with routing algorithms on top of this.
+- [x] Build a proper resolving algorithm and verify performance.
