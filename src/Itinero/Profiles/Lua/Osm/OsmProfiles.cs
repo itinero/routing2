@@ -20,6 +20,18 @@ namespace Itinero.Profiles.Lua.Osm
         /// </summary>
         public static Profile Bicycle { get; } = LazyBicycle.Value;
         
+        private static readonly Lazy<Profile> LazyPedestrian = new Lazy<Profile>(() =>
+        {
+            var script = new Script();
+            script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.pedestrian.lua"));
+            return new LuaProfile(script);
+        });
+
+        /// <summary>
+        /// Gets the default pedestrian profile.
+        /// </summary>
+        public static Profile Pedestrian { get; } = LazyPedestrian.Value;
+        
         /// <summary>
         /// Loads a string from an embedded resource stream.
         /// </summary>

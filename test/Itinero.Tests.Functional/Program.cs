@@ -26,19 +26,18 @@ namespace Itinero.Tests.Functional
             // do some local caching.
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
             
-            // setup a routerdb with a routeable tiles data provider..
+            // setup a router db with a routable tiles data provider..
             var routerDb = new RouterDb();
             routerDb.DataProvider = new DataProvider(routerDb);
-//            routerDb.DataProvider.TouchBox(( 4.2847530, 50.8725690,  4.2847530, 50.8725690));
-//            return;
 
-            var profile = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle; // new DefaultProfile();
+            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
+            var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
 
             var sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704);
             var sp2 = routerDb.Snap(4.30814266204834, 50.869309146821486);
             var sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
             var sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
-            var path = routerDb.Calculate(profile,sp1, sp2);
+            var path = routerDb.Calculate(bicycle,sp1, sp2);
             File.WriteAllText("route1-short.geojson", routerDb.ToGeoJson(path));
             
             Console.WriteLine("Calculating route1");
@@ -46,30 +45,38 @@ namespace Itinero.Tests.Functional
             sp2 = routerDb.Snap(4.270634651184082, 50.86964430399289);
             sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
             sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
-            path = routerDb.Calculate(profile,sp1, sp2);
+            path = routerDb.Calculate(bicycle,sp1, sp2);
             File.WriteAllText("route1.geojson",routerDb.ToGeoJson(path));
+            
+            Console.WriteLine("Calculating route1 - pedestrian");
+            sp1 = routerDb.Snap(4.309666156768798, 50.87108985327193);
+            sp2 = routerDb.Snap(4.270634651184082, 50.86964430399289);
+            sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
+            sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
+            path = routerDb.Calculate(pedestrian,sp1, sp2);
+            File.WriteAllText("route1-pedestrian.geojson",routerDb.ToGeoJson(path));
 
             Console.WriteLine("Calculating route2");
             sp1 = routerDb.Snap(4.801840782165527, 51.267903074610615);
             sp2 = routerDb.Snap(4.7806620597839355, 51.2609614991932);
-            path = routerDb.Calculate(profile, sp1, sp2);
+            path = routerDb.Calculate(bicycle, sp1, sp2);
             File.WriteAllText("route2.geojson",routerDb.ToGeoJson(path));
 
             Console.WriteLine("Calculating route3");
             sp1 = routerDb.Snap(-68.8235092163086, -32.844836958416735);
             sp2 = routerDb.Snap(-68.84187698364256, -32.88167751934565);
-            path = routerDb.Calculate(profile, sp1, sp2);
+            path = routerDb.Calculate(bicycle, sp1, sp2);
             File.WriteAllText("route3.geojson",routerDb.ToGeoJson(path));
 
             Console.WriteLine("Calculating route4");
             sp1 = routerDb.Snap( 4.801915884017944,51.26795342069926);
             sp2 = routerDb.Snap(4.780729115009308, 51.26100681751947);
-            path = routerDb.Calculate(profile, sp1, sp2);
+            path = routerDb.Calculate(bicycle, sp1, sp2);
             File.WriteAllText("route4.geojson",routerDb.ToGeoJson(path));
 
             sp1 = routerDb.Snap(149.19013023376465, -21.12181472572919);
             sp2 = routerDb.Snap(148.94960045814514, -21.14731300412497);
-            path = routerDb.Calculate(profile, sp1, sp2);
+            path = routerDb.Calculate(bicycle, sp1, sp2);
             var json = (routerDb.ToFeatureCollection(path)).ToGeoJson();
             File.WriteAllText("route5.geojson",json);
             

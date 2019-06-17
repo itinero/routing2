@@ -16,6 +16,8 @@
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Profiles\Lua\Osm\pedestrian.lua" />
+    <EmbeddedResource Include="Profiles\Lua\Osm\pedestrian.lua" />
     <None Remove="Profiles\Lua\Osm\bicycle.lua" />
     <EmbeddedResource Include="Profiles\Lua\Osm\bicycle.lua" />
   </ItemGroup>
