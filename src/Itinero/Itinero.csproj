@@ -1,10 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>7.2</LangVersion>
+    <AssemblyName>Itinero</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Authors>Ben Abelshausen;openplannerteam</Authors>
+    <PackageId>openplannerteam.Itinero</PackageId>
+    <PackageTags>Routing</PackageTags>
+    <PackageIconUrl>https://avatars0.githubusercontent.com/u/30265183</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/openplannerteam/itinero-tiled-routing</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/openplannerteam/itinero-tiled-routing</RepositoryUrl>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Reminiscence" Version="1.2.0-pre08" />
+    <PackageReference Include="Reminiscence" Version="1.3.0" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>

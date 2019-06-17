@@ -2,6 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Itinero.IO.Shape</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <Authors>Ben Abelshausen;openplannerteam</Authors>
+        <PackageId>openplannerteam.Itinero.IO.Shape</PackageId>
+        <PackageTags>Routing</PackageTags>
+        <PackageIconUrl>https://avatars0.githubusercontent.com/u/30265183</PackageIconUrl>
+        <PackageProjectUrl>https://github.com/openplannerteam/itinero-tiled-routing</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/openplannerteam/itinero-tiled-routing</RepositoryUrl>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>

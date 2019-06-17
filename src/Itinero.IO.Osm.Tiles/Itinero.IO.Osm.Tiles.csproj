@@ -2,11 +2,16 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Itinero.IO.Osm.Tiles</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <Authors>Ben Abelshausen;openplannerteam</Authors>
+        <PackageId>openplannerteam.Itinero.IO.Osm.Tiles</PackageId>
+        <PackageTags>Routing</PackageTags>
+        <PackageIconUrl>https://avatars0.githubusercontent.com/u/30265183</PackageIconUrl>
+        <PackageProjectUrl>https://github.com/openplannerteam/itinero-tiled-routing</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/openplannerteam/itinero-tiled-routing</RepositoryUrl>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
-    
-    <ItemGroup>
-        <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.0" />
-    </ItemGroup>
     
     <ItemGroup>
       <ProjectReference Include="..\Itinero\Itinero.csproj" />
@@ -14,6 +19,9 @@
     <ItemGroup>
         <None Remove="ontology\mapping_config.json" />
         <EmbeddedResource Include="ontology\mapping_config.json" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     </ItemGroup>
 
 </Project>
