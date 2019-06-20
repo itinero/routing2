@@ -58,8 +58,7 @@ namespace Itinero.Tests.Algorithms.Search
             var snapPoint = network.SnapInBox((4.797506332397461 - 0.001, 51.26674845584085 - 0.001, 
                 4.797506332397461 + 0.001, 51.26674845584085 + 0.001));
             Assert.Equal(edge, snapPoint.EdgeId);
-            // TODO: come up with a way to snap to vertices/shapepoints when they are just too close.
-            //Assert.AreEqual(ushort.MaxValue, snapPoint.Offset, 10);
+            Assert.Equal(ushort.MaxValue, snapPoint.Offset);
         }
 
         [Fact]

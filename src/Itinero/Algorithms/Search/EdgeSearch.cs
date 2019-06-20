@@ -34,6 +34,7 @@ namespace Itinero.Algorithms.Search
             var center = new Coordinate((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
 
             var bestDistance = double.MaxValue;
+            const double vertexTolerance = 1;
             (uint edgeId, ushort offset) bestSnapPoint = (uint.MaxValue, ushort.MaxValue);
             while (edges.MoveNext())
             {
@@ -59,6 +60,7 @@ namespace Itinero.Algorithms.Search
                 var distance = Coordinate.DistanceEstimateInMeter(vertex1, center);
                 if (distance < bestDistance)
                 {
+                    if (distance < vertexTolerance) distance = 0;
                     bestDistance = distance;
                     localSnapPoint = (edgeId, 0);
                 }
@@ -124,6 +126,7 @@ namespace Itinero.Algorithms.Search
                 distance = Coordinate.DistanceEstimateInMeter(vertex2, center);
                 if (distance < bestDistance)
                 {
+                    if (distance < vertexTolerance) distance = 0;
                     bestDistance = distance;
                     localSnapPoint = (edgeId, length);
                 }
