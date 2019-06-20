@@ -24,21 +24,28 @@ namespace Itinero
         /// <param name="latitude">The latitude.</param>
         /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 500)
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 1000)
         {
-            // calculate search box.
-            var offsets = (new Coordinate(longitude, latitude)).OffsetWithDistances(maxOffsetInMeter);
-            var latitudeOffset = System.Math.Abs(latitude - offsets.Latitude);
-            var longitudeOffset = System.Math.Abs(longitude - offsets.Longitude);
-            var box = (longitude - longitudeOffset, latitude - latitudeOffset, longitude + longitudeOffset, latitude + latitudeOffset);
-            
-            // make sure data is loaded.
-            routerDb.DataProvider?.TouchBox(box);
+            var offset = 100;
+            while (offset < maxOffsetInMeter)
+            {
+                // calculate search box.
+                var offsets = (new Coordinate(longitude, latitude)).OffsetWithDistances(maxOffsetInMeter);
+                var latitudeOffset = System.Math.Abs(latitude - offsets.Latitude);
+                var longitudeOffset = System.Math.Abs(longitude - offsets.Longitude);
+                var box = (longitude - longitudeOffset, latitude - latitudeOffset, longitude + longitudeOffset,
+                    latitude + latitudeOffset);
 
-            // snap to closest edge.
-            var snapPoint = routerDb.Network.SnapInBox(box);
-            if (snapPoint.EdgeId == uint.MaxValue) return new Result<SnapPoint>($"Could not snap to location: {longitude},{latitude}");
-            return snapPoint;
+                // make sure data is loaded.
+                routerDb.DataProvider?.TouchBox(box);
+
+                // snap to closest edge.
+                var snapPoint = routerDb.Network.SnapInBox(box);
+                if (snapPoint.EdgeId != uint.MaxValue) return snapPoint;
+
+                offset *= 2;
+            }
+            return new Result<SnapPoint>($"Could not snap to location: {longitude},{latitude}");
         }
 
         /// <summary>
