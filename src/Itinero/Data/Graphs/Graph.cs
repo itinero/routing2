@@ -162,17 +162,14 @@ namespace Itinero.Data.Graphs
             // try to find the tile.
             var (vertexPointer, tilePointer, capacity) = FindTile(localTileId);
             if (vertexPointer == GraphConstants.TileNotLoaded)
-            {
                 throw new ArgumentException($"{vertex} does not exist.");
-            }
-
             if (vertex.LocalId >= capacity)
-            {
                 throw new ArgumentException($"{vertex} does not exist.");
-            }
 
             var tile = Tile.FromLocalId(localTileId, _zoom);
-            return GetEncodedVertex(vertexPointer + vertex.LocalId, tile);
+            if (!TryGetEncodedVertex(vertexPointer + vertex.LocalId, tile, out var location)) 
+                throw new ArgumentException($"{vertex} does not exist.");
+            return location;
         }
 
         /// <summary>
@@ -189,24 +186,28 @@ namespace Itinero.Data.Graphs
             var (vertexPointer, tilePointer, capacity) = FindTile(localTileId);
             if (vertexPointer == GraphConstants.TileNotLoaded)
             {
-                location = new Coordinate();
+                location = default;
                 return false;
             }
 
             if (vertex.LocalId >= capacity)
             {
-                location = new Coordinate();
+                location = default;
                 return false;
             }
 
             var tile = Tile.FromLocalId(localTileId, _zoom);
-            location = GetEncodedVertex(vertexPointer + vertex.LocalId, tile);
+            if (!TryGetEncodedVertex(vertexPointer + vertex.LocalId, tile, out location))
+            {
+                return false;
+            }
             return true;
         }
         
         private void SetEncodedVertex(uint pointer, Tile tile, double longitude, double latitude)
         {
-            var localCoordinates = tile.ToLocalCoordinates(longitude, latitude, 1 << TileResolutionInBits);
+            const int resolution = (1 << TileResolutionInBits) - 1;
+            var localCoordinates = tile.ToLocalCoordinates(longitude, latitude, resolution);
             var localCoordinatesEncoded = (localCoordinates.x << TileResolutionInBits) + localCoordinates.y;
             var localCoordinatesBits = BitConverter.GetBytes(localCoordinatesEncoded);
             var vertexPointer = pointer * (long)CoordinateSizeInBytes;
@@ -216,22 +217,31 @@ namespace Itinero.Data.Graphs
             }
         }
 
-        private Coordinate GetEncodedVertex(uint pointer, Tile tile)
+        private bool TryGetEncodedVertex(uint pointer, Tile tile, out Coordinate location)
         {
-            const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
+            const int TileResolutionInBits = (CoordinateSizeInBytes * 8 / 2);
             var vertexPointer = pointer * (long)CoordinateSizeInBytes;
 
             var bytes = new byte[4];
+            var hasData = false;
             for (var b = 0; b < CoordinateSizeInBytes; b++)
             {
                 bytes[b] = _vertices[vertexPointer + b];
+                if (!hasData && bytes[b] != byte.MaxValue) hasData = true;
+            }
+            if (!hasData)
+            {
+                location = default;
+                return false;
             }
 
             var localCoordinatesEncoded = BitConverter.ToInt32(bytes, 0);
             var y = localCoordinatesEncoded % (1 << TileResolutionInBits);
             var x = localCoordinatesEncoded >> TileResolutionInBits;
 
-            return tile.FromLocalCoordinates(x, y, 1 << TileResolutionInBits);
+            const int resolution = (1 << TileResolutionInBits) - 1;
+            location = tile.FromLocalCoordinates(x, y, resolution);
+            return true;
         }
 
         private void CopyEncodedVertex(uint pointer1, uint pointer2)
@@ -331,7 +341,13 @@ namespace Itinero.Data.Graphs
                 {
                     _edgePointers[p] = GraphConstants.NoVertex;
                 }
+
+                sizeBefore = _vertices.Length;
                 _vertices.Resize(length * CoordinateSizeInBytes);
+                for (var p = sizeBefore; p < _vertices.Length; p++)
+                {
+                    _vertices[p] = byte.MaxValue;
+                }
             }
             
             // copy all the data over.

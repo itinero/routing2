@@ -24,6 +24,19 @@ namespace Itinero.Tests.Data.Graphs
         }
         
         [Fact]
+        public void Graph_ShouldStoreVertexLocation()
+        {
+            // when adding a vertex to a tile the graph should store the location accurately.
+            
+            var graph = new Graph();
+            var vertex1 = graph.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            
+            Assert.True(graph.TryGetVertex(vertex1, out var location));
+            Assert.Equal(4.7868, location.Longitude, 4);
+            Assert.Equal(51.2643, location.Latitude,4);
+        }
+        
+        [Fact]
         public void Graph_ShouldGenerateTiledVertexIdWithProperLocalId()
         {
             // when adding a vertex to a tile the graph should always generate an id in the same tile with a proper

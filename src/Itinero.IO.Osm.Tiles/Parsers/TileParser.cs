@@ -192,6 +192,10 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             if (!globalIdMap.TryGet(node1Id, out var vertex))
                             {
                                 vertex = routerDb.AddVertex(node1Data.location.Longitude, node1Data.location.Latitude);
+//                                if (vertex.TileId == 90022084)
+//                                {
+//                                    Console.WriteLine($"{vertex}");
+//                                }
                                 globalIdMap.Set(node1Id, vertex);
                                 updated = true;
                             }
@@ -223,6 +227,10 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             if (!globalIdMap.TryGet(node2Id, out var vertex))
                             {
                                 vertex = routerDb.AddVertex(node2Data.location.Longitude, node2Data.location.Latitude);
+//                                if (vertex.TileId == 90022084)
+//                                {
+//                                    Console.WriteLine($"{vertex}");
+//                                }
                                 globalIdMap.Set(node2Id, vertex);
                                 updated = true;
                             }
@@ -266,7 +274,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
 //                var coordinates = routerDb.GetVertex(new VertexId()
 //                {
-//                    LocalId = 1369,
+//                    LocalId = 1389,
 //                    TileId = 90022084
 //                });
 

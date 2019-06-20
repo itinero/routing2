@@ -33,7 +33,7 @@ namespace Itinero.Tests.Functional
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
 
-            var sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704, 50);
+            var sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704, 500);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
             var sp2 = routerDb.Snap(4.30814266204834, 50.869309146821486);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
@@ -43,7 +43,7 @@ namespace Itinero.Tests.Functional
             File.WriteAllText("route1-short.geojson", routerDb.ToGeoJson(route));
             
             Console.WriteLine("Calculating route1");
-            sp1 = routerDb.Snap(4.309666156768798, 50.87108985327193);
+            sp1 = routerDb.Snap(4.309666156768798, 50.87108985327193, 500);
             sp2 = routerDb.Snap(4.270634651184082, 50.86964430399289);
             sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
             sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();

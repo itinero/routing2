@@ -24,7 +24,7 @@ namespace Itinero
         /// <param name="latitude">The latitude.</param>
         /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 50)
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 500)
         {
             // calculate search box.
             var offsets = (new Coordinate(longitude, latitude)).OffsetWithDistances(maxOffsetInMeter);
