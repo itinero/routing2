@@ -140,15 +140,13 @@ namespace Itinero.LocalGeo
         /// </summary>
         public Coordinate OffsetWithDistances(double meter)
         {
-            var offsetLat = new Coordinate(
-                this.Latitude + 0.1, this.Longitude);
-            var offsetLon = new Coordinate(
-                this.Latitude, this.Longitude + 0.1);
+            var offsetLat = new Coordinate(this.Longitude, this.Latitude + 0.1);
+            var offsetLon = new Coordinate(this.Longitude + 0.1, this.Latitude);
             var latDistance = Coordinate.DistanceEstimateInMeter(offsetLat, this);
             var lonDistance = Coordinate.DistanceEstimateInMeter(offsetLon, this);
 
-            return new Coordinate(this.Latitude + (meter / latDistance) * 0.1,
-                this.Longitude + (meter / lonDistance) * 0.1);
+            return new Coordinate(this.Longitude + (meter / lonDistance) * 0.1, 
+                this.Latitude + (meter / latDistance) * 0.1);
         }
 
         /// <summary>

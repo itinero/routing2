@@ -155,7 +155,8 @@ namespace Itinero.Tests.Functional.Staging
                 {"vertex1", _enumerator.From.LocalId},
                 {"vertex1_til", _enumerator.From.TileId},
                 {"vertex2", _enumerator.To.LocalId},
-                {"vertex2_til", _enumerator.To.TileId}
+                {"vertex2_til", _enumerator.To.TileId},
+                {"edge_id", _enumerator.Id}
             };
             var attributes = _routerDb.GetAttributes(edgeId);
             foreach (var attribute in attributes)

@@ -32,7 +32,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         /// <param name="routerDb">The router db to fill.</param>
         /// <param name="globalIdMap">The global id map.</param>
         /// <param name="tile">The tile to load.</param>
-        /// <param name="baseUrl">The base url of the routeable tile source.</param>
+        /// <param name="baseUrl">The base url of the routable tile source.</param>
         internal static bool AddOsmTile(this RouterDb routerDb, GlobalIdMap globalIdMap, Tile tile, string baseUrl = BaseUrl)
         {
             var url = baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
@@ -43,9 +43,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             }
 
             Logger.Log(nameof(TileParser), Logging.TraceEventType.Information,
-                $"Loading tile: {tile}");
+                $"Loading tile: {tile}({tile.LocalId})");
             
-            var nodeLocations = new Dictionary<long, Coordinate>();
+            var nodeLocations = new Dictionary<long, (Coordinate location, bool inTile)>();
             var waysData = new Dictionary<long, (List<long> nodes, AttributeCollection attributes)>();
             var nodes = new HashSet<long>();
             var coreNodes = new HashSet<long>();
@@ -69,18 +69,16 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         var nodeId = long.Parse(id.Substring("http://www.openstreetmap.org/node/".Length,
                             id.Length - "http://www.openstreetmap.org/node/".Length));
 
-                        if (globalIdMap.TryGet(nodeId, out var _))
-                        { // this node was marked core in another tile, make sure it's core here too. 
-                            coreNodes.Add(nodeId);
-                            continue;
-                        }
-
                         if (!(graphObject["geo:long"] is JToken longToken)) continue;
                         var lon = longToken.Value<double>();
                         if (!(graphObject["geo:lat"] is JToken latToken)) continue;
                         var lat = latToken.Value<double>();
                         
-                        nodeLocations[nodeId] = new Coordinate((float) lon, (float) lat);
+                        // determine if node is in tile or not.
+                        var inTile = Tile.WorldToTile(lon, lat,
+                                         tile.Zoom).LocalId == tile.LocalId;
+                        nodeLocations[nodeId] = (new Coordinate(lon, lat),
+                            inTile);
                     }
                     else if (id.StartsWith("http://www.openstreetmap.org/way/"))
                     { // parse as a way.
@@ -140,55 +138,144 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     }
                 }
 
+                var shape = new List<Coordinate>();
                 foreach (var wayPairs in waysData)
                 {
+                    // prepare for next way.
+                    shape.Clear();
+                    var previousVertex = VertexId.Empty;
+                    
+                    // get way data.
                     var wayNodes = wayPairs.Value.nodes;
                     var attributes = wayPairs.Value.attributes;
-
-                    var shape = new List<Coordinate>();
-                    var previousVertex = VertexId.Empty;
-                    for (var n = 0; n < wayNodes.Count; n++)
+                    
+                    // verify way data and spit out a warning if a way has <= 1 node.
+                    if (wayNodes.Count <= 1)
                     {
-                        var nodeId = wayNodes[n];
+                        Itinero.Logging.Logger.Log($"{nameof(TileParser)}.{nameof(AddOsmTile)}", TraceEventType.Warning,
+                            $"A way was detected with <= 1 nodes.");
+                        continue;
+                    }
+
+                    // iterate over the way segments and add them as edges or part of the next edge.
+                    for (var n = 0; n < wayNodes.Count - 1; n++)
+                    {
+                        var node1Id = wayNodes[n];
+                        var node2Id = wayNodes[n + 1];
+
+                        // get the nodes data.
+                        if (!nodeLocations.TryGetValue(node1Id, out var node1Data))
+                        {
+                            Itinero.Logging.Logger.Log(nameof(TileParser), TraceEventType.Warning,
+                                $"Could not load way {wayPairs.Key} in {tile}: node {node1Id} missing.");
+                            break;
+                        }
+                        if (!nodeLocations.TryGetValue(node2Id, out var node2Data))
+                        {
+                            Itinero.Logging.Logger.Log(nameof(TileParser), TraceEventType.Warning,
+                                $"Could not load way {wayPairs.Key} in {tile}: node {node2Id} missing.");
+                            break;
+                        }
+
+                        // always add segments that cross tile boundaries.
+                        // TODO: we can probably do better and add only one of the nodes as core but for now to keep complexity down we add both.
+                        if (!node1Data.inTile || !node2Data.inTile)
+                        {
+                            coreNodes.Add(node1Id);
+                            coreNodes.Add(node2Id);
+                        }
                         
-                        if (coreNodes.Contains(nodeId))
-                        {      
-                            if (!globalIdMap.TryGet(nodeId, out var vertex))
+                        // if node1 is core make sure to add it.
+                        if (coreNodes.Contains(node1Id))
+                        {
+                            // add node1 as vertex but check if it already exists.
+                            if (!globalIdMap.TryGet(node1Id, out var vertex))
                             {
-                                if (!nodeLocations.TryGetValue(nodeId, out var vertexLocation))
-                                {
-                                    Itinero.Logging.Logger.Log(nameof(TileParser), TraceEventType.Warning,
-                                        $"Could not load way {wayPairs.Key} in {tile}: node {nodeId} missing.");
-                                    break;
-                                }
-                                
-                                vertex = routerDb.AddVertex(vertexLocation.Longitude, vertexLocation.Latitude);
-                                globalIdMap.Set(nodeId, vertex);
+                                vertex = routerDb.AddVertex(node1Data.location.Longitude, node1Data.location.Latitude);
+                                globalIdMap.Set(node1Id, vertex);
                                 updated = true;
                             }
 
-                            if (!previousVertex.IsEmpty())
+                            // check if this segment wasn't just opened the iteration before.
+                            if (vertex != previousVertex)
                             {
+                                // close previous segment if any.
+                                if (!previousVertex.IsEmpty())
+                                {
+                                    routerDb.AddEdge(previousVertex, vertex, attributes, new ShapeEnumerable(shape));
+                                    updated = true;
+                                    shape.Clear();
+                                }
+
+                                // start a new segment if the end of this one is in tile.
+                                previousVertex = VertexId.Empty;
+                                if (node1Data.inTile)
+                                {
+                                    previousVertex = vertex;
+                                }
+                            }
+                        }
+
+                        // if the second node is also core, close the segment.
+                        if (coreNodes.Contains(node2Id))
+                        {
+                            // add node2 as vertex but check if it already exists.
+                            if (!globalIdMap.TryGet(node2Id, out var vertex))
+                            {
+                                vertex = routerDb.AddVertex(node2Data.location.Longitude, node2Data.location.Latitude);
+                                globalIdMap.Set(node2Id, vertex);
+                                updated = true;
+                            }
+                            
+                            // if this segment overlaps, always add it.
+                            if (!node1Data.inTile || !node2Data.inTile)
+                            {
+                                if (!globalIdMap.TryGet(node1Id, out previousVertex)) throw new Exception("Cannot add segment overlapping tile boundary, node should have already been added.");
                                 routerDb.AddEdge(previousVertex, vertex, attributes, new ShapeEnumerable(shape));
                                 updated = true;
                                 shape.Clear();
                             }
+                            else
+                            {
+                                // close previous segment if any.
+                                if (!previousVertex.IsEmpty())
+                                { 
+                                    routerDb.AddEdge(previousVertex, vertex, attributes, new ShapeEnumerable(shape));
+                                    updated = true;
+                                    shape.Clear();
+                                }
+                            }
 
-                            previousVertex = vertex;
-                            continue;
+                            // start a new segment if the end of this one is in tile.
+                            previousVertex = VertexId.Empty;
+                            if (node2Data.inTile)
+                            {
+                                previousVertex = vertex;
+                            }
                         }
-                        
-                        if (!nodeLocations.TryGetValue(nodeId, out var nodeLocation))
+                        else
                         {
-                            Itinero.Logging.Logger.Log(nameof(TileParser), TraceEventType.Warning,
-                                $"Could not load way {wayPairs.Key} in {tile}: node {nodeId} missing.");
-                            break;
+                            // add as shape point if there is an active segment.
+                            if (!previousVertex.IsEmpty())
+                            {
+                                shape.Add(node2Data.location);
+                            }
                         }
-
-                        shape.Add(nodeLocation);
                     }
                 }
 
+//                var coordinates = routerDb.GetVertex(new VertexId()
+//                {
+//                    LocalId = 1369,
+//                    TileId = 90022084
+//                });
+
+//                routerDb.GetEdgeEnumerator().MoveTo(new VertexId()
+//                {
+//                    LocalId = 1369,
+//                    TileId = 90022084
+//                });
+                
                 return updated;
             }
         }

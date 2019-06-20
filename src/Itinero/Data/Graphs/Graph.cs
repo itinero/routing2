@@ -527,6 +527,10 @@ namespace Itinero.Data.Graphs
                 {
                     _rawPointer = GraphConstants.NoEdges;
                 }
+                else if (edgePointer == uint.MaxValue)
+                {
+                    throw new Exception("no data here, this should not happen");
+                }
                 else
                 {
                     _rawPointer = (uint)(edgePointer * _graph._edgeSize);
