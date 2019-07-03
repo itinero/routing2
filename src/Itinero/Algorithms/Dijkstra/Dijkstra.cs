@@ -85,6 +85,11 @@ namespace Itinero.Algorithms.Dijkstra
             // keep going until heap is empty.
             while (_heap.Count > 0)
             {
+                if (_visits.Count > 16384)
+                {
+                    break;
+                }
+                
                 // dequeue new visit.
                 var currentPointer = _heap.Pop(out var currentCost);
                 var currentVisit = _tree.GetVisit(currentPointer);

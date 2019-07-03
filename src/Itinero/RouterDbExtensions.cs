@@ -239,6 +239,7 @@ namespace Itinero
                     return false;
                 });
 
+            if (path == null) return new Result<Route>($"Route not found!");
             return RouteBuilder.Default.Build(routerDb, profile, path);
         }
     }

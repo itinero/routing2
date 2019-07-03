@@ -41,6 +41,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             {
                 return false;
             }
+            
 
             Logger.Log(nameof(TileParser), Logging.TraceEventType.Information,
                 $"Loading tile: {tile}({tile.LocalId})");

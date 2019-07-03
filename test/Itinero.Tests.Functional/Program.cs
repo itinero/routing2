@@ -36,13 +36,22 @@ namespace Itinero.Tests.Functional
 
             var profile = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
 
-            var sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704);
+            var sp1 = routerDb.Snap(3.218109999999996,51.21459999999999);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
-            var sp2 = routerDb.Snap(4.30814266204834, 50.869309146821486);
+            var sp2 = routerDb.Snap(3.2167249917984009, 51.197229555160746);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
             var sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
             var sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
             var route = routerDb.Calculate(bicycle,sp1, sp2);
+            File.WriteAllText("route1-short.geojson", routerDb.ToGeoJson(route));
+
+            sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704);
+            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
+            sp2 = routerDb.Snap(4.30814266204834, 50.869309146821486);
+            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
+            sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
+            sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
+            route = routerDb.Calculate(bicycle,sp1, sp2);
             File.WriteAllText("route1-short.geojson", routerDb.ToGeoJson(route));
             
             Console.WriteLine("Calculating route1");
