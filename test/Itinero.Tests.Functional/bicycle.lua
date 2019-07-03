@@ -1,4 +1,4 @@
-name = "bicycle"
+name = "ebike"
 vehicle_types = { "vehicle", "bicycle" }
 
 speed_profile = {

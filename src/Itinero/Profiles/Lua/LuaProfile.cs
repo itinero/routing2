@@ -23,11 +23,7 @@ namespace Itinero.Profiles.Lua
             _resultsTable = new Table(_script);
             
             var dynName = _script.Globals.Get("name");
-            if (dynName == null)
-            {
-                throw new Exception("Dynamic profile doesn't define a name.");
-            }
-            this.Name = dynName.String;
+            this.Name = dynName.String ?? throw new Exception("Dynamic profile doesn't define a name.");
         }
 
         /// <summary>
@@ -38,7 +34,7 @@ namespace Itinero.Profiles.Lua
         public static LuaProfile Load(string script)
         {
             var s = new Script();
-            s.LoadString(script);
+            s.DoString(script);
             return new LuaProfile(s);
         }
 
