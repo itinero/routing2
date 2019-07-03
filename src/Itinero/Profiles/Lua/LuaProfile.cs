@@ -6,7 +6,7 @@ namespace Itinero.Profiles.Lua
     /// <summary>
     /// Represents a dynamic routing profile that is based on a lua function.
     /// </summary>
-    internal class LuaProfile : Profile
+    public class LuaProfile : Profile
     {
         private readonly Script _script;
         private readonly Table _attributesTable;
