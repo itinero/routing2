@@ -31,6 +31,18 @@ namespace Itinero.Profiles.Lua
         }
 
         /// <summary>
+        /// Load profile from a raw lua script.
+        /// </summary>
+        /// <param name="script">The script.</param>
+        /// <returns>The profile.</returns>
+        public static LuaProfile Load(string script)
+        {
+            var s = new Script();
+            s.LoadString(script);
+            return new LuaProfile(s);
+        }
+
+        /// <summary>
         /// Gets the name.
         /// </summary>
         public override string Name { get; }

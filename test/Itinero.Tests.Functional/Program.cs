@@ -10,6 +10,7 @@ using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.IO.Shape;
 using Itinero.LocalGeo;
 using Itinero.Profiles;
+using Itinero.Profiles.Lua;
 using Itinero.Tests.Functional.Staging;
 using NetTopologySuite.Features;
 using NetTopologySuite.IO;
@@ -32,6 +33,8 @@ namespace Itinero.Tests.Functional
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
+
+            var profile = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
 
             var sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());

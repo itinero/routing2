@@ -16,4 +16,7 @@
   <ItemGroup>
     <Folder Include="cache" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="bicycle.lua" />
+  </ItemGroup>
 </Project>
