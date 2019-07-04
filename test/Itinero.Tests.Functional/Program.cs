@@ -4,7 +4,7 @@ using System.IO;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
-using Itinero.IO.Osm;
+using Itinero.IO.Json;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.IO.Shape;
@@ -44,7 +44,7 @@ namespace Itinero.Tests.Functional
             var sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
             var route = routerDb.Calculate(bicycle,sp1, sp2);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
-            File.WriteAllText("route1-short.geojson", routerDb.ToGeoJson(route));
+            File.WriteAllText("route1-short.geojson", route.Value.ToGeoJson());
 
             sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
