@@ -45,3 +45,4 @@ TestResult*.xml
 *.shx
 .idea/*
 *.geojson
+*.tile

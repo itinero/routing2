@@ -15,7 +15,7 @@ namespace Itinero.Tests.Functional.Download
         /// <returns>An open stream for the content at the given url.</returns>
         public static Stream Download(string url)
         {
-            var fileName = HttpUtility.UrlEncode(url);
+            var fileName = HttpUtility.UrlEncode(url) + ".tile";
             fileName = Path.Combine(".", "cache", fileName);
 
             if (File.Exists(fileName))
