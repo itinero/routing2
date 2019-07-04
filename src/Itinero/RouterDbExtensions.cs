@@ -23,8 +23,10 @@ namespace Itinero
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
         /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
+        /// <param name="profile">The profile to snap for.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 1000)
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 1000,
+            Profile profile = null)
         {
             var offset = 100;
             while (offset < maxOffsetInMeter)
@@ -40,7 +42,13 @@ namespace Itinero
                 routerDb.DataProvider?.TouchBox(box);
 
                 // snap to closest edge.
-                var snapPoint = routerDb.Network.SnapInBox(box);
+                var snapPoint = routerDb.Network.SnapInBox(box, (edgeId) =>
+                {
+                    var attributes = routerDb.GetAttributes(edgeId);
+                    var edgeFactor = profile.Factor(attributes);
+                    if (!edgeFactor.CanStop) return false;
+                    return true;
+                });
                 if (snapPoint.EdgeId != uint.MaxValue) return snapPoint;
 
                 offset *= 2;

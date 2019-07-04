@@ -77,7 +77,7 @@ namespace Itinero.Profiles.Lua
                 }
                 if (!_resultsTable.TryGetBool("canstop", out var canstop))
                 {
-                    canstop = true;
+                    canstop = backwardFactor != 0 || forwardFactor != 0;
                 }
                 
                 // the speeds are supposed to be in m/s.

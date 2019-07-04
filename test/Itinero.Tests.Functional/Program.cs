@@ -36,13 +36,14 @@ namespace Itinero.Tests.Functional
 
             var profile = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
 
-            var sp1 = routerDb.Snap(3.218109999999996,51.21459999999999);
+            var sp1 = routerDb.Snap(3.218109999999996,51.21459999999999, profile: bicycle);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
-            var sp2 = routerDb.Snap(3.2167249917984009, 51.197229555160746);
+            var sp2 = routerDb.Snap(3.2167249917984009, 51.197229555160746, profile: bicycle);
             File.WriteAllText("network.geojson", routerDb.ToGeoJson());
             var sp1Geojson = routerDb.ToFeatureCollection(sp1).ToGeoJson();
             var sp2Geojson = routerDb.ToFeatureCollection(sp2).ToGeoJson();
             var route = routerDb.Calculate(bicycle,sp1, sp2);
+            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
             File.WriteAllText("route1-short.geojson", routerDb.ToGeoJson(route));
 
             sp1 = routerDb.Snap(4.308834671974182, 50.869586751922704);

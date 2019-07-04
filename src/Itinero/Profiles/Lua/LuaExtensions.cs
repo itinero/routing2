@@ -45,7 +45,7 @@ namespace Itinero.Profiles.Lua
         internal static bool TryGetBool(this Table table, string key, out bool value)
         {
             var dynValue = table.Get(key);
-            if (dynValue != null)
+            if (dynValue != null && !DynValue.Nil.Equals(dynValue))
             {
                 value = dynValue.CastToBool();
                 return true;
