@@ -44,6 +44,8 @@ namespace Itinero
                 // snap to closest edge.
                 var snapPoint = routerDb.Network.SnapInBox(box, (edgeId) =>
                 {
+                    if (profile == null) return true;
+                    
                     var attributes = routerDb.GetAttributes(edgeId);
                     var edgeFactor = profile.Factor(attributes);
                     if (!edgeFactor.CanStop) return false;
