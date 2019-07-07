@@ -85,8 +85,9 @@ namespace Itinero.Algorithms.Dijkstra
             // keep going until heap is empty.
             while (_heap.Count > 0)
             {
-                if (_visits.Count > 16384)
-                {
+                if (_visits.Count > (1 << 16))
+                { // TODO: come up with a stop condition that makes more sense to prevent the global network being loaded
+                    // when a route is not found.
                     break;
                 }
                 

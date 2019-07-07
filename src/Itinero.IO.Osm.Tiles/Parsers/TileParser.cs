@@ -42,8 +42,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 return false;
             }
             
-
-            Logger.Log(nameof(TileParser), Logging.TraceEventType.Information,
+            Logger.Log(nameof(TileParser), Logging.TraceEventType.Verbose,
                 $"Loading tile: {tile}({tile.LocalId})");
             
             var nodeLocations = new Dictionary<long, (Coordinate location, bool inTile)>();
