@@ -19,6 +19,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using Itinero.Data.Shapes;
 using Itinero.Data.Tiles;
 using Itinero.LocalGeo;
 using Reminiscence;
@@ -60,6 +62,8 @@ namespace Itinero.Data.Graphs
         private readonly int _edgeSize;
         private uint _vertexPointer = 0; // the pointer to the next empty vertex.
         private uint _edgePointer = 0; // the pointer to the next empty edge.
+        
+        private readonly ShapesArray _shapes = new ShapesArray();
 
         /// <summary>
         /// Creates a new graph.
@@ -94,6 +98,11 @@ namespace Itinero.Data.Graphs
         /// Gets the number of edges in this graph.
         /// </summary>
         public uint EdgeCount => _edgePointer;
+
+        /// <summary>
+        /// Gets the number of bytes that can be stored on an edge.
+        /// </summary>
+        public int EdgeDataSize => _edgeDataSize;
 
         /// <summary>
         /// Adds a new vertex and returns its ID.
@@ -262,13 +271,19 @@ namespace Itinero.Data.Graphs
             //   we can do this in netstandard2.1 normally.
             //   perhaps implement our own version of bitconverter.
             var tileBytes = new byte[4];
+            var targetTileBytes = BitConverter.GetBytes(localTileId);
             for (uint p = 0; p < _tiles.Length - 9; p += 9)
             {
+                var tileId = localTileId;
                 for (var b = 0; b < 4; b++)
                 {
-                    tileBytes[b] = _tiles[p + b];
+                    var v = _tiles[p + b];
+                    if (v != targetTileBytes[b])
+                    {
+                        tileId = uint.MaxValue;
+                        break;
+                    }
                 }
-                var tileId = BitConverter.ToUInt32(tileBytes, 0);
                 if (tileId != localTileId) continue;
                 
                 for (var b = 0; b < 4; b++)
@@ -381,19 +396,31 @@ namespace Itinero.Data.Graphs
             return 4;
         }
 
-        private int WriteToEdges(long pointer, IReadOnlyList<byte> data, int start = 0, int length = -1)
+        private int WriteToEdges(long pointer, IReadOnlyList<byte> data)
         {
-            if (length < 0)
+            if (data == null)
             {
-                length = data.Count - start;
+                for (var i = 0; i < _edgeDataSize; i++)
+                {
+                    _edges[pointer + i] = byte.MaxValue;;
+                }
+
+                return _edgeDataSize;
             }
 
-            for (var i = start; i < length; i++)
+            for (var i = 0; i < _edgeDataSize; i++)
             {
-                _edges[pointer + i] = data[start + i];
+                if (i < data.Count)
+                {
+                    _edges[pointer + i] = data[i];
+                }
+                else
+                {
+                    _edges[pointer + i] = byte.MaxValue;
+                }
             }
 
-            return length - start;
+            return _edgeDataSize;
         }
 
         private VertexId ReadFromEdgeVertexId(long pointer)
@@ -422,8 +449,10 @@ namespace Itinero.Data.Graphs
         /// <param name="vertex1">The first vertex.</param>
         /// <param name="vertex2">The second vertex.</param>
         /// <param name="data">The inline data.</param>
+        /// <param name="shape">The edge shape.</param>
         /// <returns>The edge id.</returns>
-        public uint AddEdge(VertexId vertex1, VertexId vertex2, IReadOnlyList<byte> data = null)
+        public uint AddEdge(VertexId vertex1, VertexId vertex2, IReadOnlyList<byte> data = null,
+            IEnumerable<Coordinate> shape = null)
         {
             // try to find vertex1.
             var (vertex1Pointer, _, capacity1) = FindTile(vertex1.TileId);
@@ -473,13 +502,23 @@ namespace Itinero.Data.Graphs
             { // write pointer but offset by 1.
                 rawPointer += WriteToEdges(rawPointer, edgePointer2 + 1);
             }
-            if (data != null) WriteToEdges(rawPointer, data, _edgeDataSize); // write data package.
+            rawPointer += WriteToEdges(rawPointer, data); // write data package.
             
             // update edge pointers.
             var newEdgePointer = _edgePointer;
             _edgePointers[vertex1Pointer + vertex1.LocalId] = newEdgePointer;
             _edgePointers[vertex2Pointer + vertex2.LocalId] = newEdgePointer;
             _edgePointer += 1;
+
+            // add shape if any.
+            if (shape != null)
+            {
+                if (_shapes.Length <= newEdgePointer)
+                { // TODO: this resizing should be in the shapes array.
+                    _shapes.Resize(newEdgePointer + 1024);
+                }
+                _shapes[newEdgePointer] = new ShapeEnumerable(shape);
+            }
 
             return newEdgePointer;
         }
@@ -488,12 +527,12 @@ namespace Itinero.Data.Graphs
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns></returns>
-        public Enumerator GetEnumerator()
+        internal Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
-        public class Enumerator
+        internal class Enumerator
         {
             private VertexId _vertex;
             private bool _firstEdge;
@@ -678,7 +717,19 @@ namespace Itinero.Data.Graphs
             /// Gets the edge id.
             /// </summary>
             public uint Id => (uint)(_rawPointer / _graph._edgeSize);
-
+            
+            /// <summary>
+            /// Gets the shape, if any.
+            /// </summary>
+            /// <returns>The shape.</returns>
+            public ShapeBase GetShape()
+            {
+                var shape = _graph._shapes[this.Id];
+                if (shape == null) return null;
+                if (!this.Forward) shape = shape.Reverse();
+                return shape;
+            }
+            
             /// <summary>
             /// Copies the data to the given array.
             /// </summary>
@@ -693,7 +744,7 @@ namespace Itinero.Data.Graphs
                 if (data.Length - start < count) count = data.Length - start;
                 for (var i = 0; i < count; i++)
                 {
-                    data[start + i] =  _graph._edges[_rawPointer - 1 + 24 + i];
+                    data[start + i] =  _graph._edges[_rawPointer + 24 + i];
                 }
 
                 return count;
@@ -713,6 +764,28 @@ namespace Itinero.Data.Graphs
                     return data;
                 }
             }
+
+            // TODO: these below are only exposed for the edge data coders, figure out if we can do this in a better way. This externalizes some of the graphs internal structure.
+            
+            /// <summary>
+            /// Gets the internal raw pointer for the edge.
+            /// </summary>
+            internal uint RawPointer => _rawPointer;
+
+            /// <summary>
+            /// Gets the raw edges array.
+            /// </summary>
+            internal ArrayBase<byte> Edges => _graph._edges;
+
+            /// <summary>
+            /// Gets the graph this enumerator is for.
+            /// </summary>
+            internal Graph Graph => _graph;
+
+            /// <summary>
+            /// Gets the edge size.
+            /// </summary>
+            internal int EdgeSize => _graph._edgeSize;
         }
     }
 }

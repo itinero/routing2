@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Itinero.Algorithms;
 using Itinero.Algorithms.DataStructures;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Routes;
 using Itinero.Algorithms.Search;
+using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Coders;
 using Itinero.LocalGeo;
 using Itinero.Profiles;
+using Itinero.Profiles.Handlers;
 
 namespace Itinero
 {
@@ -61,43 +65,40 @@ namespace Itinero
         /// <summary>
         /// Returns the part of the edge between the two offsets not including the vertices at the start or the end.
         /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="edge">The edge.</param>
+        /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset1">The start offset.</param>
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-        public static IEnumerable<Coordinate> GetShapeBetween(this RouterDb routerDb, (uint id, bool forward) edge,
+        public static IEnumerable<Coordinate> GetShapeBetween(this RouterDbEdgeEnumerator enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
         {
             if (offset1 > offset2) throw new ArgumentException($"{nameof(offset1)} has to smaller than or equal to {nameof(offset2)}");
 
             // get edge and shape details.
-            var shape = routerDb.GetShape(edge.id, edge.forward);
-            var edgeEnumerator = routerDb.GetEdgeEnumerator();
-            edgeEnumerator.MoveToEdge(edge.id, edge.forward);
+            var shape = enumerator.GetShape();
             
             // return the entire edge if requested.
             if (offset1 == 0 && offset2 == ushort.MaxValue)
             {
-                if (includeVertices) yield return routerDb.GetVertex(edgeEnumerator.From);
+                if (includeVertices) yield return enumerator.FromLocation;
                 foreach (var s in shape)
                 {
                     yield return s;
                 }
-                if (includeVertices) yield return routerDb.GetVertex(edgeEnumerator.To);
+                if (includeVertices) yield return enumerator.ToLocation;
                 yield break;
             }
 
             // calculate offsets in meters.
-            var edgeLength = routerDb.EdgeLength(edge.id);
+            var edgeLength = enumerator.EdgeLength();
             var offset1Length = (offset1/(double)ushort.MaxValue) * edgeLength;
             var offset2Length = (offset2/(double)ushort.MaxValue) * edgeLength;
 
             // calculate coordinate shape.
             var before = offset1 > 0; // when there is a start offset.
             var length = 0.0;
-            var previous = routerDb.GetVertex(edgeEnumerator.From);
+            var previous = enumerator.FromLocation;
             if (offset1 == 0 && includeVertices) yield return previous;
             for (var i = 0; i < shape.Count + 1; i++)
             {
@@ -108,7 +109,7 @@ namespace Itinero
                 }
                 else
                 { // the last location.
-                    next = routerDb.GetVertex(edgeEnumerator.To);
+                    next = enumerator.ToLocation;
                 }
 
                 var segmentLength = Coordinate.DistanceEstimateInMeter(previous, next);
@@ -148,24 +149,20 @@ namespace Itinero
         }
 
         /// <summary>
-        /// Calculates the length of an edge in meters.
+        /// Gets the length of an edge in centimeters.
         /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="edgeId">The edge id.</param>
+        /// <param name="enumerator">The enumerator.</param>
         /// <returns>The length in meters.</returns>
-        public static double EdgeLength(this RouterDb routerDb, uint edgeId)
+        internal static uint EdgeLength(this RouterDbEdgeEnumerator enumerator)
         {
-            var enumerator = routerDb.Network.Graph.GetEnumerator();
-            if (!enumerator.MoveToEdge(edgeId)) return 0;
-
-            var vertex1 = routerDb.Network.Graph.GetVertex(enumerator.From);
-            var vertex2 = routerDb.Network.Graph.GetVertex(enumerator.To);
+            var vertex1 = enumerator.FromLocation;
+            var vertex2 = enumerator.ToLocation;
             
             var distance = 0.0;
 
             // compose geometry.
             var previous = new Coordinate(vertex1.Longitude, vertex1.Latitude);
-            var shape = routerDb.GetShape(edgeId);
+            var shape = enumerator.GetShape();
             if (shape != null)
             {
                 foreach (var shapePoint in shape)
@@ -177,23 +174,34 @@ namespace Itinero
             }
             distance += Coordinate.DistanceEstimateInMeter(previous, new Coordinate(vertex2.Longitude, vertex2.Latitude));
 
-            return distance;
+            return (uint)(distance * 100);
         }
-        
+
         /// <summary>
-        /// Returns the location on the network for the given edge, offset and direction.
+        /// Returns the location on the given edge using the given offset.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="edge">The edge and it's direction.</param>
+        /// <param name="snapPoint">The snap point.</param>
+        /// <returns>The location on the network.</returns>
+        public static Coordinate LocationOnNetwork(this RouterDb routerDb, SnapPoint snapPoint)
+        {
+            var enumerator = routerDb.GetEdgeEnumerator();
+            enumerator.MoveToEdge(snapPoint.EdgeId);
+
+            return enumerator.LocationOnEdge(snapPoint.Offset);
+        }
+
+        /// <summary>
+        /// Returns the location on the given edge using the given offset.
+        /// </summary>
+        /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
-        public static Coordinate LocationOnNetwork(this RouterDb routerDb, (uint id, bool forward) edge, ushort offset)
+        public static Coordinate LocationOnEdge(this RouterDbEdgeEnumerator enumerator, in ushort offset)
         {
-            if (!edge.forward) offset = (ushort)(ushort.MaxValue - offset);
-            
             // TODO: this can be optimized, build a performance test.
-            var shape = routerDb.GetShapeBetween((edge.id, true)).ToList();
-            var length = routerDb.EdgeLength(edge.id);
+            var shape = enumerator.GetShapeBetween().ToList();
+            var length = enumerator.EdgeLength();
             var currentLength = 0.0;
             var targetLength = length * (offset / (double)ushort.MaxValue);
             for (var i = 1; i < shape.Count; i++)
@@ -231,19 +239,11 @@ namespace Itinero
         /// <returns></returns>
         public static Result<Route> Calculate(this RouterDb routerDb, Profile profile, SnapPoint snapPoint1, SnapPoint snapPoint2)
         {
-            var path = Dijkstra.Default.Run(routerDb.Network.Graph, snapPoint1,
+            var profileHandler = routerDb.GetProfileHandler(profile);
+            
+            var path = Dijkstra.Default.Run(routerDb, snapPoint1,
                 new[] { snapPoint2 },
-                (e) =>
-                {
-                    var attributes = routerDb.GetAttributes(e.Id);
-                    var edgeFactor = profile.Factor(attributes);
-                    var length = routerDb.EdgeLength(e.Id);
-                    if (e.Forward)
-                    {
-                        return (uint)(edgeFactor.FactorForward * length);
-                    }
-                    return (uint)(edgeFactor.FactorBackward * length);
-                }, (v) =>
+                profileHandler.GetForwardWeight, (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
                     return false;
@@ -251,6 +251,21 @@ namespace Itinero
 
             if (path == null) return new Result<Route>($"Route not found!");
             return RouteBuilder.Default.Build(routerDb, profile, path);
+        }
+
+        internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
+        {
+            if (routerDb.EdgeDataLayout.TryGet($"{profile.Name}.weight", out var layout))
+            {
+                // the weight is encoded on the edges.
+                if (layout.dataType == EdgeDataType.UInt32)
+                {
+                    return new ProfileInlineUInt32WeightHandlerDefault(profile,
+                        new EdgeDataCoderUInt32(layout.offset));
+                }
+            }
+
+            return new ProfileHandlerDefault(profile);
         }
     }
 }

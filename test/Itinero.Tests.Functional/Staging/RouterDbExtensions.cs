@@ -13,16 +13,16 @@ namespace Itinero.Tests.Functional.Staging
     {
         public static Feature ToFeature(this RouterDb routerDb, uint edgeId)
         {
-            var enumerator = routerDb.Network.Graph.GetEnumerator();
+            var enumerator = routerDb.Network.GetEnumerator();
             if (!enumerator.MoveToEdge(edgeId)) return null;
 
-            var vertex1 = routerDb.Network.Graph.GetVertex(enumerator.From);
-            var vertex2 = routerDb.Network.Graph.GetVertex(enumerator.To);
+            var vertex1 = routerDb.Network.GetVertex(enumerator.From);
+            var vertex2 = routerDb.Network.GetVertex(enumerator.To);
 
             // compose geometry.
             var coordinates = new List<Coordinate>();
             coordinates.Add(new Coordinate(vertex1.Longitude, vertex1.Latitude));
-            var shape = routerDb.GetShape(edgeId);
+            var shape = enumerator.GetShape();
             if (shape != null)
             {
                 foreach (var shapePoint in shape)
@@ -46,7 +46,7 @@ namespace Itinero.Tests.Functional.Staging
         {
             var features = new FeatureCollection();
             features.Add(routerDb.ToFeature(snapPoint.EdgeId));
-            var locationOnNetwork = routerDb.LocationOnNetwork((snapPoint.EdgeId, true), snapPoint.Offset);
+            var locationOnNetwork = routerDb.LocationOnNetwork(snapPoint);
             features.Add(new Feature(new Point(new Coordinate(locationOnNetwork.Longitude, locationOnNetwork.Latitude)), new AttributesTable()));
             return features;
         }
@@ -67,7 +67,7 @@ namespace Itinero.Tests.Functional.Staging
         public static IEnumerable<Feature> ToFeaturesVertices(this RouterDb routerDb,
             (double minLon, double minLat, double maxLon, double maxLat) box)
         {
-            foreach (var vertexAndLocation in routerDb.Network.Graph.SearchVerticesInBox(box))
+            foreach (var vertexAndLocation in routerDb.Network.SearchVerticesInBox(box))
             {
                 var attributes = new AttributesTable();
                 attributes.Add("tile_id", vertexAndLocation.vertex.TileId);

@@ -10,16 +10,16 @@ namespace Itinero.Profiles
         /// </summary>
         /// <param name="factorForward">The forward factor.</param>
         /// <param name="factorBackward">The backward factor.</param>
-        /// <param name="speedForward">The forward speed.</param>
-        /// <param name="speedBackward">The backward speed.</param>
+        /// <param name="forwardSpeed">The forward speed.</param>
+        /// <param name="backwardSpeed">The backward speed.</param>
         /// <param name="canStop">The can stop.</param>
         public EdgeFactor(uint factorForward, uint factorBackward,
-            uint speedForward, uint speedBackward, bool canStop = true)
+            uint forwardSpeed, uint backwardSpeed, bool canStop = true)
         {
             this.FactorForward = factorForward;
             this.FactorBackward = factorBackward;
-            this.SpeedForward = speedForward;
-            this.SpeedBackward = speedBackward;
+            this.ForwardSpeed = forwardSpeed;
+            this.BackwardSpeed = backwardSpeed;
             this.CanStop = canStop;
         }
         
@@ -36,12 +36,12 @@ namespace Itinero.Profiles
         /// <summary>
         /// Gets the forward speed.
         /// </summary>
-        public uint SpeedForward { get; }
+        public uint ForwardSpeed { get; }
         
         /// <summary>
         /// Gets the backward speed.
         /// </summary>
-        public uint SpeedBackward { get; }
+        public uint BackwardSpeed { get; }
         
         /// <summary>
         /// Gets the can stop flag.

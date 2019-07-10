@@ -20,11 +20,11 @@ namespace Itinero.Algorithms.Dijkstra
         /// Calculates a path.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path Run(Graph graph, SnapPoint source,
-            IEnumerable<SnapPoint> targets, Func<Graph.Enumerator, uint> getWeight,
+        public Path Run(RouterDb routerDb, SnapPoint source,
+            IEnumerable<SnapPoint> targets, Func<RouterDbEdgeEnumerator, uint> getWeight,
             Func<VertexId, bool> settled = null)
         {
-            var enumerator = graph.GetEnumerator();
+            var enumerator = routerDb.GetEdgeEnumerator();
             _tree.Clear();
             _visits.Clear();
             _heap.Clear();
@@ -51,7 +51,7 @@ namespace Itinero.Algorithms.Dijkstra
             
             // add targets.
             (uint pointer, float cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, float.MaxValue, false, 
-                default(SnapPoint));
+                default);
             var targetMaxCost = 0f;
             var targetsPerVertex = new Dictionary<VertexId, (float cost, bool forward, SnapPoint target)>();
             foreach (var target in targets)
@@ -85,7 +85,7 @@ namespace Itinero.Algorithms.Dijkstra
             // keep going until heap is empty.
             while (_heap.Count > 0)
             {
-                if (_visits.Count > (1 << 16))
+                if (_visits.Count > (1 << 20))
                 { // TODO: come up with a stop condition that makes more sense to prevent the global network being loaded
                     // when a route is not found.
                     break;
@@ -161,7 +161,7 @@ namespace Itinero.Algorithms.Dijkstra
             if (bestTarget.pointer == uint.MaxValue) return null;
 
             // build resulting path.
-            var path = new Path(graph);
+            var path = new Path(routerDb.Network);
             var visit = _tree.GetVisit(bestTarget.pointer);
             
             if (!enumerator.MoveToEdge(bestTarget.target.EdgeId, bestTarget.forward)) throw new Exception($"Edge in bestTarget {bestTarget} not found!");

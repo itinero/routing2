@@ -44,25 +44,26 @@ namespace Itinero.Algorithms.Routes
 
                 var attributes = db.GetAttributes(segment.edge);
                 var factor = profile.Factor(attributes);
-                var distance = db.EdgeLength(segment.edge);
+                edgeEnumerator.MoveToEdge(segment.edge, segment.forward);
+                var distance = edgeEnumerator.EdgeLength() / 100.0;
                 distance = ((offset2 - offset1) / (double)ushort.MaxValue) * distance;
                 route.TotalDistance += distance;
                 if (segment.forward)
                 {
-                    if (factor.SpeedBackward > 0)
+                    if (factor.BackwardSpeed > 0)
                     { // ok factor makes sense.
-                        route.TotalTime += distance / factor.SpeedForward;
+                        route.TotalTime += distance / factor.ForwardSpeed;
                     }
                 }
                 else
                 {
-                    if (factor.SpeedBackward > 0)
+                    if (factor.BackwardSpeed > 0)
                     { // ok factor makes sense.
-                        route.TotalTime += distance / factor.SpeedBackward;
+                        route.TotalTime += distance / factor.BackwardSpeed;
                     }
                 }
                 
-                route.Shape.AddRange(db.GetShapeBetween(segment, offset1, offset2));
+                route.Shape.AddRange(edgeEnumerator.GetShapeBetween(offset1, offset2));
             }
             
             return route;

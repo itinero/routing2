@@ -3,8 +3,8 @@ using System.Runtime.CompilerServices;
 using Itinero.Data;
 using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Coders;
 using Itinero.Data.Providers;
-using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
@@ -17,13 +17,20 @@ namespace Itinero
     /// </summary>
     public class RouterDb
     {
-        private readonly Network _network;
+        private readonly Graph _network;
         private readonly MappedAttributesIndex _edgesMeta;
 
+        /// <summary>
+        /// Creates a new router db.
+        /// </summary>
+        /// <param name="zoom">The default zoom level.</param>
         public RouterDb(int zoom = 14)
         {
-            _network = new Network(zoom);
+            _network = new Graph(zoom, 4);
             _edgesMeta = new MappedAttributesIndex();
+            
+            this.EdgeDataLayout = new EdgeDataLayout();
+            this.EdgeDataLayout.Add("bicycle.weight", EdgeDataType.UInt32);
         }
 
         /// <summary>
@@ -58,14 +65,19 @@ namespace Itinero
         public int Zoom => _network.Zoom;
 
         /// <summary>
-        /// Gets the network.
+        /// Gets the network graph.
         /// </summary>
-        internal Network Network => _network;
+        internal Graph Network => _network;
         
         /// <summary>
         /// Gets or sets the data provider.
         /// </summary>
         public ILiveDataProvider DataProvider { get; set; }
+
+        /// <summary>
+        /// Gets the data layout.
+        /// </summary>
+        internal EdgeDataLayout EdgeDataLayout { get; }
 
         /// <summary>
         /// Adds a new edge and returns its id.
@@ -89,22 +101,9 @@ namespace Itinero
         /// Gets the edge enumerator for the graph in this network.
         /// </summary>
         /// <returns>The edge enumerator.</returns>
-        public Graph.Enumerator GetEdgeEnumerator()
+        public RouterDbEdgeEnumerator GetEdgeEnumerator()
         {
-            return _network.GetEdgeEnumerator();
-        }
-
-        /// <summary>
-        /// Gets the shape for the given edge, if any.
-        /// </summary>
-        /// <param name="edgeId">The edge id.</param>
-        /// <param name="forward">The direction of the edge.</param>
-        /// <returns>The shape.</returns>
-        public ShapeBase GetShape(uint edgeId, bool forward = true)
-        {
-            var shape = _network.GetShape(edgeId);
-            if (!forward) shape = shape.Reverse();
-            return shape;
+            return new RouterDbEdgeEnumerator(this);
         }
 
         /// <summary>

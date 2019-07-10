@@ -33,6 +33,9 @@ namespace Itinero.Tests.Functional.Download
                 {
                     stream.CopyTo(fileStream);    
                 }
+                
+                Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Verbose, 
+                    $"Downloaded from {url}.");
             }
             catch (Exception ex)
             {

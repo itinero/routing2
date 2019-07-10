@@ -42,22 +42,65 @@ namespace Itinero.Tests.Functional
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
-            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
-                $"Snapping hot: heldergem");
-            var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle));
-            var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle));
-
-            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}");
-
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}");
+//            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
+//                $"Snapping hot: heldergem");
+//            var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle),
+//                $"Snapping hot: ninove");
+//            var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle),
+//                $"Snapping hot: pepingen");
+//            var lebbeke = SnappingTest.Default.Run((routerDb, 4.12864, 50.99926, profile: bicycle),
+//                $"Snapping cold: lebbeke");
+//            var hamme = SnappingTest.Default.Run((routerDb, 4.13418, 51.09707, profile: bicycle),
+//                $"Snapping cold: hamme");
+//            var stekene = SnappingTest.Default.Run((routerDb, 4.03705, 51.20637, profile: bicycle),
+//                $"Snapping cold: hamme");
+//            var leuven = SnappingTest.Default.Run((routerDb, 4.69575, 50.88040, profile: bicycle),
+//                $"Snapping cold: hamme");
+            var wechelderzande = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
+                $"Snapping cold: wechelderzande");
             
-            File.WriteAllText("network.geojson", routerDb.ToGeoJson());
+//            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
+//            
+//            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
+            
+            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
+            
+            routerDb.WriteToShape("test");
+            //File.WriteAllText("network.geojson", routerDb.ToGeoJson());
         }
 
         private static void EnableLogging()
@@ -88,7 +131,7 @@ namespace Itinero.Tests.Functional
 
                 if (level == TraceEventType.Verbose.ToString().ToLower())
                 {
-                    //Log.Debug(message);
+                    Log.Debug(message);
                 }
                 else if (level == TraceEventType.Information.ToString().ToLower())
                 {

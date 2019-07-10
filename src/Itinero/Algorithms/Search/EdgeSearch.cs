@@ -28,11 +28,11 @@ namespace Itinero.Algorithms.Search
         /// <param name="box">The box.</param>
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
-        public static SnapPoint SnapInBox(this Network network,
+        public static SnapPoint SnapInBox(this Graph network,
             (double minLon, double minLat, double maxLon, double maxLat) box, 
             Func<uint, bool> acceptableFunc = null)
         {
-            var edges = network.Graph.SearchEdgesInBox(box);
+            var edges = network.SearchEdgesInBox(box);
             var center = new Coordinate((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
 
             var bestDistance = double.MaxValue;
@@ -52,7 +52,7 @@ namespace Itinero.Algorithms.Search
                 // get edge details.
                 var from = edges.GraphEnumerator.From;
                 var to = edges.GraphEnumerator.To;
-                var shape = network.GetShape(edges.GraphEnumerator.Id);
+                var shape = edges.GraphEnumerator.GetShape();
                 if (!edges.GraphEnumerator.Forward)
                 {
                     var t = from;

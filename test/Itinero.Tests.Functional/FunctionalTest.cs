@@ -32,12 +32,13 @@ namespace Itinero.Tests.Functional
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="name">The test name.</param>
+        /// <param name="count">The count.</param>
         /// <returns>The output.</returns>
-        public TOut Run(TIn input = default(TIn), string name = null)
+        public TOut Run(TIn input = default(TIn), string name = null, int count = 1)
         {
             try
             {
-                return TrackPerformance ? RunPerformance(input, name: name) : Execute(input);
+                return TrackPerformance ? RunPerformance(input, name: name, count: count) : Execute(input);
             }
             catch (Exception ex)
             {

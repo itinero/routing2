@@ -60,7 +60,7 @@ namespace Itinero.Algorithms.Search
             }
         }
 
-        public Graph.Enumerator GraphEnumerator => _graphEnumerator;
+        internal Graph.Enumerator GraphEnumerator => _graphEnumerator;
 
         public void Dispose()
         {

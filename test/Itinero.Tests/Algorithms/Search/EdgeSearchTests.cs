@@ -1,5 +1,6 @@
 using Itinero.Algorithms.Search;
 using Itinero.Data;
+using Itinero.Data.Graphs;
 using Xunit;
 
 namespace Itinero.Tests.Algorithms.Search
@@ -9,11 +10,11 @@ namespace Itinero.Tests.Algorithms.Search
         [Fact]
         public void EdgeSearch_SearchEdgesInBox_ShouldReturnNothingWhenNoEdges()
         {
-            var network = new Network();
+            var network = new Graph();
             network.AddVertex(4.792613983154297, 51.26535213392538);
             network.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edges = network.Graph.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
+            var edges = network.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
             Assert.NotNull(edges);
             Assert.False(edges.MoveNext());
         }
@@ -21,12 +22,12 @@ namespace Itinero.Tests.Algorithms.Search
         [Fact]
         public void EdgeSearch_SearchEdgesInBox_ShouldReturnEdgeWhenOneVertexInBox()
         {
-            var network = new Network();
+            var network = new Graph();
             var vertex1 = network.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = network.AddVertex(4.797506332397461, 51.26674845584085);
             var edge = network.AddEdge(vertex1, vertex2);
             
-            var edges = network.Graph.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
+            var edges = network.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
             Assert.NotNull(edges);
             Assert.True(edges.MoveNext());
             Assert.Equal(edge, edges.GraphEnumerator.Id);
@@ -36,7 +37,7 @@ namespace Itinero.Tests.Algorithms.Search
         [Fact]
         public void EdgeSearch_SnapInBox_ShouldSnapToVertex1WhenVertex1Closest()
         {
-            var network = new Network();
+            var network = new Graph();
             var vertex1 = network.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = network.AddVertex(4.797506332397461, 51.26674845584085);
             var edge = network.AddEdge(vertex1, vertex2);
@@ -50,7 +51,7 @@ namespace Itinero.Tests.Algorithms.Search
         [Fact]
         public void EdgeSearch_SnapInBox_ShouldSnapToVertex2WhenVertex2Closest()
         {
-            var network = new Network();
+            var network = new Graph();
             var vertex1 = network.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = network.AddVertex(4.797506332397461, 51.26674845584085);
             var edge = network.AddEdge(vertex1, vertex2);
@@ -64,7 +65,7 @@ namespace Itinero.Tests.Algorithms.Search
         [Fact]
         public void EdgeSearch_SnapInBox_ShouldSnapToSegmentWhenMiddleIsClosest()
         {
-            var network = new Network();
+            var network = new Graph();
             var vertex1 = network.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = network.AddVertex(4.797506332397461, 51.26674845584085);
             var edge = network.AddEdge(vertex1, vertex2);

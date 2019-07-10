@@ -12,7 +12,7 @@ namespace Itinero.Tests.Functional.Staging
     public class RouterDbFeatures : IList<IFeature>
     {
         private readonly RouterDb _routerDb;
-        private readonly Graph.Enumerator _enumerator;
+        private readonly RouterDbEdgeEnumerator _enumerator;
 
         /// <summary>
         /// Creates a new features list.
@@ -137,7 +137,7 @@ namespace Itinero.Tests.Functional.Staging
             // compose geometry.
             var coordinates = new List<Coordinate>();
             coordinates.Add(new Coordinate(vertex1.Longitude, vertex1.Latitude));
-            var shape = _routerDb.GetShape(edgeId);
+            var shape = _enumerator.GetShape();
             if (shape != null)
             {
                 foreach (var shapePoint in shape)

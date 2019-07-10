@@ -41,8 +41,6 @@ namespace Itinero.Tests
             Assert.Equal(vertex1, enumerator.From);
             Assert.Equal(vertex2, enumerator.To);
             Assert.True(enumerator.Forward);
-            Assert.Equal(0, enumerator.CopyDataTo(new byte[10]));
-            Assert.Empty(enumerator.Data);
         }
 
         [Fact]
@@ -59,7 +57,9 @@ namespace Itinero.Tests
             var edgeId = network.AddEdge(vertex1, vertex2, shape: new [] { new Coordinate(4.795167446136475,
                 51.26580191532799), });
 
-            var shape = network.GetShape(edgeId);
+            var enumerator = network.GetEdgeEnumerator();
+            enumerator.MoveToEdge(edgeId);
+            var shape = enumerator.GetShape();
             Assert.NotNull(shape);
             var shapeList = shape.ToList();
             Assert.Single(shapeList);
