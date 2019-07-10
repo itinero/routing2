@@ -18,8 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using Itinero.Data.Shapes;
 using Itinero.Data.Tiles;
 using Itinero.LocalGeo;

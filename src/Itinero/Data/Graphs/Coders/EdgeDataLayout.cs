@@ -2,12 +2,28 @@ using System.Collections.Generic;
 
 namespace Itinero.Data.Graphs.Coders
 {
+    // TODO: before release, make sure this is internalized.
+    
     /// <summary>
     /// The layout of the data on an edge.
     /// </summary>
     public class EdgeDataLayout
     {
         private readonly List<(string key, int offset, EdgeDataType dataType)> _data = new List<(string key, int offset, EdgeDataType dataType)>();
+
+        /// <summary>
+        /// Creates a new layout.
+        /// </summary>
+        /// <param name="layouts">The initial layouts.</param>
+        public EdgeDataLayout(IEnumerable<(string key, EdgeDataType dataType)> layouts = null)
+        {
+            if (layouts == null) return;
+            
+            foreach (var (key, dataType) in layouts)
+            {
+                this.Add(key, dataType);
+            }
+        }
         
         /// <summary>
         /// Adds a new entry.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Coders;
 using Itinero.Data.Tiles;
 using Itinero.IO.Json;
 using Itinero.IO.Osm.Tiles;
@@ -30,32 +31,38 @@ namespace Itinero.Tests.Functional
             
             // do some local caching.
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
-            
-            // setup a router db with a routable tiles data provider..
-            var routerDb = new RouterDb();
-            routerDb.DataProvider = new DataProvider(routerDb);
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
-
             var profile = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
+            
+            // setup a router db with a routable tiles data provider.
+            var routerDb = new RouterDb(new RouterDbConfiguration()
+            {
+                Zoom = 14,
+                EdgeDataLayout = new EdgeDataLayout(new (string key, EdgeDataType dataType)[]
+                {
+                    ("bicycle.weight", EdgeDataType.UInt32)
+                })
+            });
+            routerDb.DataProvider = new DataProvider(routerDb);
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
 //            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
 //                $"Snapping hot: heldergem");
-//            var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle),
-//                $"Snapping hot: ninove");
-//            var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle),
-//                $"Snapping hot: pepingen");
-//            var lebbeke = SnappingTest.Default.Run((routerDb, 4.12864, 50.99926, profile: bicycle),
-//                $"Snapping cold: lebbeke");
-//            var hamme = SnappingTest.Default.Run((routerDb, 4.13418, 51.09707, profile: bicycle),
-//                $"Snapping cold: hamme");
-//            var stekene = SnappingTest.Default.Run((routerDb, 4.03705, 51.20637, profile: bicycle),
-//                $"Snapping cold: hamme");
-//            var leuven = SnappingTest.Default.Run((routerDb, 4.69575, 50.88040, profile: bicycle),
-//                $"Snapping cold: hamme");
+            var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle),
+                $"Snapping hot: ninove");
+            var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle),
+                $"Snapping hot: pepingen");
+            var lebbeke = SnappingTest.Default.Run((routerDb, 4.12864, 50.99926, profile: bicycle),
+                $"Snapping cold: lebbeke");
+            var hamme = SnappingTest.Default.Run((routerDb, 4.13418, 51.09707, profile: bicycle),
+                $"Snapping cold: hamme");
+            var stekene = SnappingTest.Default.Run((routerDb, 4.03705, 51.20637, profile: bicycle),
+                $"Snapping cold: hamme");
+            var leuven = SnappingTest.Default.Run((routerDb, 4.69575, 50.88040, profile: bicycle),
+                $"Snapping cold: hamme");
             var wechelderzande = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
                 $"Snapping cold: wechelderzande");
             
@@ -79,10 +86,12 @@ namespace Itinero.Tests.Functional
 //            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
 //                $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
 //            
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
+            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 100);
 //            
 //            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
 //                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
@@ -91,11 +100,11 @@ namespace Itinero.Tests.Functional
 //            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
 //                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
             
-            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
+//            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+//            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
 //            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
 //                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
             

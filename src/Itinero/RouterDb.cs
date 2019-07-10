@@ -23,14 +23,14 @@ namespace Itinero
         /// <summary>
         /// Creates a new router db.
         /// </summary>
-        /// <param name="zoom">The default zoom level.</param>
-        public RouterDb(int zoom = 14)
+        /// <param name="configuration">The configuration.</param>
+        public RouterDb(RouterDbConfiguration configuration = null)
         {
-            _network = new Graph(zoom, 4);
+            configuration = configuration ?? RouterDbConfiguration.Default;
+            this.EdgeDataLayout = configuration.EdgeDataLayout ?? new EdgeDataLayout();
+
+            _network = new Graph(configuration.Zoom, this.EdgeDataLayout.Size);
             _edgesMeta = new MappedAttributesIndex();
-            
-            this.EdgeDataLayout = new EdgeDataLayout();
-            this.EdgeDataLayout.Add("bicycle.weight", EdgeDataType.UInt32);
         }
 
         /// <summary>
