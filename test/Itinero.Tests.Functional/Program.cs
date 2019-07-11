@@ -65,51 +65,60 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: hamme");
             var wechelderzande = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
                 $"Snapping cold: wechelderzande");
+            var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
+                $"Snapping cold: middelburg");
             
-//            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
-//            
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
-//            
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
-//            
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
-//            
-            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 100);
-//            
-//            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
             
-//            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-//                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-//            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
-//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-//                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
+                $"Route cold: {nameof(heldergem)} -> {nameof(middelburg)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(middelburg)}");
+            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
+                $"Route hot: {nameof(heldergem)} -> {nameof(middelburg)}", 10);
             
             routerDb.WriteToShape("test");
-            //File.WriteAllText("network.geojson", routerDb.ToGeoJson());
         }
 
         private static void EnableLogging()
@@ -140,7 +149,7 @@ namespace Itinero.Tests.Functional
 
                 if (level == TraceEventType.Verbose.ToString().ToLower())
                 {
-                    Log.Debug(message);
+                    //Log.Debug(message);
                 }
                 else if (level == TraceEventType.Information.ToString().ToLower())
                 {

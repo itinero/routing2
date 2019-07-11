@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using Itinero.Algorithms.DataStructures;
 using Itinero.Data.Shapes;
 using Itinero.Data.Tiles;
 using Itinero.LocalGeo;
@@ -33,13 +34,13 @@ namespace Itinero.Data.Graphs
         private readonly int _zoom; // the zoom level.
         private const int CoordinateSizeInBytes = 3; // 3 bytes = 24 bits = 4096 x 4096, the needed resolution depends on the zoom-level, higher, less resolution.
         const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
+        private const int TileSizeInIndex = 5; // 4 bytes for the pointer, 1 for the size.
         
         // The tile-index.
         // - tile-id (4 bytes): the local tile-id, maximum possible zoom level 16.
         // - pointer (4 bytes): the pointer to the first vertex in the tile.
         // - capacity (in max bits, 1 byte) : the capacity in # of bytes.
-        private readonly ArrayBase<byte> _tiles;
-        private uint _tilePointer = 0;
+        private readonly SparseArray<byte> _tiles;
 
         private readonly ArrayBase<byte> _vertices; // holds the vertex location, encoded relative to a tile.
         private readonly ArrayBase<uint> _edgePointers; // holds edge pointers, points to the first edge for each vertex.
@@ -76,7 +77,7 @@ namespace Itinero.Data.Graphs
                 4 * 2 + // the pointers to previous edges.
                 _edgeDataSize; // the edge data package.
             
-            _tiles = new MemoryArray<byte>(0);
+            _tiles = new SparseArray<byte>(0, emptyDefault: byte.MaxValue);
             _vertices = new MemoryArray<byte>(CoordinateSizeInBytes);
             _edgePointers = new MemoryArray<uint>(1);
             _edges = new MemoryArray<byte>(0);
@@ -115,10 +116,10 @@ namespace Itinero.Data.Graphs
             var localTileId = tile.LocalId;
             
             // try to find the tile.
-            var (vertexPointer, tilePointer, capacity) = FindTile(localTileId);
+            var (vertexPointer, capacity) = FindTile(localTileId);
             if (vertexPointer == GraphConstants.TileNotLoaded)
             {
-                (vertexPointer, tilePointer, capacity) = AddTile(localTileId);
+                (vertexPointer, capacity) = AddTile(localTileId);
             }
             
             // if the tile is at max capacity increase it's capacity.
@@ -126,7 +127,7 @@ namespace Itinero.Data.Graphs
             if (_edgePointers.Length <= vertexPointer + capacity - 1 ||
                 _edgePointers[vertexPointer + capacity - 1] != GraphConstants.NoVertex)
             { // increase capacity.
-                (vertexPointer, capacity) = IncreaseCapacityForTile(tilePointer, vertexPointer);
+                (vertexPointer, capacity) = IncreaseCapacityForTile(localTileId, vertexPointer);
                 nextEmpty = (vertexPointer + (capacity / 2));
             }
             else
@@ -167,7 +168,7 @@ namespace Itinero.Data.Graphs
             var localTileId = vertex.TileId;
             
             // try to find the tile.
-            var (vertexPointer, tilePointer, capacity) = FindTile(localTileId);
+            var (vertexPointer, capacity) = FindTile(localTileId);
             if (vertexPointer == GraphConstants.TileNotLoaded)
                 throw new ArgumentException($"{vertex} does not exist.");
             if (vertex.LocalId >= capacity)
@@ -190,7 +191,7 @@ namespace Itinero.Data.Graphs
             var localTileId = vertex.TileId;
             
             // try to find the tile.
-            var (vertexPointer, tilePointer, capacity) = FindTile(localTileId);
+            var (vertexPointer, capacity) = FindTile(localTileId);
             if (vertexPointer == GraphConstants.TileNotLoaded)
             {
                 location = default;
@@ -262,72 +263,65 @@ namespace Itinero.Data.Graphs
             }
         }
 
-        private (uint vertexPointer, uint tilePointer, int capacity) FindTile(uint localTileId)
+        private (uint vertexPointer, int capacity) FindTile(uint localTileId)
         {
+            var tilePointerIndex = (long)localTileId * TileSizeInIndex;
+            if (tilePointerIndex + TileSizeInIndex >= _tiles.Length)
+            {
+                return (GraphConstants.TileNotLoaded, 0);
+            }
+
+            if (_tiles[tilePointerIndex + 0] == byte.MaxValue &&
+                _tiles[tilePointerIndex + 1] == byte.MaxValue &&
+                _tiles[tilePointerIndex + 2] == byte.MaxValue &&
+                _tiles[tilePointerIndex + 3] == byte.MaxValue &&
+                _tiles[tilePointerIndex + 4] == byte.MaxValue)
+            {
+                return (GraphConstants.TileNotLoaded, 0);
+            }
+            
             // find an allocation-less way of doing this:
             //   this is possible it .NET core 2.1 but not netstandard2.0,
             //   we can do this in netstandard2.1 normally.
             //   perhaps implement our own version of bitconverter.
             var tileBytes = new byte[4];
-            var targetTileBytes = BitConverter.GetBytes(localTileId);
-            for (uint p = 0; p < _tiles.Length - 9; p += 9)
-            {
-                var tileId = localTileId;
-                for (var b = 0; b < 4; b++)
-                {
-                    var v = _tiles[p + b];
-                    if (v != targetTileBytes[b])
-                    {
-                        tileId = uint.MaxValue;
-                        break;
-                    }
-                }
-                if (tileId != localTileId) continue;
-                
-                for (var b = 0; b < 4; b++)
-                {
-                    tileBytes[b] = _tiles[p + b + 4];
-                }
+            tileBytes[0] = _tiles[tilePointerIndex + 0];
+            tileBytes[1] = _tiles[tilePointerIndex + 1];
+            tileBytes[2] = _tiles[tilePointerIndex + 2];
+            tileBytes[3] = _tiles[tilePointerIndex + 3];
 
-                return (BitConverter.ToUInt32(tileBytes, 0), p, 1 << _tiles[p + 8]);
-            }
-
-            return (GraphConstants.TileNotLoaded, uint.MaxValue, 0);
+            return (BitConverter.ToUInt32(tileBytes, 0), 1 << _tiles[tilePointerIndex + 4]);
         }
 
-        private (uint vertexPointer, uint tilePointer, int capacity) AddTile(uint localTileId)
+        private (uint vertexPointer, int capacity) AddTile(uint localTileId)
         {
-            if (_tilePointer + 9 >= _tiles.Length)
+            var tilePointerIndex = (long)localTileId * TileSizeInIndex;
+            if (tilePointerIndex + TileSizeInIndex >= _tiles.Length)
             {
-                _tiles.Resize(_tiles.Length + 1024);
+                _tiles.Resize(tilePointerIndex + TileSizeInIndex + 1024);
             }
             
-            var tileBytes = BitConverter.GetBytes(localTileId);
-            for (var b = 0; b < 4; b++)
-            {
-                _tiles[_tilePointer + b] = tileBytes[b];
-            }
-            tileBytes = BitConverter.GetBytes(_vertexPointer);
-            for (var b = 0; b < 4; b++)
-            {
-                _tiles[_tilePointer + 4 + b] = tileBytes[b];
-            }
-            _tiles[_tilePointer + 9] = DefaultTileCapacityInBits;
-            var tilePointer = _tilePointer;
-            _tilePointer += 9;
+            var tileBytes = BitConverter.GetBytes(_vertexPointer);
+            _tiles[tilePointerIndex + 0] = tileBytes[0];
+            _tiles[tilePointerIndex + 1] = tileBytes[1];
+            _tiles[tilePointerIndex + 2] = tileBytes[2];
+            _tiles[tilePointerIndex + 3] = tileBytes[3];
+            _tiles[tilePointerIndex + 4] = DefaultTileCapacityInBits;
+            
             const int capacity = 1 << DefaultTileCapacityInBits;
             var pointer = _vertexPointer;
             _vertexPointer += capacity;
-            return (pointer, tilePointer, capacity);
+            return (pointer, capacity);
         }
 
-        private (uint vertexPointer, int capacity) IncreaseCapacityForTile(uint tilePointer, uint pointer)
+        private (uint vertexPointer, int capacity) IncreaseCapacityForTile(uint localTileId, uint pointer)
         {
             // copy current data, we assume current capacity is at max.
+            var tilePointer = (long)localTileId * TileSizeInIndex;
             
             // get current capacity and double it.
-            var capacityInBits = _tiles[tilePointer + 8];
-            _tiles[tilePointer + 8] = (byte)(capacityInBits + 1);
+            var capacityInBits = _tiles[tilePointer + 4];
+            _tiles[tilePointer + 4] = (byte)(capacityInBits + 1);
             var capacity = 1 << capacityInBits;
 
             // get the current pointer and update it.
@@ -336,7 +330,7 @@ namespace Itinero.Data.Graphs
             var pointerBytes = BitConverter.GetBytes(newVertexPointer); 
             for (var b = 0; b < 4; b++)
             {
-                _tiles[tilePointer + 4 + b] = pointerBytes[b];
+                _tiles[tilePointer + b] = pointerBytes[b];
             }
             
             // make sure edge pointers array and vertex coordinates arrays are the proper sizes.
@@ -453,7 +447,7 @@ namespace Itinero.Data.Graphs
             IEnumerable<Coordinate> shape = null)
         {
             // try to find vertex1.
-            var (vertex1Pointer, _, capacity1) = FindTile(vertex1.TileId);
+            var (vertex1Pointer, capacity1) = FindTile(vertex1.TileId);
             if (vertex1Pointer == GraphConstants.TileNotLoaded ||
                 vertex1.LocalId >= capacity1)
             {
@@ -461,7 +455,7 @@ namespace Itinero.Data.Graphs
             }
             
             // try to find vertex2.
-            var (vertex2Pointer, _, capacity2) = FindTile(vertex2.TileId);
+            var (vertex2Pointer, capacity2) = FindTile(vertex2.TileId);
             if (vertex2Pointer == GraphConstants.TileNotLoaded ||
                 vertex2.LocalId >= capacity2)
             {
@@ -565,7 +559,7 @@ namespace Itinero.Data.Graphs
                 _nextRawPointer = uint.MaxValue;
                 
                 // try to find vertex.
-                var (vertex1Pointer, _, capacity1) =  _graph.FindTile(vertex.TileId);
+                var (vertex1Pointer, capacity1) =  _graph.FindTile(vertex.TileId);
                 if (vertex1Pointer == GraphConstants.TileNotLoaded ||
                     vertex.LocalId >= capacity1)
                 {
