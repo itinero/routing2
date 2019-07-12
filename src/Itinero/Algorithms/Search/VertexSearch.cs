@@ -5,7 +5,10 @@ using Itinero.LocalGeo;
 
 namespace Itinero.Algorithms.Search
 {
-    public static class VertexSearch
+    /// <summary>
+    /// Implements vertex searches.
+    /// </summary>
+    internal static class VertexSearch
     {
         /// <summary>
         /// Enumerates all vertices in the given bounding box.
@@ -13,7 +16,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="graph">The graph.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static IEnumerable<(VertexId vertex, Coordinate location)> SearchVerticesInBox(this Graph graph,
+        internal static IEnumerable<(VertexId vertex, Coordinate location)> SearchVerticesInBox(this Graph graph,
             (double minLon, double minLat, double maxLon, double maxLat) box)
         {
             var range = new TileRange(box, graph.Zoom);

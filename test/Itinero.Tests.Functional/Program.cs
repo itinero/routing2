@@ -49,8 +49,8 @@ namespace Itinero.Tests.Functional
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
-//            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
-//                $"Snapping hot: heldergem");
+            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
+                $"Snapping hot: heldergem", 1000);
             var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle),
                 $"Snapping hot: ninove");
             var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle),
@@ -106,7 +106,7 @@ namespace Itinero.Tests.Functional
                 $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
+            File.WriteAllText("route.geojson", route.ToGeoJson());
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
             
@@ -114,7 +114,7 @@ namespace Itinero.Tests.Functional
                 $"Route cold: {nameof(heldergem)} -> {nameof(middelburg)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(middelburg)}");
-            File.WriteAllText("route.geojson", route.Value.ToGeoJson());
+            File.WriteAllText("route.geojson", route.ToGeoJson());
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(middelburg)}", 10);
             

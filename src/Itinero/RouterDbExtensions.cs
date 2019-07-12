@@ -32,6 +32,9 @@ namespace Itinero
         public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 1000,
             Profile profile = null)
         {
+            ProfileHandler profileHandler = null;
+            if (profile != null) profileHandler = routerDb.GetProfileHandler(profile);
+            
             var offset = 100;
             while (offset < maxOffsetInMeter)
             {
@@ -46,14 +49,14 @@ namespace Itinero
                 routerDb.DataProvider?.TouchBox(box);
 
                 // snap to closest edge.
-                var snapPoint = routerDb.Network.SnapInBox(box, (edgeId) =>
+                var snapPoint = routerDb.SnapInBox(box, (eEnum) =>
                 {
-                    if (profile == null) return true;
-                    
-                    var attributes = routerDb.GetAttributes(edgeId);
-                    var edgeFactor = profile.Factor(attributes);
-                    if (!edgeFactor.CanStop) return false;
-                    return true;
+                    if (profileHandler == null) return true;
+
+                    profileHandler.MoveTo(eEnum);
+                    var canStop = profileHandler.CanStop;
+
+                    return canStop;
                 });
                 if (snapPoint.EdgeId != uint.MaxValue) return snapPoint;
 
@@ -81,12 +84,10 @@ namespace Itinero
             // return the entire edge if requested.
             if (offset1 == 0 && offset2 == ushort.MaxValue)
             {
-                if (includeVertices) yield return enumerator.FromLocation;
-                foreach (var s in shape)
+                foreach (var s in enumerator.GetCompleteShape())
                 {
                     yield return s;
                 }
-                if (includeVertices) yield return enumerator.ToLocation;
                 yield break;
             }
 
@@ -95,10 +96,11 @@ namespace Itinero
             var offset1Length = (offset1/(double)ushort.MaxValue) * edgeLength;
             var offset2Length = (offset2/(double)ushort.MaxValue) * edgeLength;
 
+            // TODO: can we make this easier with the complete shape enumeration?
             // calculate coordinate shape.
             var before = offset1 > 0; // when there is a start offset.
             var length = 0.0;
-            var previous = enumerator.FromLocation;
+            var previous = enumerator.FromLocation();
             if (offset1 == 0 && includeVertices) yield return previous;
             for (var i = 0; i < shape.Count + 1; i++)
             {
@@ -109,7 +111,7 @@ namespace Itinero
                 }
                 else
                 { // the last location.
-                    next = enumerator.ToLocation;
+                    next = enumerator.ToLocation();
                 }
 
                 var segmentLength = Coordinate.DistanceEstimateInMeter(previous, next);
@@ -155,24 +157,20 @@ namespace Itinero
         /// <returns>The length in meters.</returns>
         internal static uint EdgeLength(this RouterDbEdgeEnumerator enumerator)
         {
-            var vertex1 = enumerator.FromLocation;
-            var vertex2 = enumerator.ToLocation;
-            
             var distance = 0.0;
 
             // compose geometry.
-            var previous = new Coordinate(vertex1.Longitude, vertex1.Latitude);
-            var shape = enumerator.GetShape();
-            if (shape != null)
+            var shape = enumerator.GetCompleteShape();
+            var shapeEnumerator = shape.GetEnumerator();
+            shapeEnumerator.MoveNext();
+            var previous = shapeEnumerator.Current;
+
+            while (shapeEnumerator.MoveNext())
             {
-                foreach (var shapePoint in shape)
-                {
-                    var current = new Coordinate(shapePoint.Longitude, shapePoint.Latitude);
-                    distance += Coordinate.DistanceEstimateInMeter(previous, current);
-                    previous = current;
-                }
+                var current = shapeEnumerator.Current;
+                distance += Coordinate.DistanceEstimateInMeter(previous, current);
+                previous = current;
             }
-            distance += Coordinate.DistanceEstimateInMeter(previous, new Coordinate(vertex2.Longitude, vertex2.Latitude));
 
             return (uint)(distance * 100);
         }

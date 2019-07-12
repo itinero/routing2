@@ -3,11 +3,13 @@ using Itinero.Profiles;
 
 namespace Itinero.Tests.Functional
 {
-    public class SnappingTest : FunctionalTest<Result<SnapPoint>, (RouterDb routerDb, double longitude, double latitude, Profile profile)>
+    public class SnappingTest : FunctionalTest<SnapPoint, (RouterDb routerDb, double longitude, double latitude, Profile profile)>
     {
-        protected override Result<SnapPoint> Execute((RouterDb routerDb, double longitude, double latitude, Profile profile) input)
+        protected override SnapPoint Execute((RouterDb routerDb, double longitude, double latitude, Profile profile) input)
         {
-            return input.routerDb.Snap(input.longitude, input.latitude, profile: input.profile);
+            var result = input.routerDb.Snap(input.longitude, input.latitude, profile: input.profile);
+
+            return result.Value;
         }
         
         /// <summary>

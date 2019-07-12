@@ -12,135 +12,123 @@ namespace Itinero.Algorithms.Search
         /// <summary>
         /// Enumerates all edges that have at least one vertex in the given bounding box.
         /// </summary>
-        /// <param name="graph">The graph.</param>
+        /// <param name="routerDb">The router db.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static EdgeEnumerator SearchEdgesInBox(this Graph graph, (double minLon, double minLat, double maxLon, double maxLat) box)
+        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDb routerDb, (double minLon, double minLat, double maxLon, double maxLat) box)
         {
-            var vertices = graph.SearchVerticesInBox(box);
-            return new EdgeEnumerator(graph, vertices.Select((i) => i.vertex));
+            var vertices = routerDb.Network.SearchVerticesInBox(box);
+            return new RouterDbEdgeEnumerator(routerDb, new EdgeEnumerator(routerDb.Network, vertices.Select((i) => i.vertex)));
         }
 
         /// <summary>
         /// Returns the closest edge to the center of the given box that has at least one vertex inside the given box.
         /// </summary>
-        /// <param name="network">The network.</param>
+        /// <param name="routerDb">The router db.</param>
         /// <param name="box">The box.</param>
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
-        public static SnapPoint SnapInBox(this Graph network,
+        public static SnapPoint SnapInBox(this RouterDb routerDb,
             (double minLon, double minLat, double maxLon, double maxLat) box, 
-            Func<uint, bool> acceptableFunc = null)
+            Func<RouterDbEdgeEnumerator, bool> acceptableFunc = null)
         {
-            var edges = network.SearchEdgesInBox(box);
+            bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
+            {
+                if (isAcceptable.HasValue) return isAcceptable.Value;
+                
+                if (acceptableFunc != null &&
+                    !acceptableFunc.Invoke(eEnum))
+                { // edge cannot be used.
+                    return false;
+                }
+
+                return true;
+            }
+            
+            var edgeEnumerator = routerDb.SearchEdgesInBox(box);
             var center = new Coordinate((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
 
+            const double exactTolerance = 1;
             var bestDistance = double.MaxValue;
-            const double vertexTolerance = 1;
             (uint edgeId, ushort offset) bestSnapPoint = (uint.MaxValue, ushort.MaxValue);
-            while (edges.MoveNext())
+            while (edgeEnumerator.MoveNext())
             {
-                var edgeId = edges.GraphEnumerator.Id;
+                if (bestDistance <= 0) break; // break when exact on an edge.
                 
-                // TODO: move this to when a new edge is closer, this check is potentially expensive.
-                if (acceptableFunc != null &&
-                    !acceptableFunc.Invoke(edgeId))
-                { // edge cannot be used.
-                    continue;
-                }
-
-                // get edge details.
-                var from = edges.GraphEnumerator.From;
-                var to = edges.GraphEnumerator.To;
-                var shape = edges.GraphEnumerator.GetShape();
-                if (!edges.GraphEnumerator.Forward)
-                {
-                    var t = from;
-                    from = to;
-                    to = t;
-                    shape = shape?.Reverse();
-                }
-                
-                // search for closest point along edge.
-                (uint edgeId, double offset) localSnapPoint = (uint.MaxValue, double.MaxValue);
-                
-                // try vertex1.
-                var vertex1 = network.GetVertex(from);
-                var distance = Coordinate.DistanceEstimateInMeter(vertex1, center);
-                if (distance < bestDistance)
-                {
-                    if (distance < vertexTolerance) distance = 0;
-                    bestDistance = distance;
-                    localSnapPoint = (edgeId, 0);
-                }
-
-                // try the shape points and it's segments.
+                // search for the local snap point that improves the current best snap point.
+                (uint edgeId, double offset) localSnapPoint = (uint.MaxValue, 0); 
+                var isAcceptable = (bool?) null;
+                var completeShape = edgeEnumerator.GetCompleteShape();
                 var length = 0.0;
-                Coordinate? projected = null;
-                Line line;
-                var segmentLength = 0.0;
-                var previous = vertex1;
-                if (shape != null)
+                using (var completeShapeEnumerator = completeShape.GetEnumerator())
                 {
-                    if (!edges.GraphEnumerator.Forward) shape.Reverse();
-                    foreach (var shapePoint in shape)
-                    {
-                        segmentLength = Coordinate.DistanceEstimateInMeter(previous, shapePoint);
-                        
-                        // check the segment.
-                        line = new Line(previous, shapePoint);
-                        projected = line.ProjectOn(center);
-                        if (projected.HasValue)
-                        {
-                            distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
-                            if (distance < bestDistance)
-                            {
-                                bestDistance = distance;
-                                localSnapPoint = (edgeId, length + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
-                            }
-                        }
-                        
-                        // add the segment length.
-                        length += segmentLength;
-                        
-                        // check shape point itself.
-                        distance = Coordinate.DistanceEstimateInMeter(shapePoint, center);
-                        if (!(distance < bestDistance)) continue;
-                        
-                        bestDistance = distance;
-                        localSnapPoint = (edgeId, length);
-                    }
-                }
-                
-                var vertex2 = network.GetVertex(to);
-                segmentLength = Coordinate.DistanceEstimateInMeter(previous, vertex2);
-                
-                // check the last segment.
-                line = new Line(previous, vertex2);
-                projected = line.ProjectOn(center);
-                if (projected.HasValue)
-                {
-                    distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
+                    completeShapeEnumerator.MoveNext();
+                    var previous = completeShapeEnumerator.Current;
+                    
+                    // start with the first location.
+                    var distance = Coordinate.DistanceEstimateInMeter(previous, center);
                     if (distance < bestDistance)
                     {
+                        isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
+                        if (isAcceptable.HasValue && !isAcceptable.Value) continue;
+                        
+                        if (distance < exactTolerance) distance = 0;
                         bestDistance = distance;
-                        localSnapPoint = (edgeId, length + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                        localSnapPoint = (edgeEnumerator.Id, 0);
+                    }
+                    
+                    // loop over all pairs.
+                    while (completeShapeEnumerator.MoveNext())
+                    {
+                        var current = completeShapeEnumerator.Current;
+                        
+                        var segmentLength = Coordinate.DistanceEstimateInMeter(previous, current);
+                        
+                        // first check the actual current location, it may be an exact match.
+                        distance = Coordinate.DistanceEstimateInMeter(current, center);
+                        if (distance < bestDistance)
+                        {
+                            isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
+                            if (isAcceptable.HasValue && !isAcceptable.Value) break;
+                        
+                            if (distance < exactTolerance) distance = 0;
+                            bestDistance = distance;
+                            localSnapPoint = (edgeEnumerator.Id, length + segmentLength);
+                        }
+                        
+                        // update length.
+                        var startLength = length;
+                        length += segmentLength;
+                        
+                        // check if we even need to check.
+                        var previousDistance = Coordinate.DistanceEstimateInMeter(previous, center);
+                        var shapePointDistance = Coordinate.DistanceEstimateInMeter(current, center);
+                        if (previousDistance + segmentLength > bestDistance &&
+                            shapePointDistance + segmentLength > bestDistance)
+                        {
+                            continue;
+                        }
+                        
+                        // project on line segment.
+                        if (bestDistance <= 0) continue;
+                        var line = new Line(previous, current);
+                        var projected = line.ProjectOn(center);
+                        if (!projected.HasValue) continue;
+                        
+                        distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
+                        if (!(distance < bestDistance)) continue;
+                        
+                        isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
+                        if (isAcceptable.HasValue && !isAcceptable.Value) break;
+                                
+                        if (distance < exactTolerance) distance = 0;
+                        bestDistance = distance;
+                        localSnapPoint = (edgeEnumerator.Id, startLength + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
                     }
                 }
-                        
-                // add the segment length.
-                length += segmentLength;
 
-                // check the last vertex.
-                distance = Coordinate.DistanceEstimateInMeter(vertex2, center);
-                if (distance < bestDistance)
-                {
-                    if (distance < vertexTolerance) distance = 0;
-                    bestDistance = distance;
-                    localSnapPoint = (edgeId, length);
-                }
-                
-                if (localSnapPoint.edgeId == uint.MaxValue) continue; // did not find a better snap point.
+                // move to the nex edge if no better point was found.
+                if (localSnapPoint.edgeId == uint.MaxValue) continue;
                 
                 // calculate the actual offset.
                 var offset = ushort.MaxValue;
@@ -153,6 +141,12 @@ namespace Itinero.Algorithms.Search
                     else
                     {
                         offset = (ushort) ((localSnapPoint.offset / length) * ushort.MaxValue);
+                    }
+                
+                    // invert offset if edge is reversed.
+                    if (!edgeEnumerator.Forward)
+                    {
+                        offset = (ushort)(ushort.MaxValue - offset);
                     }
                 }
 

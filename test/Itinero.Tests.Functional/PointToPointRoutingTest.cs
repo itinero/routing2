@@ -6,12 +6,13 @@ namespace Itinero.Tests.Functional
     /// <summary>
     /// A simple point-to-point routing test.
     /// </summary>
-    public class PointToPointRoutingTest : FunctionalTest<Result<Route>, (RouterDb routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile)>
+    public class PointToPointRoutingTest : FunctionalTest<Route, (RouterDb routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile)>
     {
-        protected override Result<Route> Execute((RouterDb routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile) input)
+        protected override Route Execute((RouterDb routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile) input)
         {
             var (routerDb, sp1, sp2, profile) = input;
-            return routerDb.Calculate(profile, sp1, sp2);
+            var route = routerDb.Calculate(profile, sp1, sp2);
+            return route.Value;
         }
         
         /// <summary>
