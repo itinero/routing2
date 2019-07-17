@@ -34,9 +34,9 @@ namespace Itinero.Tests.Functional
             // do some local caching.
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
 
-            //var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
+            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
-            var bicycle = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
+            //var bicycle = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
             
             // setup a router db with a routable tiles data provider.
             var routerDb = new RouterDb(new RouterDbConfiguration()
@@ -55,7 +55,6 @@ namespace Itinero.Tests.Functional
             factor = bicycle.Factor(new AttributeCollection(
                 new Attribute("highway", "pedestrian"),
                 new Attribute("surface", "cobblestone")));
-            
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
@@ -77,8 +76,30 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: wechelderzande");
             var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
                 $"Snapping cold: middelburg");
+            var hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
+                $"Snapping cold: hermain teirlinck");
+            hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
+                $"Snapping hot: hermain teirlinck");
+            var mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
+                $"Snapping cold: mechelen neckerspoel");
+            mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
+                $"Snapping hot: mechelen neckerspoel");
+            var dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
+                $"Snapping cold: dendermonde");
+            dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
+                $"Snapping hot: dendermonde");
             
-            var route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+            var route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
+                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
+                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
+                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
+                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}", 10);
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
