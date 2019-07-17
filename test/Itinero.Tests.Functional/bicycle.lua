@@ -1,4 +1,4 @@
-name = "ebike"
+name = "bicycle"
 vehicle_types = { "vehicle", "bicycle" }
 
 speed_profile = {
@@ -72,6 +72,39 @@ function is_oneway(attributes, name)
     return nil
 end
 
+-- based on: https://wiki.openstreetmap.org/wiki/Key:surface
+best_surface = 1
+good_surface = 0.9
+bad_surface = 0.7
+no_surface = 0.5
+
+surface_factors = {
+   asphalt = best_surface,
+   ["cobblestone:flattened"] = best_surface,
+   paving_stones = best_surface,
+   compacted = good_surface,
+   cobblestone = bad_surface,
+   unpaved = bad_surface,
+   fine_gravel = bad_surface,
+   gravel = bad_surface,
+   pebblestone = bad_surface,
+   ground = bad_surface,
+   dirt = bad_surface,
+   earth = bad_surface,
+   grass = no_surface,
+   mud = no_surface,
+   sand = no_surface,
+   sett = good_surface
+}
+
+function surface_factor(attributes, result)
+    local factor = surface_factors[attributes.surface]
+    if factor then
+        return factor
+    end
+    return 1 -- the default factor, assume paved by default.
+end
+
 function factor(attributes, result)
     result.forward = 0
     result.backward = 0
@@ -97,14 +130,11 @@ function factor(attributes, result)
     else
         return
     end
+    result.forward_speed = 3.6 / result.forward
+    result.backward_speed = 3.6 / result.backward
 
-    local access = can_access(attributes, result)
-    if not access == nil then
-        result.access = access
-    end
-
-    if result.access then
-    else
+    result.access = can_access(attributes, result)    
+    if not result.access == nil then
         result.forward = 0
         result.backward = 0
         return
@@ -130,4 +160,17 @@ function factor(attributes, result)
     elseif result.direction == 2 then
         result.forward = 0
     end    
+    
+    itinero.log("before surface")
+    itinero.log(result)
+    
+    -- process surface factors
+    local surface = surface_factor(attributes, result)
+    if surface then
+        result.forward = result.forward / surface
+        result.backward = result.backward / surface
+    end
+
+    itinero.log("after surface")
+    itinero.log(result)
 end

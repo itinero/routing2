@@ -10,8 +10,8 @@ namespace Itinero.Profiles
         /// </summary>
         /// <param name="factorForward">The forward factor.</param>
         /// <param name="factorBackward">The backward factor.</param>
-        /// <param name="forwardSpeed">The forward speed.</param>
-        /// <param name="backwardSpeed">The backward speed.</param>
+        /// <param name="forwardSpeed">The forward speed in ms/s multiplied by 100.</param>
+        /// <param name="backwardSpeed">The backward speed in ms/s multiplied by 100.</param>
         /// <param name="canStop">The can stop.</param>
         public EdgeFactor(uint factorForward, uint factorBackward,
             uint forwardSpeed, uint backwardSpeed, bool canStop = true)
@@ -34,12 +34,12 @@ namespace Itinero.Profiles
         public uint FactorBackward { get; }
         
         /// <summary>
-        /// Gets the forward speed.
+        /// Gets the forward speed in ms/s multiplied by 100.
         /// </summary>
         public uint ForwardSpeed { get; }
         
         /// <summary>
-        /// Gets the backward speed.
+        /// Gets the backward speed in ms/s multiplied by 100.
         /// </summary>
         public uint BackwardSpeed { get; }
         

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Algorithms.Dijkstra;
+using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
 using Itinero.Data.Graphs.Coders;
 using Itinero.Data.Tiles;
@@ -20,6 +21,7 @@ using OsmSharp;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
+using Attribute = Itinero.Data.Attributes.Attribute;
 
 namespace Itinero.Tests.Functional
 {
@@ -32,9 +34,9 @@ namespace Itinero.Tests.Functional
             // do some local caching.
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
 
-            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
+            //var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
-            var profile = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
+            var bicycle = LuaProfile.Load(File.ReadAllText(@"bicycle.lua"));
             
             // setup a router db with a routable tiles data provider.
             var routerDb = new RouterDb(new RouterDbConfiguration()
@@ -46,6 +48,14 @@ namespace Itinero.Tests.Functional
                 })
             });
             routerDb.DataProvider = new DataProvider(routerDb);
+
+            var factor = bicycle.Factor(new AttributeCollection(
+                new Attribute("highway", "pedestrian")));
+
+            factor = bicycle.Factor(new AttributeCollection(
+                new Attribute("highway", "pedestrian"),
+                new Attribute("surface", "cobblestone")));
+            
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");

@@ -1,5 +1,7 @@
 ﻿using Itinero.Data.Attributes;
 using System;
+using System.Text;
+using Itinero.IO.Json;
 
 namespace Itinero.Profiles.Lua.ItineroLib
 {
@@ -51,6 +53,44 @@ namespace Itinero.Profiles.Lua.ItineroLib
         [MoonSharpModuleMethod]
         internal static DynValue log(ScriptExecutionContext executionContext, CallbackArguments args)
         {
+            if (args[0] == null ||
+                args[0].IsNil())
+            {
+                Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, "nil");
+
+                return DynValue.NewBoolean(true);
+            }
+            if (args[0].Type == DataType.Table)
+            {
+                var table = args[0].Table;
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append("[");
+                foreach (var key in table.Keys)
+                {
+                    stringBuilder.Append("(");
+                    stringBuilder.Append(key.String);
+                    stringBuilder.Append("=");
+                    stringBuilder.Append(table[key]);
+                    stringBuilder.Append(")");
+                }
+
+                stringBuilder.Append("]");
+                Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, stringBuilder.ToInvariantString());
+
+                return DynValue.NewBoolean(true);
+            }
+
+            if (args[0].Type == DataType.Boolean)
+            {
+                if (args[0].Boolean)
+                {
+                    Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, "true");
+                }
+                Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, "false");
+
+                return DynValue.NewBoolean(true);
+            }
+            
             DynValue text = args.AsType(0, "log", DataType.String, false);
 
             Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, text.String);
