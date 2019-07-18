@@ -8,40 +8,40 @@ namespace Itinero.Profiles
         /// <summary>
         /// Creates a new edge factor.
         /// </summary>
-        /// <param name="factorForward">The forward factor.</param>
-        /// <param name="factorBackward">The backward factor.</param>
+        /// <param name="forwardFactor">The forward factor.</param>
+        /// <param name="backwardFactor">The backward factor.</param>
         /// <param name="forwardSpeed">The forward speed in ms/s multiplied by 100.</param>
         /// <param name="backwardSpeed">The backward speed in ms/s multiplied by 100.</param>
         /// <param name="canStop">The can stop.</param>
-        public EdgeFactor(uint factorForward, uint factorBackward,
-            uint forwardSpeed, uint backwardSpeed, bool canStop = true)
+        public EdgeFactor(uint forwardFactor, uint backwardFactor,
+            ushort forwardSpeed, ushort backwardSpeed, bool canStop = true)
         {
-            this.FactorForward = factorForward;
-            this.FactorBackward = factorBackward;
+            this.ForwardFactor = forwardFactor;
+            this.BackwardFactor = backwardFactor;
             this.ForwardSpeed = forwardSpeed;
             this.BackwardSpeed = backwardSpeed;
             this.CanStop = canStop;
         }
         
         /// <summary>
-        /// Gets the forward factor.
+        /// Gets the forward factor, multiplied by an edge distance this is the weight.
         /// </summary>
-        public uint FactorForward { get; }
+        public uint ForwardFactor { get; }
         
         /// <summary>
-        /// Gets the backward factor.
+        /// Gets the backward factor, multiplied by an edge distance this is the weight.
         /// </summary>
-        public uint FactorBackward { get; }
-        
-        /// <summary>
-        /// Gets the forward speed in ms/s multiplied by 100.
-        /// </summary>
-        public uint ForwardSpeed { get; }
+        public uint BackwardFactor { get; }
         
         /// <summary>
         /// Gets the backward speed in ms/s multiplied by 100.
         /// </summary>
-        public uint BackwardSpeed { get; }
+        public ushort BackwardSpeed { get; }
+        
+        /// <summary>
+        /// Gets the forward speed in ms/s multiplied by 100.
+        /// </summary>
+        public ushort ForwardSpeed { get; }
         
         /// <summary>
         /// Gets the can stop flag.
@@ -52,5 +52,23 @@ namespace Itinero.Profiles
         /// Gets a static no-factor.
         /// </summary>
         public static EdgeFactor NoFactor => new EdgeFactor(0, 0, 0, 0);
+        
+        /// <summary>
+        /// Gets the exact reverse, switches backward and forward.
+        /// </summary>
+        public EdgeFactor Reverse => new EdgeFactor(this.BackwardFactor, this.ForwardFactor, this.BackwardSpeed, this.ForwardSpeed, this.CanStop);
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var forwardSpeed = this.ForwardSpeed / 100.0 * 3.6;
+            if (this.ForwardFactor == this.BackwardFactor &&
+                this.ForwardSpeed == this.BackwardSpeed)
+            {
+                return $"{this.ForwardFactor:F1}({forwardSpeed:F1}km/h)";
+            }
+            var backwardSpeed = this.BackwardSpeed / 100.0 * 3.6;
+            return $"F:{this.ForwardFactor:F1}({forwardSpeed:F1}km/h) B:{this.BackwardFactor:F1}({backwardSpeed:F1}km/h)";
+        }
     }
 }
