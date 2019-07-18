@@ -24,6 +24,7 @@ using Itinero.Data.Tiles;
 using Itinero.LocalGeo;
 using Reminiscence;
 using Reminiscence.Arrays;
+using Reminiscence.Arrays.Sparse;
 
 namespace Itinero.Data.Graphs
 {
@@ -37,10 +38,9 @@ namespace Itinero.Data.Graphs
         private const int TileSizeInIndex = 5; // 4 bytes for the pointer, 1 for the size.
         
         // The tile-index.
-        // - tile-id (4 bytes): the local tile-id, maximum possible zoom level 16.
         // - pointer (4 bytes): the pointer to the first vertex in the tile.
         // - capacity (in max bits, 1 byte) : the capacity in # of bytes.
-        private readonly SparseArray<byte> _tiles;
+        private readonly SparseMemoryArray<byte> _tiles;
 
         private readonly ArrayBase<byte> _vertices; // holds the vertex location, encoded relative to a tile.
         private readonly ArrayBase<uint> _edgePointers; // holds edge pointers, points to the first edge for each vertex.
@@ -77,7 +77,7 @@ namespace Itinero.Data.Graphs
                 4 * 2 + // the pointers to previous edges.
                 _edgeDataSize; // the edge data package.
             
-            _tiles = new SparseArray<byte>(0, emptyDefault: byte.MaxValue);
+            _tiles = new SparseMemoryArray<byte>(0, emptyDefault: byte.MaxValue);
             _vertices = new MemoryArray<byte>(CoordinateSizeInBytes);
             _edgePointers = new MemoryArray<uint>(1);
             _edges = new MemoryArray<byte>(0);
