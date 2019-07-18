@@ -113,7 +113,10 @@ namespace Itinero
         /// <returns>The attributes.</returns>
         public IAttributeCollection GetAttributes(uint edgeId)
         {
-            return _edgesMeta[edgeId];
+            lock (_edgesMeta)
+            {
+                return new AttributeCollection(_edgesMeta[edgeId]);
+            }
         }
     }
 }

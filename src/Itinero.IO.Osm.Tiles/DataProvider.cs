@@ -42,8 +42,11 @@ namespace Itinero.IO.Osm.Tiles
                 return false;
             }
 
-            _loadedTiles.Add(vertexId.TileId);
-            return _routerDb.AddOsmTile(_idMap, Tile.FromLocalId(vertexId.TileId, _zoom), _baseUrl);
+            lock (_loadedTiles)
+            {
+                _loadedTiles.Add(vertexId.TileId);
+                return _routerDb.AddOsmTile(_idMap, Tile.FromLocalId(vertexId.TileId, _zoom), _baseUrl);
+            }
         }
 
         /// <inheritdoc/>
@@ -57,10 +60,14 @@ namespace Itinero.IO.Osm.Tiles
             foreach (var tile in tileRange)
             {
                 if (_loadedTiles.Contains(tile.LocalId)) continue;
-                
-                if (_routerDb.AddOsmTile(_idMap, tile, _baseUrl))
+
+
+                lock (_loadedTiles)
                 {
-                    updated = true;
+                    if (_routerDb.AddOsmTile(_idMap, tile, _baseUrl))
+                    {
+                        updated = true;
+                    }
                 }
 
                 _loadedTiles.Add(tile.LocalId);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
@@ -56,6 +57,12 @@ namespace Itinero.Tests.Functional
             factor = bicycle.Factor(new AttributeCollection(
                 new Attribute("highway", "pedestrian"),
                 new Attribute("surface", "cobblestone")));
+
+            Parallel.For(0, 100, (i) =>
+            {
+                var zellik3 = SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+                    $"Snapping hot: zellik3");
+            });
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
