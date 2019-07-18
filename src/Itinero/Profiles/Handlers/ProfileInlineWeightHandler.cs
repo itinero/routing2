@@ -26,13 +26,15 @@ namespace Itinero.Profiles.Handlers
 
         public override void MoveTo(RouterDbEdgeEnumerator enumerator)
         {
+            // reset all the things.
             _enumerator = enumerator;
             _weightForward = null;
             _weightBackward = null;
             _edgeFactor = null;
             _length = null;
+            
             if (_coder.Get(enumerator.Enumerator, out var weight))
-            {
+            { // get from the storage.
                 if (weight >= (1 << 26))
                 {
                     _weightForward = weight - (1 << 26);
@@ -48,16 +50,25 @@ namespace Itinero.Profiles.Handlers
                     _weightForward = weight;
                     _weightBackward = weight;
                 }
-                return;
+            }
+            else
+            { // get the factor from the profile and store it.
+                this.ExtractFromProfileAndStore();
             }
             
-            this.ExtractFromProfile();
+            // reverse if it needs reversing.
+            if (!_enumerator.Forward)
+            {
+                var t = _weightBackward;
+                _weightBackward = _weightForward;
+                _weightForward = t;
+            }
         }
 
-        private void ExtractFromProfile()
+        private void ExtractFromProfileAndStore()
         {
             if (_edgeFactor != null) return;
-            
+
             var attributes = _enumerator.GetAttributes();
             _edgeFactor = _profile.Factor(attributes);
 
@@ -65,32 +76,33 @@ namespace Itinero.Profiles.Handlers
             _weightForward = 0;
             _weightBackward = 0;
 
-            if (_edgeFactor.Value.FactorForward != _edgeFactor.Value.FactorBackward)
+            // WARNING: always store forward and reverse when we have the actual direction, the edge won't always be accessed in the same direction.
+            if (_edgeFactor.Value.ForwardFactor != _edgeFactor.Value.BackwardFactor)
             {
-                if (_edgeFactor.Value.FactorForward == 0)
+                if (_edgeFactor.Value.ForwardFactor == 0)
                 {
-                    _weightBackward = _edgeFactor.Value.FactorBackward * _length;
+                    _weightBackward = _edgeFactor.Value.BackwardFactor * _length;
                     _coder.Set(_enumerator.Enumerator, _weightBackward.Value + (1 << 25));
                     return;
                 }
-                else if (_edgeFactor.Value.FactorBackward == 0)
+                else if (_edgeFactor.Value.BackwardFactor == 0)
                 {
-                    _weightForward = _edgeFactor.Value.FactorForward * _length;
+                    _weightForward = _edgeFactor.Value.ForwardFactor * _length;
                     _coder.Set(_enumerator.Enumerator, _weightForward.Value + (1 << 26));
                     return;
                 }
                 else
                 {
-                    Console.WriteLine($"Cannot store weight for {attributes}");
+                    Console.WriteLine($"Cannot store weight for {_enumerator.GetAttributes()}");
                     return;
                 }
             }
             
-            _weightForward = _edgeFactor.Value.FactorForward * _length;
+            _weightForward = _edgeFactor.Value.ForwardFactor * _length;
             _weightBackward = _weightForward;
             if (_weightForward > (1 << 24))
             {
-                Console.WriteLine($"Cannot store weight for {attributes}: > {1 << 24}");
+                Console.WriteLine($"Cannot store weight for {_enumerator.GetAttributes()}: > {1 << 24}");
                 return;
             }
 
@@ -103,8 +115,8 @@ namespace Itinero.Profiles.Handlers
             {
                 if (_weightForward.HasValue) return _weightForward.Value;
                 
-                this.ExtractFromProfile();
-                return _edgeFactor.Value.FactorForward * _length.Value;
+                this.ExtractFromProfileAndStore();
+                return _edgeFactor.Value.ForwardFactor * _length.Value;
             }
         }
         
@@ -114,8 +126,8 @@ namespace Itinero.Profiles.Handlers
             {
                 if (_weightBackward.HasValue) return _weightBackward.Value;
                 
-                this.ExtractFromProfile();
-                return _edgeFactor.Value.FactorBackward * _length.Value;
+                this.ExtractFromProfileAndStore();
+                return _edgeFactor.Value.BackwardFactor * _length.Value;
             }
         }
         
@@ -123,7 +135,7 @@ namespace Itinero.Profiles.Handlers
         {
             get
             {
-                this.ExtractFromProfile();
+                this.ExtractFromProfileAndStore();
                 return _edgeFactor.Value.ForwardSpeed;
             }
         }
@@ -132,7 +144,7 @@ namespace Itinero.Profiles.Handlers
         {
             get
             {
-                this.ExtractFromProfile();
+                this.ExtractFromProfileAndStore();
                 return _edgeFactor.Value.BackwardSpeed;
             }
         }
@@ -141,7 +153,7 @@ namespace Itinero.Profiles.Handlers
         {
             get
             {
-                this.ExtractFromProfile();
+                this.ExtractFromProfileAndStore();
                 return _edgeFactor.Value.CanStop;
             }
         }

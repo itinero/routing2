@@ -107,7 +107,7 @@ namespace Itinero.Profiles.Lua
                 }
 
                 return new EdgeFactor((uint)(forwardFactor * 100), (uint)(backwardFactor * 100), 
-                    (uint)speedForward * 100, (uint)speedBackward * 100, canstop);
+                    (ushort)(speedForward * 100), (ushort)(speedBackward * 100), canstop);
             }
         }
     }

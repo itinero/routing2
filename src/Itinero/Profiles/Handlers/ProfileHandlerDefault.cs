@@ -17,14 +17,13 @@ namespace Itinero.Profiles.Handlers
 
         public override void MoveTo(RouterDbEdgeEnumerator enumerator)
         {
-            var attributes = enumerator.GetAttributes();
-            _edgeFactor = _profile.Factor(attributes);
+            _edgeFactor = enumerator.FactorInEdgeDirection(_profile);
 
             _length = enumerator.EdgeLength();
         }
 
-        public override uint ForwardWeight => _edgeFactor.Value.FactorForward * _length;
-        public override uint BackwardWeight => _edgeFactor.Value.FactorForward * _length;
+        public override uint ForwardWeight => _edgeFactor.Value.ForwardFactor * _length;
+        public override uint BackwardWeight => _edgeFactor.Value.ForwardFactor * _length;
         public override uint ForwardSpeed  => _edgeFactor.Value.ForwardSpeed;
         public override uint BackwardSpeed => _edgeFactor.Value.BackwardSpeed;
         public override bool CanStop  => _edgeFactor.Value.CanStop;
