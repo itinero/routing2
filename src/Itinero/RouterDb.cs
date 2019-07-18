@@ -92,8 +92,11 @@ namespace Itinero
         {
             var edgeId = _network.AddEdge(vertex1, vertex2, shape: shape);
 
-            _edgesMeta[edgeId] = new AttributeCollection(attributes);
-            
+            lock (_edgesMeta)
+            {
+                _edgesMeta[edgeId] = new AttributeCollection(attributes);
+            }
+
             return edgeId;
         }
 

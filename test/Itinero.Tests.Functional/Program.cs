@@ -60,7 +60,7 @@ namespace Itinero.Tests.Functional
 
             Parallel.For(0, 100, (i) =>
             {
-                var zellik3 = SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+                SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
                     $"Snapping hot: zellik3");
             });
 
@@ -114,6 +114,12 @@ namespace Itinero.Tests.Functional
                 $"Route hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}.geojson"), 
                 route.ToGeoJson());
+
+            Parallel.For(0, 100, (i) =>
+            {
+                PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+                    $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
+            });
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
