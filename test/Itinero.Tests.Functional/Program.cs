@@ -44,7 +44,8 @@ namespace Itinero.Tests.Functional
                 Zoom = 14,
                 EdgeDataLayout = new EdgeDataLayout(new (string key, EdgeDataType dataType)[]
                 {
-                    ("bicycle.weight", EdgeDataType.UInt32)
+                    ("bicycle.weight", EdgeDataType.UInt32),
+                    ("pedestrian.weight", EdgeDataType.UInt32)
                 })
             });
             routerDb.DataProvider = new DataProvider(routerDb);
@@ -88,66 +89,87 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: dendermonde");
             dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
                 $"Snapping hot: dendermonde");
+            var zellik1 =SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
+                $"Snapping hot: zellik1"); 
+            var zellik2 =SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+                $"Snapping hot: zellik2");
             
-            var route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
-                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
-                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}", 10);
+            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
+                route.ToGeoJson());
             
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
-                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
-                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}", 10);
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
+                $"Route cold: {nameof(zellik2)} -> {nameof(zellik1)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
+                $"Route hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(pepingen)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(lebbeke)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(stekene)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 100);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(heldergem)}.geojson"), 
+                route.ToGeoJson());
             
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
                 $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-            File.WriteAllText("route.geojson", route.ToGeoJson());
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(wechelderzande)}.geojson"), 
+                route.ToGeoJson());
             
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(middelburg)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(middelburg)}");
-            File.WriteAllText("route.geojson", route.ToGeoJson());
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, middelburg, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(middelburg)}", 10);
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
+                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
+                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(mechelenNeckerspoel)}.geojson"), 
+                route.ToGeoJson());
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
+                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
+                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(dendermonde)}.geojson"), 
+                route.ToGeoJson());
             
             routerDb.WriteToShape("test");
         }
