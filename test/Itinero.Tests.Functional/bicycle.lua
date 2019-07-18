@@ -133,8 +133,13 @@ function factor(attributes, result)
     result.forward_speed = 3.6 / result.forward
     result.backward_speed = 3.6 / result.backward
 
-    result.access = can_access(attributes, result)    
-    if not result.access == nil then
+    local access = can_access(attributes, result)
+    if not access == nil then
+        result.access = access
+    end
+
+    if result.access then
+    else
         result.forward = 0
         result.backward = 0
         return
