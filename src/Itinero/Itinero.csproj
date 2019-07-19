@@ -12,8 +12,8 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Reminiscence" Version="1.3.0-pre08" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
+    <PackageReference Include="Reminiscence" Version="1.4.0-pre001" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Profiles\Lua\Osm\pedestrian.lua" />

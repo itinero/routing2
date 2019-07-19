@@ -103,6 +103,17 @@ namespace Itinero.Tests.Functional
                     $"Snapping parallel: zellik2");
             });
             
+            var routes = OneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+                $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
+            routes = OneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+                $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
+                routes[0].ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
+                routes[1].ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
+                routes[2].ToGeoJson());
+            
             var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
                 $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),

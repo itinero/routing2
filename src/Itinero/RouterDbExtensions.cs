@@ -230,17 +230,16 @@ namespace Itinero
         /// <summary>
         /// Calculates a route between two snap points.
         /// </summary>
-        /// <param name="routerDb"></param>
-        /// <param name="profile"></param>
-        /// <param name="snapPoint1"></param>
-        /// <param name="snapPoint2"></param>
-        /// <returns></returns>
-        public static Result<Route> Calculate(this RouterDb routerDb, Profile profile, SnapPoint snapPoint1, SnapPoint snapPoint2)
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="profile">The vehicle profile.</param>
+        /// <param name="source">The source location.</param>
+        /// <param name="target">The target location.</param>
+        /// <returns>A route.</returns>
+        public static Result<Route> Calculate(this RouterDb routerDb, Profile profile, SnapPoint source, SnapPoint target)
         {
             var profileHandler = routerDb.GetProfileHandler(profile);
             
-            var path = Dijkstra.Default.Run(routerDb, snapPoint1,
-                new[] { snapPoint2 },
+            var path = Dijkstra.Default.Run(routerDb, source, target,
                 profileHandler.GetForwardWeight, (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
@@ -249,6 +248,41 @@ namespace Itinero
 
             if (path == null) return new Result<Route>($"Route not found!");
             return RouteBuilder.Default.Build(routerDb, profile, path);
+        }
+
+        /// <summary>
+        /// Calculates a route between one snap point and multiple targets.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="profile">The vehicle profile.</param>
+        /// <param name="source">The source location.</param>
+        /// <param name="targets">The target locations.</param>
+        /// <returns>The routes.</returns>
+        public static Result<Route>[] Calculate(this RouterDb routerDb, Profile profile, SnapPoint source, SnapPoint[] targets)
+        {
+            var profileHandler = routerDb.GetProfileHandler(profile);
+            
+            var paths = Dijkstra.Default.Run(routerDb, source, targets,
+                profileHandler.GetForwardWeight, (v) =>
+                {
+                    routerDb.DataProvider?.TouchVertex(v);
+                    return false;
+                });
+
+            var results = new Result<Route>[paths.Length];
+            for (var r = 0; r < results.Length; r++)
+            {
+                var path = paths[r];
+                if (path == null)
+                {
+                    results[r] = new Result<Route>($"Routes not found!");
+                }
+                else
+                {
+                    results[r] = RouteBuilder.Default.Build(routerDb, profile, path);
+                }
+            }
+            return results;
         }
 
         internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
