@@ -15,8 +15,9 @@ namespace Itinero.Algorithms.Routes
         /// <param name="db">The router db.</param>
         /// <param name="profile">The profile.</param>
         /// <param name="path">The path.</param>
+        /// <param name="forward">The forward flag.</param>
         /// <returns>The route.</returns>
-        public Result<Route> Build(RouterDb db, Profile profile, Path path)
+        public Result<Route> Build(RouterDb db, Profile profile, Path path, bool forward = true)
         {
             var edgeEnumerator = db.GetEdgeEnumerator();
             var route = new Route();
@@ -44,7 +45,14 @@ namespace Itinero.Algorithms.Routes
 
                 var attributes = db.GetAttributes(segment.edge);
                 var factor = profile.Factor(attributes);
-                edgeEnumerator.MoveToEdge(segment.edge, segment.forward);
+                if (forward)
+                {
+                    edgeEnumerator.MoveToEdge(segment.edge, segment.forward);
+                }
+                else
+                {
+                    edgeEnumerator.MoveToEdge(segment.edge, !segment.forward);
+                }
                 var distance = edgeEnumerator.EdgeLength() / 100.0;
                 distance = ((offset2 - offset1) / (double)ushort.MaxValue) * distance;
                 route.TotalDistance += distance;

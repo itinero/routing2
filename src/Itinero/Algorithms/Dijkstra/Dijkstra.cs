@@ -214,7 +214,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path[] Run(RouterDb routerDb, SnapPoint source, SnapPoint[] targets,
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null, bool forward = true)
+            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             _tree.Clear();
@@ -223,7 +223,7 @@ namespace Itinero.Algorithms.Dijkstra
 
             // add sources.
             // add forward.
-            if (!enumerator.MoveToEdge(source.EdgeId, forward)) throw new Exception($"Edge in source {source} not found!");
+            if (!enumerator.MoveToEdge(source.EdgeId, true)) throw new Exception($"Edge in source {source} not found!");
             var sourceCostForward = getWeight(enumerator);
             if (sourceCostForward > 0)
             {
@@ -234,7 +234,7 @@ namespace Itinero.Algorithms.Dijkstra
             }
 
             // add backward.
-            if (!enumerator.MoveToEdge(source.EdgeId, !forward))
+            if (!enumerator.MoveToEdge(source.EdgeId, false))
                 throw new Exception($"Edge in source {source} not found!");
             var sourceCostBackward = getWeight(enumerator);
             if (sourceCostBackward > 0)
@@ -257,7 +257,7 @@ namespace Itinero.Algorithms.Dijkstra
                 var target = targets[t];
                 
                 // add forward.
-                if (!enumerator.MoveToEdge(target.EdgeId, forward)) throw new Exception($"Edge in target {target} not found!");
+                if (!enumerator.MoveToEdge(target.EdgeId, true)) throw new Exception($"Edge in target {target} not found!");
                 var targetCostForward = getWeight(enumerator);
                 if (targetCostForward > 0)
                 {
@@ -268,7 +268,7 @@ namespace Itinero.Algorithms.Dijkstra
                         targetsAtVertex = new List<(int t, float cost, bool forward, SnapPoint target)>();
                         targetsPerVertex[enumerator.From] = targetsAtVertex;
                     }
-                    targetsAtVertex.Add((t, targetCostForwardOffset, forward, target));
+                    targetsAtVertex.Add((t, targetCostForwardOffset, false, target));
                     if (targetCostForwardOffset > targetMaxCost)
                     {
                         targetMaxCost = targetCostForwardOffset;
@@ -276,7 +276,7 @@ namespace Itinero.Algorithms.Dijkstra
                 }
 
                 // add backward.
-                if (!enumerator.MoveToEdge(target.EdgeId, !forward))
+                if (!enumerator.MoveToEdge(target.EdgeId, true))
                     throw new Exception($"Edge in target {target} not found!");
                 var targetCostBackward = getWeight(enumerator);
                 if (targetCostBackward > 0)
@@ -288,7 +288,7 @@ namespace Itinero.Algorithms.Dijkstra
                         targetsAtVertex = new List<(int t, float cost, bool forward, SnapPoint target)>();
                         targetsPerVertex[enumerator.From] = targetsAtVertex;
                     }
-                    targetsAtVertex.Add((t, targetCostBackwardOffset, !forward, target));
+                    targetsAtVertex.Add((t, targetCostBackwardOffset, false, target));
                     if (targetCostBackwardOffset > targetMaxCost)
                     {
                         targetMaxCost = targetCostBackwardOffset;

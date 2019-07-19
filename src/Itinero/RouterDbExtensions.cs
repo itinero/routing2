@@ -285,6 +285,41 @@ namespace Itinero
             return results;
         }
 
+        /// <summary>
+        /// Calculates a route between multiple snap point and one target.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="profile">The vehicle profile.</param>
+        /// <param name="sources">The source locations.</param>
+        /// <param name="target">The target location.</param>
+        /// <returns>The routes.</returns>
+        public static Result<Route>[] Calculate(this RouterDb routerDb, Profile profile, SnapPoint[] sources, SnapPoint target)
+        {
+            var profileHandler = routerDb.GetProfileHandler(profile);
+            
+            var paths = Dijkstra.Default.Run(routerDb, target, sources,
+                profileHandler.GetBackwardWeight, (v) =>
+                {
+                    routerDb.DataProvider?.TouchVertex(v);
+                    return false;
+                });
+
+            var results = new Result<Route>[paths.Length];
+            for (var r = 0; r < results.Length; r++)
+            {
+                var path = paths[r];
+                if (path == null)
+                {
+                    results[r] = new Result<Route>($"Routes not found!");
+                }
+                else
+                {
+                    results[r] = RouteBuilder.Default.Build(routerDb, profile, path);
+                }
+            }
+            return results;
+        }
+
         internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
         {
             if (routerDb.EdgeDataLayout.TryGet($"{profile.Name}.weight", out var layout))

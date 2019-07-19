@@ -11,6 +11,6 @@ namespace Itinero.Algorithms.Routes
         /// <summary>
         /// Tries to build a route for the given profile/source/target and path.
         /// </summary>
-        Result<Route> Build(RouterDb db, Profile profile, Path path);
+        Result<Route> Build(RouterDb db, Profile profile, Path path, bool forward = true);
     }
 }
