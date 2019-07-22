@@ -11,7 +11,7 @@ namespace Itinero.Tests.Functional
         protected override Route Execute((RouterDb routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile) input)
         {
             var (routerDb, sp1, sp2, profile) = input;
-            var route = routerDb.Calculate(profile, sp1, sp2);
+            var route = routerDb.Calculate( new RoutingSettings() { Profile = profile, MaxDistance = double.MaxValue }, sp1, sp2);
             return route.Value;
         }
         

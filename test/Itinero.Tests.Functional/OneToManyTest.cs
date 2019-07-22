@@ -11,7 +11,7 @@ namespace Itinero.Tests.Functional
         protected override Route[] Execute((RouterDb routerDb, SnapPoint source, SnapPoint[] targets, Profile profile) input)
         {
             var (routerDb, source, targets, profile) = input;
-            var results = routerDb.Calculate(profile, source, targets);
+            var results = routerDb.Calculate( new RoutingSettings() { Profile = profile }, source, targets);
 
             var routes = new Route[targets.Length];
             for (var r = 0; r < routes.Length; r++)

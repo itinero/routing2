@@ -231,19 +231,41 @@ namespace Itinero
         /// Calculates a route between two snap points.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="profile">The vehicle profile.</param>
+        /// <param name="settings">The routing settings.</param>
         /// <param name="source">The source location.</param>
         /// <param name="target">The target location.</param>
         /// <returns>A route.</returns>
-        public static Result<Route> Calculate(this RouterDb routerDb, Profile profile, SnapPoint source, SnapPoint target)
+        public static Result<Route> Calculate(this RouterDb routerDb, RoutingSettings settings, SnapPoint source, SnapPoint target)
         {
+            var profile = settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);
+
+            // if there is max distance don't search outside the box.
+            var sourceLocation = routerDb.LocationOnNetwork(source);
+            var maxDistance = settings.MaxDistance;
+            Box? maxBox = null;
+            if (settings.MaxDistance < double.MaxValue)
+            {
+                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
+            }
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+                    
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex.Longitude, vertex.Latitude))
+                {
+                    return true;
+                }
+                return false;
+            }
             
+            // run dijkstra.
             var path = Dijkstra.Default.Run(routerDb, source, target,
                 profileHandler.GetForwardWeight, (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
-                    return false;
+                    return checkMaxDistance(v);
                 });
 
             if (path == null) return new Result<Route>($"Route not found!");
@@ -254,19 +276,40 @@ namespace Itinero
         /// Calculates a route between one snap point and multiple targets.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="profile">The vehicle profile.</param>
+        /// <param name="settings">The routing settings.</param>
         /// <param name="source">The source location.</param>
         /// <param name="targets">The target locations.</param>
         /// <returns>The routes.</returns>
-        public static Result<Route>[] Calculate(this RouterDb routerDb, Profile profile, SnapPoint source, SnapPoint[] targets)
+        public static Result<Route>[] Calculate(this RouterDb routerDb, RoutingSettings settings, SnapPoint source, SnapPoint[] targets)
         {
+            var profile = settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);
+
+            // if there is max distance don't search outside the box.
+            var sourceLocation = routerDb.LocationOnNetwork(source);
+            var maxDistance = settings.MaxDistance;
+            Box? maxBox = null;
+            if (settings.MaxDistance < double.MaxValue)
+            {
+                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
+            }
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+                    
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex.Longitude, vertex.Latitude))
+                {
+                    return true;
+                }
+                return false;
+            }
             
             var paths = Dijkstra.Default.Run(routerDb, source, targets,
                 profileHandler.GetForwardWeight, (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
-                    return false;
+                    return checkMaxDistance(v);
                 });
 
             var results = new Result<Route>[paths.Length];
@@ -289,13 +332,34 @@ namespace Itinero
         /// Calculates a route between multiple snap point and one target.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="profile">The vehicle profile.</param>
+        /// <param name="settings">The routing settings.</param>
         /// <param name="sources">The source locations.</param>
         /// <param name="target">The target location.</param>
         /// <returns>The routes.</returns>
-        public static Result<Route>[] Calculate(this RouterDb routerDb, Profile profile, SnapPoint[] sources, SnapPoint target)
+        public static Result<Route>[] Calculate(this RouterDb routerDb, RoutingSettings settings, SnapPoint[] sources, SnapPoint target)
         {
+            var profile = settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);
+
+            // if there is max distance don't search outside the box.
+            var sourceLocation = routerDb.LocationOnNetwork(target);
+            var maxDistance = settings.MaxDistance;
+            Box? maxBox = null;
+            if (settings.MaxDistance < double.MaxValue)
+            {
+                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
+            }
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+                    
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex.Longitude, vertex.Latitude))
+                {
+                    return true;
+                }
+                return checkMaxDistance(v);
+            }
             
             var paths = Dijkstra.Default.Run(routerDb, target, sources,
                 profileHandler.GetBackwardWeight, (v) =>

@@ -150,6 +150,24 @@ namespace Itinero.LocalGeo
         }
 
         /// <summary>
+        /// Creates a box around this coordinate with width/height approximately the given size in meter.
+        /// </summary>
+        /// <param name="size">The size in meter.</param>
+        /// <returns>The size in meter.</returns>
+        public Box BoxAround(double size)
+        {
+            var offsetLat = new Coordinate(this.Longitude, this.Latitude + 0.1);
+            var offsetLon = new Coordinate(this.Longitude + 0.1, this.Latitude);
+            var latDistance = Coordinate.DistanceEstimateInMeter(offsetLat, this);
+            var lonDistance = Coordinate.DistanceEstimateInMeter(offsetLon, this);
+            
+            return new Box(this.Longitude - (size / lonDistance) * 0.1, 
+                this.Latitude - (size / latDistance) * 0.1,
+                this.Longitude + (size / lonDistance) * 0.1, 
+                this.Latitude + (size / latDistance) * 0.1);
+        }
+
+        /// <summary>
         /// Calculates an offset position along the line formed by the two coordinates.
         /// </summary>
         /// <param name="coordinate1">The first coordinate.</param>

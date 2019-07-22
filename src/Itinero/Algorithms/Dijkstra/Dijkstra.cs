@@ -124,7 +124,7 @@ namespace Itinero.Algorithms.Dijkstra
                 if (settled != null && settled(currentVisit.vertex))
                 {
                     // break if requested.
-                    break;
+                    continue;
                 }
 
                 // check if the search needs to stop.
