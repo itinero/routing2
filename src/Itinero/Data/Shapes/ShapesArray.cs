@@ -449,6 +449,7 @@ namespace Itinero.Data.Shapes
             stream.Seek(initialPosition + sizeInBytes, System.IO.SeekOrigin.Begin);
             return sizeInBytes;
         }
+        
         /// <summary>
         /// Copies from the given stream.
         /// </summary>

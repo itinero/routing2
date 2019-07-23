@@ -93,7 +93,21 @@ namespace Itinero.Data.Graphs
             int coordinateSizeInBytes, MemoryArray<byte> vertices, uint vertexPointer, MemoryArray<uint> edgePointers,
             uint edgePointer, MemoryArray<byte> edges, ShapesArray shapes)
         {
+            _zoom = zoom;
+            _edgeDataSize = edgeDataSize;
+            _edgeSize = 8 * 2 + // the vertices.
+                        4 * 2 + // the pointers to previous edges.
+                        _edgeDataSize; // the edge data package.
             
+            if (TileSizeInIndex != tileSizeInIndex) throw new ArgumentOutOfRangeException($"{nameof(tileSizeInIndex)}");
+            _tiles = tiles;
+            if (CoordinateSizeInBytes != coordinateSizeInBytes) throw new ArgumentOutOfRangeException($"{nameof(coordinateSizeInBytes)}");
+            _vertices = vertices;
+            _vertexPointer = vertexPointer;
+            _edgePointers = edgePointers;
+            _edgePointer = edgePointer;
+            _edges = edges;
+            _shapes = shapes;
         }
 
         /// <summary>
@@ -815,7 +829,7 @@ namespace Itinero.Data.Graphs
             _edges.CopyToWithSize(stream);
             
             // write shapes.
-            _shapes.CopyToWithSize(stream);
+            _shapes.CopyTo(stream);
 
             return stream.Position - p;
         }
