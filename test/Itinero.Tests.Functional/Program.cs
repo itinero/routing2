@@ -90,125 +90,132 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: dendermonde");
             dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
                 $"Snapping hot: dendermonde");
-            var zellik1 =SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
+            var zellik1 = SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
                 $"Snapping hot: zellik1"); 
-            var zellik2 =SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+            var zellik2 = SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
                 $"Snapping hot: zellik2");
+            var bruggeStation = SnappingTest.Default.Run((routerDb, 3.214899, 51.195129, profile: bicycle),
+                $"Snapping cold: brugge-station");
+            var stationDuinberge = SnappingTest.Default.Run((routerDb, 3.26358318328857, 51.3381990351222, profile: bicycle),
+                $"Snapping cold: duinberge");
+                
+            var route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
+                $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
 
-            Parallel.For(0, 10, (i) =>
-            {
-                SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
-                    $"Snapping parallel: zellik1"); 
-                SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
-                    $"Snapping parallel: zellik2");
-            });
-            
-            var routes = ManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
-                $"Routes (many to one) cold: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
-            routes = ManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
-                $"Routes (many to one) hot: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
-            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-0.geojson"),
-                routes[0].ToGeoJson());
-            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-1.geojson"),
-                routes[1].ToGeoJson());
-            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-2.geojson"),
-                routes[2].ToGeoJson());
-            
-            routes = OneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
-                $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-            routes = OneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
-                $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
-                routes[0].ToGeoJson());
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-                routes[1].ToGeoJson());
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-                routes[2].ToGeoJson());
-            
-            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
-                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
-                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
-                $"Route cold: {nameof(zellik2)} -> {nameof(zellik1)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
-                $"Route hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}.geojson"), 
-                route.ToGeoJson());
-
-            Parallel.For(0, 10, (i) =>
-            {
-                PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
-                    $"Routing parallel: {nameof(heldergem)} -> {nameof(ninove)}");
-            });
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(pepingen)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(lebbeke)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(stekene)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(heldergem)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(wechelderzande)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
-                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
-                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(mechelenNeckerspoel)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
-                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
-                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(dendermonde)}.geojson"), 
-                route.ToGeoJson());
-            
-            routerDb.WriteToShape("test");
+//            Parallel.For(0, 10, (i) =>
+//            {
+//                SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
+//                    $"Snapping parallel: zellik1"); 
+//                SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+//                    $"Snapping parallel: zellik2");
+//            });
+//            
+//            var routes = ManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
+//                $"Routes (many to one) cold: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
+//            routes = ManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
+//                $"Routes (many to one) hot: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
+//            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-0.geojson"),
+//                routes[0].ToGeoJson());
+//            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-1.geojson"),
+//                routes[1].ToGeoJson());
+//            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-2.geojson"),
+//                routes[2].ToGeoJson());
+//            
+//            routes = OneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+//                $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
+//            routes = OneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+//                $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
+//                routes[0].ToGeoJson());
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
+//                routes[1].ToGeoJson());
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
+//                routes[2].ToGeoJson());
+//            
+//            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+//                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+//                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
+//                $"Route cold: {nameof(zellik2)} -> {nameof(zellik1)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
+//                $"Route hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}.geojson"), 
+//                route.ToGeoJson());
+//
+//            Parallel.For(0, 10, (i) =>
+//            {
+//                PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
+//                    $"Routing parallel: {nameof(heldergem)} -> {nameof(ninove)}");
+//            });
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, pepingen, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(pepingen)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, lebbeke, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(lebbeke)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, stekene, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(stekene)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(heldergem)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+//                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
+//                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(wechelderzande)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
+//                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
+//                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(mechelenNeckerspoel)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
+//                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
+//                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}", 10);
+//            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(dendermonde)}.geojson"), 
+//                route.ToGeoJson());
+//            
+//            routerDb.WriteToShape("test");
         }
 
         private static void EnableLogging()

@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using Itinero.Algorithms.DataStructures;
 using Itinero.Data.Shapes;
 using Itinero.Data.Tiles;
 using Itinero.LocalGeo;
