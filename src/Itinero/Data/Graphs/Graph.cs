@@ -574,8 +574,17 @@ namespace Itinero.Data.Graphs
                     _rawPointer = GraphConstants.NoEdges;
                 }
                 else if (edgePointer == uint.MaxValue)
-                {
-                    throw new Exception("no data here, this should not happen");
+                {               
+                    // try to find vertex again, tile was moved?.
+                    (vertex1Pointer, capacity1) =  _graph.FindTile(vertex.TileId);
+                    if (vertex1Pointer == GraphConstants.TileNotLoaded ||
+                        vertex.LocalId >= capacity1)
+                    {
+                        return false;
+                    }
+                
+                    // get edge pointer.
+                    edgePointer = _graph._edgePointers[vertex1Pointer + vertex.LocalId];
                 }
                 else
                 {

@@ -21,7 +21,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path Run(RouterDb routerDb, SnapPoint source, SnapPoint target, 
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null)
+            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null, Func<VertexId, bool> queued = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             _tree.Clear();
@@ -164,6 +164,12 @@ namespace Itinero.Algorithms.Dijkstra
                     var neighbourEdge = enumerator.Id;
                     if (neighbourEdge == currentVisit.edge) continue; // don't consider u-turns.
 
+                    if (queued != null &&
+                        queued.Invoke(enumerator.To))
+                    { // don't queue this vertex if the queued function returns true.
+                        continue;
+                    }
+
                     var neighbourPointer = _tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
                     _heap.Push(neighbourPointer, neighbourCost + currentCost);
                 }
@@ -214,7 +220,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path[] Run(RouterDb routerDb, SnapPoint source, SnapPoint[] targets,
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null)
+            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null, Func<VertexId, bool> queued = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             _tree.Clear();
@@ -388,6 +394,12 @@ namespace Itinero.Algorithms.Dijkstra
 
                     var neighbourEdge = enumerator.Id;
                     if (neighbourEdge == currentVisit.edge) continue; // don't consider u-turns.
+
+                    if (queued != null &&
+                        queued.Invoke(enumerator.To))
+                    { // don't queue this vertex if the queued function returns true.
+                        continue;
+                    }
 
                     var neighbourPointer = _tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
                     _heap.Push(neighbourPointer, neighbourCost + currentCost);

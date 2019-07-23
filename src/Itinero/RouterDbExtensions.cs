@@ -262,7 +262,8 @@ namespace Itinero
             
             // run dijkstra.
             var path = Dijkstra.Default.Run(routerDb, source, target,
-                profileHandler.GetForwardWeight, (v) =>
+                profileHandler.GetForwardWeight,
+                settled: (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
                     return checkMaxDistance(v);
@@ -306,7 +307,8 @@ namespace Itinero
             }
             
             var paths = Dijkstra.Default.Run(routerDb, source, targets,
-                profileHandler.GetForwardWeight, (v) =>
+                profileHandler.GetForwardWeight,
+                settled: (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
                     return checkMaxDistance(v);
@@ -362,10 +364,11 @@ namespace Itinero
             }
             
             var paths = Dijkstra.Default.Run(routerDb, target, sources,
-                profileHandler.GetBackwardWeight, (v) =>
+                profileHandler.GetBackwardWeight,
+                settled: (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
-                    return false;
+                    return checkMaxDistance(v);
                 });
 
             var results = new Result<Route>[paths.Length];

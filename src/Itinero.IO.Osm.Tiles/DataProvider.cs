@@ -44,8 +44,14 @@ namespace Itinero.IO.Osm.Tiles
 
             lock (_loadedTiles)
             {
+                if (_loadedTiles.Contains(vertexId.TileId))
+                { // tile was already loaded.
+                    return false;
+                }
+                
+                var result = _routerDb.AddOsmTile(_idMap, Tile.FromLocalId(vertexId.TileId, _zoom), _baseUrl);
                 _loadedTiles.Add(vertexId.TileId);
-                return _routerDb.AddOsmTile(_idMap, Tile.FromLocalId(vertexId.TileId, _zoom), _baseUrl);
+                return result;
             }
         }
 
