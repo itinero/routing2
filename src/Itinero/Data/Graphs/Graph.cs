@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Itinero.Algorithms.DataStructures;
 using Itinero.Data.Shapes;
 using Itinero.Data.Tiles;
@@ -86,6 +87,13 @@ namespace Itinero.Data.Graphs
             {
                 _edgePointers[p] = GraphConstants.TileNotLoaded;
             }
+        }
+
+        private Graph(int zoom, int edgeDataSize, int tileSizeInIndex, SparseMemoryArray<byte> tiles,
+            int coordinateSizeInBytes, MemoryArray<byte> vertices, uint vertexPointer, MemoryArray<uint> edgePointers,
+            uint edgePointer, MemoryArray<byte> edges, ShapesArray shapes)
+        {
+            
         }
 
         /// <summary>
@@ -778,6 +786,71 @@ namespace Itinero.Data.Graphs
             /// Gets the edge size.
             /// </summary>
             internal int EdgeSize => _graph._edgeSize;
+        }
+
+        internal long WriteTo(Stream stream)
+        {
+            var p = stream.Position;
+            
+            // write header and version.
+            stream.WriteWithSize($"{nameof(Graph)}");
+            stream.WriteByte(1);
+            
+            // writes zoom and edge data size.
+            stream.WriteByte((byte)_zoom);
+            stream.WriteByte((byte)_edgeDataSize);
+            
+            // write tile index.
+            stream.WriteByte((byte)TileSizeInIndex);
+            _tiles.CopyToWithHeader(stream);
+            
+            // write vertices.
+            stream.WriteByte((byte)CoordinateSizeInBytes);
+            stream.Write(BitConverter.GetBytes((long) _vertexPointer), 0, 8);
+            _vertices.CopyToWithSize(stream);
+            _edgePointers.CopyToWithSize(stream);
+            
+            // write edges.
+            stream.Write(BitConverter.GetBytes((long) _edgePointer), 0, 8);
+            _edges.CopyToWithSize(stream);
+            
+            // write shapes.
+            _shapes.CopyToWithSize(stream);
+
+            return stream.Position - p;
+        }
+
+        internal static Graph ReadFrom(Stream stream)
+        {
+            // read & verify header.
+            var header = stream.ReadWithSizeString();
+            var version = stream.ReadByte();
+            if (header != nameof(Graph)) throw new InvalidDataException($"Cannot read {nameof(Graph)}: Header invalid.");
+            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(Graph)}: Version # invalid.");
+            
+            // read zoom and edge data size.
+            var zoom = stream.ReadByte();
+            var edgeDataSize = stream.ReadByte();
+            
+            // read tile index.
+            var tileSizeIndex = stream.ReadByte();
+            var tiles = SparseMemoryArray<byte>.CopyFromWithHeader(stream);
+            
+            // read vertices.
+            var coordinateSizeInBytes = stream.ReadByte();
+            var vertexPointer = stream.ReadInt64();
+            var vertices = MemoryArray<byte>.CopyFromWithSize(stream);
+            var edgePointers = MemoryArray<uint>.CopyFromWithSize(stream);
+            
+            // read edges.
+            var edgePointer = stream.ReadInt64();
+            var edges = MemoryArray<byte>.CopyFromWithSize(stream);
+            
+            // read shapes.
+            var shapes = ShapesArray.CreateFrom(stream, true, false);
+            
+            return new Graph(zoom, edgeDataSize, tileSizeIndex, tiles, coordinateSizeInBytes, vertices, (uint)vertexPointer, edgePointers,
+                (uint)edgePointer, edges, shapes);
         }
     }
 }
