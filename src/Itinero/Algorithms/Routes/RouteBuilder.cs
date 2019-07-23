@@ -58,16 +58,16 @@ namespace Itinero.Algorithms.Routes
                 route.TotalDistance += distance;
                 if (segment.forward)
                 {
-                    if (factor.BackwardSpeed > 0)
+                    if (factor.ForwardSpeed > 0)
                     { // ok factor makes sense.
-                        route.TotalTime += distance / factor.ForwardSpeed;
+                        route.TotalTime += distance / factor.ForwardSpeedMeterPerSecond;
                     }
                 }
                 else
                 {
                     if (factor.BackwardSpeed > 0)
                     { // ok factor makes sense.
-                        route.TotalTime += distance / factor.BackwardSpeed;
+                        route.TotalTime += distance / factor.BackwardSpeedMeterPerSecond;
                     }
                 }
                 

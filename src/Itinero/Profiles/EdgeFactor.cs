@@ -34,14 +34,24 @@ namespace Itinero.Profiles
         public uint BackwardFactor { get; }
         
         /// <summary>
-        /// Gets the backward speed in ms/s multiplied by 100.
+        /// Gets the backward speed in m/s multiplied by 100.
         /// </summary>
         public ushort BackwardSpeed { get; }
-        
+
+        /// <summary>
+        /// Gets the backward speed in m/s.
+        /// </summary>
+        public double BackwardSpeedMeterPerSecond => this.BackwardSpeed / 100.0;
+
         /// <summary>
         /// Gets the forward speed in ms/s multiplied by 100.
         /// </summary>
         public ushort ForwardSpeed { get; }
+
+        /// <summary>
+        /// Gets the backward speed in m/s.
+        /// </summary>
+        public double ForwardSpeedMeterPerSecond => this.ForwardSpeed / 100.0;
         
         /// <summary>
         /// Gets the can stop flag.
