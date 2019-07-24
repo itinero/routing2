@@ -46,3 +46,4 @@ TestResult*.xml
 .idea/*
 *.geojson
 *.tile
+*.tile.zip

@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web;
 using Itinero.Logging;
 
@@ -15,17 +17,18 @@ namespace Itinero.Tests.Functional.Download
         /// <returns>An open stream for the content at the given url.</returns>
         public static Stream Download(string url)
         {
-            var fileName = HttpUtility.UrlEncode(url) + ".tile";
+            var fileName = HttpUtility.UrlEncode(url) + ".tile.zip";
             fileName = Path.Combine(".", "cache", fileName);
 
             if (File.Exists(fileName))
             {
-                return File.OpenRead(fileName);
+                return new GZipStream(File.OpenRead(fileName), CompressionMode.Decompress);
             }
                 
             try
             {
                 var client = new HttpClient();
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 var response = client.GetAsync(url);
                 using (var stream = response.GetAwaiter().GetResult().Content.ReadAsStreamAsync().GetAwaiter()
                     .GetResult()) 
@@ -44,7 +47,7 @@ namespace Itinero.Tests.Functional.Download
                 return null;
             }
             
-            return File.OpenRead(fileName);
+            return new GZipStream(File.OpenRead(fileName), CompressionMode.Decompress);
         }
     }
 }

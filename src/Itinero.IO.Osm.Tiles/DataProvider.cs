@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Itinero.Data.Graphs;
 using Itinero.Data.Providers;
 using Itinero.IO.Osm.Tiles.Parsers;
@@ -19,7 +20,7 @@ namespace Itinero.IO.Osm.Tiles
         /// <summary>
         /// Creates a new data provider.
         /// </summary>
-        /// <param name="routerDb">The routerdb to load data in.</param>
+        /// <param name="routerDb">The router db to load data in.</param>
         /// <param name="baseUrl">The base url to load tiles from.</param>
         /// <param name="globalIdMap">The global id map, if any.</param>
         /// <param name="zoom">The zoom level.</param>
@@ -55,20 +56,33 @@ namespace Itinero.IO.Osm.Tiles
         public bool TouchVertex(VertexId vertexId)
         {
             if (_loadedTiles.Contains(vertexId.TileId))
-            { // tile was already loaded.
+            {
+                // tile was already loaded.
                 return false;
             }
 
             lock (_loadedTiles)
             {
                 if (_loadedTiles.Contains(vertexId.TileId))
-                { // tile was already loaded.
+                {
+                    // tile was already loaded.
                     return false;
                 }
-                
-                var result = _routerDb.AddOsmTile(_idMap, Tile.FromLocalId(vertexId.TileId, _zoom), _baseUrl);
-                _loadedTiles.Add(vertexId.TileId);
-                return result;
+
+                var tile = Tile.FromLocalId(vertexId.TileId, _zoom);
+                var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
+                using (var stream = TileParser.DownloadFunc(url))
+                {
+                    var parse = stream?.Parse(tile);
+                    if (parse == null)
+                    {
+                        return false;
+                    }
+
+                    var result = _routerDb.AddOsmTile(_idMap, tile, parse);
+                    _loadedTiles.Add(vertexId.TileId);
+                    return result;
+                }
             }
         }
 
@@ -80,21 +94,33 @@ namespace Itinero.IO.Osm.Tiles
             
             // get all the tiles and build the router db.
             var updated = false;
-            foreach (var tile in tileRange)
+
+            Parallel.ForEach(tileRange, (tile) =>
+                //foreach (var tile in tileRange)
             {
-                if (_loadedTiles.Contains(tile.LocalId)) continue;
+                if (_loadedTiles.Contains(tile.LocalId)) return;
 
+                var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
 
-                lock (_loadedTiles)
+                using (var stream = TileParser.DownloadFunc(url))
                 {
-                    if (_routerDb.AddOsmTile(_idMap, tile, _baseUrl))
+                    var parse = stream?.Parse(tile);
+                    if (parse == null)
                     {
-                        updated = true;
+                        return;
+                    }
+
+                    lock (_loadedTiles)
+                    {
+                        if (_routerDb.AddOsmTile(_idMap, tile, parse))
+                        {
+                            updated = true;
+                        }
+
+                        _loadedTiles.Add(tile.LocalId);
                     }
                 }
-
-                _loadedTiles.Add(tile.LocalId);
-            }
+            });
 
             return updated;
         }
