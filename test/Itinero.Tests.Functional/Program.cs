@@ -49,7 +49,7 @@ namespace Itinero.Tests.Functional
                     ("pedestrian.weight", EdgeDataType.UInt32)
                 })
             });
-            routerDb.DataProvider = new DataProvider(routerDb);
+            routerDb.DataProvider = new DataProvider();
 
             var factor = bicycle.Factor(new AttributeCollection(
                 new Attribute("highway", "pedestrian")));
@@ -121,7 +121,6 @@ namespace Itinero.Tests.Functional
             File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}.geojson"), 
                 route.ToGeoJson());
 
-            var dataProvider = routerDb.DataProvider;
             using (var stream = File.Open("temp.routerdb", FileMode.Create))
             {
                 routerDb.WriteTo(stream);
@@ -129,8 +128,7 @@ namespace Itinero.Tests.Functional
 
             using (var stream = File.OpenRead("temp.routerdb"))
             {
-                routerDb = RouterDb.ReadFrom(stream);
-                routerDb.DataProvider = (dataProvider as DataProvider).CloneFor(routerDb);
+                routerDb = RouterDb.ReadFrom(stream, new DataProvider());
             }
             
             route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
@@ -222,7 +220,7 @@ namespace Itinero.Tests.Functional
                         ("pedestrian.weight", EdgeDataType.UInt32)
                     })
                 });
-                routerDb.DataProvider = new DataProvider(routerDb);
+                routerDb.DataProvider = new DataProvider();
 
                 var deSterre = SnappingTest.Default.Run((routerDb, 3.715675, 51.026164, profile: bicycle),
                     $"Snapping cold: deSterre");
