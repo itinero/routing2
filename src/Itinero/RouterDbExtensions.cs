@@ -358,14 +358,15 @@ namespace Itinero
                 {
                     return true;
                 }
-                return checkMaxDistance(v);
+
+                return false;
             }
             
             var paths = Dijkstra.Default.Run(routerDb, target, sources,
                 profileHandler.GetBackwardWeight, (v) =>
                 {
                     routerDb.DataProvider?.TouchVertex(v);
-                    return false;
+                    return checkMaxDistance(v);
                 });
 
             var results = new Result<Route>[paths.Length];
