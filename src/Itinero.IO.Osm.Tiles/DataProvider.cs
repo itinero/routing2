@@ -34,6 +34,23 @@ namespace Itinero.IO.Osm.Tiles
             _loadedTiles = new HashSet<uint>();
         }
 
+        /// <summary>
+        /// Clones the data provider with the same state but with a new router db.
+        /// </summary>
+        /// <param name="routerDb"></param>
+        /// <returns></returns>
+        public DataProvider CloneFor(RouterDb routerDb)
+        {
+            var dp = new DataProvider(routerDb, _baseUrl, _idMap, _zoom);
+
+            foreach (var tile in this._loadedTiles)
+            {
+                dp._loadedTiles.Add(tile);
+            }
+
+            return dp;
+        }
+
         /// <inheritdoc/>
         public bool TouchVertex(VertexId vertexId)
         {

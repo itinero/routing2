@@ -16,6 +16,7 @@
  *  limitations under the License.
  */
 
+using System.IO;
 using System.Linq;
 using Itinero.Data;
 using Itinero.Data.Attributes;
@@ -85,6 +86,45 @@ namespace Itinero.Tests
             Assert.Equal(1, attributes.Count);
             Assert.Equal("highway", attributes.First().Key);
             Assert.Equal("residential", attributes.First().Value);
+        }
+
+        [Fact]
+        public void RouterDb_WriteReadShouldCopy()
+        {
+            var original = new RouterDb();
+            var vertex1 = original.AddVertex(
+                4.792613983154297,
+                51.26535213392538);
+            var vertex2 = original.AddVertex(
+                4.797506332397461,
+                51.26674845584085);
+
+            var edgeId = original.AddEdge(vertex1, vertex2, 
+                shape: new [] { new Coordinate(4.795167446136475, 51.26580191532799), }, 
+                attributes: new [] { new Attribute("highway", "residential"), });
+
+            using (var stream = new MemoryStream())
+            {
+                original.WriteTo(stream);
+
+                stream.Seek(0, SeekOrigin.Begin);
+
+                var routerDb = RouterDb.ReadFrom(stream);
+                
+                var enumerator = routerDb.GetEdgeEnumerator();
+                enumerator.MoveToEdge(edgeId);
+                var shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                var shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                var attributes = routerDb.GetAttributes(edgeId);
+                Assert.NotNull(attributes);
+                Assert.Equal(1, attributes.Count);
+                Assert.Equal("highway", attributes.First().Key);
+                Assert.Equal("residential", attributes.First().Value);
+            }
         }
     }
 }

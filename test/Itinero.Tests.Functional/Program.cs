@@ -120,7 +120,26 @@ namespace Itinero.Tests.Functional
                 $"Route host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
             File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}.geojson"), 
                 route.ToGeoJson());
+
+            var dataProvider = routerDb.DataProvider;
+            using (var stream = File.Open("temp.routerdb", FileMode.Create))
+            {
+                routerDb.WriteTo(stream);
+            }
+
+            using (var stream = File.OpenRead("temp.routerdb"))
+            {
+                routerDb = RouterDb.ReadFrom(stream);
+                routerDb.DataProvider = (dataProvider as DataProvider).CloneFor(routerDb);
+            }
             
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
+                route.ToGeoJson());
+
             route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
                 $"Route cold: {nameof(zellik2)} -> {nameof(zellik1)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
@@ -167,34 +186,6 @@ namespace Itinero.Tests.Functional
             route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, hamme, bicycle),
                 $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(leuven)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, leuven, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(leuven)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(heldergem)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route cold: {nameof(heldergem)} -> {nameof(wechelderzande)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, wechelderzande, bicycle),
-                $"Route hot: {nameof(heldergem)} -> {nameof(wechelderzande)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(wechelderzande)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
-                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, mechelenNeckerspoel, bicycle),
-                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(mechelenNeckerspoel)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(mechelenNeckerspoel)}.geojson"), 
-                route.ToGeoJson());
-            
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
-                $"Route cold: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, hermanTeirlinck, dendermonde, bicycle),
-                $"Route hot: {nameof(hermanTeirlinck)} -> {nameof(dendermonde)}", 10);
-            File.WriteAllText(Path.Combine("results", $"{nameof(hermanTeirlinck)}-{nameof(dendermonde)}.geojson"), 
                 route.ToGeoJson());
 
             var routes = ManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),

@@ -1,5 +1,8 @@
+using System.IO;
+using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
+using Itinero.LocalGeo;
 using Xunit;
 
 namespace Itinero.Tests.Data.Graphs
@@ -73,6 +76,30 @@ namespace Itinero.Tests.Data.Graphs
             var edgeId1 = graph.AddEdge(vertex1, vertex2);
             var edgeId2 = graph.AddEdge(vertex1, vertex3);
             Assert.Equal((uint)1, edgeId2);
+        }
+        
+        [Fact]
+        public void Graph_ShouldStoreShape()
+        {
+            var network = new Graph();
+            var vertex1 = network.AddVertex(
+                4.792613983154297,
+                51.26535213392538);
+            var vertex2 = network.AddVertex(
+                4.797506332397461,
+                51.26674845584085);
+
+            var edgeId = network.AddEdge(vertex1, vertex2, shape: new [] { new Coordinate(4.795167446136475,
+                51.26580191532799), });
+
+            var enumerator = network.GetEnumerator();
+            enumerator.MoveToEdge(edgeId);
+            var shape = enumerator.GetShape();
+            Assert.NotNull(shape);
+            var shapeList = shape.ToList();
+            Assert.Single(shapeList);
+            Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+            Assert.Equal(51.26580191532799, shapeList[0].Latitude);
         }
         
         [Fact]
@@ -188,6 +215,89 @@ namespace Itinero.Tests.Data.Graphs
             Assert.Equal(1, data[1]);
             Assert.Equal(2, data[2]);
             Assert.Equal(3, data[3]);
+        }
+        
+        [Fact]
+        public void Graph_WriteToAndReadFromShouldBeCopy()
+        {
+            var original = new Graph();
+            var vertex1 = original.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = original.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex3 = original.AddVertex(4.797506332397461, 51.26674845584085);
+            
+            var edgeId1 = original.AddEdge(vertex1, vertex2,
+                shape: new [] { new Coordinate(4.795167446136475, 51.26580191532799)});
+            var edgeId2 = original.AddEdge(vertex1, vertex3,
+                shape: new [] { new Coordinate(4.795167446136475, 51.26580191532799)});
+            var edgeId3 = original.AddEdge(vertex2, vertex3,
+                shape: new [] { new Coordinate(4.795167446136475, 51.26580191532799)});
+
+            using (var memory = new MemoryStream())
+            {
+                original.WriteTo(memory);
+
+                memory.Seek(0, SeekOrigin.Begin);
+
+                var graph = Graph.ReadFrom(memory);
+
+                var enumerator = graph.GetEnumerator();
+                Assert.True(enumerator.MoveTo(vertex1));
+                Assert.True(enumerator.MoveNext());
+                Assert.Equal(vertex3, enumerator.To);
+                var shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                var shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.True(enumerator.MoveNext());
+                Assert.Equal(vertex2, enumerator.To);
+                shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.False(enumerator.MoveNext());
+            
+                Assert.True(enumerator.MoveTo(vertex2));
+                Assert.True(enumerator.MoveNext());
+                Assert.Equal(vertex3, enumerator.To);
+                shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.True(enumerator.MoveNext());
+                Assert.Equal(vertex1, enumerator.To);
+                shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.False(enumerator.MoveNext());
+            
+                Assert.True(enumerator.MoveTo(vertex3));
+                Assert.True(enumerator.MoveNext());
+                Assert.Equal(vertex2, enumerator.To);
+                shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.True(enumerator.MoveNext());
+                Assert.Equal(vertex1, enumerator.To);
+                shape = enumerator.GetShape();
+                Assert.NotNull(shape);
+                shapeList = shape.ToList();
+                Assert.Single(shapeList);
+                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.False(enumerator.MoveNext());
+            }
         }
     }
 }

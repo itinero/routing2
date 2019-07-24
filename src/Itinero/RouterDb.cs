@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Itinero.Data;
 using Itinero.Data.Attributes;
@@ -6,6 +7,7 @@ using Itinero.Data.Graphs;
 using Itinero.Data.Graphs.Coders;
 using Itinero.Data.Providers;
 using Itinero.LocalGeo;
+using Reminiscence.IO.Streams;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -31,6 +33,13 @@ namespace Itinero
 
             _network = new Graph(configuration.Zoom, this.EdgeDataLayout.Size);
             _edgesMeta = new MappedAttributesIndex();
+        }
+
+        private RouterDb(EdgeDataLayout edgeDataLayout, Graph network, MappedAttributesIndex edgeMeta)
+        {
+            this.EdgeDataLayout = edgeDataLayout;
+            _network = network;
+            _edgesMeta = edgeMeta;
         }
 
         /// <summary>
@@ -120,6 +129,52 @@ namespace Itinero
             {
                 return new AttributeCollection(_edgesMeta[edgeId]);
             }
+        }
+
+        /// <summary>
+        /// Writes to the given stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <returns>The number of bytes written.</returns>
+        public long WriteTo(Stream stream)
+        {
+            var p = stream.Position;
+            
+            // write header and version.
+            stream.WriteWithSize($"{nameof(RouterDb)}");
+            stream.WriteByte(1);
+
+            this.EdgeDataLayout.WriteTo(stream);
+            _network.WriteTo(stream);
+            lock (_edgesMeta)
+            {
+                _edgesMeta.Serialize(new LimitedStream(stream));
+            }
+
+            return stream.Position - p;
+        }
+
+        /// <summary>
+        /// Reads from the given stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <returns>The router db.</returns>
+        /// <exception cref="InvalidDataException"></exception>
+        public static RouterDb ReadFrom(Stream stream)
+        {
+            // read & verify header.
+            var header = stream.ReadWithSizeString();
+            var version = stream.ReadByte();
+            if (header != nameof(RouterDb)) throw new InvalidDataException($"Cannot read {nameof(RouterDb)}: Header invalid.");
+            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(RouterDb)}: Version # invalid.");
+
+            var edgeDataLayout = Data.Graphs.Coders.EdgeDataLayout.ReadFrom(stream);
+            var graph = Graph.ReadFrom(stream);
+            var edgesMeta = MappedAttributesIndex.Deserialize(new LimitedStream(stream), null);
+            
+            edgesMeta.MakeWriteable();
+            
+            return new RouterDb(edgeDataLayout, graph, edgesMeta);
         }
     }
 }

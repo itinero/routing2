@@ -381,30 +381,28 @@ namespace Itinero.Data.Shapes
             long newPointer = 0;
             long elevationNewPointer = 0;
             using (var indexStream = new BinaryWriter(new LimitedStream(stream, position)))
+            using (var coordinatesStream = new BinaryWriter(new LimitedStream(stream, coordinatesPosition)))
             {
-                using(var coordinatesStream = new BinaryWriter(new LimitedStream(stream, coordinatesPosition)))
+                for (var i = 0; i < _index.Length; i++)
                 {
-                    for(var i = 0; i < _index.Length; i++)
+                    coordinatesStream.SeekBegin(newPointer * 8);
+                    ShapesArray.ExtractPointerAndSize(_index[i], out var pointer, out var size);
+                    if (size > 0)
                     {
-                        coordinatesStream.SeekBegin(newPointer * 4);
-                        ShapesArray.ExtractPointerAndSize(_index[i], out var pointer, out var size);
-                        if (size > 0)
+                        for (var p = 0; p < size; p++)
                         {
-                            for (var p = 0; p < size; p++)
-                            {
-                                coordinatesStream.Write(_coordinates[pointer + (p * 2)]);
-                                coordinatesStream.Write(_coordinates[pointer + (p * 2) + 1]);
-                            }
+                            coordinatesStream.Write(_coordinates[pointer + (p * 2)]);
+                            coordinatesStream.Write(_coordinates[pointer + (p * 2) + 1]);
+                        }
 
-                            indexStream.SeekBegin(i * 8);
-                            indexStream.Write(ShapesArray.BuildPointerAndSize(newPointer, size));
-                            newPointer += size * 2;
-                        }
-                        else
-                        {
-                            indexStream.SeekBegin(i * 8);
-                            indexStream.Write((ulong)0);
-                        }
+                        indexStream.SeekBegin(i * 8);
+                        indexStream.Write(ShapesArray.BuildPointerAndSize(newPointer, size));
+                        newPointer += size * 2;
+                    }
+                    else
+                    {
+                        indexStream.SeekBegin(i * 8);
+                        indexStream.Write((ulong) 0);
                     }
                 }
 
@@ -445,10 +443,11 @@ namespace Itinero.Data.Shapes
             stream.Write(BitConverter.GetBytes(newPointer), 0, 8);
 
             // seek until after.
-            var sizeInBytes = 16 + (_index.Length * 8) + (newPointer * 4) + (elevationNewPointer * 2);
+            var sizeInBytes = 16 + (_index.Length * 8) + (newPointer * 8) + (elevationNewPointer * 2);
             stream.Seek(initialPosition + sizeInBytes, System.IO.SeekOrigin.Begin);
             return sizeInBytes;
         }
+
         /// <summary>
         /// Copies from the given stream.
         /// </summary>

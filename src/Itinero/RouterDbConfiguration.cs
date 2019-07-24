@@ -1,3 +1,5 @@
+using System.IO;
+using Itinero.Data;
 using Itinero.Data.Graphs.Coders;
 
 namespace Itinero
