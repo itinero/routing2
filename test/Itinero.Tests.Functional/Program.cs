@@ -33,6 +33,10 @@ namespace Itinero.Tests.Functional
             EnableLogging();
             
             // do some local caching.
+            if (!Directory.Exists("cache"))
+            {
+                Directory.CreateDirectory("cache");
+            }
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
