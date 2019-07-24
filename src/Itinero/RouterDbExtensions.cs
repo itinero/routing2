@@ -9,6 +9,7 @@ using Itinero.Algorithms.Routes;
 using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
 using Itinero.Data.Graphs.Coders;
+using Itinero.Data.Shapes;
 using Itinero.LocalGeo;
 using Itinero.Profiles;
 using Itinero.Profiles.Handlers;
@@ -80,6 +81,10 @@ namespace Itinero
 
             // get edge and shape details.
             var shape = enumerator.GetShape();
+            if (shape == null)
+            {
+                shape = new ShapeEnumerable(Enumerable.Empty<Coordinate>());
+            }
             
             // return the entire edge if requested.
             if (offset1 == 0 && offset2 == ushort.MaxValue)

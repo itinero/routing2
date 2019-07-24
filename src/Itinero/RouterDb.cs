@@ -172,6 +172,8 @@ namespace Itinero
             var graph = Graph.ReadFrom(stream);
             var edgesMeta = MappedAttributesIndex.Deserialize(new LimitedStream(stream), null);
             
+            edgesMeta.MakeWriteable();
+            
             return new RouterDb(edgeDataLayout, graph, edgesMeta);
         }
     }

@@ -112,6 +112,7 @@ namespace Itinero.Tests.Functional
             File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
                 route.ToGeoJson());
 
+            var dataProvider = routerDb.DataProvider;
             using (var stream = File.Open("temp.routerdb", FileMode.Create))
             {
                 routerDb.WriteTo(stream);
@@ -120,6 +121,7 @@ namespace Itinero.Tests.Functional
             using (var stream = File.OpenRead("temp.routerdb"))
             {
                 routerDb = RouterDb.ReadFrom(stream);
+                routerDb.DataProvider = (dataProvider as DataProvider).CloneFor(routerDb);
             }
             
             route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
