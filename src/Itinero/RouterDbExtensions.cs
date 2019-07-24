@@ -360,7 +360,8 @@ namespace Itinero
                 {
                     return true;
                 }
-                return checkMaxDistance(v);
+
+                return false;
             }
             
             var paths = Dijkstra.Default.Run(routerDb, target, sources,
