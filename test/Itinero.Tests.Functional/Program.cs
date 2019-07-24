@@ -32,6 +32,12 @@ namespace Itinero.Tests.Functional
         {
             EnableLogging();
             
+            // make sure the results folder exists.
+            if (!Directory.Exists("results"))
+            {
+                Directory.CreateDirectory("results");
+            }
+            
             // do some local caching.
             if (!Directory.Exists("cache"))
             {
