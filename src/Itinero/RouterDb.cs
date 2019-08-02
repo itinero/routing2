@@ -21,6 +21,7 @@ namespace Itinero
     {
         private readonly Graph _network;
         private readonly MappedAttributesIndex _edgesMeta;
+        private ILiveDataProvider _dataProvider = null;
 
         /// <summary>
         /// Creates a new router db.
@@ -77,11 +78,19 @@ namespace Itinero
         /// Gets the network graph.
         /// </summary>
         internal Graph Network => _network;
-        
+
         /// <summary>
         /// Gets or sets the data provider.
         /// </summary>
-        public ILiveDataProvider DataProvider { get; set; }
+        public ILiveDataProvider DataProvider
+        {
+            get => _dataProvider;
+            set
+            {
+                _dataProvider = value;
+                _dataProvider?.SetRouterDb(this);
+            }
+        }
 
         /// <summary>
         /// Gets the data layout.
@@ -151,6 +160,8 @@ namespace Itinero
                 _edgesMeta.Serialize(new LimitedStream(stream));
             }
 
+            DataProvider?.WriteTo(stream);
+
             return stream.Position - p;
         }
 
@@ -158,9 +169,10 @@ namespace Itinero
         /// Reads from the given stream.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
+        /// <param name="dataProvider">The data provider if any.</param>
         /// <returns>The router db.</returns>
         /// <exception cref="InvalidDataException"></exception>
-        public static RouterDb ReadFrom(Stream stream)
+        public static RouterDb ReadFrom(Stream stream, ILiveDataProvider dataProvider = null)
         {
             // read & verify header.
             var header = stream.ReadWithSizeString();
@@ -174,7 +186,11 @@ namespace Itinero
             
             edgesMeta.MakeWriteable();
             
-            return new RouterDb(edgeDataLayout, graph, edgesMeta);
+            dataProvider?.ReadFrom(stream);
+            
+            var db = new RouterDb(edgeDataLayout, graph, edgesMeta);
+            if (dataProvider != null) db.DataProvider = dataProvider;
+            return db;
         }
     }
 }

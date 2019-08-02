@@ -1,8 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.IO;
 using Itinero.Data.Graphs;
 using Itinero.Data.Providers;
 using Itinero.IO.Osm.Tiles.Parsers;
+using Itinero.Profiles;
+using Reminiscence;
+using Reminiscence.Arrays;
 
 namespace Itinero.IO.Osm.Tiles
 {
@@ -11,8 +15,8 @@ namespace Itinero.IO.Osm.Tiles
     /// </summary>
     public class DataProvider : ILiveDataProvider
     {
-        private readonly RouterDb _routerDb;
-        private readonly GlobalIdMap _idMap;
+        private RouterDb _routerDb;
+        private GlobalIdMap _idMap;
         private readonly string _baseUrl;
         private readonly HashSet<uint> _loadedTiles;
         private readonly int _zoom;
@@ -20,14 +24,12 @@ namespace Itinero.IO.Osm.Tiles
         /// <summary>
         /// Creates a new data provider.
         /// </summary>
-        /// <param name="routerDb">The router db to load data in.</param>
         /// <param name="baseUrl">The base url to load tiles from.</param>
         /// <param name="globalIdMap">The global id map, if any.</param>
         /// <param name="zoom">The zoom level.</param>
-        public DataProvider(RouterDb routerDb, string baseUrl = TileParser.BaseUrl,
+        public DataProvider(string baseUrl = TileParser.BaseUrl,
             GlobalIdMap globalIdMap = null, int zoom = 14)
         {
-            _routerDb = routerDb;
             _idMap = globalIdMap ?? new GlobalIdMap();
             _baseUrl = baseUrl;
             _zoom = 14;
@@ -35,21 +37,10 @@ namespace Itinero.IO.Osm.Tiles
             _loadedTiles = new HashSet<uint>();
         }
 
-        /// <summary>
-        /// Clones the data provider with the same state but with a new router db.
-        /// </summary>
-        /// <param name="routerDb"></param>
-        /// <returns></returns>
-        public DataProvider CloneFor(RouterDb routerDb)
+        /// <inheritdoc/>
+        public void SetRouterDb(RouterDb routerDb)
         {
-            var dp = new DataProvider(routerDb, _baseUrl, _idMap, _zoom);
-
-            foreach (var tile in this._loadedTiles)
-            {
-                dp._loadedTiles.Add(tile);
-            }
-
-            return dp;
+            _routerDb = routerDb;
         }
 
         /// <inheritdoc/>
@@ -123,6 +114,59 @@ namespace Itinero.IO.Osm.Tiles
             });
 
             return updated;
+        }
+
+        /// <inheritdoc/>
+        public long WriteTo(Stream stream)
+        {
+            lock (_loadedTiles)
+            {
+                var p = stream.Position;
+            
+                // write header and version.
+                stream.WriteWithSize($"{nameof(DataProvider)}");
+                stream.WriteByte(1);
+            
+                // write loaded tiles.
+                var tilesArray = new MemoryArray<uint>(_loadedTiles.Count);
+                var t = 0;
+                foreach (var loadedTile in _loadedTiles)
+                {
+                    tilesArray[t] = loadedTile;
+                    t++;
+                }
+                tilesArray.CopyToWithSize(stream);
+                
+                // write global id map.
+                _idMap.WriteTo(stream);
+
+                return stream.Position - p;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ReadFrom(Stream stream)
+        {
+            // read & verify header.
+            var header = stream.ReadWithSizeString();
+            var version = stream.ReadByte();
+            if (header != nameof(DataProvider)) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Header invalid.");
+            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Version # invalid.");
+            
+            // read load tiles.
+            var tilesArray = MemoryArray<uint>.CopyFromWithSize(stream);
+            
+            // read global id map.
+            var globalIdMap = GlobalIdMap.ReadFrom(stream);
+
+            lock (_loadedTiles)
+            {
+                _idMap = globalIdMap;
+                for (var t = 0; t < tilesArray.Length; t++)
+                {
+                    _loadedTiles.Add(tilesArray[t]);
+                }
+            }
         }
     }
 }
