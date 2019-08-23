@@ -111,12 +111,18 @@ namespace Itinero.Data.Graphs
             const int resolution = (1 << TileResolutionInBits) - 1;
             var (x, y) = TileStatic.ToLocalTileCoordinates(_zoom, _tileId, longitude, latitude, resolution);
             _coordinates.SetFixed(tileCoordinatePointer, CoordinateSizeInBytes, x);
-            _coordinates.SetFixed(tileCoordinatePointer, CoordinateSizeInBytes, y);
+            _coordinates.SetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, y);
         }
 
         private void GetCoordinate(uint localId, out double longitude, out double latitude)
         {
-            throw new NotImplementedException();
+            var tileCoordinatePointer = _nextVertexId * CoordinateSizeInBytes * 2;
+            
+            const int resolution = (1 << TileResolutionInBits) - 1;
+            _coordinates.GetFixed(tileCoordinatePointer, CoordinateSizeInBytes, out var x);
+            _coordinates.GetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, out var y);
+
+            TileStatic.FromLocalTileCoordinates(_zoom, resolution, x, y, resolution, out longitude, out latitude);
         }
 
         private uint EncodeVertex(uint pointer, VertexId vertexId)

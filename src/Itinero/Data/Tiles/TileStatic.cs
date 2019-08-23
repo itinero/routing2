@@ -34,10 +34,29 @@ namespace Itinero.Data.Tiles
             
             return ((int) ((longitude - left) / lonStep), (int) ((top - latitude) / latStep));
         }
+
+        public static void FromLocalTileCoordinates(int zoom, uint tileId, int x, int y, int resolution, out double longitude, out double latitude)
+        {
+            var tile = ToTile(zoom, tileId);
+            
+            var n = Math.PI - ((2.0 * Math.PI * tile.y) / Math.Pow(2.0, zoom));
+            var left = ((tile.x / Math.Pow(2.0, zoom) * 360.0) - 180.0);
+            var top = (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+
+            n = Math.PI - ((2.0 * Math.PI * (tile.y + 1)) / Math.Pow(2.0, zoom));
+            var right = ((tile.x + 1) / Math.Pow(2.0, zoom) * 360.0) - 180.0;
+            var bottom = (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            
+            var latStep = (top - bottom) / resolution;
+            var lonStep = (right - left) / resolution;
+
+            longitude = left + (lonStep * x);
+            latitude = top - (y * latStep);
+        }
         
         public static (uint x, uint y) WorldToTile(double longitude, double latitude, int zoom)
         {
-            var n = (int) Math.Floor(Math.Pow(2, zoom)); // replace by bitshifting?
+            var n = (int) Math.Floor(Math.Pow(2, zoom)); // replace by bit shifting?
 
             var rad = (latitude / 180d) * System.Math.PI;
 
