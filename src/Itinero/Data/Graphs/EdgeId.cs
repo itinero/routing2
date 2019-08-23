@@ -1,44 +1,40 @@
-﻿using System;
+using System;
 
 namespace Itinero.Data.Graphs
 {
     /// <summary>
-    /// Represents a vertex ID composed of a tile ID and a vertex ID.
+    /// Represents a edge id composed of a tile id and a local id.
     /// </summary>
-    public struct VertexId : IEquatable<VertexId>
+    public struct EdgeId : IEquatable<EdgeId>
     {
         /// <summary>
         /// Creates a new vertex id.
         /// </summary>
         /// <param name="tileId">The tile id.</param>
         /// <param name="localId">The local id.</param>
-        public VertexId(uint tileId, uint localId)
+        public EdgeId(uint tileId, uint localId)
         {
             this.TileId = tileId;
             this.LocalId = localId;
         }
-
+        
         /// <summary>
         /// Gets or sets the tile id.
         /// </summary>
-        public uint TileId { get; set; }
+        public uint TileId { get; }
         
         /// <summary>
         /// Gets or sets the local id.
         /// </summary>
-        public uint LocalId { get; set; }
+        public uint LocalId { get; }
 
         /// <summary>
-        /// Returns an empty vertex id.
+        /// Returns an empty edge id.
         /// </summary>
-        public static VertexId Empty => new VertexId()
-        {
-            LocalId = uint.MaxValue,
-            TileId = uint.MaxValue
-        };
+        public static readonly EdgeId Empty = new EdgeId(uint.MaxValue, uint.MaxValue);
 
         /// <summary>
-        /// Returns true if this vertex id is empty.
+        /// Returns true if this edge id is empty.
         /// </summary>
         /// <returns></returns>
         public bool IsEmpty()
@@ -56,31 +52,41 @@ namespace Itinero.Data.Graphs
         }
         
         /// <summary>
-        /// Returns true if the two vertices represent the same id.
+        /// Returns true if the two edges represent the same id.
         /// </summary>
         /// <returns></returns>
-        public static bool operator ==(VertexId vertex1, VertexId vertex2)
+        public static bool operator ==(EdgeId vertex1, EdgeId vertex2)
         {
             return vertex1.LocalId == vertex2.LocalId &&
                 vertex1.TileId == vertex2.TileId;
         }
-
-        public static bool operator !=(VertexId vertex1, VertexId vertex2)
+        
+        /// <summary>
+        /// Returns true if the two edges don't represent the same id.
+        /// </summary>
+        /// <returns></returns>
+        public static bool operator !=(EdgeId vertex1, EdgeId vertex2)
         {
             return !(vertex1 == vertex2);
         }
 
-        public bool Equals(VertexId other)
+        /// <summary>
+        /// Returns true if the given edge represent the same id.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(EdgeId other)
         {
             return LocalId == other.LocalId && TileId == other.TileId;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            return obj is VertexId other && Equals(other);
+            return obj is EdgeId other && Equals(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked

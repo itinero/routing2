@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -8,6 +9,7 @@ using Itinero.Data.Graphs.Coders;
 using Itinero.Data.Providers;
 using Itinero.LocalGeo;
 using Reminiscence.IO.Streams;
+using Attribute = Itinero.Data.Attributes.Attribute;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -32,7 +34,7 @@ namespace Itinero
             configuration = configuration ?? RouterDbConfiguration.Default;
             this.EdgeDataLayout = configuration.EdgeDataLayout ?? new EdgeDataLayout();
 
-            _network = new Graph(configuration.Zoom, this.EdgeDataLayout.Size);
+            _network = new Graph(configuration.Zoom);
             _edgesMeta = new MappedAttributesIndex();
         }
 
@@ -61,13 +63,15 @@ namespace Itinero
         /// <returns>The vertex.</returns>
         public Coordinate GetVertex(VertexId vertex)
         {
-            return _network.GetVertex(vertex);
+            if (!_network.TryGetVertex(vertex, out var longitude, out var latitude)) throw new ArgumentException($"{nameof(vertex)} does not exist.");
+            
+            return new Coordinate(longitude, latitude);
         }
 
         /// <summary>
         /// Gets the number of edges.
         /// </summary>
-        public uint EdgeCount => _network.EdgeCount;
+        public uint EdgeCount => 0;
 
         /// <summary>
         /// Gets the zoom.
@@ -108,14 +112,14 @@ namespace Itinero
         public uint AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<Attribute> attributes = null,
             IEnumerable<Coordinate> shape = null)
         {
-            var edgeId = _network.AddEdge(vertex1, vertex2, shape: shape);
+            var edgeId = _network.AddEdge(vertex1, vertex2);
 
-            lock (_edgesMeta)
-            {
-                _edgesMeta[edgeId] = new AttributeCollection(attributes);
-            }
+//            lock (_edgesMeta)
+//            {
+//                _edgesMeta[edgeId] = new AttributeCollection(attributes);
+//            }
 
-            return edgeId;
+            return 0;
         }
 
         /// <summary>

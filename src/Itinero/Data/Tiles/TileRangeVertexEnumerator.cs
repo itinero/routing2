@@ -33,7 +33,8 @@ namespace Itinero.Data.Tiles
 
         private uint _currentTile = uint.MaxValue;
         private uint _currentVertex = uint.MaxValue;
-        private Coordinate _currentLocation;
+        private double _currentLatitude;
+        private double _currentLongitude;
         
         public bool MoveNext()
         {
@@ -48,7 +49,7 @@ namespace Itinero.Data.Tiles
                     {
                         TileId = _currentTile,
                         LocalId = _currentVertex
-                    }, out _currentLocation))
+                    }, out _currentLongitude, out _currentLatitude))
                     {
                         return true;
                     }
@@ -64,7 +65,7 @@ namespace Itinero.Data.Tiles
                 {
                     TileId = _currentTile,
                     LocalId = _currentVertex
-                }, out _currentLocation))
+                }, out _currentLongitude, out _currentLatitude))
                 {
                     return true;
                 }
@@ -91,7 +92,7 @@ namespace Itinero.Data.Tiles
             LocalId = _currentVertex
         };
 
-        public Coordinate Location => _currentLocation;
+        public Coordinate Location => new Coordinate(_currentLongitude, _currentLatitude);
 
         public void Dispose()
         {

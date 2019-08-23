@@ -16,8 +16,8 @@ namespace Itinero.Tests.Functional.Staging
             var enumerator = routerDb.Network.GetEnumerator();
             if (!enumerator.MoveToEdge(edgeId)) return null;
 
-            var vertex1 = routerDb.Network.GetVertex(enumerator.From);
-            var vertex2 = routerDb.Network.GetVertex(enumerator.To);
+            var vertex1 = routerDb.GetVertex(enumerator.From);
+            var vertex2 = routerDb.GetVertex(enumerator.To);
 
             // compose geometry.
             var coordinates = new List<Coordinate>();
