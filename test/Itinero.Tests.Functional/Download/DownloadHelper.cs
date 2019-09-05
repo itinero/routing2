@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web;
@@ -30,6 +31,10 @@ namespace Itinero.Tests.Functional.Download
                 var client = new HttpClient();
                 client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 var response = client.GetAsync(url);
+                if (response.Result.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
                 using (var stream = response.GetAwaiter().GetResult().Content.ReadAsStreamAsync().GetAwaiter()
                     .GetResult()) 
                 using (var fileStream = File.Open(fileName, FileMode.Create))

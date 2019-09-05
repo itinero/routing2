@@ -87,7 +87,6 @@ namespace Itinero.IO.Osm.Tiles
             var updated = false;
 
             Parallel.ForEach(tileRange, (tile) =>
-                //foreach (var tile in tileRange)
             {
                 if (_loadedTiles.Contains(tile.LocalId)) return;
 
@@ -95,6 +94,14 @@ namespace Itinero.IO.Osm.Tiles
 
                 using (var stream = TileParser.DownloadFunc(url))
                 {
+                    if (stream == null)
+                    {
+                        lock (_loadedTiles)
+                        {
+                            _loadedTiles.Add(tile.LocalId);
+                            return;
+                        }
+                    }
                     var parse = stream?.Parse(tile);
                     if (parse == null)
                     {

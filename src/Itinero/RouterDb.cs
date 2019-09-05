@@ -112,6 +112,10 @@ namespace Itinero
 
             lock (_edgesMeta)
             {
+                if (_edgesMeta.IsOptimized)
+                {
+                    _edgesMeta.MakeWriteable();
+                }
                 _edgesMeta[edgeId] = new AttributeCollection(attributes);
             }
 
