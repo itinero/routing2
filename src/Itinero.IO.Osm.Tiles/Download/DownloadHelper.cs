@@ -1,7 +1,10 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Web;
 using Itinero.Logging;
 
 namespace Itinero.IO.Osm.Tiles.Download
@@ -18,13 +21,23 @@ namespace Itinero.IO.Osm.Tiles.Download
             try
             {
                 var client = new HttpClient();
+                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 var response = client.GetAsync(url);
-                return response.GetAwaiter().GetResult().Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                if (response.Result.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                var stream = response.GetAwaiter().GetResult().Content.ReadAsStreamAsync().GetAwaiter()
+                    .GetResult();
+                Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Verbose,
+                    $"Downloaded from {url}.");
+                return new GZipStream(stream, CompressionMode.Decompress);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Warning, 
-                    $"Failed to download from {url}.");
+                Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Warning,
+                    $"Failed to download from {url}: {ex}.");
                 return null;
             }
         }
