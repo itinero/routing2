@@ -59,7 +59,7 @@ namespace Itinero
         /// </summary>
         /// <param name="edgeId">The edge id.</param>
         /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
-        public bool MoveToEdge(uint edgeId, bool forward = true)
+        public bool MoveToEdge(EdgeId edgeId, bool forward = true)
         {
             if (_enumerator == null) throw new InvalidOperationException(
                 $"Cannot reset an enumerator created from an {nameof(EdgeEnumerator)}.");
@@ -97,7 +97,7 @@ namespace Itinero
         /// <summary>
         /// Gets the edge id.
         /// </summary>
-        public uint Id => this.Enumerator.Id;
+        public EdgeId Id => this.Enumerator.Id;
 
         /// <summary>
         /// Gets the shape, if any.

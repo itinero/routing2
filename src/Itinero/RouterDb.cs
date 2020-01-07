@@ -109,7 +109,7 @@ namespace Itinero
         /// <param name="attributes">The attributes associated with this edge.</param>
         /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public uint AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<Attribute> attributes = null,
+        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<Attribute> attributes = null,
             IEnumerable<Coordinate> shape = null)
         {
             var edgeId = _network.AddEdge(vertex1, vertex2);
@@ -119,7 +119,7 @@ namespace Itinero
 //                _edgesMeta[edgeId] = new AttributeCollection(attributes);
 //            }
 
-            return 0;
+            return edgeId;
         }
 
         /// <summary>
@@ -136,11 +136,12 @@ namespace Itinero
         /// </summary>
         /// <param name="edgeId">The edge id.</param>
         /// <returns>The attributes.</returns>
-        public IAttributeCollection GetAttributes(uint edgeId)
+        public IAttributeCollection GetAttributes(EdgeId edgeId)
         {
             lock (_edgesMeta)
             {
-                return new AttributeCollection(_edgesMeta[edgeId]);
+                return new AttributeCollection();
+                //return new AttributeCollection(_edgesMeta[edgeId]);
             }
         }
 

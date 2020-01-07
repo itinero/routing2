@@ -45,6 +45,8 @@ namespace Itinero.Collections
         {
             get
             {
+                if (idx >= this.Length) throw new ArgumentNullException(nameof(idx));
+                
                 var blockId = idx >> _arrayPow;
                 var block = _blocks[blockId];
                 if (block == null) return _default;
@@ -54,6 +56,7 @@ namespace Itinero.Collections
             }
             set
             {
+                if (idx >= this.Length) throw new ArgumentNullException(nameof(idx));
                 
                 var blockId = idx >> _arrayPow;
                 var block = _blocks[blockId];
@@ -96,5 +99,16 @@ namespace Itinero.Collections
         /// Gets the length of this array.
         /// </summary>
         public long Length => _size;
+    }
+
+    internal static class SparseArrayExtensions
+    {
+        internal static void EnsureMinimumSize<T>(this SparseArray<T> array, long i)
+        {
+            if (array.Length <= i)
+            {
+                array.Resize(i + 1);
+            }
+        }
     }
 }

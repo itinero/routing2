@@ -321,7 +321,7 @@ namespace Itinero.Data
         {
             for (var b = 0; b < bytes; b++)
             {
-                data[b] = (byte)(value & byte.MaxValue);
+                data[i + b] = (byte)(value & byte.MaxValue);
                 value >>= 8;
             }
         }
@@ -331,7 +331,7 @@ namespace Itinero.Data
             value = 0;
             for (var b = 0; b < bytes; b++)
             {
-                value += (data[b] << (b * 8));
+                value += (data[i + b] << (b * 8));
             }
         }
     }

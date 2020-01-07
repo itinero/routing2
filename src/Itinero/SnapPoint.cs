@@ -1,3 +1,5 @@
+using Itinero.Data.Graphs;
+
 namespace Itinero
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace Itinero
         /// </summary>
         /// <param name="edgeId">The edge id.</param>
         /// <param name="offset">The offset.</param>
-        public SnapPoint(uint edgeId, ushort offset)
+        public SnapPoint(EdgeId edgeId, ushort offset)
         {
             this.EdgeId = edgeId;
             this.Offset = offset;
@@ -25,7 +27,7 @@ namespace Itinero
         /// <summary>
         /// Gets the edge id.
         /// </summary>
-        public uint EdgeId { get; }
+        public EdgeId EdgeId { get; }
         
         /// <summary>
         /// Gets the offset.

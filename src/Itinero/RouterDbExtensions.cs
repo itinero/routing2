@@ -59,7 +59,7 @@ namespace Itinero
 
                     return canStop;
                 });
-                if (snapPoint.EdgeId != uint.MaxValue) return snapPoint;
+                if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
 
                 offset *= 2;
             }

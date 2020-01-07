@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Net;
 using Itinero.Data.Tiles;
 using Reminiscence.Arrays;
 
@@ -25,6 +27,9 @@ namespace Itinero.Data.Graphs
         private uint _nextEdgeId = 0;
         // the edges.
         private readonly ArrayBase<byte> _edges;
+        // the shapes.
+        private readonly ArrayBase<uint> _shapePointers;
+        private readonly ArrayBase<byte> _shapes;
 
         /// <summary>
         /// Creates a new tile.
@@ -36,11 +41,19 @@ namespace Itinero.Data.Graphs
             _zoom = zoom;
             _tileId = tileId;
             
-            _coordinates = new MemoryArray<byte>(0);
             _pointers = new MemoryArray<uint>(0);
-            
             _edges = new MemoryArray<byte>(0);
+            
+            _coordinates = new MemoryArray<byte>(0);
+            
+            _shapePointers = new MemoryArray<uint>(0);
+            _shapes = new MemoryArray<byte>(0);
         }
+
+        /// <summary>
+        /// Gets the tile id.
+        /// </summary>
+        public uint TileId => _tileId;
 
         /// <summary>
         /// Gets the number of vertices.
@@ -61,6 +74,9 @@ namespace Itinero.Data.Graphs
             // create id.
             var vertexId = new VertexId(_tileId, _nextVertexId);
             _nextVertexId++;
+            
+            // make room for edges.
+            if (vertexId.LocalId > _pointers.Length) _pointers.Resize(_pointers.Length + 1024);
 
             return vertexId;
         }
@@ -87,22 +103,58 @@ namespace Itinero.Data.Graphs
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>
         /// <param name="vertex2">The second vertex.</param>
+        /// <param name="shape">The shape."</param>
         /// <returns>The new edge id.</returns>
-        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2)
+        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null)
         {
             var edgeId = new EdgeId(_tileId, _nextEdgeId);
 
+            // write the edge data.
+            var newp = _nextEdgeId;
             var size = EncodeVertex(_nextEdgeId, vertex1);
             _nextEdgeId += size;
             size = EncodeVertex(_nextEdgeId, vertex2);
             _nextEdgeId += size;
+            
+            // get previous pointers if vertices already has edges
+            // set the new pointers.
+            // TODO: save the offset pointers, this prevents the need to decode two vertices for every edge.
+            // we also need to decode just one next pointer for each edge.
+            // we do need to save the first pointer in the global pointers list.
+            // we can check if it's the first while adding it again.
+            uint? v1p = null;
+            if (vertex1.TileId == _tileId)
+            {
+                v1p = _pointers[vertex1.LocalId].ToNullable();
+                _pointers[vertex1.LocalId] = newp;
+            }
+
+            uint? v2p = null;
+            if (vertex2.TileId == _tileId)
+            {
+                v2p = _pointers[vertex2.LocalId].ToNullable();
+                _pointers[vertex2.LocalId] = newp;
+            }
+
+            // set next pointers.
+            size = EncodePointer(_nextEdgeId, v1p);
+            _nextEdgeId += size;
+            size = EncodePointer(_nextEdgeId, v2p);
+            _nextEdgeId += size;
+            
+            if (shape != null)
+            {
+                 // TODO: implement shapes using diff-encoding integers.
+                 // first entry needs to be # of points.
+                 // then follow the pairs.
+            }
 
             return edgeId;
         }
 
         private void SetCoordinate(uint localId, double longitude, double latitude)
         {    
-            var tileCoordinatePointer = _nextVertexId * CoordinateSizeInBytes * 2;
+            var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
             if (_coordinates.Length <= tileCoordinatePointer + CoordinateSizeInBytes * 2)
             {
                 _coordinates.Resize(_coordinates.Length + 1024);
@@ -116,39 +168,65 @@ namespace Itinero.Data.Graphs
 
         private void GetCoordinate(uint localId, out double longitude, out double latitude)
         {
-            var tileCoordinatePointer = _nextVertexId * CoordinateSizeInBytes * 2;
+            var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
             
             const int resolution = (1 << TileResolutionInBits) - 1;
             _coordinates.GetFixed(tileCoordinatePointer, CoordinateSizeInBytes, out var x);
             _coordinates.GetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, out var y);
 
-            TileStatic.FromLocalTileCoordinates(_zoom, resolution, x, y, resolution, out longitude, out latitude);
+            TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out longitude, out latitude);
         }
 
-        private uint EncodeVertex(uint pointer, VertexId vertexId)
+        internal uint VertexEdgePointer(uint vertex)
         {
+            return this._pointers[vertex];
+        }
+
+        internal uint EncodeVertex(uint location, VertexId vertexId)
+        {
+            if (_edges.Length <= location + 5)
+            {
+                _edges.Resize(_edges.Length + 1024);
+            }
+            
             if (vertexId.TileId == _tileId)
             {
-                return (uint)_edges.SetDynamicUInt32(pointer, vertexId.LocalId);
+                return (uint)_edges.SetDynamicUInt32(location, vertexId.LocalId);
             }
 
             var encodedId = (((ulong) vertexId.TileId) << 32) + vertexId.LocalId;
-            return (uint) _edges.SetDynamicUInt64(pointer, encodedId);
+            return (uint) _edges.SetDynamicUInt64(location, encodedId);
         }
 
-        internal class EdgeEnumerator
+        internal uint DecodeVertex(uint location, out uint localId, out uint tileId)
         {
-            private readonly GraphTile _graphTile;
-
-            public EdgeEnumerator(GraphTile graphTile)
+            var size = (uint) _edges.GetDynamicUInt64(location, out var encodedId);
+            if (encodedId < uint.MaxValue)
             {
-                _graphTile = graphTile;
+                localId = (uint) encodedId;
+                tileId = _tileId;
             }
 
-            public bool MoveTo(VertexId vertex)
+            tileId = (uint) (encodedId << 32);
+            localId = (uint) (encodedId - ((ulong)tileId >> 32));
+            return size;
+        }
+
+        internal uint EncodePointer(uint location, uint? pointer)
+        {
+            if (_edges.Length <= location + 5)
             {
-                return false;
+                _edges.Resize(_edges.Length + 1024);
             }
+            return (uint) _edges.SetDynamicUInt32(location, 
+                pointer.FromNullable());
+        }
+
+        internal uint DecodePointer(uint location, out uint? pointer)
+        {
+            var size = _edges.GetDynamicUInt32(location, out var data);
+            pointer = data.ToNullable();
+            return (uint)size;
         }
     }
 }

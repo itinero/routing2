@@ -55,11 +55,11 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edgeId = network.AddEdge(vertex1, vertex2, shape: new [] { new Coordinate(4.795167446136475,
+            var edges = network.AddEdge(vertex1, vertex2, shape: new [] { new Coordinate(4.795167446136475,
                 51.26580191532799), });
 
             var enumerator = network.GetEdgeEnumerator();
-            enumerator.MoveToEdge(edgeId);
+            enumerator.MoveToEdge(edges.edge1);
             var shape = enumerator.GetShape();
             Assert.NotNull(shape);
             var shapeList = shape.ToList();
@@ -79,9 +79,9 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edgeId = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { new Attribute("highway", "residential"), });
+            var edges = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { new Attribute("highway", "residential"), });
 
-            var attributes = routerDb.GetAttributes(edgeId);
+            var attributes = routerDb.GetAttributes(edges.edge1);
             Assert.NotNull(attributes);
             Assert.Equal(1, attributes.Count);
             Assert.Equal("highway", attributes.First().Key);
@@ -99,7 +99,7 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edgeId = original.AddEdge(vertex1, vertex2, 
+            var edges = original.AddEdge(vertex1, vertex2, 
                 shape: new [] { new Coordinate(4.795167446136475, 51.26580191532799), }, 
                 attributes: new [] { new Attribute("highway", "residential"), });
 
@@ -112,14 +112,14 @@ namespace Itinero.Tests
                 var routerDb = RouterDb.ReadFrom(stream);
                 
                 var enumerator = routerDb.GetEdgeEnumerator();
-                enumerator.MoveToEdge(edgeId);
+                enumerator.MoveToEdge(edges.edge1);
                 var shape = enumerator.GetShape();
                 Assert.NotNull(shape);
                 var shapeList = shape.ToList();
                 Assert.Single(shapeList);
                 Assert.Equal(4.795167446136475, shapeList[0].Longitude);
                 Assert.Equal(51.26580191532799, shapeList[0].Latitude);
-                var attributes = routerDb.GetAttributes(edgeId);
+                var attributes = routerDb.GetAttributes(edges.edge1);
                 Assert.NotNull(attributes);
                 Assert.Equal(1, attributes.Count);
                 Assert.Equal("highway", attributes.First().Key);

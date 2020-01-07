@@ -6,6 +6,7 @@ namespace Itinero.Algorithms.DataStructures
     /// Implements a priority queue in the form of a binary heap.
     /// </summary>
     internal class BinaryHeap<T>
+        where T : struct
     {
         private T[] _heap; // The objects per priority.
         private float[] _priorities; // Holds the priorities of this heap.

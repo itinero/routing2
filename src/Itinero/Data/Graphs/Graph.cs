@@ -44,14 +44,17 @@ namespace Itinero.Data.Graphs
         {
             // get the local tile id.
             var (x, y) = TileStatic.WorldToTile(longitude, latitude, this.Zoom);
-            var localTilId = TileStatic.ToLocalId(x, y, this.Zoom);
+            var localTileId = TileStatic.ToLocalId(x, y, this.Zoom);
+            
+            // ensure minimum size.
+            _tiles.EnsureMinimumSize(localTileId);
             
             // get the tile (or create it).
-            var tile = _tiles[localTilId];
+            var tile = _tiles[localTileId];
             if (tile == null)
             {
-                tile = new GraphTile(this.Zoom, localTilId);
-                _tiles[localTilId] = tile;
+                tile = new GraphTile(this.Zoom, localTileId);
+                _tiles[localTileId] = tile;
             }
 
             return tile.AddVertex(longitude, latitude);
@@ -112,10 +115,13 @@ namespace Itinero.Data.Graphs
         internal class Enumerator
         {
             private readonly Graph _graph;
+            private readonly GraphTileEnumerator _tileEnumerator;
 
             internal Enumerator(Graph graph)
             {
                 _graph = graph;
+                
+                _tileEnumerator = new GraphTileEnumerator();
             }
             
             /// <summary>
@@ -125,8 +131,14 @@ namespace Itinero.Data.Graphs
             /// <returns>True if the vertex exists.</returns>
             public bool MoveTo(VertexId vertex)
             {
+                if (_tileEnumerator.TileId == vertex.TileId) return _tileEnumerator.MoveTo(vertex);
+                
+                // move to the tile.
+                var tile = _graph._tiles[vertex.TileId];
+                if (tile == null) return false;
+                _tileEnumerator.MoveTo(tile);
 
-                return true;
+                return _tileEnumerator.MoveTo(vertex);
             }
 
             /// <summary>
@@ -134,18 +146,30 @@ namespace Itinero.Data.Graphs
             /// </summary>
             /// <param name="edgeId">The edge id.</param>
             /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
-            public bool MoveToEdge(uint edgeId, bool forward = true)
+            public bool MoveToEdge(EdgeId edgeId, bool forward = true)
             {
+                if (_tileEnumerator.TileId == edgeId.TileId) return _tileEnumerator.MoveTo(edgeId, forward);
+                
+                // move to the tile.
+                var tile = _graph._tiles[edgeId.TileId];
+                if (tile == null) return false;
+                _tileEnumerator.MoveTo(tile);
 
-                return true;
+                return _tileEnumerator.MoveTo(edgeId, forward);
             }
 
             /// <summary>
-            /// Resets this enumerator to the first edge of the last vertex that was moved to if any.
+            /// Resets this enumerator.
             /// </summary>
-            public void Reset()
+            /// <remarks>
+            /// Reset this enumerator to:
+            /// - the first vertex for the currently selected edge.
+            /// - the first vertex for the graph tile if there is no selected edge.
+            /// - returns false if there is no data in the current tile or if there is no tile selected.
+            /// </remarks>
+            public bool Reset()
             {
-                
+                return _tileEnumerator.Reset();
             }
 
             /// <summary>
@@ -154,29 +178,28 @@ namespace Itinero.Data.Graphs
             /// <returns>True if there is data available.</returns>
             public bool MoveNext()
             {
-                
-                return true;
+                return _tileEnumerator.MoveNext();
             }
 
             /// <summary>
             /// Returns true if the edge is from -> to, false otherwise.
             /// </summary>
-            public bool Forward => true;
+            public bool Forward => _tileEnumerator.Forward;
 
             /// <summary>
             /// Gets the source vertex.
             /// </summary>
-            public VertexId From => default;
-            
+            public VertexId From => _tileEnumerator.Vertex1;
+
             /// <summary>
             /// Gets the target vertex.
             /// </summary>
-            public VertexId To { get; private set; }
+            public VertexId To => _tileEnumerator.Vertex2;
 
             /// <summary>
             /// Gets the edge id.
             /// </summary>
-            public uint Id => 0;
+            public EdgeId Id => new EdgeId(_tileEnumerator.TileId, _tileEnumerator.EdgeId);
             
             /// <summary>
             /// Gets the shape, if any.

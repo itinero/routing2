@@ -14,7 +14,7 @@ namespace Itinero.Data.Tiles
         public static uint ToLocalId(uint x, uint y, int zoom)
         {
             var xMax = (1 << (int) zoom);
-            return (uint)(x * xMax + y);
+            return (uint)(y * xMax + x);
         }
         
         public static (int x, int y) ToLocalTileCoordinates(int zoom, uint tileId, double longitude, double latitude, int resolution)

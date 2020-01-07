@@ -9,7 +9,7 @@ namespace Itinero.Algorithms
     public class Result<T>
     {
         private readonly T _value;
-        private readonly Func<string, Exception> _createException;
+        private readonly Func<string, Exception>? _createException;
 
         /// <summary>
         /// Creates a new result.
@@ -33,7 +33,7 @@ namespace Itinero.Algorithms
         /// <summary>
         /// Creates a new result.
         /// </summary>
-        public Result(string errorMessage, Func<string, Exception> createException)
+        public Result(string errorMessage, Func<string, Exception>? createException)
         {
             _value = default(T);
             _createException = createException;
@@ -48,7 +48,8 @@ namespace Itinero.Algorithms
         {
             get
             {
-                if(this.IsError)
+                if(this.IsError &&
+                   _createException != null)
                 {
                     throw _createException(this.ErrorMessage);
                 }

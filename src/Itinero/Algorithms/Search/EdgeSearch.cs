@@ -50,13 +50,13 @@ namespace Itinero.Algorithms.Search
 
             const double exactTolerance = 1;
             var bestDistance = double.MaxValue;
-            (uint edgeId, ushort offset) bestSnapPoint = (uint.MaxValue, ushort.MaxValue);
+            (EdgeId edgeId, ushort offset) bestSnapPoint = (EdgeId.Empty, ushort.MaxValue);
             while (edgeEnumerator.MoveNext())
             {
                 if (bestDistance <= 0) break; // break when exact on an edge.
                 
                 // search for the local snap point that improves the current best snap point.
-                (uint edgeId, double offset) localSnapPoint = (uint.MaxValue, 0); 
+                (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0); 
                 var isAcceptable = (bool?) null;
                 var completeShape = edgeEnumerator.GetCompleteShape();
                 var length = 0.0;
@@ -128,7 +128,7 @@ namespace Itinero.Algorithms.Search
                 }
 
                 // move to the nex edge if no better point was found.
-                if (localSnapPoint.edgeId == uint.MaxValue) continue;
+                if (localSnapPoint.edgeId == EdgeId.Empty) continue;
                 
                 // calculate the actual offset.
                 var offset = ushort.MaxValue;

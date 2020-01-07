@@ -30,7 +30,8 @@ namespace Itinero.Tests.Algorithms.Search
             var edges = network.SearchEdgesInBox((4.796, 51.265, 4.798, 51.267));
             Assert.NotNull(edges);
             Assert.True(edges.MoveNext());
-            Assert.Equal(edge, edges.Id);
+            Assert.Equal(edge.edge1, edges.Id);
+            Assert.Equal(edge.edge2, EdgeId.Empty);
             Assert.False(edges.MoveNext());
         }
 
@@ -44,7 +45,8 @@ namespace Itinero.Tests.Algorithms.Search
             
             var snapPoint = network.SnapInBox((4.792613983154297 - 0.001, 51.26535213392538 - 0.001, 
                 4.792613983154297 + 0.001, 51.26535213392538 + 0.001));
-            Assert.Equal(edge, snapPoint.EdgeId);
+            Assert.Equal(edge.edge1, snapPoint.EdgeId);
+            Assert.Equal(edge.edge2, EdgeId.Empty);
             Assert.Equal(0, snapPoint.Offset);
         }
 
@@ -58,7 +60,8 @@ namespace Itinero.Tests.Algorithms.Search
             
             var snapPoint = network.SnapInBox((4.797506332397461 - 0.001, 51.26674845584085 - 0.001, 
                 4.797506332397461 + 0.001, 51.26674845584085 + 0.001));
-            Assert.Equal(edge, snapPoint.EdgeId);
+            Assert.Equal(edge.edge1, snapPoint.EdgeId);
+            Assert.Equal(edge.edge2, EdgeId.Empty);
             Assert.Equal(ushort.MaxValue, snapPoint.Offset);
         }
 
@@ -73,7 +76,8 @@ namespace Itinero.Tests.Algorithms.Search
             (double lon, double lat) middle = ((4.79261398315429 + 4.797506332397461) / 2,(51.26535213392538 + 51.26674845584085) / 2);
             var snapPoint = network.SnapInBox((middle.lon - 0.01, middle.lat - 0.01, 
                 middle.lon + 0.01, middle.lat + 0.01));
-            Assert.Equal(edge, snapPoint.EdgeId);
+            Assert.Equal(edge.edge1, snapPoint.EdgeId);
+            Assert.Equal(edge.edge2, EdgeId.Empty);
         }
     }
 }
