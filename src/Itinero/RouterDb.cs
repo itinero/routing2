@@ -31,7 +31,7 @@ namespace Itinero
         /// <param name="configuration">The configuration.</param>
         public RouterDb(RouterDbConfiguration configuration = null)
         {
-            configuration = configuration ?? RouterDbConfiguration.Default;
+            configuration ??= RouterDbConfiguration.Default;
             this.EdgeDataLayout = configuration.EdgeDataLayout ?? new EdgeDataLayout();
 
             _network = new Graph(configuration.Zoom);
