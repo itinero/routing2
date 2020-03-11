@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Itinero.Data.Graphs
 {
     internal class GraphTileEnumerator
@@ -9,7 +11,15 @@ namespace Itinero.Data.Graphs
         /// <summary>
         /// Gets the tile id.
         /// </summary>
-        public uint TileId => _graphTile.TileId;
+        public uint TileId
+        {
+            get
+            {
+                if (_graphTile == null) return uint.MaxValue;
+                
+                return _graphTile.TileId;
+            }
+        }
 
         /// <summary>
         /// Moves to the given tile.
@@ -119,6 +129,11 @@ namespace Itinero.Data.Graphs
 
             return true;
         }
+
+        /// <summary>
+        /// Gets the shape of the given edge (not including vertex locations).
+        /// </summary>
+        public IEnumerable<(double longitude, double latitude)> Shape => _graphTile.GetShape(new EdgeId(_graphTile.TileId, this.EdgeId));
 
         /// <summary>
         /// Gets the first vertex.

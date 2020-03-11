@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Itinero.Data.Tiles;
 using Itinero.LocalGeo;
@@ -250,7 +251,7 @@ namespace Itinero.Data.Graphs
         internal IEnumerable<(double longitude, double latitude)> GetShape(EdgeId edge)
         {
             var pointer = _shapePointers[edge.LocalId].DecodeNullableData();
-            if (pointer == null) return null;
+            if (pointer == null) return Enumerable.Empty<(double longitude, double latitude)>();
             
             return GetShape(pointer.Value);
         }
