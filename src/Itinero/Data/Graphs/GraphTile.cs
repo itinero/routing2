@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Itinero.Data.Tiles;
+using Itinero.LocalGeo;
 using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs
@@ -28,6 +29,7 @@ namespace Itinero.Data.Graphs
         // the edges.
         private readonly ArrayBase<byte> _edges;
         // the shapes.
+        private uint _nextShapePointer = 0;
         private readonly ArrayBase<uint> _shapePointers;
         private readonly ArrayBase<byte> _shapes;
 
@@ -110,7 +112,7 @@ namespace Itinero.Data.Graphs
             var edgeId = new EdgeId(_tileId, _nextEdgeId);
 
             // write the edge data.
-            var newp = _nextEdgeId;
+            var newEdgePointer = _nextEdgeId;
             var size = EncodeVertex(_nextEdgeId, vertex1);
             _nextEdgeId += size;
             size = EncodeVertex(_nextEdgeId, vertex2);
@@ -125,15 +127,15 @@ namespace Itinero.Data.Graphs
             uint? v1p = null;
             if (vertex1.TileId == _tileId)
             {
-                v1p = _pointers[vertex1.LocalId].ToNullable();
-                _pointers[vertex1.LocalId] = newp;
+                v1p = _pointers[vertex1.LocalId].DecodeNullableData();
+                _pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
             }
 
             uint? v2p = null;
             if (vertex2.TileId == _tileId)
             {
-                v2p = _pointers[vertex2.LocalId].ToNullable();
-                _pointers[vertex2.LocalId] = newp;
+                v2p = _pointers[vertex2.LocalId].DecodeNullableData();
+                _pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
             }
 
             // set next pointers.
@@ -141,13 +143,19 @@ namespace Itinero.Data.Graphs
             _nextEdgeId += size;
             size = EncodePointer(_nextEdgeId, v2p);
             _nextEdgeId += size;
-            
+
+            // take care of shape if any.
+            uint? shapePointer = null;
             if (shape != null)
             {
-                 // TODO: implement shapes using diff-encoding integers.
-                 // first entry needs to be # of points.
-                 // then follow the pairs.
+                shapePointer = SetShape(shape);
             }
+
+            if (_shapePointers.Length <= newEdgePointer)
+            {
+                _shapePointers.Resize(_shapePointers.Length + 1024);
+            }
+            _shapePointers[newEdgePointer] = shapePointer.EncodeAsNullableData();
 
             return edgeId;
         }
@@ -175,6 +183,105 @@ namespace Itinero.Data.Graphs
             _coordinates.GetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, out var y);
 
             TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out longitude, out latitude);
+        }
+
+        private uint SetShape(IEnumerable<(double longitude, double latitude)> shape)
+        {
+            const int resolution = (1 << TileResolutionInBits) - 1;
+            var originalPointer = _nextShapePointer;
+            var blockPointer = originalPointer;
+            var pointer = blockPointer + 1;
+            
+            if (_shapes.Length <= pointer + 8)
+            {
+                _shapes.Resize(_shapes.Length + 1024);
+            }
+
+            using var enumerator = shape.GetEnumerator();
+            var count = 0;
+            (int x, int y) previous = (int.MaxValue, int.MaxValue);
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                var (x, y) =
+                    TileStatic.ToLocalTileCoordinates(_zoom, _tileId, current.longitude, current.latitude, resolution);
+                if (_shapes.Length <= pointer + 8)
+                {
+                    _shapes.Resize(_shapes.Length + 1024);
+                }
+                if (count == 0)
+                {
+                    // first coordinate.
+                    pointer += (uint) _shapes.SetDynamicInt32(pointer, x);
+                    pointer += (uint) _shapes.SetDynamicInt32(pointer, y);
+                }
+                else
+                {
+                    // calculate diff and then store.
+                    var diffX = x - previous.x;
+                    var diffY = y - previous.y;
+                    pointer += (uint) _shapes.SetDynamicInt32(pointer, diffX);
+                    pointer += (uint) _shapes.SetDynamicInt32(pointer, diffY);
+                }
+
+                if (count == 255)
+                {
+                    // start a new block, assign 255.
+                    _shapes[blockPointer] = 255;
+                    blockPointer = pointer;
+                    pointer = blockPointer + 1;
+                    count = 0;
+                }
+                else
+                {
+                    count++;
+                }
+
+                previous = (x, y);
+            }
+
+            // a block is still open, close it.
+            _shapes[blockPointer] = (byte) count;
+            _nextShapePointer = pointer;
+
+            return originalPointer;
+        }
+
+        internal IEnumerable<(double longitude, double latitude)> GetShape(EdgeId edge)
+        {
+            var pointer = _shapePointers[edge.LocalId].DecodeNullableData();
+            if (pointer == null) return null;
+            
+            return GetShape(pointer.Value);
+        }
+
+        private IEnumerable<(double longitude, double latitude)> GetShape(uint pointer)
+        {
+            const int resolution = (1 << TileResolutionInBits) - 1;
+            var count = -1;
+            (int x, int y) previous = (int.MaxValue, int.MaxValue); 
+            do
+            {
+                count = _shapes[pointer];
+                pointer++;
+                
+                for (var i = 0; i < count; i++)
+                {
+                    pointer += (uint)_shapes.GetDynamicInt32(pointer, out var x);
+                    pointer += (uint)_shapes.GetDynamicInt32(pointer, out var y);
+
+                    if (previous.x != int.MaxValue)
+                    {
+                        x = previous.x + x;
+                        y = previous.y + y;
+                    }
+                    
+                    TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out var longitude, out var latitude);
+                    yield return (longitude, latitude);
+
+                    previous = (x, y);
+                }
+            } while (count == 255);
         }
 
         internal uint VertexEdgePointer(uint vertex)
@@ -205,6 +312,7 @@ namespace Itinero.Data.Graphs
             {
                 localId = (uint) encodedId;
                 tileId = _tileId;
+                return size;
             }
 
             tileId = (uint) (encodedId << 32);
@@ -219,13 +327,13 @@ namespace Itinero.Data.Graphs
                 _edges.Resize(_edges.Length + 1024);
             }
             return (uint) _edges.SetDynamicUInt32(location, 
-                pointer.FromNullable());
+                pointer.EncodeAsNullableData());
         }
 
         internal uint DecodePointer(uint location, out uint? pointer)
         {
             var size = _edges.GetDynamicUInt32(location, out var data);
-            pointer = data.ToNullable();
+            pointer = data.DecodeNullableData();
             return (uint)size;
         }
     }

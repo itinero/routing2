@@ -4,25 +4,12 @@ namespace Itinero.Data.Graphs
     {
         private GraphTile _graphTile;
         private uint _localId;
-        private uint? _edgep;
+        private uint? _nextEdgePointer;
 
         /// <summary>
         /// Gets the tile id.
         /// </summary>
         public uint TileId => _graphTile.TileId;
-
-        /// <summary>
-        /// Gets the local edge id.
-        /// </summary>
-        public uint EdgeId
-        {
-            get
-            {
-                if (_edgep == null) return uint.MaxValue;
-
-                return _edgep.Value;
-            }
-        }
 
         /// <summary>
         /// Moves to the given tile.
@@ -49,6 +36,8 @@ namespace Itinero.Data.Graphs
             }
 
             _localId = vertex.LocalId;
+
+            this.Vertex1 = vertex;
             return true;
         }
 
@@ -77,7 +66,7 @@ namespace Itinero.Data.Graphs
         {
             if (_graphTile == null) return false;
             
-            _edgep = uint.MaxValue;
+            _nextEdgePointer = uint.MaxValue;
 
             return true;
         }
@@ -88,39 +77,44 @@ namespace Itinero.Data.Graphs
         /// <returns>True when there is a new edge.</returns>
         public bool MoveNext()
         {
-            if (_edgep == uint.MaxValue)
+            if (_nextEdgePointer == uint.MaxValue)
             {
                 // move to the first edge.
-                _edgep = _graphTile.VertexEdgePointer(_localId).ToNullable();
+                _nextEdgePointer = _graphTile.VertexEdgePointer(_localId).DecodeNullableData();
             }
 
-            if (_edgep == null)
+            if (_nextEdgePointer == null)
             {
                 // no more data available.
                 return false;
             }
 
             // decode edge data.
-            var size = _graphTile.DecodeVertex(_edgep.FromNullable(), out var localId, out var tileId);
-            this.Vertex1 = new VertexId(tileId, localId);
-            _edgep += size;
-            size = _graphTile.DecodeVertex(_edgep.FromNullable(), out localId, out tileId);
-            this.Vertex2 = new VertexId(tileId, localId);
-            _edgep += size;
-            size = _graphTile.DecodePointer(_edgep.FromNullable(), out var vp1);
-            _edgep += size;
-            size = _graphTile.DecodePointer(_edgep.FromNullable(), out var vp2);
+            this.EdgeId = _nextEdgePointer.Value;
+            var size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
+            var vertex1 = new VertexId(tileId, localId);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
+            var vertex2 = new VertexId(tileId, localId);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp1);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
 
-            if (this.Vertex1.TileId == _graphTile.TileId &&
-                this.Vertex1.LocalId == _localId)
+            if (vertex1.TileId == _graphTile.TileId &&
+                vertex1.LocalId == _localId)
             {
-                _edgep = vp1;
+                _nextEdgePointer = vp1;
+
+                this.Vertex2 = vertex2;
+                this.Forward = true;
             }
-
-            if (this.Vertex2.TileId == _graphTile.TileId &&
-                this.Vertex2.LocalId == _localId)
+            else
             {
-                _edgep = vp1;
+                _nextEdgePointer = vp2;
+
+                this.Vertex2 = vertex1;
+                this.Forward = false;
             }
 
             return true;
@@ -129,16 +123,21 @@ namespace Itinero.Data.Graphs
         /// <summary>
         /// Gets the first vertex.
         /// </summary>
-        public VertexId Vertex1 { get; set; }
+        public VertexId Vertex1 { get; private set; }
 
         /// <summary>
         /// Gets the second vertex.
         /// </summary>
-        public VertexId Vertex2 { get; set; }
+        public VertexId Vertex2 { get; private set; }
+
+        /// <summary>
+        /// Gets the local edge id.
+        /// </summary>
+        public uint EdgeId { get; private set; }
 
         /// <summary>
         /// Gets the forward/backward flag.
         /// </summary>
-        public bool Forward { get; set; }
+        public bool Forward { get; private set; }
     }
 }

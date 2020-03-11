@@ -317,6 +317,45 @@ namespace Itinero.Data
             return 10;
         }
 
+        public static uint ToUnsigned(int value)
+        {
+            var unsigned = (uint) value;
+            if (value < 0) unsigned = (uint) -value;
+
+            unsigned <<= 1;
+            if (value < 0)
+            {
+                unsigned += 1;
+            }
+
+            return unsigned;
+        }
+
+        public static int FromUnsigned(uint unsigned)
+        {
+            var sign = unsigned & (uint)1;
+
+            var value = (int)(unsigned >> 1);
+            if (sign == 1)
+            {
+                value = -value;
+            }
+
+            return value;
+        }
+        
+        public static long SetDynamicInt32(this ArrayBase<byte> data, long i, int value)
+        {
+            return data.SetDynamicUInt32(i, ToUnsigned(value));
+        }
+
+        public static long GetDynamicInt32(this ArrayBase<byte> data, long i, out int value)
+        {
+            var c = data.GetDynamicUInt32(i, out var unsigned);
+            value = FromUnsigned(unsigned);
+            return c;
+        }
+
         public static void SetFixed(this ArrayBase<byte> data, long i, int bytes, int value)
         {
             for (var b = 0; b < bytes; b++)

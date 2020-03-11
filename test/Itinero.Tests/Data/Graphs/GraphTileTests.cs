@@ -1,3 +1,4 @@
+using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
 using Xunit;
@@ -81,6 +82,25 @@ namespace Itinero.Tests.Data.Graphs
             // the second edge get the pointer as id.
             var edge = graphTile.AddEdge(vertex2, vertex1);
             Assert.Equal((uint)4, edge.LocalId);
+        }
+
+        [Fact]
+        public void GraphTile_AddEdge0_OneShapePoint_ShouldStoreShapePoints()
+        {
+            var graphTile = new GraphTile(14, 
+                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
+            var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
+
+            var edge = graphTile.AddEdge(vertex1, vertex2, new []{ (4.86786,
+                51.26909)});
+
+            var shapes = graphTile.GetShape(edge).ToList();
+            Assert.NotNull(shapes);
+            Assert.Single(shapes);
+            var shapePoint = shapes[0];
+            Assert.Equal(4.86786, shapePoint.longitude, 4);
+            Assert.Equal(51.26909, shapePoint.latitude, 4);
         }
     }
 }
