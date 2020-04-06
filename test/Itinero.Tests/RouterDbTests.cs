@@ -61,8 +61,8 @@ namespace Itinero.Tests
             Assert.NotNull(shape);
             var shapeList = shape.ToList();
             Assert.Single(shapeList);
-            Assert.Equal(4.795167446136475, shapeList[0].longitude);
-            Assert.Equal(51.26580191532799, shapeList[0].latitude);
+            Assert.Equal(4.795167446136475, shapeList[0].longitude, 4);
+            Assert.Equal(51.26580191532799, shapeList[0].latitude, 4);
         }
 
         [Fact]

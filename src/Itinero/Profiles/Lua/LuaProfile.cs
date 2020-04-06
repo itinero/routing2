@@ -57,11 +57,13 @@ namespace Itinero.Profiles.Lua
                 {
                     return EdgeFactor.NoFactor;
                 }
+                var hasValue = false;
                 foreach (var attribute in attributes)
                 {
+                    hasValue = true;
                     _attributesTable.Set(attribute.key, DynValue.NewString(attribute.value));
                 }
-                if (_attributesTable.Length == 0) return EdgeFactor.NoFactor;
+                if (!hasValue) return EdgeFactor.NoFactor;
 
                 // call factor_and_speed function.
                 _resultsTable.Clear();

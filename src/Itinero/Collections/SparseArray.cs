@@ -45,7 +45,7 @@ namespace Itinero.Collections
         {
             get
             {
-                if (idx >= this.Length) throw new ArgumentNullException(nameof(idx));
+                if (idx >= this.Length) throw new ArgumentOutOfRangeException(nameof(idx));
                 
                 var blockId = idx >> _arrayPow;
                 var block = _blocks[blockId];
@@ -56,7 +56,7 @@ namespace Itinero.Collections
             }
             set
             {
-                if (idx >= this.Length) throw new ArgumentNullException(nameof(idx));
+                if (idx >= this.Length) throw new ArgumentOutOfRangeException(nameof(idx));
                 
                 var blockId = idx >> _arrayPow;
                 var block = _blocks[blockId];

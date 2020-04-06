@@ -68,6 +68,12 @@ namespace Itinero.Data.Graphs
             var localTileId = vertex.TileId;
             
             // get tile.
+            if (_tiles.Length <= localTileId)
+            {
+                longitude = default;
+                latitude = default;
+                return false;
+            }
             var tile = _tiles[localTileId];
             if (tile == null)
             {
