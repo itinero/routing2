@@ -95,10 +95,13 @@ namespace Itinero.Tests.Data.Graphs
             var edge = graphTile.AddEdge(vertex1, vertex2, new []{ (4.86786,
                 51.26909)});
 
-            var shapes = graphTile.GetShape(edge).ToList();
+            var enumerator = new GraphTileEnumerator();
+            enumerator.MoveTo(graphTile);
+            Assert.True(enumerator.MoveTo(edge, true));
+            var shapes = enumerator.Shape;
             Assert.NotNull(shapes);
             Assert.Single(shapes);
-            var shapePoint = shapes[0];
+            var shapePoint = shapes.First();
             Assert.Equal(4.86786, shapePoint.longitude, 4);
             Assert.Equal(51.26909, shapePoint.latitude, 4);
         }
@@ -127,7 +130,10 @@ namespace Itinero.Tests.Data.Graphs
                 )
             });
 
-            var shapes = graphTile.GetShape(edge).ToList();
+            var enumerator = new GraphTileEnumerator();
+            enumerator.MoveTo(graphTile);
+            Assert.True(enumerator.MoveTo(edge, true));
+            var shapes = enumerator.Shape.ToList();
             Assert.NotNull(shapes);
             Assert.Equal(3, shapes.Count);
             var shapePoint = shapes[0];

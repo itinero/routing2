@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Itinero.Data.Graphs
@@ -7,6 +8,7 @@ namespace Itinero.Data.Graphs
         private GraphTile _graphTile;
         private uint _localId;
         private uint? _nextEdgePointer;
+        private uint? _shapePointer;
 
         /// <summary>
         /// Gets the tile id.
@@ -59,8 +61,42 @@ namespace Itinero.Data.Graphs
         /// <returns>True if the move succeeds and the edge exists.</returns>
         public bool MoveTo(EdgeId edge, bool forward)
         {
-            // TODO: implement this!
-            return false;
+            if (this.TileId != edge.TileId) throw new ArgumentOutOfRangeException(nameof(edge), 
+                "Cannot move to edge not in current tile, move to the tile first.");
+
+            _nextEdgePointer = edge.LocalId;
+            
+            // decode edge data.
+            var size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
+            var vertex1 = new VertexId(tileId, localId);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
+            var vertex2 = new VertexId(tileId, localId);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp1);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
+
+            if (forward)
+            {
+                this.Vertex1 = vertex1;
+                this.Vertex2 = vertex2;
+                this.Forward = true;
+                
+                _nextEdgePointer = vp1;
+            }
+            else
+            {
+                this.Vertex1 = vertex2;
+                this.Vertex2 = vertex1;
+                this.Forward = false;
+                
+                _nextEdgePointer = vp2;
+            }
+            
+            return true;
         }
 
         /// <summary>
@@ -110,6 +146,8 @@ namespace Itinero.Data.Graphs
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp1);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
 
             if (vertex1.TileId == _graphTile.TileId &&
                 vertex1.LocalId == _localId)
@@ -133,7 +171,7 @@ namespace Itinero.Data.Graphs
         /// <summary>
         /// Gets the shape of the given edge (not including vertex locations).
         /// </summary>
-        public IEnumerable<(double longitude, double latitude)> Shape => _graphTile.GetShape(new EdgeId(_graphTile.TileId, this.EdgeId));
+        public IEnumerable<(double longitude, double latitude)> Shape => _graphTile.GetShape(_shapePointer);
 
         /// <summary>
         /// Gets the first vertex.

@@ -8,7 +8,7 @@ using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs
 {
-    internal class GraphTile
+    internal partial class GraphTile
     {
         private const int CoordinateSizeInBytes = 3; // 3 bytes = 24 bits = 4096 x 4096, the needed resolution depends on the zoom-level, higher, less resolution.
         private const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
@@ -31,7 +31,6 @@ namespace Itinero.Data.Graphs
         private readonly ArrayBase<byte> _edges;
         // the shapes.
         private uint _nextShapePointer = 0;
-        private readonly ArrayBase<uint> _shapePointers;
         private readonly ArrayBase<byte> _shapes;
 
         /// <summary>
@@ -49,7 +48,6 @@ namespace Itinero.Data.Graphs
             
             _coordinates = new MemoryArray<byte>(0);
             
-            _shapePointers = new MemoryArray<uint>(0);
             _shapes = new MemoryArray<byte>(0);
         }
 
@@ -151,12 +149,8 @@ namespace Itinero.Data.Graphs
             {
                 shapePointer = SetShape(shape);
             }
-
-            if (_shapePointers.Length <= newEdgePointer)
-            {
-                _shapePointers.Resize(_shapePointers.Length + 1024);
-            }
-            _shapePointers[newEdgePointer] = shapePointer.EncodeAsNullableData();
+            size = EncodePointer(_nextEdgeId, shapePointer);
+            _nextEdgeId += size;
 
             return edgeId;
         }
@@ -248,28 +242,23 @@ namespace Itinero.Data.Graphs
             return originalPointer;
         }
 
-        internal IEnumerable<(double longitude, double latitude)> GetShape(EdgeId edge)
+        internal IEnumerable<(double longitude, double latitude)> GetShape(uint? pointer)
         {
-            var pointer = _shapePointers[edge.LocalId].DecodeNullableData();
-            if (pointer == null) return Enumerable.Empty<(double longitude, double latitude)>();
+            if (pointer == null) yield break;
+            var p = pointer.Value;
             
-            return GetShape(pointer.Value);
-        }
-
-        private IEnumerable<(double longitude, double latitude)> GetShape(uint pointer)
-        {
             const int resolution = (1 << TileResolutionInBits) - 1;
             var count = -1;
             (int x, int y) previous = (int.MaxValue, int.MaxValue); 
             do
             {
-                count = _shapes[pointer];
-                pointer++;
+                count = _shapes[p];
+                p++;
                 
                 for (var i = 0; i < count; i++)
                 {
-                    pointer += (uint)_shapes.GetDynamicInt32(pointer, out var x);
-                    pointer += (uint)_shapes.GetDynamicInt32(pointer, out var y);
+                    p += (uint)_shapes.GetDynamicInt32(p, out var x);
+                    p += (uint)_shapes.GetDynamicInt32(p, out var y);
 
                     if (previous.x != int.MaxValue)
                     {
