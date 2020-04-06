@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
-using Itinero.LocalGeo;
 
 namespace Itinero.Data.Tiles
 {
@@ -92,7 +91,7 @@ namespace Itinero.Data.Tiles
             LocalId = _currentVertex
         };
 
-        public Coordinate Location => new Coordinate(_currentLongitude, _currentLatitude);
+        public (double longitude, double latitude) Location => (_currentLongitude, _currentLatitude);
 
         public void Dispose()
         {

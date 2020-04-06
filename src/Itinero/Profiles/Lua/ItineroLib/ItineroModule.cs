@@ -1,7 +1,4 @@
-﻿using Itinero.Data.Attributes;
-using System;
-using System.Text;
-using Itinero.IO.Json;
+﻿using System.Text;
 
 namespace Itinero.Profiles.Lua.ItineroLib
 {
@@ -75,7 +72,7 @@ namespace Itinero.Profiles.Lua.ItineroLib
                 }
 
                 stringBuilder.Append("]");
-                Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, stringBuilder.ToInvariantString());
+                Itinero.Logging.Logger.Log("Lua", Logging.TraceEventType.Information, stringBuilder.ToString());
 
                 return DynValue.NewBoolean(true);
             }

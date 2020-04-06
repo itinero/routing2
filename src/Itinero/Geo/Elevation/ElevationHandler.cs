@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Licensed to SharpSoftware under one or more contributor
  *  license agreements. See the NOTICE file distributed with this work for 
  *  additional information regarding copyright ownership.
@@ -15,24 +15,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-using System.Collections.Generic;
-
-namespace Itinero.Data.Attributes
+ 
+ namespace Itinero.Geo.Elevation
 {
     /// <summary>
-    /// Abstract representation of a readonly attribute collection.
+    /// An elevation handler.
     /// </summary>
-    public interface IReadonlyAttributeCollection : IEnumerable<Attribute>
+    public static class ElevationHandler
     {
         /// <summary>
-        /// Gets the count.
+        /// Gets or sets the delegate to get elevation.
         /// </summary>
-        int Count { get; }
-        
+        public static GetElevationDelegate GetElevation = null;
+
         /// <summary>
-        /// Tries to get the value for the given key.
+        /// A delegate to get elevation.
         /// </summary>
-        bool TryGetValue(string key, out string value);
+        public delegate short? GetElevationDelegate(double longitude, double latitude);
+
+        /// <summary>
+        /// Add elevation to the given coordinate.
+        /// </summary>
+        public static short? Elevation(this (double longitude, double latitude) coordinate)
+        {
+            return GetElevation?.Invoke(coordinate.longitude, coordinate.latitude);
+        }
     }
 }

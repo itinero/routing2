@@ -1,5 +1,5 @@
 using System;
-using Itinero.Data.Attributes;
+using System.Collections.Generic;
 
 namespace Itinero.Profiles.Lua
 {
@@ -47,20 +47,21 @@ namespace Itinero.Profiles.Lua
         /// Get a function to calculate properties for a set given edge attributes.
         /// </summary>
         /// <returns></returns>
-        public sealed override EdgeFactor Factor(IAttributeCollection attributes)
+        public sealed override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
         {
             lock (_script)
             {
                 // build lua table.
                 _attributesTable.Clear();
-                if (attributes == null || attributes.Count == 0)
+                if (attributes == null)
                 {
                     return EdgeFactor.NoFactor;
                 }
                 foreach (var attribute in attributes)
                 {
-                    _attributesTable.Set(attribute.Key, DynValue.NewString(attribute.Value));
+                    _attributesTable.Set(attribute.key, DynValue.NewString(attribute.value));
                 }
+                if (_attributesTable.Length == 0) return EdgeFactor.NoFactor;
 
                 // call factor_and_speed function.
                 _resultsTable.Clear();

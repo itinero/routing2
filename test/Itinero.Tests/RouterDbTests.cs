@@ -18,9 +18,6 @@
 
 using System.IO;
 using System.Linq;
-using Itinero.Data;
-using Itinero.Data.Attributes;
-using Itinero.LocalGeo;
 using Xunit;
 
 namespace Itinero.Tests
@@ -55,17 +52,17 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edges = network.AddEdge(vertex1, vertex2, shape: new [] { new Coordinate(4.795167446136475,
-                51.26580191532799), });
+            var edges = network.AddEdge(vertex1, vertex2, shape: new [] { (4.795167446136475,
+                51.26580191532799) });
 
             var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edges.edge1);
-            var shape = enumerator.GetShape();
+            var shape = enumerator.Shape;
             Assert.NotNull(shape);
             var shapeList = shape.ToList();
             Assert.Single(shapeList);
-            Assert.Equal(4.795167446136475, shapeList[0].Longitude);
-            Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+            Assert.Equal(4.795167446136475, shapeList[0].longitude);
+            Assert.Equal(51.26580191532799, shapeList[0].latitude);
         }
 
         [Fact]
@@ -79,13 +76,13 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edges = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { new Attribute("highway", "residential"), });
+            var edges = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
 
             var attributes = routerDb.GetAttributes(edges.edge1);
             Assert.NotNull(attributes);
-            Assert.Equal(1, attributes.Count);
-            Assert.Equal("highway", attributes.First().Key);
-            Assert.Equal("residential", attributes.First().Value);
+            Assert.Single(attributes);
+            Assert.Equal("highway", attributes.First().key);
+            Assert.Equal("residential", attributes.First().value);
         }
 
         [Fact]
@@ -100,8 +97,8 @@ namespace Itinero.Tests
                 51.26674845584085);
 
             var edges = original.AddEdge(vertex1, vertex2, 
-                shape: new [] { new Coordinate(4.795167446136475, 51.26580191532799), }, 
-                attributes: new [] { new Attribute("highway", "residential"), });
+                shape: new [] { (4.795167446136475, 51.26580191532799) }, 
+                attributes: new [] { ("highway", "residential") });
 
             using (var stream = new MemoryStream())
             {
@@ -113,17 +110,17 @@ namespace Itinero.Tests
                 
                 var enumerator = routerDb.GetEdgeEnumerator();
                 enumerator.MoveToEdge(edges.edge1);
-                var shape = enumerator.GetShape();
+                var shape = enumerator.Shape;
                 Assert.NotNull(shape);
                 var shapeList = shape.ToList();
                 Assert.Single(shapeList);
-                Assert.Equal(4.795167446136475, shapeList[0].Longitude);
-                Assert.Equal(51.26580191532799, shapeList[0].Latitude);
+                Assert.Equal(4.795167446136475, shapeList[0].longitude);
+                Assert.Equal(51.26580191532799, shapeList[0].latitude);
                 var attributes = routerDb.GetAttributes(edges.edge1);
                 Assert.NotNull(attributes);
-                Assert.Equal(1, attributes.Count);
-                Assert.Equal("highway", attributes.First().Key);
-                Assert.Equal("residential", attributes.First().Value);
+                Assert.Single(attributes);
+                Assert.Equal("highway", attributes.First().key);
+                Assert.Equal("residential", attributes.First().value);
             }
         }
     }

@@ -3,13 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Itinero.Data;
-using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
 using Itinero.Data.Graphs.Coders;
-using Itinero.Data.Providers;
-using Itinero.LocalGeo;
-using Reminiscence.IO.Streams;
-using Attribute = Itinero.Data.Attributes.Attribute;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -22,8 +17,6 @@ namespace Itinero
     public class RouterDb
     {
         private readonly Graph _network;
-        private readonly MappedAttributesIndex _edgesMeta;
-        private ILiveDataProvider _dataProvider = null;
 
         /// <summary>
         /// Creates a new router db.
@@ -35,14 +28,12 @@ namespace Itinero
             this.EdgeDataLayout = configuration.EdgeDataLayout ?? new EdgeDataLayout();
 
             _network = new Graph(configuration.Zoom);
-            _edgesMeta = new MappedAttributesIndex();
         }
 
-        private RouterDb(EdgeDataLayout edgeDataLayout, Graph network, MappedAttributesIndex edgeMeta)
+        private RouterDb(EdgeDataLayout edgeDataLayout, Graph network)
         {
             this.EdgeDataLayout = edgeDataLayout;
             _network = network;
-            _edgesMeta = edgeMeta;
         }
 
         /// <summary>
@@ -61,11 +52,11 @@ namespace Itinero
         /// </summary>
         /// <param name="vertex">The vertex.</param>
         /// <returns>The vertex.</returns>
-        public Coordinate GetVertex(VertexId vertex)
+        public (double longitude, double latitude) GetVertex(VertexId vertex)
         {
             if (!_network.TryGetVertex(vertex, out var longitude, out var latitude)) throw new ArgumentException($"{nameof(vertex)} does not exist.");
             
-            return new Coordinate(longitude, latitude);
+            return (longitude, latitude);
         }
 
         /// <summary>
@@ -84,19 +75,6 @@ namespace Itinero
         internal Graph Network => _network;
 
         /// <summary>
-        /// Gets or sets the data provider.
-        /// </summary>
-        public ILiveDataProvider DataProvider
-        {
-            get => _dataProvider;
-            set
-            {
-                _dataProvider = value;
-                _dataProvider?.SetRouterDb(this);
-            }
-        }
-
-        /// <summary>
         /// Gets the data layout.
         /// </summary>
         internal EdgeDataLayout EdgeDataLayout { get; }
@@ -106,20 +84,13 @@ namespace Itinero
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>
         /// <param name="vertex2">The second vertex.</param>
-        /// <param name="attributes">The attributes associated with this edge.</param>
+        /// <param name="attributes">The attributes.</param>
         /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<Attribute> attributes = null,
-            IEnumerable<Coordinate> shape = null)
+        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null, 
+            IEnumerable<(string key, string value)> attributes = null)
         {
-            var edgeId = _network.AddEdge(vertex1, vertex2);
-
-//            lock (_edgesMeta)
-//            {
-//                _edgesMeta[edgeId] = new AttributeCollection(attributes);
-//            }
-
-            return edgeId;
+            return _network.AddEdge(vertex1, vertex2, shape, attributes);
         }
 
         /// <summary>
@@ -129,20 +100,6 @@ namespace Itinero
         public RouterDbEdgeEnumerator GetEdgeEnumerator()
         {
             return new RouterDbEdgeEnumerator(this);
-        }
-
-        /// <summary>
-        /// Gets the attributes for the given edge, if any.
-        /// </summary>
-        /// <param name="edgeId">The edge id.</param>
-        /// <returns>The attributes.</returns>
-        public IAttributeCollection GetAttributes(EdgeId edgeId)
-        {
-            lock (_edgesMeta)
-            {
-                return new AttributeCollection();
-                //return new AttributeCollection(_edgesMeta[edgeId]);
-            }
         }
 
         /// <summary>
@@ -160,12 +117,6 @@ namespace Itinero
 
             this.EdgeDataLayout.WriteTo(stream);
             _network.WriteTo(stream);
-            lock (_edgesMeta)
-            {
-                _edgesMeta.Serialize(new LimitedStream(stream));
-            }
-
-            DataProvider?.WriteTo(stream);
 
             return stream.Position - p;
         }
@@ -174,10 +125,9 @@ namespace Itinero
         /// Reads from the given stream.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
-        /// <param name="dataProvider">The data provider if any.</param>
         /// <returns>The router db.</returns>
         /// <exception cref="InvalidDataException"></exception>
-        public static RouterDb ReadFrom(Stream stream, ILiveDataProvider dataProvider = null)
+        public static RouterDb ReadFrom(Stream stream)
         {
             // read & verify header.
             var header = stream.ReadWithSizeString();
@@ -187,14 +137,8 @@ namespace Itinero
 
             var edgeDataLayout = Data.Graphs.Coders.EdgeDataLayout.ReadFrom(stream);
             var graph = Graph.ReadFrom(stream);
-            var edgesMeta = MappedAttributesIndex.Deserialize(new LimitedStream(stream), null);
             
-            edgesMeta.MakeWriteable();
-            
-            dataProvider?.ReadFrom(stream);
-            
-            var db = new RouterDb(edgeDataLayout, graph, edgesMeta);
-            if (dataProvider != null) db.DataProvider = dataProvider;
+            var db = new RouterDb(edgeDataLayout, graph);
             return db;
         }
     }

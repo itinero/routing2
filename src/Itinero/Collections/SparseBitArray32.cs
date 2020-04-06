@@ -7,7 +7,7 @@ namespace Itinero.Collections
     /// <summary>
     /// Represents a sparse bitarray.
     /// </summary>
-    public class SparseBitArray32 : IEnumerable<long>
+    internal class SparseBitArray32 : IEnumerable<long>
     {
         private readonly int _blockSize; // Holds the blocksize, or the size of the 'sub arrays'.
         private readonly long _length; // Holds the length of this array.

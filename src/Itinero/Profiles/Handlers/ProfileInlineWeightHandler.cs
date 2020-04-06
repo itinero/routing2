@@ -69,7 +69,7 @@ namespace Itinero.Profiles.Handlers
         {
             if (_edgeFactor != null) return;
 
-            var attributes = _enumerator.GetAttributes();
+            var attributes = _enumerator.Attributes;
             _edgeFactor = _profile.Factor(attributes);
 
             _length = _enumerator.EdgeLength();
@@ -93,7 +93,7 @@ namespace Itinero.Profiles.Handlers
                 }
                 else
                 {
-                    Console.WriteLine($"Cannot store weight for {_enumerator.GetAttributes()}");
+                    Console.WriteLine($"Cannot store weight for {_enumerator.Attributes}");
                     return;
                 }
             }
@@ -102,7 +102,7 @@ namespace Itinero.Profiles.Handlers
             _weightBackward = _weightForward;
             if (_weightForward > (1 << 24))
             {
-                Console.WriteLine($"Cannot store weight for {_enumerator.GetAttributes()}: > {1 << 24}");
+                Console.WriteLine($"Cannot store weight for {_enumerator.Attributes}: > {1 << 24}");
                 return;
             }
 

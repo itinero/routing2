@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Data.Attributes;
+using Itinero.Data;
 using Itinero.Data.Graphs;
-using Itinero.Data.Shapes;
 using Itinero.IO.Osm.Tiles.Parsers.Semantics;
-using Itinero.LocalGeo;
 using Itinero.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -57,8 +55,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             Logger.Log(nameof(TileParser), Logging.TraceEventType.Verbose,
                 $"Loading tile: {tile}({tile.LocalId})");
 
-            var nodeLocations = new Dictionary<long, (Coordinate location, bool inTile)>();
-            var waysData = new Dictionary<long, (List<long> nodes, AttributeCollection attributes)>();
+            var nodeLocations = new Dictionary<long, ((double longitude, double latitude) location, bool inTile)>();
+            var waysData = new Dictionary<long, (List<long> nodes, IEnumerable<(string key, string value)> attributes)>();
             var nodes = new HashSet<long>();
             var coreNodes = new HashSet<long>();
             var updated = false;
@@ -85,7 +83,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     // determine if node is in tile or not.
                     var inTile = Tile.WorldToTile(lon, lat,
                                      tile.Zoom).LocalId == tile.LocalId;
-                    nodeLocations[nodeId] = (new Coordinate(lon, lat),
+                    nodeLocations[nodeId] = ((lon, lat),
                         inTile);
                 }
                 else if (id.StartsWith("http://www.openstreetmap.org/way/"))
@@ -152,7 +150,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 }
             }
 
-            var shape = new List<Coordinate>();
+            var shape = new List<(double longitude, double latitude)>();
             foreach (var wayPairs in waysData)
             {
                 // prepare for next way.
@@ -207,12 +205,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         // add node1 as vertex but check if it already exists.
                         if (!globalIdMap.TryGet(node1Id, out var vertex))
                         {
-                            vertex = routerDb.AddVertex(node1Data.location.Longitude,
-                                node1Data.location.Latitude);
-//                                if (vertex.TileId == 90022084)
-//                                {
-//                                    Console.WriteLine($"{vertex}");
-//                                }
+                            vertex = routerDb.AddVertex(node1Data.location.longitude,
+                                node1Data.location.latitude);
                             globalIdMap.Set(node1Id, vertex);
                             updated = true;
                         }
@@ -223,8 +217,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             // close previous segment if any.
                             if (!previousVertex.IsEmpty())
                             {
-                                routerDb.AddEdge(previousVertex, vertex, attributes,
-                                    new ShapeEnumerable(shape));
+                                routerDb.AddEdge(previousVertex, vertex, shape, attributes);
                                 updated = true;
                                 shape.Clear();
                             }
@@ -244,12 +237,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         // add node2 as vertex but check if it already exists.
                         if (!globalIdMap.TryGet(node2Id, out var vertex))
                         {
-                            vertex = routerDb.AddVertex(node2Data.location.Longitude,
-                                node2Data.location.Latitude);
-//                                if (vertex.TileId == 90022084)
-//                                {
-//                                    Console.WriteLine($"{vertex}");
-//                                }
+                            vertex = routerDb.AddVertex(node2Data.location.longitude,
+                                node2Data.location.latitude);
+                            
                             globalIdMap.Set(node2Id, vertex);
                             updated = true;
                         }
@@ -260,7 +250,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             if (!globalIdMap.TryGet(node1Id, out previousVertex))
                                 throw new Exception(
                                     "Cannot add segment overlapping tile boundary, node should have already been added.");
-                            routerDb.AddEdge(previousVertex, vertex, attributes, new ShapeEnumerable(shape));
+                            routerDb.AddEdge(previousVertex, vertex, shape, attributes);
                             updated = true;
                             shape.Clear();
                         }
@@ -269,8 +259,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             // close previous segment if any.
                             if (!previousVertex.IsEmpty())
                             {
-                                routerDb.AddEdge(previousVertex, vertex, attributes,
-                                    new ShapeEnumerable(shape));
+                                routerDb.AddEdge(previousVertex, vertex, shape, attributes);
                                 updated = true;
                                 shape.Clear();
                             }
@@ -294,18 +283,6 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 }
             }
 
-//                var coordinates = routerDb.GetVertex(new VertexId()
-//                {
-//                    LocalId = 1389,
-//                    TileId = 90022084
-//                });
-
-//                routerDb.GetEdgeEnumerator().MoveTo(new VertexId()
-//                {
-//                    LocalId = 1369,
-//                    TileId = 90022084
-//                });
-
             return updated;
         }
 
@@ -315,9 +292,9 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         /// <param name="osmGeo">The node, way or relation json-ld part.</param>
         /// <param name="reverseMappings">The reverse mappings.</param>
         /// <returns>The tags.</returns>
-        private static AttributeCollection GetTags(JToken osmGeo, Dictionary<string, TagMapperConfig> reverseMappings)
+        private static List<(string key, string value)> GetTags(JToken osmGeo, Dictionary<string, TagMapperConfig> reverseMappings)
         {
-            var attributes = new AttributeCollection();
+            var attributes = new List<(string key, string value)>();
                         
             // interpret all tags with defined semantics.
             foreach (var child in osmGeo.Children())
@@ -331,7 +308,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 var attribute = property.Map(reverseMappings);
                 if (attribute == null) continue;
 
-                attributes.AddOrReplace(attribute.Value.Key, attribute.Value.Value);
+                attributes.AddOrReplace(attribute.Value.key, attribute.Value.value);
             }
 
             return attributes;

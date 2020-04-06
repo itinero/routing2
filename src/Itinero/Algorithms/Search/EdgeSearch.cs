@@ -1,9 +1,7 @@
 using System;
 using Itinero.Data.Graphs;
-using Itinero.Data.Tiles;
 using System.Linq;
-using Itinero.Data;
-using Itinero.LocalGeo;
+using Itinero.Geo;
 
 namespace Itinero.Algorithms.Search
 {
@@ -46,7 +44,7 @@ namespace Itinero.Algorithms.Search
             }
             
             var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-            var center = new Coordinate((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
+            var center = ((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
 
             const double exactTolerance = 1;
             var bestDistance = double.MaxValue;
@@ -66,7 +64,7 @@ namespace Itinero.Algorithms.Search
                     var previous = completeShapeEnumerator.Current;
                     
                     // start with the first location.
-                    var distance = Coordinate.DistanceEstimateInMeter(previous, center);
+                    var distance = previous.DistanceEstimateInMeter(center);
                     if (distance < bestDistance)
                     {
                         isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
@@ -82,10 +80,10 @@ namespace Itinero.Algorithms.Search
                     {
                         var current = completeShapeEnumerator.Current;
                         
-                        var segmentLength = Coordinate.DistanceEstimateInMeter(previous, current);
+                        var segmentLength = previous.DistanceEstimateInMeter(current);
                         
                         // first check the actual current location, it may be an exact match.
-                        distance = Coordinate.DistanceEstimateInMeter(current, center);
+                        distance = current.DistanceEstimateInMeter(center);
                         if (distance < bestDistance)
                         {
                             isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
@@ -101,8 +99,8 @@ namespace Itinero.Algorithms.Search
                         length += segmentLength;
                         
                         // check if we even need to check.
-                        var previousDistance = Coordinate.DistanceEstimateInMeter(previous, center);
-                        var shapePointDistance = Coordinate.DistanceEstimateInMeter(current, center);
+                        var previousDistance = previous.DistanceEstimateInMeter(center);
+                        var shapePointDistance = current.DistanceEstimateInMeter(center);
                         if (previousDistance + segmentLength > bestDistance &&
                             shapePointDistance + segmentLength > bestDistance)
                         {
@@ -111,11 +109,11 @@ namespace Itinero.Algorithms.Search
                         
                         // project on line segment.
                         if (bestDistance <= 0) continue;
-                        var line = new Line(previous, current);
+                        var line = (previous, current);
                         var projected = line.ProjectOn(center);
                         if (!projected.HasValue) continue;
                         
-                        distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
+                        distance = projected.Value.DistanceEstimateInMeter(center);
                         if (!(distance < bestDistance)) continue;
                         
                         isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
@@ -123,7 +121,7 @@ namespace Itinero.Algorithms.Search
                                 
                         if (distance < exactTolerance) distance = 0;
                         bestDistance = distance;
-                        localSnapPoint = (edgeEnumerator.Id, startLength + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                        localSnapPoint = (edgeEnumerator.Id, startLength + previous.DistanceEstimateInMeter(projected.Value));
                     }
                 }
 

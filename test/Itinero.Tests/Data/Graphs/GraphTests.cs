@@ -1,8 +1,5 @@
-using System.IO;
-using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
-using Itinero.LocalGeo;
 using Xunit;
 
 namespace Itinero.Tests.Data.Graphs

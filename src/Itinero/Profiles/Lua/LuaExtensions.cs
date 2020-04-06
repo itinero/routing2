@@ -1,4 +1,4 @@
-﻿using Itinero.Data.Attributes;
+﻿using System.Collections.Generic;
 
 namespace Itinero.Profiles.Lua
 {
@@ -57,7 +57,7 @@ namespace Itinero.Profiles.Lua
         /// <summary>
         /// Converts the given attribute collection to a lua table.
         /// </summary>
-        internal static Table ToTable(this IAttributeCollection attributes, Script script)
+        internal static Table ToTable(this IEnumerable<(string key, string value)> attributes, Script script)
         {
             var table = new Table(script);
             if (attributes == null)
@@ -66,7 +66,7 @@ namespace Itinero.Profiles.Lua
             }
             foreach(var attribute in attributes)
             {
-                table[attribute.Key] = attribute.Value;
+                table[attribute.key] = attribute.value;
             }
             return table;
         }

@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Collections;
-using Itinero.Data.Shapes;
 using Itinero.Data.Tiles;
-using Itinero.LocalGeo;
-using Reminiscence;
 using Reminiscence.Arrays;
-using Reminiscence.Arrays.Sparse;
 
 namespace Itinero.Data.Graphs
 {
@@ -89,17 +85,20 @@ namespace Itinero.Data.Graphs
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>
         /// <param name="vertex2">The second vertex.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2)
+        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null, 
+            IEnumerable<(string key, string value)> attributes = null)
         {
             var tile = _tiles[vertex1.TileId];
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
             
-            var edge1 = tile.AddEdge(vertex1, vertex2);
+            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
             if (vertex1.TileId == vertex2.TileId) return (edge1, EdgeId.Empty);
 
             tile = _tiles[vertex2.TileId];
-            var edge2 = tile.AddEdge(vertex1, vertex2);
+            var edge2 = tile.AddEdge(vertex1, vertex2, shape, attributes);
             return (edge1, edge2);
         }
 
@@ -202,13 +201,16 @@ namespace Itinero.Data.Graphs
             public EdgeId Id => new EdgeId(_tileEnumerator.TileId, _tileEnumerator.EdgeId);
             
             /// <summary>
-            /// Gets the shape, if any.
+            /// Gets the shape.
             /// </summary>
             /// <returns>The shape.</returns>
-            public ShapeBase GetShape()
-            {
-                throw new NotImplementedException();
-            }
+            public IEnumerable<(double longitude, double latitude)> Shape => _tileEnumerator.Shape; 
+            
+            /// <summary>
+            /// Gets the attributes.
+            /// </summary>
+            /// <returns>The attributes.</returns>
+            public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes; 
 
             // TODO: these below are only exposed for the edge data coders, figure out if we can do this in a better way. This externalizes some of the graphs internal structure.
             

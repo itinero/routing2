@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Itinero.Algorithms;
-using Itinero.Algorithms.DataStructures;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Routes;
 using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
 using Itinero.Data.Graphs.Coders;
-using Itinero.Data.Shapes;
-using Itinero.LocalGeo;
+using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Profiles.Handlers;
 
@@ -21,18 +18,27 @@ namespace Itinero
     /// </summary>
     public static class RouterDbExtensions
     {
+        public static IEnumerable<(string key, string value)> GetAttributes(this RouterDb routerDb, EdgeId edge)
+        {
+            var enumerator = routerDb.GetEdgeEnumerator();
+            if (!enumerator.MoveToEdge(edge)) return Enumerable.Empty<(string key, string value)>();
+
+            return enumerator.Attributes;
+        }
+        
         /// <summary>
         /// Snaps to an edge closest to the given coordinates.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="longitude">The longitude.</param>
-        /// <param name="latitude">The latitude.</param>
+        /// <param name="location">The location.</param>
         /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
         /// <param name="profile">The profile to snap for.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, double longitude, double latitude, float maxOffsetInMeter = 1000,
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location, float maxOffsetInMeter = 1000,
             Profile profile = null)
         {
+            // TODO: convert this to something using snap settings.
+            
             ProfileHandler profileHandler = null;
             if (profile != null) profileHandler = routerDb.GetProfileHandler(profile);
             
@@ -40,14 +46,11 @@ namespace Itinero
             while (offset < maxOffsetInMeter)
             {
                 // calculate search box.
-                var offsets = (new Coordinate(longitude, latitude)).OffsetWithDistances(maxOffsetInMeter);
-                var latitudeOffset = System.Math.Abs(latitude - offsets.Latitude);
-                var longitudeOffset = System.Math.Abs(longitude - offsets.Longitude);
-                var box = (longitude - longitudeOffset, latitude - latitudeOffset, longitude + longitudeOffset,
-                    latitude + latitudeOffset);
-
-                // make sure data is loaded.
-                routerDb.DataProvider?.TouchBox(box);
+                var offsets = location.OffsetWithDistances(maxOffsetInMeter);
+                var latitudeOffset = System.Math.Abs(location.latitude - offsets.latitude);
+                var longitudeOffset = System.Math.Abs(location.longitude - offsets.longitude);
+                var box = (location.longitude - longitudeOffset, location.latitude - latitudeOffset, 
+                    location.longitude + longitudeOffset, location.latitude + latitudeOffset);
 
                 // snap to closest edge.
                 var snapPoint = routerDb.SnapInBox(box, (eEnum) =>
@@ -63,7 +66,7 @@ namespace Itinero
 
                 offset *= 2;
             }
-            return new Result<SnapPoint>($"Could not snap to location: {longitude},{latitude}");
+            return new Result<SnapPoint>($"Could not snap to location: {location.longitude},{location.latitude}");
         }
 
         /// <summary>
@@ -74,17 +77,13 @@ namespace Itinero
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-        public static IEnumerable<Coordinate> GetShapeBetween(this RouterDbEdgeEnumerator enumerator,
+        public static IEnumerable<(double longitude, double latitude)> GetShapeBetween(this RouterDbEdgeEnumerator enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
         {
             if (offset1 > offset2) throw new ArgumentException($"{nameof(offset1)} has to smaller than or equal to {nameof(offset2)}");
 
             // get edge and shape details.
-            var shape = enumerator.GetShape();
-            if (shape == null)
-            {
-                shape = new ShapeEnumerable(Enumerable.Empty<Coordinate>());
-            }
+            var shape = enumerator.Shape.ToList();
             
             // return the entire edge if requested.
             if (offset1 == 0 && offset2 == ushort.MaxValue)
@@ -109,7 +108,7 @@ namespace Itinero
             if (offset1 == 0 && includeVertices) yield return previous;
             for (var i = 0; i < shape.Count + 1; i++)
             {
-                Coordinate next;
+                (double longitude, double latitude) next;
                 if (i < shape.Count)
                 { // the 
                     next = shape[i];
@@ -119,14 +118,14 @@ namespace Itinero
                     next = enumerator.ToLocation();
                 }
 
-                var segmentLength = Coordinate.DistanceEstimateInMeter(previous, next);
+                var segmentLength = previous.DistanceEstimateInMeter(next);
                 if (before)
                 { // check if offset1 length has exceeded.
                     if (segmentLength + length >= offset1Length && 
                         offset1 > 0)
                     { // we are before, but not we have move to after.
                         var segmentOffset = offset1Length - length;
-                        var location = Coordinate.PositionAlongLine(previous, next, (segmentOffset / segmentLength));
+                        var location = (previous, next).PositionAlongLine(segmentOffset / segmentLength);
                         previous = next;
                         before = false;
                         yield return location;
@@ -139,7 +138,7 @@ namespace Itinero
                         offset2 < ushort.MaxValue)
                     { // we are after but now we are after.
                         var segmentOffset = offset2Length - length;
-                        var location = Coordinate.PositionAlongLine(previous, next, (segmentOffset / segmentLength));
+                        var location = (previous, next).PositionAlongLine(segmentOffset / segmentLength);
                         yield return location;
                         yield break;
                     }
@@ -173,7 +172,7 @@ namespace Itinero
             while (shapeEnumerator.MoveNext())
             {
                 var current = shapeEnumerator.Current;
-                distance += Coordinate.DistanceEstimateInMeter(previous, current);
+                distance += previous.DistanceEstimateInMeter(current);
                 previous = current;
             }
 
@@ -186,7 +185,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="snapPoint">The snap point.</param>
         /// <returns>The location on the network.</returns>
-        public static Coordinate LocationOnNetwork(this RouterDb routerDb, SnapPoint snapPoint)
+        public static (double longitude, double latitude) LocationOnNetwork(this RouterDb routerDb, SnapPoint snapPoint)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             enumerator.MoveToEdge(snapPoint.EdgeId);
@@ -200,7 +199,7 @@ namespace Itinero
         /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
-        public static Coordinate LocationOnEdge(this RouterDbEdgeEnumerator enumerator, in ushort offset)
+        public static (double longitude, double latitude) LocationOnEdge(this RouterDbEdgeEnumerator enumerator, in ushort offset)
         {
             // TODO: this can be optimized, build a performance test.
             var shape = enumerator.GetShapeBetween().ToList();
@@ -209,23 +208,19 @@ namespace Itinero
             var targetLength = length * (offset / (double)ushort.MaxValue);
             for (var i = 1; i < shape.Count; i++)
             {
-                var segmentLength = Coordinate.DistanceEstimateInMeter(shape[i - 1], shape[i]);
+                var segmentLength = shape[i - 1].DistanceEstimateInMeter(shape[i]);
                 if (segmentLength + currentLength > targetLength)
                 {
                     var segmentOffsetLength = segmentLength + currentLength - targetLength;
                     var segmentOffset = 1 - (segmentOffsetLength / segmentLength);
                     short? elevation = null;
-                    if (shape[i - 1].Elevation.HasValue && 
-                        shape[i].Elevation.HasValue)
-                    {
-                        elevation = (short)(shape[i - 1].Elevation.Value + (segmentOffset * (shape[i].Elevation.Value - shape[i - 1].Elevation.Value)));
-                    }
-                    return new Coordinate()
-                    {
-                        Latitude = (shape[i - 1].Latitude + (segmentOffset * (shape[i].Latitude - shape[i - 1].Latitude))),
-                        Longitude = (shape[i - 1].Longitude + (segmentOffset * (shape[i].Longitude - shape[i - 1].Longitude))),
-                        Elevation = elevation
-                    };
+//                    if (shape[i - 1].Elevation.HasValue && 
+//                        shape[i].Elevation.HasValue)
+//                    {
+//                        elevation = (short)(shape[i - 1].Elevation.Value + (segmentOffset * (shape[i].Elevation.Value - shape[i - 1].Elevation.Value)));
+//                    }
+                    return (shape[i - 1].longitude + (segmentOffset * (shape[i].longitude - shape[i - 1].longitude)),
+                        shape[i - 1].latitude + (segmentOffset * (shape[i].latitude - shape[i - 1].latitude)));
                 }
                 currentLength += segmentLength;
             }
@@ -247,18 +242,19 @@ namespace Itinero
 
             // if there is max distance don't search outside the box.
             var sourceLocation = routerDb.LocationOnNetwork(source);
-            var maxDistance = settings.MaxDistance;
-            Box? maxBox = null;
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
+                null;
             if (settings.MaxDistance < double.MaxValue)
             {
                 maxBox = sourceLocation.BoxAround(settings.MaxDistance);
             }
+            
             bool checkMaxDistance(VertexId v)
             {
                 if (maxBox == null) return false;
                     
                 var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex.Longitude, vertex.Latitude))
+                if (!maxBox.Value.Overlaps(vertex))
                 {
                     return true;
                 }
@@ -270,7 +266,7 @@ namespace Itinero
                 profileHandler.GetForwardWeight,
                 settled: (v) =>
                 {
-                    routerDb.DataProvider?.TouchVertex(v);
+                    //routerDb.DataProvider?.TouchVertex(v);
                     return checkMaxDistance(v);
                 });
 
@@ -293,8 +289,8 @@ namespace Itinero
 
             // if there is max distance don't search outside the box.
             var sourceLocation = routerDb.LocationOnNetwork(source);
-            var maxDistance = settings.MaxDistance;
-            Box? maxBox = null;
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
+                null;
             if (settings.MaxDistance < double.MaxValue)
             {
                 maxBox = sourceLocation.BoxAround(settings.MaxDistance);
@@ -304,7 +300,7 @@ namespace Itinero
                 if (maxBox == null) return false;
                     
                 var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex.Longitude, vertex.Latitude))
+                if (!maxBox.Value.Overlaps(vertex))
                 {
                     return true;
                 }
@@ -315,7 +311,7 @@ namespace Itinero
                 profileHandler.GetForwardWeight,
                 settled: (v) =>
                 {
-                    routerDb.DataProvider?.TouchVertex(v);
+                    //routerDb.DataProvider?.TouchVertex(v);
                     return checkMaxDistance(v);
                 });
 
@@ -350,8 +346,8 @@ namespace Itinero
 
             // if there is max distance don't search outside the box.
             var sourceLocation = routerDb.LocationOnNetwork(target);
-            var maxDistance = settings.MaxDistance;
-            Box? maxBox = null;
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
+                null;
             if (settings.MaxDistance < double.MaxValue)
             {
                 maxBox = sourceLocation.BoxAround(settings.MaxDistance);
@@ -361,7 +357,7 @@ namespace Itinero
                 if (maxBox == null) return false;
                     
                 var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex.Longitude, vertex.Latitude))
+                if (!maxBox.Value.Overlaps(vertex))
                 {
                     return true;
                 }
@@ -373,7 +369,7 @@ namespace Itinero
                 profileHandler.GetBackwardWeight,
                 settled: (v) =>
                 {
-                    routerDb.DataProvider?.TouchVertex(v);
+                    //routerDb.DataProvider?.TouchVertex(v);
                     return checkMaxDistance(v);
                 });
 
