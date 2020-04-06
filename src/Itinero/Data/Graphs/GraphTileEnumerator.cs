@@ -9,6 +9,7 @@ namespace Itinero.Data.Graphs
         private uint _localId;
         private uint? _nextEdgePointer;
         private uint? _shapePointer;
+        private uint? _attributesPointer;
 
         /// <summary>
         /// Gets the tile id.
@@ -78,6 +79,8 @@ namespace Itinero.Data.Graphs
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
 
             if (forward)
             {
@@ -148,6 +151,8 @@ namespace Itinero.Data.Graphs
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
+            _nextEdgePointer += size;
+            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
 
             if (vertex1.TileId == _graphTile.TileId &&
                 vertex1.LocalId == _localId)
@@ -172,6 +177,11 @@ namespace Itinero.Data.Graphs
         /// Gets the shape of the given edge (not including vertex locations).
         /// </summary>
         public IEnumerable<(double longitude, double latitude)> Shape => _graphTile.GetShape(_shapePointer);
+
+        /// <summary>
+        /// Gets the attributes of the given edge.
+        /// </summary>
+        public IEnumerable<(string key, string value)> Attributes => _graphTile.GetAttributes(_attributesPointer);
 
         /// <summary>
         /// Gets the first vertex.
