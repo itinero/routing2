@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Itinero.Data;
+using Itinero.Data.Events;
 using Itinero.Data.Graphs;
 using Itinero.Data.Graphs.Coders;
 
@@ -58,16 +59,11 @@ namespace Itinero
             
             return (longitude, latitude);
         }
-
+        
         /// <summary>
-        /// Gets the number of edges.
+        /// Gets the usage notifier.
         /// </summary>
-        public uint EdgeCount => 0;
-
-        /// <summary>
-        /// Gets the zoom.
-        /// </summary>
-        public int Zoom => _network.Zoom;
+        public DataUseNotifier UsageNotifier { get; } = new DataUseNotifier();
 
         /// <summary>
         /// Gets the network graph.
@@ -140,6 +136,11 @@ namespace Itinero
             
             var db = new RouterDb(edgeDataLayout, graph);
             return db;
+        }
+
+        public class DataUseNotifications
+        {
+            
         }
     }
 }

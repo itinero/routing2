@@ -17,7 +17,6 @@
  */
 
 using Itinero.Algorithms.Sorting;
-using Itinero.LocalGeo;
 using Reminiscence.Arrays;
 using Reminiscence.IO;
 using System.Collections.Generic;
@@ -309,18 +308,15 @@ namespace Itinero.IO.Osm.Collections
         /// <summary>
         /// Gets the coordinate for the given node.
         /// </summary>
-        public bool TryGetValue(long id, out Coordinate coordinate, out bool isCore)
+        public bool TryGetValue(long id, out (double longitude, double latitude) coordinate, out bool isCore)
         {
             if (this.TryGetValue(id, out var latitude, out var longitude, out isCore))
             {
-                coordinate = new Coordinate()
-                {
-                    Latitude = latitude,
-                    Longitude = longitude
-                };
+                coordinate = (longitude, latitude);
                 return true;
             }
-            coordinate = new Coordinate();
+
+            coordinate = (default, default);
             return false;
         }
 

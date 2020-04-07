@@ -49,9 +49,12 @@ namespace Itinero
                 var offsets = location.OffsetWithDistances(maxOffsetInMeter);
                 var latitudeOffset = System.Math.Abs(location.latitude - offsets.latitude);
                 var longitudeOffset = System.Math.Abs(location.longitude - offsets.longitude);
-                var box = (location.longitude - longitudeOffset, location.latitude - latitudeOffset, 
-                    location.longitude + longitudeOffset, location.latitude + latitudeOffset);
+                var box = ((location.longitude - longitudeOffset, location.latitude + latitudeOffset), 
+                    (location.longitude + longitudeOffset, location.latitude - latitudeOffset));
 
+                // make sure data is loaded.
+                routerDb.UsageNotifier?.NotifyBox(box);
+                
                 // snap to closest edge.
                 var snapPoint = routerDb.SnapInBox(box, (eEnum) =>
                 {

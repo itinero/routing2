@@ -13,7 +13,8 @@ namespace Itinero.Algorithms.Search
         /// <param name="routerDb">The router db.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDb routerDb, (double minLon, double minLat, double maxLon, double maxLat) box)
+        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDb routerDb, 
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             var vertices = routerDb.Network.SearchVerticesInBox(box);
             return new RouterDbEdgeEnumerator(routerDb, new EdgeEnumerator(routerDb.Network, vertices.Select((i) => i.vertex)));
@@ -27,7 +28,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
         public static SnapPoint SnapInBox(this RouterDb routerDb,
-            (double minLon, double minLat, double maxLon, double maxLat) box, 
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
             Func<RouterDbEdgeEnumerator, bool> acceptableFunc = null)
         {
             bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
@@ -44,7 +45,8 @@ namespace Itinero.Algorithms.Search
             }
             
             var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-            var center = ((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
+            var center = ((box.topLeft.longitude + box.bottomRight.longitude) / 2,
+                (box.topLeft.latitude + box.bottomRight.latitude) / 2);
 
             const double exactTolerance = 1;
             var bestDistance = double.MaxValue;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Itinero.Data.Tiles;
 using Reminiscence.Arrays;
@@ -72,7 +73,7 @@ namespace Itinero.Data.Graphs
             _nextVertexId++;
             
             // make room for edges.
-            if (vertexId.LocalId > _pointers.Length) _pointers.Resize(_pointers.Length + 1024);
+            if (vertexId.LocalId >= _pointers.Length) _pointers.Resize(_pointers.Length + 1024);
 
             return vertexId;
         }
@@ -123,6 +124,10 @@ namespace Itinero.Data.Graphs
             uint? v1p = null;
             if (vertex1.TileId == _tileId)
             {
+                if (_pointers.Length <= vertex1.LocalId)
+                {
+                    throw new Exception();
+                }
                 v1p = _pointers[vertex1.LocalId].DecodeNullableData();
                 _pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
             }
@@ -193,16 +198,22 @@ namespace Itinero.Data.Graphs
 
         internal uint EncodeVertex(uint location, VertexId vertexId)
         {
-            if (_edges.Length <= location + 5)
+            if (vertexId.TileId == _tileId)
+            { // same tile, only store local id.
+                if (_edges.Length <= location + 5)
+                {
+                    _edges.Resize(_edges.Length + 1024);
+                }
+                
+                return (uint)_edges.SetDynamicUInt32(location, vertexId.LocalId);
+            }
+            
+            // other tile, store full id.
+            if (_edges.Length <= location + 10)
             {
                 _edges.Resize(_edges.Length + 1024);
             }
             
-            if (vertexId.TileId == _tileId)
-            {
-                return (uint)_edges.SetDynamicUInt32(location, vertexId.LocalId);
-            }
-
             var encodedId = (((ulong) vertexId.TileId) << 32) + vertexId.LocalId;
             return (uint) _edges.SetDynamicUInt64(location, encodedId);
         }

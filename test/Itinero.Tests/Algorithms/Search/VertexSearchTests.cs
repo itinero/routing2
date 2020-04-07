@@ -14,7 +14,7 @@ namespace Itinero.Tests.Algorithms.Search
             var vertex1 = graph.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var vertices = graph.SearchVerticesInBox((4.796, 51.265, 4.798, 51.267));
+            var vertices = graph.SearchVerticesInBox(((4.796, 51.265), (4.798, 51.267)));
             Assert.NotNull(vertices);
 
             var verticesList = vertices.ToList();

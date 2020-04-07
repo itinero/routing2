@@ -46,6 +46,10 @@ namespace Itinero.Data.Graphs
                     p++;
                 }
             }
+            if (_attributes.Length <= cPos)
+            {
+                _attributes.Resize(_attributes.Length + 256);
+            }
             _attributes[cPos] = (byte)c;
             
             _nextAttributePointer = (uint)p;

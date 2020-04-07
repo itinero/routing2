@@ -6,10 +6,10 @@ namespace Itinero.Data.Tiles
 {
     public struct TileRange : IEnumerable<Tile>
     {
-        public TileRange((double minLon, double minLat, double maxLon, double maxLat) box, int zoom)
+        public TileRange(((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, int zoom)
         {
-            var topLeft = Tile.WorldToTile(box.minLon, box.maxLat, zoom);
-            var bottomRight = Tile.WorldToTile(box.maxLon, box.minLat, zoom);
+            var topLeft = Tile.WorldToTile(box.topLeft.longitude, box.topLeft.latitude, zoom);
+            var bottomRight = Tile.WorldToTile(box.bottomRight.longitude, box.bottomRight.latitude, zoom);
 
             this.Left = topLeft.X;
             this.Top = topLeft.Y;
