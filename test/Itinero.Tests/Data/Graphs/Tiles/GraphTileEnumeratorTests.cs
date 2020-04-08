@@ -1,9 +1,9 @@
 using System.Linq;
-using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Tiles;
 using Itinero.Data.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs
+namespace Itinero.Tests.Data.Graphs.Tiles
 {
     public class GraphTileEnumeratorTests
     {

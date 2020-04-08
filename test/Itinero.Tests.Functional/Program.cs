@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Data.Graphs.Coders;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
@@ -35,12 +34,7 @@ namespace Itinero.Tests.Functional
             // setup a router db with a routable tiles data provider.
             var routerDb = new RouterDb(new RouterDbConfiguration()
             {
-                Zoom = 14,
-                EdgeDataLayout = new EdgeDataLayout(new (string key, EdgeDataType dataType)[]
-                {
-                    ("bicycle.weight", EdgeDataType.UInt32),
-                    ("pedestrian.weight", EdgeDataType.UInt32)
-                })
+                Zoom = 14
             });
             var dataProvider = new DataProvider(routerDb);
 

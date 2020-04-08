@@ -12,7 +12,7 @@ namespace Itinero.Profiles.Handlers
             _profile = profile;
         }
 
-        private EdgeFactor? _edgeFactor = null;
+        private EdgeFactor _edgeFactor = EdgeFactor.NoFactor;
         private uint _length;
 
         public override void MoveTo(RouterDbEdgeEnumerator enumerator)
@@ -22,10 +22,10 @@ namespace Itinero.Profiles.Handlers
             _length = enumerator.EdgeLength();
         }
 
-        public override uint ForwardWeight => _edgeFactor.Value.ForwardFactor * _length;
-        public override uint BackwardWeight => _edgeFactor.Value.ForwardFactor * _length;
-        public override uint ForwardSpeed  => _edgeFactor.Value.ForwardSpeed;
-        public override uint BackwardSpeed => _edgeFactor.Value.BackwardSpeed;
-        public override bool CanStop  => _edgeFactor.Value.CanStop;
+        public override uint ForwardWeight => _edgeFactor.ForwardFactor * _length;
+        public override uint BackwardWeight => _edgeFactor.ForwardFactor * _length;
+        public override uint ForwardSpeed  => _edgeFactor.ForwardSpeed;
+        public override uint BackwardSpeed => _edgeFactor.BackwardSpeed;
+        public override bool CanStop  => _edgeFactor.CanStop;
     }
 }

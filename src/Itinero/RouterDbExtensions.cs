@@ -6,7 +6,6 @@ using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Routes;
 using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.Coders;
 using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Profiles.Handlers;
@@ -394,16 +393,6 @@ namespace Itinero
 
         internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
         {
-            if (routerDb.EdgeDataLayout.TryGet($"{profile.Name}.weight", out var layout))
-            {
-                // the weight is encoded on the edges.
-                if (layout.dataType == EdgeDataType.UInt32)
-                {
-                    return new ProfileInlineUInt32WeightHandlerDefault(profile,
-                        new EdgeDataCoderUInt32(layout.offset));
-                }
-            }
-
             return new ProfileHandlerDefault(profile);
         }
     }

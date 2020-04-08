@@ -29,7 +29,7 @@ namespace Itinero.Algorithms.Search
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
         public static SnapPoint SnapInBox(this RouterDb routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
-            Func<RouterDbEdgeEnumerator, bool> acceptableFunc = null)
+            Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null)
         {
             bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
             {
@@ -57,6 +57,8 @@ namespace Itinero.Algorithms.Search
                 
                 // search for the local snap point that improves the current best snap point.
                 (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0); 
+                Console.WriteLine(edgeEnumerator.Id);
+                Console.WriteLine(edgeEnumerator.To);
                 var isAcceptable = (bool?) null;
                 var completeShape = edgeEnumerator.GetCompleteShape();
                 var length = 0.0;

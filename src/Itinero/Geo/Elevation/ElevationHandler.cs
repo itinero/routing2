@@ -26,7 +26,7 @@
         /// <summary>
         /// Gets or sets the delegate to get elevation.
         /// </summary>
-        public static GetElevationDelegate GetElevation = null;
+        public static GetElevationDelegate? GetElevation { get; set; }
 
         /// <summary>
         /// A delegate to get elevation.

@@ -35,8 +35,7 @@ namespace Itinero.Collections
             get
             {
                 int blockId = (int)(idx / _blockSize);
-                BitArray block = null;
-                if (_data.TryGetValue(blockId, out block))
+                if (_data.TryGetValue(blockId, out _))
                 { // the block actually exists.
                     int blockIdx = (int)(idx % _blockSize);
                     return _data[blockId][blockIdx];
@@ -46,8 +45,7 @@ namespace Itinero.Collections
             set
             {
                 int blockId = (int)(idx / _blockSize);
-                BitArray block = null;
-                if (!_data.TryGetValue(blockId, out block))
+                if (!_data.TryGetValue(blockId, out var block))
                 {
                     if (value)
                     { // only add new block if true.

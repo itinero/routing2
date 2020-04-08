@@ -1,6 +1,5 @@
 using System.IO;
 using Itinero.Data;
-using Itinero.Data.Graphs.Coders;
 
 namespace Itinero
 {
@@ -13,11 +12,6 @@ namespace Itinero
         /// Gets or sets the zoom level.
         /// </summary>
         public int Zoom { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the edge data layout.
-        /// </summary>
-        public EdgeDataLayout EdgeDataLayout { get; set; }
         
         /// <summary>
         /// Gets the default configuration.

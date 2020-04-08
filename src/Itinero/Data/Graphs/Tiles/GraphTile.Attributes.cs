@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Reminiscence.Arrays;
 
-namespace Itinero.Data.Graphs
+namespace Itinero.Data.Graphs.Tiles
 {
     internal partial class GraphTile
     {

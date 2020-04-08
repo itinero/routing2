@@ -8,8 +8,8 @@ namespace Itinero.Collections
     /// </summary>
     internal class SparseLongIndex : IEnumerable<long>
     {
-        private readonly long _size = (long)(1024 * 1024) * (long)(1024 * 32); // Holds the total size.
-        private readonly int _blockSize = 32; // Holds the block size.
+        private const long SIZE = (long) (1024 * 1024) * (long) (1024 * 32); // Holds the total size.
+        private readonly int _blockSize; // Holds the block size.
 
         /// <summary>
         /// Creates a new longindex.
@@ -20,10 +20,9 @@ namespace Itinero.Collections
         }
 
         private long _count = 0; // Holds the number of flags.
-        private SparseBitArray32 _negativeFlags = null; // Holds the negative flags array
-        private SparseBitArray32 _positiveFlags = null; // Holds the positive flags array.
-
-
+        private SparseBitArray32? _negativeFlags; // Holds the negative flags array
+        private SparseBitArray32? _positiveFlags; // Holds the positive flags array.
+        
         /// <summary>
         /// Sets an id.
         /// </summary>
@@ -78,7 +77,7 @@ namespace Itinero.Collections
         {
             if (_positiveFlags == null)
             {
-                _positiveFlags = new SparseBitArray32(_size, _blockSize);
+                _positiveFlags = new SparseBitArray32(SIZE, _blockSize);
             }
 
             if (!_positiveFlags[number])
@@ -95,7 +94,7 @@ namespace Itinero.Collections
         {
             if (_positiveFlags == null)
             {
-                _positiveFlags = new SparseBitArray32(_size, _blockSize);
+                _positiveFlags = new SparseBitArray32(SIZE, _blockSize);
             }
 
             if (_positiveFlags[number])
@@ -129,7 +128,7 @@ namespace Itinero.Collections
         {
             if (_negativeFlags == null)
             {
-                _negativeFlags = new SparseBitArray32(_size, _blockSize);
+                _negativeFlags = new SparseBitArray32(SIZE, _blockSize);
             }
 
             if (!_negativeFlags[number])
@@ -146,7 +145,7 @@ namespace Itinero.Collections
         {
             if (_negativeFlags == null)
             {
-                _negativeFlags = new SparseBitArray32(_size, _blockSize);
+                _negativeFlags = new SparseBitArray32(SIZE, _blockSize);
             }
 
             if (_negativeFlags[number])

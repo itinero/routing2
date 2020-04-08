@@ -34,11 +34,7 @@ namespace Itinero.Algorithms.Dijkstra
         {
             tree.Get(pointer, out var data0, out var data1, out var data2, out var data3, out var data4);
 
-            return (new VertexId()
-            {
-                TileId = data0,
-                LocalId = data1
-            }, new EdgeId(data2, data3), data4);
+            return (new VertexId(data0, data1), new EdgeId(data2, data3), data4);
         }
     }
 }

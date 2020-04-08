@@ -69,11 +69,7 @@ namespace Itinero.IO.Osm.Tiles
 
         internal static VertexId ReadVertexId(this Stream stream)
         {
-            return new VertexId()
-            {
-                TileId = stream.ReadUInt32(),
-                LocalId = stream.ReadUInt32()
-            };
+            return new VertexId(stream.ReadUInt32(), stream.ReadUInt32());
         }
     }
 }

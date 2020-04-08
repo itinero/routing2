@@ -44,11 +44,8 @@ namespace Itinero.Data.Tiles
                     _currentTile = _tileEnumerator.Current.LocalId;
                     _currentVertex = 0;
 
-                    if (_graph.TryGetVertex(new VertexId()
-                    {
-                        TileId = _currentTile,
-                        LocalId = _currentVertex
-                    }, out _currentLongitude, out _currentLatitude))
+                    if (_graph.TryGetVertex(new VertexId(_currentTile, _currentVertex), 
+                        out _currentLongitude, out _currentLatitude))
                     {
                         return true;
                     }
@@ -60,11 +57,8 @@ namespace Itinero.Data.Tiles
             while (true)
             {
                 _currentVertex++;
-                if (_graph.TryGetVertex(new VertexId()
-                {
-                    TileId = _currentTile,
-                    LocalId = _currentVertex
-                }, out _currentLongitude, out _currentLatitude))
+                if (_graph.TryGetVertex(new VertexId(_currentTile, _currentVertex), 
+                    out _currentLongitude, out _currentLatitude))
                 {
                     return true;
                 }
@@ -82,14 +76,10 @@ namespace Itinero.Data.Tiles
 
             return false;
         }
-        
-        
 
-        public VertexId Current => new VertexId()
-        {
-            TileId = _currentTile,
-            LocalId = _currentVertex
-        };
+
+
+        public VertexId Current => new VertexId(_currentTile, _currentVertex);
 
         public (double longitude, double latitude) Location => (_currentLongitude, _currentLatitude);
 

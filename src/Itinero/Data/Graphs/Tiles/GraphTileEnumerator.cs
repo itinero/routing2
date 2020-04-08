@@ -1,15 +1,23 @@
 using System;
 using System.Collections.Generic;
 
-namespace Itinero.Data.Graphs
+namespace Itinero.Data.Graphs.Tiles
 {
     internal class GraphTileEnumerator
     {
-        private GraphTile _graphTile;
+        private GraphTile? _graphTile;
         private uint _localId;
         private uint? _nextEdgePointer;
         private uint? _shapePointer;
         private uint? _attributesPointer;
+
+        /// <summary>
+        /// Creates a new graph tile enumerator.
+        /// </summary>
+        internal GraphTileEnumerator()
+        {
+            
+        }
 
         /// <summary>
         /// Gets the tile id.
@@ -43,6 +51,9 @@ namespace Itinero.Data.Graphs
         /// <returns>True if the move succeeds and the vertex exists.</returns>
         public bool MoveTo(VertexId vertex)
         {
+            if (_graphTile == null)
+                throw new InvalidOperationException("Move to graph tile first.");
+            
             if (vertex.LocalId >= _graphTile.VertexCount)
             {
                 return false;
@@ -62,6 +73,8 @@ namespace Itinero.Data.Graphs
         /// <returns>True if the move succeeds and the edge exists.</returns>
         public bool MoveTo(EdgeId edge, bool forward)
         {
+            if (_graphTile == null)
+                throw new InvalidOperationException("Move to graph tile first.");
             if (this.TileId != edge.TileId) throw new ArgumentOutOfRangeException(nameof(edge), 
                 "Cannot move to edge not in current tile, move to the tile first.");
 
@@ -126,6 +139,8 @@ namespace Itinero.Data.Graphs
         /// <returns>True when there is a new edge.</returns>
         public bool MoveNext()
         {
+            if (_graphTile == null)
+                throw new InvalidOperationException("Move to graph tile first.");
             if (_nextEdgePointer == uint.MaxValue)
             {
                 // move to the first edge.
@@ -176,12 +191,28 @@ namespace Itinero.Data.Graphs
         /// <summary>
         /// Gets the shape of the given edge (not including vertex locations).
         /// </summary>
-        public IEnumerable<(double longitude, double latitude)> Shape => _graphTile.GetShape(_shapePointer);
+        public IEnumerable<(double longitude, double latitude)> Shape
+        {
+            get
+            {
+                if (_graphTile == null)
+                    throw new InvalidOperationException("Move to graph tile first.");
+                return _graphTile.GetShape(_shapePointer);
+            }
+        }
 
         /// <summary>
         /// Gets the attributes of the given edge.
         /// </summary>
-        public IEnumerable<(string key, string value)> Attributes => _graphTile.GetAttributes(_attributesPointer);
+        public IEnumerable<(string key, string value)> Attributes
+        {
+            get
+            {
+                if (_graphTile == null)
+                    throw new InvalidOperationException("Move to graph tile first.");
+                return _graphTile.GetAttributes(_attributesPointer);
+            }
+        }
 
         /// <summary>
         /// Gets the first vertex.

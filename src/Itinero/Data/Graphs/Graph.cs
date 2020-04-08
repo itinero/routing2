@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Itinero.Collections;
+using Itinero.Data.Graphs.Tiles;
 using Itinero.Data.Tiles;
-using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs
 {
@@ -19,16 +18,15 @@ namespace Itinero.Data.Graphs
         public Graph(int zoom = 14)
         {
             Zoom = zoom;
-            
+
             _tiles = new SparseArray<GraphTile>(0);
         }
 
+        // TODO: make this internal because it exposes the internal data structure of the graph.
         /// <summary>
         /// Gets the zoom.
         /// </summary>
         public int Zoom { get; }
-        
-        public int EdgeDataSize { get; }
 
         /// <summary>
         /// Adds a new vertex and returns its ID.
@@ -94,8 +92,8 @@ namespace Itinero.Data.Graphs
         /// <param name="attributes">The attributes.</param>
         /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null, 
-            IEnumerable<(string key, string value)> attributes = null)
+        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
+            IEnumerable<(string key, string value)>? attributes = null)
         {
             var tile = _tiles[vertex1.TileId];
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
@@ -216,98 +214,7 @@ namespace Itinero.Data.Graphs
             /// Gets the attributes.
             /// </summary>
             /// <returns>The attributes.</returns>
-            public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes; 
-
-            // TODO: these below are only exposed for the edge data coders, figure out if we can do this in a better way. This externalizes some of the graphs internal structure.
-            
-            /// <summary>
-            /// Gets the internal raw pointer for the edge.
-            /// </summary>
-            internal uint RawPointer => 0;
-
-            /// <summary>
-            /// Gets the raw edges array.
-            /// </summary>
-            internal ArrayBase<byte> Edges => null;
-
-            /// <summary>
-            /// Gets the graph this enumerator is for.
-            /// </summary>
-            internal Graph Graph => _graph;
-
-            /// <summary>
-            /// Gets the edge size.
-            /// </summary>
-            internal int EdgeSize => 0;
-        }
-
-        internal long WriteTo(Stream stream)
-        {
-//            var p = stream.Position;
-//            
-//            // write header and version.
-//            stream.WriteWithSize($"{nameof(Graph)}");
-//            stream.WriteByte(1);
-//            
-//            // writes zoom and edge data size.
-//            stream.WriteByte((byte)_zoom);
-//            stream.WriteByte((byte)_edgeDataSize);
-//            
-//            // write tile index.
-//            stream.WriteByte((byte)TileSizeInIndex);
-//            _tiles.CopyToWithHeader(stream);
-//            
-//            // write vertices.
-//            stream.WriteByte((byte)CoordinateSizeInBytes);
-//            stream.Write(BitConverter.GetBytes((long) _vertexPointer), 0, 8);
-//            _vertices.CopyToWithSize(stream);
-//            _edgePointers.CopyToWithSize(stream);
-//            
-//            // write edges.
-//            stream.Write(BitConverter.GetBytes((long) _edgePointer), 0, 8);
-//            _edges.CopyToWithSize(stream);
-//            
-//            // write shapes.
-//            _shapes.CopyTo(stream);
-//
-//            return stream.Position - p;
-
-            throw new NotImplementedException();
-        }
-
-        internal static Graph ReadFrom(Stream stream)
-        {
-//            // read & verify header.
-//            var header = stream.ReadWithSizeString();
-//            var version = stream.ReadByte();
-//            if (header != nameof(Graph)) throw new InvalidDataException($"Cannot read {nameof(Graph)}: Header invalid.");
-//            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(Graph)}: Version # invalid.");
-//            
-//            // read zoom and edge data size.
-//            var zoom = stream.ReadByte();
-//            var edgeDataSize = stream.ReadByte();
-//            
-//            // read tile index.
-//            var tileSizeIndex = stream.ReadByte();
-//            var tiles = SparseMemoryArray<byte>.CopyFromWithHeader(stream);
-//            
-//            // read vertices.
-//            var coordinateSizeInBytes = stream.ReadByte();
-//            var vertexPointer = stream.ReadInt64();
-//            var vertices = MemoryArray<byte>.CopyFromWithSize(stream);
-//            var edgePointers = MemoryArray<uint>.CopyFromWithSize(stream);
-//            
-//            // read edges.
-//            var edgePointer = stream.ReadInt64();
-//            var edges = MemoryArray<byte>.CopyFromWithSize(stream);
-//            
-//            // read shapes.
-//            var shapes = ShapesArray.CreateFrom(stream, true, false);
-//            
-//            return new Graph(zoom, edgeDataSize, tileSizeIndex, tiles, coordinateSizeInBytes, vertices, (uint)vertexPointer, edgePointers,
-//                (uint)edgePointer, edges, shapes);
-
-            throw new NotImplementedException();
+            public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes;
         }
     }
 }

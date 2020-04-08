@@ -82,12 +82,12 @@ namespace Itinero.Logging
         /// <param name="message">The message content.</param>
         /// <param name="parameters">Any parameters that may be useful.</param>
         public delegate void LogActionFunction(string origin, string level, string message,
-            Dictionary<string, object> parameters);
+            Dictionary<string, object>? parameters);
 
         /// <summary>
         /// Gets or sets the action to actually log a message.
         /// </summary>
-        public static LogActionFunction LogAction
+        public static LogActionFunction? LogAction
         {
             get;
             set;

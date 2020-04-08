@@ -20,7 +20,7 @@ namespace Itinero.Data
         {
             if (attributes == null)
             {
-                value = null;
+                value = string.Empty;
                 return false;
             }
             
@@ -32,7 +32,7 @@ namespace Itinero.Data
                 return true;
             }
 
-            value = null;
+            value = string.Empty;
             return false;
         }
 

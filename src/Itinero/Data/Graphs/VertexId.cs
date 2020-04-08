@@ -21,12 +21,12 @@ namespace Itinero.Data.Graphs
         /// <summary>
         /// Gets or sets the tile id.
         /// </summary>
-        public uint TileId { get; set; }
+        public uint TileId { get;  private set; }
         
         /// <summary>
         /// Gets or sets the local id.
         /// </summary>
-        public uint LocalId { get; set; }
+        public uint LocalId { get; private set; }
 
         /// <summary>
         /// Returns an empty vertex id.

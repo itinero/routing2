@@ -84,44 +84,5 @@ namespace Itinero.Tests
             Assert.Equal("highway", attributes.First().key);
             Assert.Equal("residential", attributes.First().value);
         }
-
-        [Fact]
-        public void RouterDb_WriteReadShouldCopy()
-        {
-            var original = new RouterDb();
-            var vertex1 = original.AddVertex(
-                4.792613983154297,
-                51.26535213392538);
-            var vertex2 = original.AddVertex(
-                4.797506332397461,
-                51.26674845584085);
-
-            var edges = original.AddEdge(vertex1, vertex2, 
-                shape: new [] { (4.795167446136475, 51.26580191532799) }, 
-                attributes: new [] { ("highway", "residential") });
-
-            using (var stream = new MemoryStream())
-            {
-                original.WriteTo(stream);
-
-                stream.Seek(0, SeekOrigin.Begin);
-
-                var routerDb = RouterDb.ReadFrom(stream);
-                
-                var enumerator = routerDb.GetEdgeEnumerator();
-                enumerator.MoveToEdge(edges.edge1);
-                var shape = enumerator.Shape;
-                Assert.NotNull(shape);
-                var shapeList = shape.ToList();
-                Assert.Single(shapeList);
-                Assert.Equal(4.795167446136475, shapeList[0].longitude);
-                Assert.Equal(51.26580191532799, shapeList[0].latitude);
-                var attributes = routerDb.GetAttributes(edges.edge1);
-                Assert.NotNull(attributes);
-                Assert.Single(attributes);
-                Assert.Equal("highway", attributes.First().key);
-                Assert.Equal("residential", attributes.First().value);
-            }
-        }
     }
 }

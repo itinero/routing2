@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Itinero.Data.Tiles;
 using Reminiscence.Arrays;
 
-namespace Itinero.Data.Graphs
+namespace Itinero.Data.Graphs.Tiles
 {
     internal partial class GraphTile
     {
@@ -103,9 +103,12 @@ namespace Itinero.Data.Graphs
         /// <param name="shape">The shape."</param>
         /// <param name="attributes">The attributes."</param>
         /// <returns>The new edge id.</returns>
-        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null,
-            IEnumerable<(string key, string value)> attributes = null)
+        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null,
+            IEnumerable<(string key, string value)>? attributes = null)
         {
+            if (vertex1.TileId == 0) throw new Exception();
+            if (vertex2.TileId == 0) throw new Exception();
+            
             var edgeId = new EdgeId(_tileId, _nextEdgeId);
 
             // write the edge data.
@@ -124,10 +127,6 @@ namespace Itinero.Data.Graphs
             uint? v1p = null;
             if (vertex1.TileId == _tileId)
             {
-                if (_pointers.Length <= vertex1.LocalId)
-                {
-                    throw new Exception();
-                }
                 v1p = _pointers[vertex1.LocalId].DecodeNullableData();
                 _pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
             }
