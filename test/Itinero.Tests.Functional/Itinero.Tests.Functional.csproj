@@ -7,7 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Itinero.IO.Osm.Tiles\Itinero.IO.Osm.Tiles.csproj" />
     <ProjectReference Include="..\..\src\Itinero.IO.Osm\Itinero.IO.Osm.csproj" />
-    <ProjectReference Include="..\..\src\Itinero.IO.Shape\Itinero.IO.Shape.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
   </ItemGroup>
   <ItemGroup>

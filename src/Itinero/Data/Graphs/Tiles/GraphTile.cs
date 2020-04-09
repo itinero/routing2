@@ -106,9 +106,6 @@ namespace Itinero.Data.Graphs.Tiles
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null)
         {
-            if (vertex1.TileId == 0) throw new Exception();
-            if (vertex2.TileId == 0) throw new Exception();
-            
             var edgeId = new EdgeId(_tileId, _nextEdgeId);
 
             // write the edge data.
@@ -227,8 +224,8 @@ namespace Itinero.Data.Graphs.Tiles
                 return size;
             }
 
-            tileId = (uint) (encodedId << 32);
-            localId = (uint) (encodedId - ((ulong)tileId >> 32));
+            tileId = (uint) (encodedId >> 32);
+            localId = (uint) (encodedId - ((ulong)tileId << 32));
             return size;
         }
 

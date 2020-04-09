@@ -83,5 +83,24 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             var edge = graphTile.AddEdge(vertex2, vertex1);
             Assert.Equal((uint)6, edge.LocalId);
         }
+
+        [Fact]
+        public void GraphTile_AddEdge_OverTileBoundary_ShouldStoreVertex()
+        {
+            var graphTile = new GraphTile(14, 
+                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
+            var vertex2 = new VertexId(vertex1.TileId + 1, 451);
+
+            var edge = graphTile.AddEdge(vertex1, vertex2);
+            Assert.Equal((uint)0, edge.LocalId);
+
+            var size = graphTile.DecodeVertex(edge.LocalId, out var localId, out var tileId);
+            Assert.Equal((uint)0, localId);
+            Assert.Equal((uint)vertex1.TileId, tileId);
+            size = graphTile.DecodeVertex(edge.LocalId + size, out localId, out tileId);
+            Assert.Equal((uint)451, localId);
+            Assert.Equal((uint)vertex1.TileId + 1, tileId);
+        }
     }
 }

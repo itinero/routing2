@@ -85,7 +85,7 @@ namespace Itinero.IO.Osm.Tiles
                 var parse = stream?.Parse(tile);
                 if (parse == null)
                 {
-                    return;
+                    continue;
                 }
 
                 lock (_loadedTiles)

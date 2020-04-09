@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
@@ -47,60 +48,64 @@ namespace Itinero.Tests.Functional
 
             var heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
-//            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
-//                $"Snapping hot: heldergem", 1000);
-//            var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle),
-//                $"Snapping hot: ninove");
-//            var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle),
-//                $"Snapping hot: pepingen");
-//            var lebbeke = SnappingTest.Default.Run((routerDb, 4.12864, 50.99926, profile: bicycle),
-//                $"Snapping cold: lebbeke");
-//            var hamme = SnappingTest.Default.Run((routerDb, 4.13418, 51.09707, profile: bicycle),
-//                $"Snapping cold: hamme");
-//            var stekene = SnappingTest.Default.Run((routerDb, 4.03705, 51.20637, profile: bicycle),
-//                $"Snapping cold: hamme");
-//            var leuven = SnappingTest.Default.Run((routerDb, 4.69575, 50.88040, profile: bicycle),
-//                $"Snapping cold: hamme");
-//            var wechelderzande = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
-//                $"Snapping cold: wechelderzande");
-//            var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
-//                $"Snapping cold: middelburg");
-//            var hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
-//                $"Snapping cold: hermain teirlinck");
-//            hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
-//                $"Snapping hot: hermain teirlinck");
-//            var mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
-//                $"Snapping cold: mechelen neckerspoel");
-//            mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
-//                $"Snapping hot: mechelen neckerspoel");
-//            var dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
-//                $"Snapping cold: dendermonde");
-//            dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
-//                $"Snapping hot: dendermonde");
-//            var zellik1 = SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
-//                $"Snapping hot: zellik1"); 
-//            var zellik2 = SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
-//                $"Snapping hot: zellik2");
-//            var bruggeStation = SnappingTest.Default.Run((routerDb, 3.214899, 51.195129, profile: bicycle),
-//                $"Snapping cold: brugge-station");
-//            var stationDuinberge = SnappingTest.Default.Run((routerDb, 3.26358318328857, 51.3381990351222, profile: bicycle),
-//                $"Snapping cold: duinberge");
-//
-//            Parallel.For(0, 10, (i) =>
-//            {
-//                SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
-//                    $"Snapping parallel: zellik1"); 
-//                SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
-//                    $"Snapping parallel: zellik2");
-//            });
-//            
-//            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
-//                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-//            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
-//                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
+            heldergem = SnappingTest.Default.Run((routerDb, 3.95454, 50.88142, profile: bicycle),
+                $"Snapping hot: heldergem", 1000);
+            var ninove = SnappingTest.Default.Run((routerDb, 4.02573, 50.83963, profile: bicycle),
+                $"Snapping hot: ninove");
+            var pepingen = SnappingTest.Default.Run((routerDb, 4.15887, 50.75932, profile: bicycle),
+                $"Snapping hot: pepingen");
+            var lebbeke = SnappingTest.Default.Run((routerDb, 4.12864, 50.99926, profile: bicycle),
+                $"Snapping cold: lebbeke");
+            var hamme = SnappingTest.Default.Run((routerDb, 4.13418, 51.09707, profile: bicycle),
+                $"Snapping cold: hamme");
+            var stekene = SnappingTest.Default.Run((routerDb, 4.03705, 51.20637, profile: bicycle),
+                $"Snapping cold: hamme");
+            var leuven = SnappingTest.Default.Run((routerDb, 4.69575, 50.88040, profile: bicycle),
+                $"Snapping cold: hamme");
+            var wechelderzande = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
+                $"Snapping cold: wechelderzande");
+            var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
+                $"Snapping cold: middelburg");
+            var hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
+                $"Snapping cold: hermain teirlinck");
+            hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
+                $"Snapping hot: hermain teirlinck");
+            var mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
+                $"Snapping cold: mechelen neckerspoel");
+            mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
+                $"Snapping hot: mechelen neckerspoel");
+            var dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
+                $"Snapping cold: dendermonde");
+            dendermonde = SnappingTest.Default.Run((routerDb, 4.10142481327057, 51.0227846418863, profile: bicycle),
+                $"Snapping hot: dendermonde");
+            var zellik1 = SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
+                $"Snapping cold: zellik1"); 
+            zellik1 = SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
+                $"Snapping hot: zellik1"); 
+            var zellik2 = SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+                $"Snapping cold: zellik2");
+            zellik2 = SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+                $"Snapping hot: zellik2");
+            var bruggeStation = SnappingTest.Default.Run((routerDb, 3.214899, 51.195129, profile: bicycle),
+                $"Snapping cold: brugge-station");
+            var stationDuinberge = SnappingTest.Default.Run((routerDb, 3.26358318328857, 51.3381990351222, profile: bicycle),
+                $"Snapping cold: duinberge");
+
+            Parallel.For(0, 10, (i) =>
+            {
+                SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
+                    $"Snapping parallel: zellik1"); 
+                SnappingTest.Default.Run((routerDb, 4.275886416435242, 50.88336336674239, profile: bicycle),
+                    $"Snapping parallel: zellik2");
+            });
+            
+            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
 //            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
 //                route.ToGeoJson());
-//                
+                
 //            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
 //                $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
 //            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),

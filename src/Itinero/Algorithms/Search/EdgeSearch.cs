@@ -56,9 +56,7 @@ namespace Itinero.Algorithms.Search
                 if (bestDistance <= 0) break; // break when exact on an edge.
                 
                 // search for the local snap point that improves the current best snap point.
-                (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0); 
-                Console.WriteLine(edgeEnumerator.Id);
-                Console.WriteLine(edgeEnumerator.To);
+                (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);
                 var isAcceptable = (bool?) null;
                 var completeShape = edgeEnumerator.GetCompleteShape();
                 var length = 0.0;
