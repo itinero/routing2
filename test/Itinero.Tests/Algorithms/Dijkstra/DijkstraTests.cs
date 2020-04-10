@@ -13,7 +13,7 @@
 //            var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
 //
 //            var edgeId = graph.AddEdge(vertex1, vertex2);
-//
+//            
 //            var dijkstra = new Itinero.Algorithms.Dijkstra.Dijkstra(graph,
 //                new (VertexId vertex, uint edge, float cost)[]
 //                {

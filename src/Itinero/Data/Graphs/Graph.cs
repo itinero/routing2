@@ -140,6 +140,7 @@ namespace Itinero.Data.Graphs
                 if (_tileEnumerator.TileId == vertex.TileId) return _tileEnumerator.MoveTo(vertex);
                 
                 // move to the tile.
+                if (_graph._tiles.Length <= vertex.TileId) return false;
                 var tile = _graph._tiles[vertex.TileId];
                 if (tile == null) return false;
                 _tileEnumerator.MoveTo(tile);

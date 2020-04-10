@@ -24,52 +24,6 @@ namespace Itinero
 
             return enumerator.Attributes;
         }
-        
-        /// <summary>
-        /// Snaps to an edge closest to the given coordinates.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
-        /// <param name="profile">The profile to snap for.</param>
-        /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location, float maxOffsetInMeter = 1000,
-            Profile profile = null)
-        {
-            // TODO: convert this to something using snap settings.
-            
-            ProfileHandler profileHandler = null;
-            if (profile != null) profileHandler = routerDb.GetProfileHandler(profile);
-            
-            var offset = 100;
-            while (offset < maxOffsetInMeter)
-            {
-                // calculate search box.
-                var offsets = location.OffsetWithDistances(maxOffsetInMeter);
-                var latitudeOffset = System.Math.Abs(location.latitude - offsets.latitude);
-                var longitudeOffset = System.Math.Abs(location.longitude - offsets.longitude);
-                var box = ((location.longitude - longitudeOffset, location.latitude + latitudeOffset), 
-                    (location.longitude + longitudeOffset, location.latitude - latitudeOffset));
-
-                // make sure data is loaded.
-                routerDb.UsageNotifier?.NotifyBox(box);
-                
-                // snap to closest edge.
-                var snapPoint = routerDb.SnapInBox(box, (eEnum) =>
-                {
-                    if (profileHandler == null) return true;
-
-                    profileHandler.MoveTo(eEnum);
-                    var canStop = profileHandler.CanStop;
-
-                    return canStop;
-                });
-                if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
-
-                offset *= 2;
-            }
-            return new Result<SnapPoint>($"Could not snap to location: {location.longitude},{location.latitude}");
-        }
 
         /// <summary>
         /// Returns the part of the edge between the two offsets not including the vertices at the start or the end.
@@ -179,20 +133,6 @@ namespace Itinero
             }
 
             return (uint)(distance * 100);
-        }
-
-        /// <summary>
-        /// Returns the location on the given edge using the given offset.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="snapPoint">The snap point.</param>
-        /// <returns>The location on the network.</returns>
-        public static (double longitude, double latitude) LocationOnNetwork(this RouterDb routerDb, SnapPoint snapPoint)
-        {
-            var enumerator = routerDb.GetEdgeEnumerator();
-            enumerator.MoveToEdge(snapPoint.EdgeId);
-
-            return enumerator.LocationOnEdge(snapPoint.Offset);
         }
 
         /// <summary>
