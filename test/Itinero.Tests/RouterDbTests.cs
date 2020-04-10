@@ -52,11 +52,11 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edges = network.AddEdge(vertex1, vertex2, shape: new [] { (4.795167446136475,
+            var edge = network.AddEdge(vertex1, vertex2, shape: new [] { (4.795167446136475,
                 51.26580191532799) });
 
             var enumerator = network.GetEdgeEnumerator();
-            enumerator.MoveToEdge(edges.edge1);
+            enumerator.MoveToEdge(edge);
             var shape = enumerator.Shape;
             Assert.NotNull(shape);
             var shapeList = shape.ToList();
@@ -76,9 +76,9 @@ namespace Itinero.Tests
                 4.797506332397461,
                 51.26674845584085);
 
-            var edges = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
+            var edge = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
 
-            var attributes = routerDb.GetAttributes(edges.edge1);
+            var attributes = routerDb.GetAttributes(edge);
             Assert.NotNull(attributes);
             Assert.Single(attributes);
             Assert.Equal("highway", attributes.First().key);

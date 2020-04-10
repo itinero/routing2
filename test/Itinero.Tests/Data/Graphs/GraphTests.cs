@@ -68,7 +68,7 @@ namespace Itinero.Tests.Data.Graphs
             var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
 
             var edges = graph.AddEdge(vertex1, vertex2);
-            Assert.Equal((uint)0, edges.edge1.LocalId); // first edge should have id 0.
+            Assert.Equal((uint)0, edges.LocalId); // first edge should have id 0.
         }
 
         [Fact]
@@ -81,7 +81,39 @@ namespace Itinero.Tests.Data.Graphs
 
             graph.AddEdge(vertex1, vertex2);
             var edges = graph.AddEdge(vertex1, vertex3);
-            Assert.Equal((uint)6, edges.edge1.LocalId);
+            Assert.Equal((uint)6, edges.LocalId);
+        }
+
+        [Fact]
+        public void Graph_AddEdge_OverTileBoundary_ShouldEdgeTwice_WithOneId()
+        {
+            // store an edge across tile boundaries should store the edge twice.
+            // once in the tile of vertex1, in forward direction.
+            // once in the tile of vertex2, in backward direction.
+            // we test this by enumeration edges for both vertices.
+            
+            var graph = new Graph();
+            var vertex1 = graph.AddVertex(3.1074142456054688,51.31012070202407);
+            var vertex2 = graph.AddVertex(3.146638870239258,51.31060357805506);
+
+            var edge = graph.AddEdge(vertex1, vertex2);
+            Assert.Equal(vertex1.TileId, edge.TileId);
+            Assert.Equal((uint)0, edge.LocalId);
+
+            var enumerator = graph.GetEnumerator();
+            Assert.True(enumerator.MoveTo(vertex1));
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.From);
+            Assert.Equal(vertex2, enumerator.To);
+            Assert.True(enumerator.Forward);
+            Assert.Equal(enumerator.Id, edge);
+            
+            Assert.True(enumerator.MoveTo(vertex2));
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex2, enumerator.From);
+            Assert.Equal(vertex1, enumerator.To);
+            Assert.False(enumerator.Forward);
+            Assert.Equal(enumerator.Id, edge);
         }
 //        
 //        [Fact]

@@ -99,17 +99,17 @@ namespace Itinero.Tests.Functional
                     $"Snapping parallel: zellik2");
             });
             
-            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
-                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
-                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
+//            var route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+//                $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
+//            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+//                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
 //            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
 //                route.ToGeoJson());
                 
-//            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
-//                $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
-//            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
-//                $"Route host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
+            var route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
+                $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
+            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
+                $"Route host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
 //            File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}.geojson"), 
 //                route.ToGeoJson());
 //

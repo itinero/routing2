@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Itinero.Data;
 using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Tiles.Parsers.Semantics;

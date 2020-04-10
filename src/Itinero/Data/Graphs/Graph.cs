@@ -92,18 +92,21 @@ namespace Itinero.Data.Graphs
         /// <param name="attributes">The attributes.</param>
         /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
+        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
             IEnumerable<(string key, string value)>? attributes = null)
         {
             var tile = _tiles[vertex1.TileId];
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
             
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
-            if (vertex1.TileId == vertex2.TileId) return (edge1, EdgeId.Empty);
-
-            tile = _tiles[vertex2.TileId];
-            var edge2 = tile.AddEdge(vertex1, vertex2, shape, attributes);
-            return (edge1, edge2);
+            if (vertex1.TileId != vertex2.TileId)
+            {
+                // this edge crosses tiles, also add an extra edge to the other tile.
+                tile = _tiles[vertex2.TileId];
+                tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
+            }
+            
+            return edge1;
         }
 
         /// <summary>
@@ -202,7 +205,7 @@ namespace Itinero.Data.Graphs
             /// <summary>
             /// Gets the edge id.
             /// </summary>
-            public EdgeId Id => new EdgeId(_tileEnumerator.TileId, _tileEnumerator.EdgeId);
+            public EdgeId Id => _tileEnumerator.EdgeId;
             
             /// <summary>
             /// Gets the shape.

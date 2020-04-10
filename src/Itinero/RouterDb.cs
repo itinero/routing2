@@ -75,7 +75,7 @@ namespace Itinero
         /// <param name="attributes">The attributes.</param>
         /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public (EdgeId edge1, EdgeId edge2) AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null, 
+        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null, 
             IEnumerable<(string key, string value)> attributes = null)
         {
             return _network.AddEdge(vertex1, vertex2, shape, attributes);

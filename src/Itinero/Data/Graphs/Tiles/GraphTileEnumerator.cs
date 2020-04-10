@@ -81,6 +81,7 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer = edge.LocalId;
             
             // decode edge data.
+            this.EdgeId = edge;
             var size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
             var vertex1 = new VertexId(tileId, localId);
             _nextEdgePointer += size;
@@ -91,6 +92,20 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
+
+            var flipEdge = false;
+            if (vertex1.TileId != vertex2.TileId)
+            {
+                size = _graphTile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
+                _nextEdgePointer += size;
+
+                if (edgeId != null)
+                {
+                    this.EdgeId = edgeId.Value;
+                    flipEdge = true;
+                }
+            }
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -99,7 +114,7 @@ namespace Itinero.Data.Graphs.Tiles
             {
                 this.Vertex1 = vertex1;
                 this.Vertex2 = vertex2;
-                this.Forward = true;
+                this.Forward = !flipEdge;
                 
                 _nextEdgePointer = vp1;
             }
@@ -107,7 +122,7 @@ namespace Itinero.Data.Graphs.Tiles
             {
                 this.Vertex1 = vertex2;
                 this.Vertex2 = vertex1;
-                this.Forward = false;
+                this.Forward = flipEdge;
                 
                 _nextEdgePointer = vp2;
             }
@@ -154,7 +169,7 @@ namespace Itinero.Data.Graphs.Tiles
             }
 
             // decode edge data.
-            this.EdgeId = _nextEdgePointer.Value;
+            this.EdgeId = new EdgeId(_graphTile.TileId, _nextEdgePointer.Value);
             var size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
             var vertex1 = new VertexId(tileId, localId);
             _nextEdgePointer += size;
@@ -165,6 +180,20 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
+
+            var flipEdge = false;
+            if (vertex1.TileId != vertex2.TileId)
+            {
+                size = _graphTile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
+                _nextEdgePointer += size;
+
+                if (edgeId != null)
+                {
+                    this.EdgeId = edgeId.Value;
+                    flipEdge = true;
+                }
+            }
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -175,14 +204,14 @@ namespace Itinero.Data.Graphs.Tiles
                 _nextEdgePointer = vp1;
 
                 this.Vertex2 = vertex2;
-                this.Forward = true;
+                this.Forward = !flipEdge;
             }
             else
             {
                 _nextEdgePointer = vp2;
 
                 this.Vertex2 = vertex1;
-                this.Forward = false;
+                this.Forward = flipEdge;
             }
 
             return true;
@@ -227,7 +256,7 @@ namespace Itinero.Data.Graphs.Tiles
         /// <summary>
         /// Gets the local edge id.
         /// </summary>
-        public uint EdgeId { get; private set; }
+        public EdgeId EdgeId { get; private set; }
 
         /// <summary>
         /// Gets the forward/backward flag.

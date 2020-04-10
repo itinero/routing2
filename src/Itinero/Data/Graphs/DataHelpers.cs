@@ -18,5 +18,17 @@ namespace Itinero.Data.Graphs
         {
             return data + 1;
         }
+        
+        public static ulong EncodeAsNullableData(this ulong? data)
+        {
+            if (!data.HasValue) return 0;
+            return data.Value + 1;
+        }
+        
+        public static ulong? DecodeNullableData(this ulong data)
+        {
+            if (data == 0) return null;
+            return data - 1;
+        }
     }
 }

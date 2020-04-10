@@ -139,7 +139,8 @@ namespace Itinero.Data
                 attributes[i] = (key, value);
                 return true;
             }
-
+            
+            attributes.Add((key, value));
             return false;
         }
     }

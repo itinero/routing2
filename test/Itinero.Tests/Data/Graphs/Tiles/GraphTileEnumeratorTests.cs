@@ -36,7 +36,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.True(enumerator.Forward);
             Assert.Equal(vertex1, enumerator.Vertex1);
             Assert.Equal(vertex2, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId);
+            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
             Assert.False(enumerator.MoveNext());
         }
 
@@ -57,7 +57,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.False(enumerator.Forward);
             Assert.Equal(vertex2, enumerator.Vertex1);
             Assert.Equal(vertex1, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId);
+            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
             Assert.False(enumerator.MoveNext());
         }
 
@@ -120,7 +120,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.True(enumerator.Forward);
             Assert.Equal(vertex1, enumerator.Vertex1);
             Assert.Equal(vertex2, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId);
+            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
             Assert.False(enumerator.MoveNext());
         }
         
@@ -140,7 +140,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.False(enumerator.Forward);
             Assert.Equal(vertex2, enumerator.Vertex1);
             Assert.Equal(vertex1, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId);
+            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
             Assert.False(enumerator.MoveNext());
         }
     }

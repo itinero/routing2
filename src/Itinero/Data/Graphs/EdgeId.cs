@@ -94,5 +94,27 @@ namespace Itinero.Data.Graphs
                 return ((int) TileId * 397) ^ (int) LocalId;
             }
         }
+
+        /// <summary>
+        /// Encodes the info in this edge into one 64bit unsigned integer.
+        /// </summary>
+        /// <returns>An encoded version of this edge.</returns>
+        internal ulong Encode()
+        {
+            return (((ulong) this.TileId) << 32) + this.LocalId;
+        }
+
+        /// <summary>
+        /// Decodes the given encoded edge id.
+        /// </summary>
+        /// <param name="encoded">The encoded version an edge.</param>
+        /// <returns>The decoded version of edge.</returns>
+        internal static EdgeId Decode(ulong encoded)
+        {
+            var tileId = (uint) (encoded >> 32);
+            var localId = (uint) (encoded - ((ulong)tileId << 32));
+            
+            return new EdgeId(tileId, localId);
+        }
     }
 }

@@ -88,5 +88,38 @@ namespace Itinero.Data.Graphs
                 return ((int) TileId * 397) ^ (int) LocalId;
             }
         }
+
+        /// <summary>
+        /// Encodes the info in this vertex into one 64bit unsigned integer.
+        /// </summary>
+        /// <returns>An encoded version of this vertex.</returns>
+        internal ulong Encode()
+        {
+            return (((ulong) this.TileId) << 32) + this.LocalId;
+        }
+
+        /// <summary>
+        /// Decodes the given encoded vertex id.
+        /// </summary>
+        /// <param name="encoded">The encoded version a vertex.</param>
+        /// <param name="tileId">The tile id.</param>
+        /// <param name="localId">The local id.</param>
+        /// <returns>The decoded version of the vertex.</returns>
+        internal static void Decode(ulong encoded, out uint tileId, out uint localId)
+        {
+            tileId = (uint) (encoded >> 32);
+            localId = (uint) (encoded - ((ulong)tileId << 32));
+        }
+
+        /// <summary>
+        /// Decodes the given encoded vertex id.
+        /// </summary>
+        /// <param name="encoded">The encoded version a vertex.</param>
+        /// <returns>The decoded version of the vertex.</returns>
+        internal static VertexId Decode(ulong encoded)
+        {
+            Decode(encoded, out var tileId, out var localId);
+            return new VertexId(tileId, localId);
+        }
     }
 }

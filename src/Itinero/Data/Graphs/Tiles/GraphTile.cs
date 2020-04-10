@@ -102,11 +102,27 @@ namespace Itinero.Data.Graphs.Tiles
         /// <param name="vertex2">The second vertex.</param>
         /// <param name="shape">The shape."</param>
         /// <param name="attributes">The attributes."</param>
+        /// <param name="edgeId">The edge id if this edge is a part of another tile.</param>
         /// <returns>The new edge id.</returns>
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null,
-            IEnumerable<(string key, string value)>? attributes = null)
+            IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null)
         {
-            var edgeId = new EdgeId(_tileId, _nextEdgeId);
+            if (vertex1.TileId != _tileId)
+            { // this is a special case, an edge is added that is not part of this tile.
+                // but it needs to be added because need to able to jump to neighbouring tiles.
+                // the edge is added in this tile **and** in the other tile.
+                if (edgeId == null) throw new ArgumentException("Cannot add an edge that doesn't start in this tile without a proper tile id.",
+                    nameof(edgeId));
+                
+                // reverse the edge.
+                var t = vertex1;
+                vertex1 = vertex2;
+                vertex2 = t;
+            }
+            else
+            { // this edge starts in this tile, it get an id from this tile.
+                edgeId = new EdgeId(_tileId, _nextEdgeId);
+            }
 
             // write the edge data.
             var newEdgePointer = _nextEdgeId;
@@ -140,6 +156,13 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgeId += size;
             size = EncodePointer(_nextEdgeId, v2p);
             _nextEdgeId += size;
+            
+            // write edge id explicitly if not in this edge.
+            if (vertex1.TileId != vertex2.TileId)
+            { // this data will only be there for edges crossing tile boundaries.
+                size = EncodeEdgeId(_nextEdgeId, edgeId.Value);
+                _nextEdgeId += size;
+            }
 
             // take care of shape if any.
             uint? shapePointer = null;
@@ -159,7 +182,7 @@ namespace Itinero.Data.Graphs.Tiles
             size = EncodePointer(_nextEdgeId, attributesPointer);
             _nextEdgeId += size;
 
-            return edgeId;
+            return edgeId.Value;
         }
 
         private void SetCoordinate(uint localId, double longitude, double latitude)
@@ -210,7 +233,7 @@ namespace Itinero.Data.Graphs.Tiles
                 _edges.Resize(_edges.Length + 1024);
             }
             
-            var encodedId = (((ulong) vertexId.TileId) << 32) + vertexId.LocalId;
+            var encodedId = vertexId.Encode();
             return (uint) _edges.SetDynamicUInt64(location, encodedId);
         }
 
@@ -224,8 +247,7 @@ namespace Itinero.Data.Graphs.Tiles
                 return size;
             }
 
-            tileId = (uint) (encodedId >> 32);
-            localId = (uint) (encodedId - ((ulong)tileId << 32));
+            VertexId.Decode(encodedId, out tileId, out localId);
             return size;
         }
 
@@ -244,6 +266,36 @@ namespace Itinero.Data.Graphs.Tiles
             var size = _edges.GetDynamicUInt32(location, out var data);
             pointer = data.DecodeNullableData();
             return (uint)size;
+        }
+
+        internal uint EncodeEdgeId(uint location, EdgeId edgeId)
+        {
+            ulong? encoded = null;
+            if (edgeId.TileId != _tileId)
+            {
+                encoded = edgeId.Encode();
+            
+                if (_edges.Length <= location + 9)
+                {
+                    _edges.Resize(_edges.Length + 1024);
+                }
+            }
+            return (uint) _edges.SetDynamicUInt64(location, 
+                encoded.EncodeAsNullableData());
+        }
+
+        internal uint DecodeEdgeId(uint location, out EdgeId? edgeId)
+        {            
+            var size = (uint) _edges.GetDynamicUInt64(location, out var encodedId);
+            var encodeNullable = encodedId.DecodeNullableData();
+
+            edgeId = null;
+            if (encodeNullable != null)
+            {
+                edgeId = EdgeId.Decode(encodeNullable.Value);
+            }
+            
+            return size;
         }
     }
 }
