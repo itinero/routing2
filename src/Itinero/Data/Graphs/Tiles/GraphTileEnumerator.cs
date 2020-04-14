@@ -60,6 +60,7 @@ namespace Itinero.Data.Graphs.Tiles
             }
 
             _localId = vertex.LocalId;
+            _nextEdgePointer = uint.MaxValue;
 
             this.Vertex1 = vertex;
             return true;

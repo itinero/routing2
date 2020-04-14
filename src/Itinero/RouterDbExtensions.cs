@@ -208,7 +208,7 @@ namespace Itinero
                 profileHandler.GetForwardWeight,
                 settled: (v) =>
                 {
-                    //routerDb.DataProvider?.TouchVertex(v);
+                    routerDb.UsageNotifier.NotifyVertex(v);
                     return checkMaxDistance(v);
                 });
 
@@ -253,7 +253,7 @@ namespace Itinero
                 profileHandler.GetForwardWeight,
                 settled: (v) =>
                 {
-                    //routerDb.DataProvider?.TouchVertex(v);
+                    routerDb.UsageNotifier.NotifyVertex(v);
                     return checkMaxDistance(v);
                 });
 
@@ -311,7 +311,7 @@ namespace Itinero
                 profileHandler.GetBackwardWeight,
                 settled: (v) =>
                 {
-                    //routerDb.DataProvider?.TouchVertex(v);
+                    routerDb.UsageNotifier.NotifyVertex(v);
                     return checkMaxDistance(v);
                 });
 
