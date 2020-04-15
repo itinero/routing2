@@ -4,39 +4,30 @@
 
 [![Build status](https://build.anyways.eu/app/rest/builds/buildType:(id:anyways_Openplannerteam_ItineroTiledRouting)/statusIcon)](https://build.anyways.eu/viewType.html?buildTypeId=anyways_Openplannerteam_ItineroTiledRouting)  
 
-A new temporary repository for v2 routing core, being tile-based.
-
-This is part of the work done by the awesome [open planner team](https://openplanner.team/).
+The new for the v2 routing core. This is part of the work done by the awesome [open planner team](https://openplanner.team/).
 
 ## Goals of this project
 
-To consume routable tiles:
+To consume routable tiles and make Itinero more flexible. Itinero should be able to update data in the routing graph and be able to handle more dynamic scenarios. Itinero should be able to do route planning using live OSM changes.
 
 ![Image of tiles for ghent](./docs/routable-tiles-ghent.png)
-
-More detailed goals are:
-
-- Experiment with tiled-routing.
-- Build a fully functioning prototype of what Itinero 2 should be and:
-  - Merge this with the current routing core when finished.
-  - Or transplant the most valuable concepts over to the current routing core without breaking too much.
-- Experiment to see if all the current features of the routing core can be implemented using Itinero 2's new concepts.
-  - Island detections is one, how to do this when using multiple tiles?
-  - Configurable profiles and changes to profiles?
-  - Preprocessing & updating data.
 
 ## Requirements on top of what Itinero is now:
 
 The main thing is to build a tile-based datastructure that replaces (or expands) the current routerdb concept. This should also enable distributed preprocessing of the data. It would be awesome to:
 
-- Live load updates, meaning we can have immidate updates to the routing graph.
-- We can add any data to the edges and make this configurable:
-  - Distance.
-  - Custom costs.
-- We can add any data to the vertices and make this configurable:
-  - Turn costs.
-  - Intersection costs.
-  - Meta data.
+- [x] Have the route planner load data automatically from [Routeable Tiles](https://github.com/openplannerteam/routable-tiles).
+- [ ] Live load updates, meaning we can have immediate updates to the routing graph.
+  - [ ] Keep multiple version in memory at the same time.
+- [ ] We can precompute edge data:
+  - [ ] Update this on-the-fly when not there.
+  - [ ] Experiment with:
+    - [ ] Dynamic travel times.
+- [ ] We can precompute vertex data:
+  - [ ] Update this on-the-fly when not there.
+  - [ ] Experiment with:
+    - [ ] Turn costs.
+    - [ ] Intersection costs.
 
 ## Status
 
