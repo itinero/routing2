@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 
@@ -40,21 +41,14 @@ namespace Itinero.IO.Json.GeoJson
         {
             if (jsonWriter == null) jsonWriter = new Utf8JsonWriter(new MemoryStream());
             
-            jsonWriter.WriteStartObject();
-            jsonWriter.WriteString("type", "Feature");
-
-            jsonWriter.WritePropertyName("properties");
-            jsonWriter.WriteStartObject();
-            jsonWriter.WriteEndObject();
+            jsonWriter.WriteFeatureStart();
+            jsonWriter.WriteProperties(Enumerable.Empty<(string key, string value)>());
 
             jsonWriter.WritePropertyName("geometry");
-            
             var locationOnNetwork = snapPoint.LocationOnNetwork(routerDb);
             jsonWriter.WritePoint(locationOnNetwork);
 
-            jsonWriter.WriteEndObject();
-            
-            jsonWriter.WriteEndObject();
+            jsonWriter.WriteFeatureEnd();
         }
     }
 }

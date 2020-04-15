@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Itinero.Data.Graphs.Tiles
 {
@@ -227,6 +228,10 @@ namespace Itinero.Data.Graphs.Tiles
             {
                 if (_graphTile == null)
                     throw new InvalidOperationException("Move to graph tile first.");
+                if (!this.Forward)
+                {
+                    return _graphTile.GetShape(_shapePointer).Reverse();
+                }
                 return _graphTile.GetShape(_shapePointer);
             }
         }
