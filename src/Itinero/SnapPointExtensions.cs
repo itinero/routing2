@@ -33,11 +33,7 @@ namespace Itinero
             while (offset < maxOffsetInMeter)
             {
                 // calculate search box.
-                var offsets = location.OffsetWithDistances(maxOffsetInMeter);
-                var latitudeOffset = System.Math.Abs(location.latitude - offsets.latitude);
-                var longitudeOffset = System.Math.Abs(location.longitude - offsets.longitude);
-                var box = ((location.longitude - longitudeOffset, location.latitude + latitudeOffset), 
-                    (location.longitude + longitudeOffset, location.latitude - latitudeOffset));
+                var box = location.BoxAround(maxOffsetInMeter);
 
                 // make sure data is loaded.
                 routerDb.UsageNotifier?.NotifyBox(box);
@@ -96,7 +92,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="snapPoint">The snap point.</param>
         /// <returns>The location on the network.</returns>
-        public static (double longitude, double latitude) LocationOnNetwork(this RouterDb routerDb, SnapPoint snapPoint)
+        public static (double longitude, double latitude) LocationOnNetwork(this SnapPoint snapPoint, RouterDb routerDb)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             enumerator.MoveToEdge(snapPoint.EdgeId);

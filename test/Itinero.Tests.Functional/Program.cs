@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Itinero.Geo;
+using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
@@ -62,8 +64,14 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: hamme");
             var leuven = SnappingTest.Default.Run((routerDb, 4.69575, 50.88040, profile: bicycle),
                 $"Snapping cold: hamme");
-            var wechelderzande = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
-                $"Snapping cold: wechelderzande");
+            var wechelderzande1 = SnappingTest.Default.Run((routerDb, 4.80129, 51.26774, profile: bicycle),
+                $"Snapping cold: wechelderzande1");
+            var wechelderzande2 = SnappingTest.Default.Run((routerDb, 4.794577360153198, 51.26723850107129, profile: bicycle),
+                $"Snapping cold: wechelderzande2");
+            var wechelderzande3 = SnappingTest.Default.Run((routerDb, 4.783204793930054, 51.266842437522904, profile: bicycle),
+                $"Snapping cold: wechelderzande3");
+            var vorselaar1 = SnappingTest.Default.Run((routerDb, 4.7668540477752686, 51.23757128291549, profile: bicycle),
+                $"Snapping cold: vorselaar1");
             var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
                 $"Snapping cold: middelburg");
             var hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
@@ -91,6 +99,11 @@ namespace Itinero.Tests.Functional
             var stationDuinberge = SnappingTest.Default.Run((routerDb, 3.26358318328857, 51.3381990351222, profile: bicycle),
                 $"Snapping cold: duinberge");
 
+            var json = routerDb.ToGeoJson((3.26358318328857, 51.3381990351222).BoxAround(1000));
+            
+            json = bruggeStation.ToGeoJson(routerDb);
+            json = stationDuinberge.ToGeoJson(routerDb);
+
             Parallel.For(0, 10, (i) =>
             {
                 SnappingTest.Default.Run((routerDb, 4.27392840385437, 50.884507285755205, profile: bicycle),
@@ -103,15 +116,22 @@ namespace Itinero.Tests.Functional
                 $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
             route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
                 $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
-//            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
-//                route.ToGeoJson());
-                
+            File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
+                route.ToGeoJson());
+            
+            route = PointToPointRoutingTest.Default.Run((routerDb, wechelderzande1, vorselaar1, bicycle),
+                $"Route cold: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}");
+            route = PointToPointRoutingTest.Default.Run((routerDb, wechelderzande1, vorselaar1, bicycle),
+                $"Route hot: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
+                route.ToGeoJson());
+
             route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
                 $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
             route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
                 $"Route host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
-//            File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}.geojson"), 
-//                route.ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}.geojson"), 
+                route.ToGeoJson());
 //
 //            using (var stream = File.Open("temp.routerdb", FileMode.Create))
 //            {

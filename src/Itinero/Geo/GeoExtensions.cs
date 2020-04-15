@@ -31,16 +31,32 @@ namespace Itinero.Geo
         /// Returns a coordinate offset with a given distance.
         /// </summary>
         /// <param name="coordinate">The coordinate.</param>
+        /// <param name="meter">The distance.</param>
         /// <returns>An offset coordinate.</returns>
-        public static (double longitude, double latitude) OffsetWithDistances(this (double longitude, double latitude) coordinate, double meter)
+        public static (double longitude, double latitude) OffsetWithDistanceX(this (double longitude, double latitude) coordinate, double meter)
         {
-            var offsetLat = (coordinate.longitude, coordinate.latitude + 0.1);
-            var offsetLon = (coordinate.longitude + 0.1, coordinate.latitude);
-            var latDistance = offsetLat.DistanceEstimateInMeter(coordinate);
+            var offset = 0.001;
+            var offsetLon = (coordinate.longitude + offset, coordinate.latitude);
             var lonDistance = offsetLon.DistanceEstimateInMeter(coordinate);
 
-            return (coordinate.longitude + (meter / lonDistance) * 0.1, 
-                coordinate.latitude + (meter / latDistance) * 0.1);
+            return (coordinate.longitude + (meter / lonDistance) * offset, 
+                coordinate.latitude);
+        }
+        
+        /// <summary>
+        /// Returns a coordinate offset with a given distance.
+        /// </summary>
+        /// <param name="coordinate">The coordinate.</param>
+        /// <param name="meter">The distance.</param>
+        /// <returns>An offset coordinate.</returns>
+        public static (double longitude, double latitude) OffsetWithDistanceY(this (double longitude, double latitude) coordinate, double meter)
+        {
+            var offset = 0.001;
+            var offsetLat = (coordinate.longitude, coordinate.latitude + offset);
+            var latDistance = offsetLat.DistanceEstimateInMeter(coordinate);
+
+            return (coordinate.longitude, 
+                coordinate.latitude + (meter / latDistance) * offset);
         }
         
         /// <summary>
@@ -89,37 +105,36 @@ namespace Itinero.Geo
             }
 
             // get direction vector.
-            var diffLat = (coordinate2.latitude - coordinate1.latitude) * 100.0;
-            var diffLon = (coordinate2.longitude - coordinate1.longitude) * 100.0;
+            var diffLat = (coordinate2.latitude - coordinate1.latitude);
+            var diffLon = (coordinate2.longitude - coordinate1.longitude);
 
             // increase this line in length if needed.
-            var thisLine = line;
+            var longerLine = line;
             if (lengthInMeters < 50)
             {
-                thisLine = (coordinate1, (diffLon + coordinate.longitude, diffLat + coordinate.latitude));
+                longerLine = (coordinate1, (diffLon + coordinate.longitude, diffLat + coordinate.latitude));
             }
 
-            // rotate 90°.
-            var temp = diffLon;
-            diffLon = -diffLat;
-            diffLat = temp;
-
-            // create second point from the given coordinate.
-            var second = (diffLon + coordinate.longitude, diffLat + coordinate.latitude);
+            // rotate 90°, offset y with x, and x with y.
+            var xLength = longerLine.coordinate1.DistanceEstimateInMeter((longerLine.coordinate2.longitude, longerLine.coordinate1.latitude));
+            if (longerLine.coordinate1.longitude > longerLine.coordinate2.longitude) xLength = -xLength;
+            var yLength = longerLine.coordinate1.DistanceEstimateInMeter((longerLine.coordinate1.longitude, longerLine.coordinate2.latitude));
+            if (longerLine.coordinate1.latitude > longerLine.coordinate2.latitude) yLength = -yLength;
+            
+            var second = coordinate.OffsetWithDistanceY(xLength)
+                .OffsetWithDistanceX(-yLength);
 
             // create a second line.
             var other = (coordinate, second);
 
             // calculate intersection.
-            var projected = thisLine.Intersect(other);
+            var projected = longerLine.Intersect(other, false);
 
             // check if coordinate is on this line.
             if (!projected.HasValue)
             {
                 return null;
             }
-
-            if (lengthInMeters < 50) return projected;
             
             // check if the coordinate is on this line.
             var dist = line.A() * line.A() + line.B() * line.B();
@@ -137,6 +152,18 @@ namespace Itinero.Geo
             }
             return projected;
         }
+
+        /// <summary>
+        /// Returns the center of the box.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <returns>The center.</returns>
+        public static (double longitude, double latitude) Center(
+            this ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+        {
+            return ((box.topLeft.longitude + box.bottomRight.longitude) / 2,
+                (box.topLeft.latitude + box.bottomRight.latitude) / 2);
+        }
         
         /// <summary>
         /// Calculates the intersection point of the given line with this line. 
@@ -147,7 +174,7 @@ namespace Itinero.Geo
         /// </summary>
         public static (double longitude, double latitude)? Intersect(this ((double longitude, double latitude) coordinate1, 
             (double longitude, double latitude) coordinate2) thisLine, ((double longitude, double latitude) coordinate1, 
-            (double longitude, double latitude) coordinate2) line)
+            (double longitude, double latitude) coordinate2) line, bool checkSegment = true)
         {
             var det = (double)(line.A() * thisLine.B() - thisLine.A() * line.B());
             if (System.Math.Abs(det) <= E)
@@ -162,18 +189,22 @@ namespace Itinero.Geo
                 var coordinate = (x ,y);
 
                 // check if the coordinate is on this line.
-                var dist = thisLine.A() * thisLine.A() + thisLine.B() * thisLine.B();
-                var line1 = (coordinate, thisLine.coordinate1);
-                var distTo1 = line1.A() * line1.A() + line1.B() * line1.B();
-                if (distTo1 > dist)
+                if (checkSegment)
                 {
-                    return null;
-                }
-                var line2 = (coordinate, thisLine.coordinate2);
-                var distTo2 = line2.A() * line2.A() + line2.B() * line2.B();
-                if (distTo2 > dist)
-                {
-                    return null;
+                    var dist = thisLine.A() * thisLine.A() + thisLine.B() * thisLine.B();
+                    var line1 = (coordinate, thisLine.coordinate1);
+                    var distTo1 = line1.A() * line1.A() + line1.B() * line1.B();
+                    if (distTo1 > dist)
+                    {
+                        return null;
+                    }
+
+                    var line2 = (coordinate, thisLine.coordinate2);
+                    var distTo2 = line2.A() * line2.A() + line2.B() * line2.B();
+                    if (distTo2 > dist)
+                    {
+                        return null;
+                    }
                 }
 
 //                if (!_coordinate1.Elevation.HasValue || !_coordinate2.Elevation.HasValue) return coordinate;
@@ -218,7 +249,7 @@ namespace Itinero.Geo
         private static double B(this ((double longitude, double latitude) coordinate1,
             (double longitude, double latitude) coordinate2) line)
         {
-            return line.coordinate2.longitude - line.coordinate1.longitude;
+            return line.coordinate1.longitude - line.coordinate2.longitude;
         }
 
         private static double C(this ((double longitude, double latitude) coordinate1,

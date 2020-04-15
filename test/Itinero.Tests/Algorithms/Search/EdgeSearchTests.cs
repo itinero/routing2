@@ -75,5 +75,21 @@ namespace Itinero.Tests.Algorithms.Search
                 (middle.lon + 0.01, middle.lat - 0.01)));
             Assert.Equal(edge, snapPoint.EdgeId);
         }
+
+        [Fact]
+        public void EdgeSearch_SnapInBox_ShouldSnapToClosetSegment()
+        {
+            var network = new RouterDb();
+            var vertex1 = network.AddVertex(4.796154499053955,51.26912479079087);
+            var vertex2 = network.AddVertex(4.799630641937256,51.27015852526688);
+            var vertex3 = network.AddVertex(4.796798229217529,51.26835954379726);
+            var vertex4 = network.AddVertex(4.800124168395996,51.26937987029022);
+            var edge1 = network.AddEdge(vertex1, vertex2);
+            var edge2 = network.AddEdge(vertex3, vertex4);
+
+            var snapPoint = network.SnapInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01), 
+                (4.798600673675537 + 0.01, 51.268748881579405 - 0.01)));
+            Assert.Equal(edge2, snapPoint.EdgeId);
+        }
     }
 }

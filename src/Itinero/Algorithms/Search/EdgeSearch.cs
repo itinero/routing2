@@ -45,8 +45,7 @@ namespace Itinero.Algorithms.Search
             }
             
             var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-            var center = ((box.topLeft.longitude + box.bottomRight.longitude) / 2,
-                (box.topLeft.latitude + box.bottomRight.latitude) / 2);
+            var center = box.Center();
 
             const double exactTolerance = 1;
             var bestDistance = double.MaxValue;
@@ -100,18 +99,21 @@ namespace Itinero.Algorithms.Search
                         var startLength = length;
                         length += segmentLength;
                         
-                        // check if we even need to check.
-                        var previousDistance = previous.DistanceEstimateInMeter(center);
-                        var shapePointDistance = current.DistanceEstimateInMeter(center);
-                        if (previousDistance + segmentLength > bestDistance &&
-                            shapePointDistance + segmentLength > bestDistance)
-                        {
-                            continue;
-                        }
+                        // TODO: figure this out, there has to be a way to not project every segment.
+//                        // check if we even need to check.
+//                        var previousDistance = previous.DistanceEstimateInMeter(center);
+//                        var shapePointDistance = current.DistanceEstimateInMeter(center);
+//                        if (previousDistance + segmentLength > bestDistance &&
+//                            shapePointDistance + segmentLength > bestDistance)
+//                        {
+//                            continue;
+//                        }
                         
                         // project on line segment.
-                        if (bestDistance <= 0) continue;
                         var line = (previous, current);
+                        var originalPrevious = previous;
+                        previous = current;
+                        if (bestDistance <= 0) continue;
                         var projected = line.ProjectOn(center);
                         if (!projected.HasValue) continue;
                         
@@ -123,7 +125,7 @@ namespace Itinero.Algorithms.Search
                                 
                         if (distance < exactTolerance) distance = 0;
                         bestDistance = distance;
-                        localSnapPoint = (edgeEnumerator.Id, startLength + previous.DistanceEstimateInMeter(projected.Value));
+                        localSnapPoint = (edgeEnumerator.Id, startLength + originalPrevious.DistanceEstimateInMeter(projected.Value));
                     }
                 }
 

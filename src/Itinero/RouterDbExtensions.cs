@@ -115,7 +115,7 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The length in meters.</returns>
-        internal static uint EdgeLength(this RouterDbEdgeEnumerator enumerator)
+        internal static double EdgeLength(this RouterDbEdgeEnumerator enumerator)
         {
             var distance = 0.0;
 
@@ -132,7 +132,7 @@ namespace Itinero
                 previous = current;
             }
 
-            return (uint)(distance * 100);
+            return distance;
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Itinero
         /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
-        public static (double longitude, double latitude) LocationOnEdge(this RouterDbEdgeEnumerator enumerator, in ushort offset)
+        internal static (double longitude, double latitude) LocationOnEdge(this RouterDbEdgeEnumerator enumerator, in ushort offset)
         {
             // TODO: this can be optimized, build a performance test.
             var shape = enumerator.GetShapeBetween().ToList();
@@ -183,7 +183,7 @@ namespace Itinero
             var profileHandler = routerDb.GetProfileHandler(profile);
 
             // if there is max distance don't search outside the box.
-            var sourceLocation = routerDb.LocationOnNetwork(source);
+            var sourceLocation = source.LocationOnNetwork(routerDb);
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
                 null;
             if (settings.MaxDistance < double.MaxValue)
@@ -230,7 +230,7 @@ namespace Itinero
             var profileHandler = routerDb.GetProfileHandler(profile);
 
             // if there is max distance don't search outside the box.
-            var sourceLocation = routerDb.LocationOnNetwork(source);
+            var sourceLocation = source.LocationOnNetwork(routerDb);
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
                 null;
             if (settings.MaxDistance < double.MaxValue)
@@ -287,7 +287,7 @@ namespace Itinero
             var profileHandler = routerDb.GetProfileHandler(profile);
 
             // if there is max distance don't search outside the box.
-            var sourceLocation = routerDb.LocationOnNetwork(target);
+            var sourceLocation = target.LocationOnNetwork(routerDb);
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
                 null;
             if (settings.MaxDistance < double.MaxValue)
