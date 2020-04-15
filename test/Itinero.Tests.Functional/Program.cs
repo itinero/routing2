@@ -154,43 +154,38 @@ namespace Itinero.Tests.Functional
                 PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                     $"Routing parallel: {nameof(heldergem)} -> {nameof(ninove)}");
             });
-
-            RouterDbWriteTest.Default.Run((routerDb, "temp.routerdb"),
-                "Writing routerdb.");
-            var deserializedRouterDb = RouterDbReadTest.Default.Run("temp.routerdb",
-                "Reading routerdb.");
             
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, zellik1, zellik2, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
                 $"Route (after deserialization) cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, zellik1, zellik2, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
                 $"Route (after deserialization) hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}-deserialized.geojson"), 
                 route.ToGeoJson());
                 
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, bruggeStation, stationDuinberge, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
                 $"Route (after deserialization) cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, bruggeStation, stationDuinberge, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
                 $"Route (after deserialization) host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
             File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}-deserialized.geojson"), 
                 route.ToGeoJson());
 
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, zellik2, zellik1, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
                 $"Route (after deserialization) cold: {nameof(zellik2)} -> {nameof(zellik1)}");
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, zellik2, zellik1, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
                 $"Route (after deserialization) hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}-deserialized.geojson"), 
                 route.ToGeoJson());
             
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, heldergem, ninove, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route (after deserialization) cold: {nameof(heldergem)} -> {nameof(ninove)}");
-            route = PointToPointRoutingTest.Default.Run((deserializedRouterDb, heldergem, ninove, bicycle),
+            route = PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                 $"Route (after deserialization) hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}-deserialized.geojson"), 
                 route.ToGeoJson());
 
             Parallel.For(0, 10, (i) =>
             {
-                PointToPointRoutingTest.Default.Run((deserializedRouterDb, heldergem, ninove, bicycle),
+                PointToPointRoutingTest.Default.Run((routerDb, heldergem, ninove, bicycle),
                     $"Routing (after deserialization) parallel: {nameof(heldergem)} -> {nameof(ninove)}");
             });
             

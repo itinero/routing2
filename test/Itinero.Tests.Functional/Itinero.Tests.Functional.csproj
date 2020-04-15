@@ -15,7 +15,6 @@
     <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Geo" />
     <Folder Include="results" />
   </ItemGroup>
   <ItemGroup>
