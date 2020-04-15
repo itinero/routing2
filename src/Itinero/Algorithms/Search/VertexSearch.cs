@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
 using Itinero.Data.Tiles;
-using Itinero.LocalGeo;
+using Itinero.Geo;
 
 namespace Itinero.Algorithms.Search
 {
@@ -16,8 +16,8 @@ namespace Itinero.Algorithms.Search
         /// <param name="graph">The graph.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        internal static IEnumerable<(VertexId vertex, Coordinate location)> SearchVerticesInBox(this Graph graph,
-            (double minLon, double minLat, double maxLon, double maxLat) box)
+        internal static IEnumerable<(VertexId vertex, (double longitude, double latitude) location)> SearchVerticesInBox(this Graph graph,
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             var range = new TileRange(box, graph.Zoom);
             var rangeVertices = new TileRangeVertexEnumerator(range, graph);
@@ -25,10 +25,7 @@ namespace Itinero.Algorithms.Search
             while (rangeVertices.MoveNext())
             {
                 var location = rangeVertices.Location;
-                if (box.minLat > location.Latitude ||
-                    box.minLon > location.Longitude ||
-                    box.maxLat < location.Latitude ||
-                    box.maxLon < location.Longitude)
+                if (!box.Overlaps(location))
                 {
                     continue;
                 }

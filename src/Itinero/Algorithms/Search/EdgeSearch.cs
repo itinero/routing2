@@ -1,9 +1,7 @@
 using System;
 using Itinero.Data.Graphs;
-using Itinero.Data.Tiles;
 using System.Linq;
-using Itinero.Data;
-using Itinero.LocalGeo;
+using Itinero.Geo;
 
 namespace Itinero.Algorithms.Search
 {
@@ -15,7 +13,8 @@ namespace Itinero.Algorithms.Search
         /// <param name="routerDb">The router db.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDb routerDb, (double minLon, double minLat, double maxLon, double maxLat) box)
+        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDb routerDb, 
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             var vertices = routerDb.Network.SearchVerticesInBox(box);
             return new RouterDbEdgeEnumerator(routerDb, new EdgeEnumerator(routerDb.Network, vertices.Select((i) => i.vertex)));
@@ -29,8 +28,8 @@ namespace Itinero.Algorithms.Search
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
         public static SnapPoint SnapInBox(this RouterDb routerDb,
-            (double minLon, double minLat, double maxLon, double maxLat) box, 
-            Func<RouterDbEdgeEnumerator, bool> acceptableFunc = null)
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
+            Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null)
         {
             bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
             {
@@ -46,17 +45,17 @@ namespace Itinero.Algorithms.Search
             }
             
             var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-            var center = new Coordinate((box.maxLon + box.minLon) / 2,(box.maxLat + box.minLat) / 2);
+            var center = box.Center();
 
             const double exactTolerance = 1;
             var bestDistance = double.MaxValue;
-            (uint edgeId, ushort offset) bestSnapPoint = (uint.MaxValue, ushort.MaxValue);
+            (EdgeId edgeId, ushort offset) bestSnapPoint = (EdgeId.Empty, ushort.MaxValue);
             while (edgeEnumerator.MoveNext())
             {
                 if (bestDistance <= 0) break; // break when exact on an edge.
                 
                 // search for the local snap point that improves the current best snap point.
-                (uint edgeId, double offset) localSnapPoint = (uint.MaxValue, 0); 
+                (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);
                 var isAcceptable = (bool?) null;
                 var completeShape = edgeEnumerator.GetCompleteShape();
                 var length = 0.0;
@@ -66,7 +65,7 @@ namespace Itinero.Algorithms.Search
                     var previous = completeShapeEnumerator.Current;
                     
                     // start with the first location.
-                    var distance = Coordinate.DistanceEstimateInMeter(previous, center);
+                    var distance = previous.DistanceEstimateInMeter(center);
                     if (distance < bestDistance)
                     {
                         isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
@@ -82,10 +81,10 @@ namespace Itinero.Algorithms.Search
                     {
                         var current = completeShapeEnumerator.Current;
                         
-                        var segmentLength = Coordinate.DistanceEstimateInMeter(previous, current);
+                        var segmentLength = previous.DistanceEstimateInMeter(current);
                         
                         // first check the actual current location, it may be an exact match.
-                        distance = Coordinate.DistanceEstimateInMeter(current, center);
+                        distance = current.DistanceEstimateInMeter(center);
                         if (distance < bestDistance)
                         {
                             isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
@@ -100,22 +99,25 @@ namespace Itinero.Algorithms.Search
                         var startLength = length;
                         length += segmentLength;
                         
-                        // check if we even need to check.
-                        var previousDistance = Coordinate.DistanceEstimateInMeter(previous, center);
-                        var shapePointDistance = Coordinate.DistanceEstimateInMeter(current, center);
-                        if (previousDistance + segmentLength > bestDistance &&
-                            shapePointDistance + segmentLength > bestDistance)
-                        {
-                            continue;
-                        }
+                        // TODO: figure this out, there has to be a way to not project every segment.
+//                        // check if we even need to check.
+//                        var previousDistance = previous.DistanceEstimateInMeter(center);
+//                        var shapePointDistance = current.DistanceEstimateInMeter(center);
+//                        if (previousDistance + segmentLength > bestDistance &&
+//                            shapePointDistance + segmentLength > bestDistance)
+//                        {
+//                            continue;
+//                        }
                         
                         // project on line segment.
+                        var line = (previous, current);
+                        var originalPrevious = previous;
+                        previous = current;
                         if (bestDistance <= 0) continue;
-                        var line = new Line(previous, current);
                         var projected = line.ProjectOn(center);
                         if (!projected.HasValue) continue;
                         
-                        distance = Coordinate.DistanceEstimateInMeter(projected.Value, center);
+                        distance = projected.Value.DistanceEstimateInMeter(center);
                         if (!(distance < bestDistance)) continue;
                         
                         isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
@@ -123,12 +125,12 @@ namespace Itinero.Algorithms.Search
                                 
                         if (distance < exactTolerance) distance = 0;
                         bestDistance = distance;
-                        localSnapPoint = (edgeEnumerator.Id, startLength + Coordinate.DistanceEstimateInMeter(previous, projected.Value));
+                        localSnapPoint = (edgeEnumerator.Id, startLength + originalPrevious.DistanceEstimateInMeter(projected.Value));
                     }
                 }
 
                 // move to the nex edge if no better point was found.
-                if (localSnapPoint.edgeId == uint.MaxValue) continue;
+                if (localSnapPoint.edgeId == EdgeId.Empty) continue;
                 
                 // calculate the actual offset.
                 var offset = ushort.MaxValue;

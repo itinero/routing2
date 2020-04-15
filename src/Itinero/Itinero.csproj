@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Itinero</AssemblyName>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>default</LangVersion>
     <Authors>Ben Abelshausen;openplannerteam</Authors>
     <PackageId>openplannerteam.Itinero</PackageId>
     <PackageTags>Routing</PackageTags>
@@ -10,10 +10,11 @@
     <PackageProjectUrl>https://github.com/openplannerteam/itinero-tiled-routing</PackageProjectUrl>
     <RepositoryUrl>https://github.com/openplannerteam/itinero-tiled-routing</RepositoryUrl>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.1" />
     <PackageReference Include="Reminiscence" Version="1.4.0-pre001" />
+    <PackageReference Include="System.Text.Json" Version="4.7.1" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Profiles\Lua\Osm\pedestrian.lua" />

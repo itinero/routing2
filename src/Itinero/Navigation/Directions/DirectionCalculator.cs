@@ -1,5 +1,3 @@
-using Itinero.LocalGeo;
-
 namespace Itinero.Navigation.Directions
 {
     /// <summary>
@@ -10,13 +8,14 @@ namespace Itinero.Navigation.Directions
         /// <summary>
         /// Calculates the angle in radians at coordinate2.
         /// </summary>
-        public static double Angle(Coordinate coordinate1, Coordinate coordinate2, Coordinate coordinate3)
+        public static double Angle((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2, 
+            (double longitude, double latitude) coordinate3)
         {
-            var v11 = coordinate1.Latitude - coordinate2.Latitude;
-            var v10 = coordinate1.Longitude - coordinate2.Longitude;
+            var v11 = coordinate1.latitude - coordinate2.latitude;
+            var v10 = coordinate1.longitude - coordinate2.longitude;
 
-            var v21 = coordinate3.Latitude - coordinate2.Latitude;
-            var v20 = coordinate3.Longitude - coordinate2.Longitude;
+            var v21 = coordinate3.latitude - coordinate2.latitude;
+            var v20 = coordinate3.longitude - coordinate2.longitude;
 
             var v1Size = System.Math.Sqrt(v11 * v11 + v10 * v10);
             var v2Size = System.Math.Sqrt(v21 * v21 + v20 * v20);
@@ -83,7 +82,8 @@ namespace Itinero.Navigation.Directions
         /// <summary>
         /// Calculates the direction of one line segment relative to another.
         /// </summary>
-        public static RelativeDirection Calculate(Coordinate coordinate1, Coordinate coordinate2, Coordinate coordinate3)
+        public static RelativeDirection Calculate((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2, 
+            (double longitude, double latitude) coordinate3)
         {
             var direction = new RelativeDirection();
 
@@ -135,9 +135,9 @@ namespace Itinero.Navigation.Directions
         /// <summary>
         /// Calculates the direction of a segment.
         /// </summary>
-        public static DirectionEnum Calculate(Coordinate coordinate1, Coordinate coordinate2)
+        public static DirectionEnum Calculate((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2)
         {
-            var angle = (double)DirectionCalculator.Angle(new Coordinate(coordinate1.Latitude + 0.01f, coordinate1.Longitude),
+            var angle = (double)DirectionCalculator.Angle((coordinate1.latitude + 0.01f, coordinate1.longitude),
                 coordinate1, coordinate2);
 
             angle = angle.ToDegrees();

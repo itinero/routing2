@@ -21,7 +21,7 @@ namespace Itinero.IO.Osm.Tiles
         /// </summary>
         internal static Stream LoadEmbeddedResourceStream(string name)
         {
-            return typeof(DataProvider).Assembly.GetManifestResourceStream(name);
+            return typeof(GlobalIdMap).Assembly.GetManifestResourceStream(name);
         }
     }
 }

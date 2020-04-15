@@ -1,4 +1,4 @@
-using Itinero.Data.Attributes;
+using System.Collections.Generic;
 
 namespace Itinero.Profiles
 {
@@ -17,6 +17,6 @@ namespace Itinero.Profiles
         /// </summary>
         /// <param name="attributes">The attributes.</param>
         /// <returns>An edge factor.</returns>
-        public abstract EdgeFactor Factor(IAttributeCollection attributes);
+        public abstract EdgeFactor Factor(IEnumerable<(string key, string value)> attributes);
     }
 }

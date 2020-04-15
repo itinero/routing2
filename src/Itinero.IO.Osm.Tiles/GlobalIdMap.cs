@@ -13,7 +13,7 @@ namespace Itinero.IO.Osm.Tiles
     /// <summary>
     /// A data structure to keep mappings between global vertex ids and vertices.
     /// </summary>
-    public class GlobalIdMap : IEnumerable<(long globalId, VertexId vertex)>
+    internal class GlobalIdMap : IEnumerable<(long globalId, VertexId vertex)>
     {
         private readonly Dictionary<long, VertexId> _vertexPerId = new Dictionary<long, VertexId>();
 

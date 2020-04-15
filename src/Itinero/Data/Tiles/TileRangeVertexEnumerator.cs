@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
-using Itinero.LocalGeo;
 
 namespace Itinero.Data.Tiles
 {
@@ -33,7 +32,8 @@ namespace Itinero.Data.Tiles
 
         private uint _currentTile = uint.MaxValue;
         private uint _currentVertex = uint.MaxValue;
-        private Coordinate _currentLocation;
+        private double _currentLatitude;
+        private double _currentLongitude;
         
         public bool MoveNext()
         {
@@ -44,11 +44,8 @@ namespace Itinero.Data.Tiles
                     _currentTile = _tileEnumerator.Current.LocalId;
                     _currentVertex = 0;
 
-                    if (_graph.TryGetVertex(new VertexId()
-                    {
-                        TileId = _currentTile,
-                        LocalId = _currentVertex
-                    }, out _currentLocation))
+                    if (_graph.TryGetVertex(new VertexId(_currentTile, _currentVertex), 
+                        out _currentLongitude, out _currentLatitude))
                     {
                         return true;
                     }
@@ -60,11 +57,8 @@ namespace Itinero.Data.Tiles
             while (true)
             {
                 _currentVertex++;
-                if (_graph.TryGetVertex(new VertexId()
-                {
-                    TileId = _currentTile,
-                    LocalId = _currentVertex
-                }, out _currentLocation))
+                if (_graph.TryGetVertex(new VertexId(_currentTile, _currentVertex), 
+                    out _currentLongitude, out _currentLatitude))
                 {
                     return true;
                 }
@@ -82,16 +76,12 @@ namespace Itinero.Data.Tiles
 
             return false;
         }
-        
-        
 
-        public VertexId Current => new VertexId()
-        {
-            TileId = _currentTile,
-            LocalId = _currentVertex
-        };
 
-        public Coordinate Location => _currentLocation;
+
+        public VertexId Current => new VertexId(_currentTile, _currentVertex);
+
+        public (double longitude, double latitude) Location => (_currentLongitude, _currentLatitude);
 
         public void Dispose()
         {

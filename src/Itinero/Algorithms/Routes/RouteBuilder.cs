@@ -43,8 +43,6 @@ namespace Itinero.Algorithms.Routes
                     offset2 = path.Offset2;
                 }
 
-                var attributes = db.GetAttributes(segment.edge);
-                var factor = profile.Factor(attributes);
                 if (forward)
                 {
                     edgeEnumerator.MoveToEdge(segment.edge, segment.forward);
@@ -53,6 +51,8 @@ namespace Itinero.Algorithms.Routes
                 {
                     edgeEnumerator.MoveToEdge(segment.edge, !segment.forward);
                 }
+                var attributes = edgeEnumerator.Attributes;
+                var factor = profile.Factor(attributes);
                 var distance = edgeEnumerator.EdgeLength() / 100.0;
                 distance = ((offset2 - offset1) / (double)ushort.MaxValue) * distance;
                 route.TotalDistance += distance;

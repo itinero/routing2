@@ -1,8 +1,8 @@
 ﻿using System;
-using Itinero.LocalGeo;
 
 namespace Itinero.Data.Tiles
 {
+    // TODO: do we get rid of this or internalize it.
     public class Tile
     {
         public Tile(uint x, uint y, int zoom)
@@ -136,14 +136,14 @@ namespace Itinero.Data.Tiles
         /// <param name="y"></param>
         /// <param name="resolution"></param>
         /// <returns>A global coordinate pair.</returns>
-        public Coordinate FromLocalCoordinates(int x, int y, int resolution)
+        public (double longitude, double latitude) FromLocalCoordinates(int x, int y, int resolution)
         {
             var latStep = (this.Top - this.Bottom) / resolution;
             var lonStep = (this.Right - this.Left) / resolution;
             var top = this.Top;
             var left = this.Left;
 
-            return new Coordinate(left + (lonStep * x), top - (y * latStep));
+            return (left + (lonStep * x), top - (y * latStep));
         }
         
         /// <summary>

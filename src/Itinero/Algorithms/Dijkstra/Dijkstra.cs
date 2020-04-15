@@ -20,8 +20,8 @@ namespace Itinero.Algorithms.Dijkstra
         /// Calculates a path.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path Run(RouterDb routerDb, SnapPoint source, SnapPoint target, 
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null, Func<VertexId, bool> queued = null)
+        public Path? Run(RouterDb routerDb, SnapPoint source, SnapPoint target, 
+            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             _tree.Clear();
@@ -220,7 +220,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path[] Run(RouterDb routerDb, SnapPoint source, SnapPoint[] targets,
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool> settled = null, Func<VertexId, bool> queued = null)
+            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             _tree.Clear();

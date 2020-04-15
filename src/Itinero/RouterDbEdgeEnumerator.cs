@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Itinero.Algorithms.Search;
-using Itinero.Data.Attributes;
 using Itinero.Data.Graphs;
-using Itinero.Data.Shapes;
-using Itinero.LocalGeo;
 
 namespace Itinero
 {
@@ -59,7 +56,7 @@ namespace Itinero
         /// </summary>
         /// <param name="edgeId">The edge id.</param>
         /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
-        public bool MoveToEdge(uint edgeId, bool forward = true)
+        public bool MoveToEdge(EdgeId edgeId, bool forward = true)
         {
             if (_enumerator == null) throw new InvalidOperationException(
                 $"Cannot reset an enumerator created from an {nameof(EdgeEnumerator)}.");
@@ -97,19 +94,19 @@ namespace Itinero
         /// <summary>
         /// Gets the edge id.
         /// </summary>
-        public uint Id => this.Enumerator.Id;
-
+        public EdgeId Id => this.Enumerator.Id;
+            
         /// <summary>
-        /// Gets the shape, if any.
+        /// Gets the shape.
         /// </summary>
         /// <returns>The shape.</returns>
-        public ShapeBase GetShape() => this.Enumerator.GetShape();
-
+        public IEnumerable<(double longitude, double latitude)> Shape => this.Enumerator.Shape; 
+            
         /// <summary>
         /// Gets the attributes.
         /// </summary>
-        /// <returns></returns>
-        public IAttributeCollection GetAttributes() => _routerDb.GetAttributes(this.Enumerator.Id);
+        /// <returns>The attributes.</returns>
+        public IEnumerable<(string key, string value)> Attributes => this.Enumerator.Attributes; 
     }
     
     /// <summary>
@@ -122,7 +119,7 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The location.</returns>
-        public static Coordinate ToLocation(this RouterDbEdgeEnumerator enumerator)
+        public static (double longitude, double latitude) ToLocation(this RouterDbEdgeEnumerator enumerator)
         {
             return enumerator.RouterDb.GetVertex(enumerator.To);
         }
@@ -132,7 +129,7 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The location.</returns>
-        public static Coordinate FromLocation(this RouterDbEdgeEnumerator enumerator)
+        public static (double longitude, double latitude) FromLocation(this RouterDbEdgeEnumerator enumerator)
         {
             return enumerator.RouterDb.GetVertex(enumerator.From);
         }
@@ -142,11 +139,11 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The complete shape.</returns>
-        public static IEnumerable<Coordinate> GetCompleteShape(this RouterDbEdgeEnumerator enumerator)
+        public static IEnumerable<(double longitude, double latitude)> GetCompleteShape(this RouterDbEdgeEnumerator enumerator)
         {
             yield return enumerator.FromLocation();
 
-            var shape = enumerator.GetShape();
+            var shape = enumerator.Shape;
             if (shape != null)
             {
                 foreach (var s in shape)

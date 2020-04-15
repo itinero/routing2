@@ -1,8 +1,8 @@
-using Itinero.LocalGeo;
 using System.Collections.Generic;
 using System;
 using System.Collections;
-using Itinero.Data.Attributes;
+using System.Linq;
+using Itinero.Data;
 using Itinero.Navigation.Directions;
 
 namespace Itinero
@@ -15,12 +15,12 @@ namespace Itinero
         /// <summary>
         /// Gets or sets the shape.
         /// </summary>
-        public List<Coordinate> Shape { get; set; } = new List<Coordinate>();
+        public List<(double longitude, double latitude)> Shape { get; set; } = new List<(double longitude, double latitude)>();
 
         /// <summary>
         /// Gets or sets the attributes.
         /// </summary>
-        public IAttributeCollection Attributes { get; set; }
+        public IEnumerable<(string key, string value)> Attributes { get; set; }
 
         /// <summary>
         /// Gets or sets the stops.
@@ -45,22 +45,22 @@ namespace Itinero
             /// <summary>
             /// Gets or sets the coordinates.
             /// </summary>
-            public Coordinate Coordinate { get; set; }
+            public (double longitude, double latitude) Coordinate { get; set; }
 
             /// <summary>
             /// Gets or sets the attributes.
             /// </summary>
-            public IAttributeCollection Attributes { get; set; }
+            public IEnumerable<(string key, string value)>  Attributes { get; set; }
 
             /// <summary>
             /// Creates a clone of this object.
             /// </summary>
             public Stop Clone()
             {
-                AttributeCollection attributes = null;
+                IEnumerable<(string key, string value)> attributes = null;
                 if (this.Attributes != null)
                 {
-                    attributes = new AttributeCollection(this.Attributes);
+                    attributes = new List<(string key, string value)>(this.Attributes);
                 }
                 return new Stop()
                 {
@@ -104,7 +104,7 @@ namespace Itinero
             /// <summary>
             /// Gets or sets the attributes.
             /// </summary>
-            public IAttributeCollection Attributes { get; set; }
+            public IEnumerable<(string key, string value)> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the relative direction flag of the attributes.
@@ -122,10 +122,10 @@ namespace Itinero
             /// <returns></returns>
             public Meta Clone()
             {
-                AttributeCollection attributes = null;
+                IEnumerable<(string key, string value)> attributes = null;
                 if (this.Attributes != null)
                 {
-                    attributes = new AttributeCollection(this.Attributes);
+                    attributes = new List<(string key, string value)>(this.Attributes);
                 }
                 return new Meta()
                 {
@@ -166,12 +166,12 @@ namespace Itinero
             /// <summary>
             /// Gets or sets the coordinates.
             /// </summary>
-            public Coordinate Coordinate { get; set; }
+            public (double longitude, double latitude) Coordinate { get; set; }
 
             /// <summary>
             /// Gets or sets the attributes.
             /// </summary>
-            public IAttributeCollection Attributes { get; set; }
+            public IEnumerable<(string key, string value)> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the relative direction flag of the attributes.
@@ -183,10 +183,10 @@ namespace Itinero
             /// </summary>
             public Branch Clone()
             {
-                AttributeCollection attributes = null;
+                IEnumerable<(string key, string value)> attributes = null;
                 if (this.Attributes != null)
                 {
-                    attributes = new AttributeCollection(this.Attributes);
+                    attributes = new List<(string key, string value)>(this.Attributes);
                 }
                 return new Branch()
                 {
@@ -541,7 +541,7 @@ namespace Itinero
         /// <summary>
         /// Gets the previous location.
         /// </summary>
-        public static Coordinate PreviousLocation(this RoutePosition position)
+        public static (double longitude, double latitude) PreviousLocation(this RoutePosition position)
         {
             return position.Route.Shape[position.Shape - 1];
         }
@@ -549,7 +549,7 @@ namespace Itinero
         /// <summary>
         /// Gets the next location.
         /// </summary>
-        public static Coordinate NextLocation(this RoutePosition position)
+        public static (double longitude, double latitude) NextLocation(this RoutePosition position)
         {
             return position.Route.Shape[position.Shape + 1];
         }
@@ -557,17 +557,9 @@ namespace Itinero
         /// <summary>
         /// Gets the location.
         /// </summary>
-        public static Coordinate Location(this RoutePosition position)
+        public static (double longitude, double latitude) Location(this RoutePosition position)
         {
             return position.Route.Shape[position.Shape];
-        }
-
-        /// <summary>
-        /// Gets the relative direction at this position.
-        /// </summary>
-        public static RelativeDirection RelativeDirection(this RoutePosition position)
-        {
-            return position.Route.RelativeDirectionAt(position.Shape);
         }
 
         /// <summary>
@@ -605,7 +597,7 @@ namespace Itinero
             {
                 return false;
             }
-            return meta.Attributes.Contains(key, value);
+            return meta.Attributes.Contains((key, value));
         }
 
         /// <summary>

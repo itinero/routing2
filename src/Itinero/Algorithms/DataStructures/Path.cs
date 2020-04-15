@@ -10,9 +10,9 @@ namespace Itinero.Algorithms.DataStructures
     /// <summary>
     /// Represents a path in a graph as a collection of edges.
     /// </summary>
-    public class Path : IReadOnlyList<(uint edge, bool forward)>
+    public class Path : IReadOnlyList<(EdgeId edge, bool forward)>
     {
-        private readonly List<(uint edge, bool forward)> _edges;
+        private readonly List<(EdgeId edge, bool forward)> _edges;
         private readonly Graph.Enumerator _graphEnumerator;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Itinero.Algorithms.DataStructures
         {
             _graphEnumerator = graph.GetEnumerator();
             
-            _edges = new List<(uint edge, bool forward)>();
+            _edges = new List<(EdgeId edge, bool forward)>();
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Itinero.Algorithms.DataStructures
         /// Gets the edge at the given index.
         /// </summary>
         /// <param name="i"></param>
-        public (uint edge, bool forward) this[int i] => _edges[i];
+        public (EdgeId edge, bool forward) this[int i] => _edges[i];
 
         /// <summary>
         /// Returns the number of edges.
@@ -52,7 +52,7 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="first">The vertex that should occur first.</param>
-        public void Append(uint edge, VertexId first)
+        public void Append(EdgeId edge, VertexId first)
         {
             if (!_graphEnumerator.MoveToEdge(edge))
                 throw new Exception($"Edge does not exist.");
@@ -76,7 +76,7 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="last">The vertex that should occur last.</param>
-        public void Prepend(uint edge, VertexId last)
+        public void Prepend(EdgeId edge, VertexId last)
         {
             if (!_graphEnumerator.MoveToEdge(edge)) 
                 throw new Exception($"Edge does not exist.");
@@ -100,7 +100,7 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="offset">The offset.</param>
-        public void Append(uint edge, ushort? offset = null)
+        public void Append(EdgeId edge, ushort? offset = null)
         {
             if (_edges.Count == 0)
             {
@@ -135,7 +135,7 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="offset">The offset.</param>
-        public void Prepend(uint edge, ushort? offset = null)
+        public void Prepend(EdgeId edge, ushort? offset = null)
         {
             if (_edges.Count == 0)
             {
@@ -170,7 +170,7 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="forward">The forward flag.</param>
-        internal void AppendInternal(uint edge, bool forward)
+        internal void AppendInternal(EdgeId edge, bool forward)
         {
             _edges.Insert(0, (edge, forward));
         }
@@ -180,12 +180,12 @@ namespace Itinero.Algorithms.DataStructures
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="forward">The forward flag.</param>
-        internal void PrependInternal(uint edge, bool forward)
+        internal void PrependInternal(EdgeId edge, bool forward)
         {
             _edges.Add((edge, forward));
         }
 
-        public IEnumerator<(uint edge, bool forward)> GetEnumerator()
+        public IEnumerator<(EdgeId edge, bool forward)> GetEnumerator()
         {
             return _edges.GetEnumerator();
         }

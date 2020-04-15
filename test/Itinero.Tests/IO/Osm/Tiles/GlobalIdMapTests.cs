@@ -11,16 +11,8 @@ namespace Itinero.Tests.IO.Osm.Tiles
         public void GlobalIdMap_ReadWriteShouldCopy()
         {
             var globalId = new GlobalIdMap();
-            globalId.Set(808034, new VertexId()
-            {
-                TileId = 80912,
-                LocalId = 184
-            });
-            globalId.Set(808035, new VertexId()
-            {
-                TileId = 80915,
-                LocalId = 1823
-            });
+            globalId.Set(808034, new VertexId(80912, 184));
+            globalId.Set(808035, new VertexId(80915, 1823));
 
             using (var stream = new MemoryStream())
             {

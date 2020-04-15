@@ -12,7 +12,7 @@ namespace Itinero.Profiles.Lua.CoreLib
 	{
 		private class DynamicExprWrapper
 		{
-			public DynamicExpression Expr;
+			public DynamicExpression? Expr;
 		}
 
 		public static void MoonSharpInit(Table globalTable, Table stringTable)

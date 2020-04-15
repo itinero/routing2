@@ -1,10 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Collections;
 using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Collections;
-using Itinero.LocalGeo;
-using Itinero.Logging;
 using OsmSharp;
 using OsmSharp.Streams;
 
@@ -77,7 +74,7 @@ namespace Itinero.IO.Osm
             else
             {
                 var vertex1 = VertexId.Empty;
-                var shape = new List<Coordinate>();
+                var shape = new List<(double longitude, double latitude)>();
                 for (var n = 0; n < way.Nodes.Length; n++)
                 {
                     var node = way.Nodes[n];
@@ -91,7 +88,7 @@ namespace Itinero.IO.Osm
                         
                         if (!isCore)
                         { // node is just a shape point, keep it but don't add is as a vertex.
-                            shape.Add(new Coordinate(longitude, latitude));
+                            shape.Add((longitude, latitude));
                             continue;
                         }
                         else
@@ -109,7 +106,7 @@ namespace Itinero.IO.Osm
 
                     _routerDb.AddEdge(vertex1, vertex2,
                         shape: shape,
-                        attributes: new TagAttributeCollection(way.Tags));
+                        attributes: way.Tags.Select(x => (x.Key, x.Value)));
                     vertex1 = vertex2;
                     shape.Clear();
                 }

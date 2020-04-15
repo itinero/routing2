@@ -1,4 +1,4 @@
-using Itinero.Data.Attributes;
+using System.Collections.Generic;
 
 namespace Itinero.Profiles
 {
@@ -11,7 +11,7 @@ namespace Itinero.Profiles
         public override string Name { get; } = "Default";
 
         /// <inheritdoc/>
-        public override EdgeFactor Factor(IAttributeCollection attributes)
+        public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
         {
             return new EdgeFactor(1, 1, 1, 1);
         }
