@@ -3,12 +3,15 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Itinero.IO.Osm</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <Authors>Ben Abelshausen;openplannerteam</Authors>
-    <PackageId>openplannerteam.Itinero.IO.Osm</PackageId>
-    <PackageTags>Routing</PackageTags>
-    <PackageIconUrl>https://avatars0.githubusercontent.com/u/30265183</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/openplannerteam/itinero-tiled-routing</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/openplannerteam/itinero-tiled-routing</RepositoryUrl>
+    <Authors>Itinero Contributors</Authors>
+    <PackageId>Itinero.IO.Osm</PackageId>
+    <Description>Itinero - Routeplanning for .NET.</Description>
+    <Copyright>Itinero BV</Copyright>
+    <PackageProjectUrl>http://www.itinero.tech/</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/itinero/routing/develop/LICENSE.md</PackageLicenseUrl>
+    <PackageIconUrl>http://www.itinero.tech/logos/itinero_logo_notext.svg.128.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/itinero/routing2/</RepositoryUrl>
+    <RepositoryType>osm, openstreetmap, routing, mapping</RepositoryType>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
