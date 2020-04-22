@@ -7,7 +7,7 @@ namespace Itinero.Tests.Functional
     {
         protected override SnapPoint Execute((RouterDb routerDb, double longitude, double latitude, Profile profile) input)
         {
-            var result = input.routerDb.Snap((input.longitude, input.latitude), profile: input.profile);
+            var result = input.routerDb.Snap((input.longitude, input.latitude), input.profile);
 
             return result.Value;
         }

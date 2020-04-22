@@ -30,6 +30,11 @@ namespace Itinero.Profiles.Handlers
         /// Gets the backward speed.
         /// </summary>
         public abstract uint BackwardSpeed { get; }
+
+        /// <summary>
+        /// Returns true if the current edge can be accessed.
+        /// </summary>
+        public virtual bool CanAccess => this.ForwardWeight > 0 || this.BackwardWeight > 0;
         
         /// <summary>
         /// Gets the can stop flag.

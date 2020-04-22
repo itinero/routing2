@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Itinero.Algorithms;
 using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
@@ -18,40 +20,41 @@ namespace Itinero
         /// </summary>
         /// <param name="routerDb">The router db.</param>
         /// <param name="location">The location.</param>
-        /// <param name="maxOffsetInMeter">The maximum offset in meter.</param>
-        /// <param name="profile">The profile to snap for.</param>
+        /// <param name="profile">The profile.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location, float maxOffsetInMeter = 1000,
-            Profile profile = null)
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location,
+            Profile profile)
         {
-            // TODO: convert this to something using snap settings.
-            
-            ProfileHandler profileHandler = null;
-            if (profile != null) profileHandler = routerDb.GetProfileHandler(profile);
-            
-            var offset = 100;
-            while (offset < maxOffsetInMeter)
+            return routerDb.Snap(location, new SnapPointSettings()
             {
-                // calculate search box.
-                var box = location.BoxAround(maxOffsetInMeter);
+                Profiles = new []{profile}
+            });
+        }
 
-                // make sure data is loaded.
-                routerDb.UsageNotifier?.NotifyBox(box);
-                
-                // snap to closest edge.
-                var snapPoint = routerDb.SnapInBox(box, (eEnum) =>
-                {
-                    if (profileHandler == null) return true;
+        /// <summary>
+        /// Snaps to an edge closest to the given coordinates.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="settings">The snap point settings.</param>
+        /// <returns>The snap point.</returns>
+        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location,
+            SnapPointSettings settings = null)
+        {
+            settings ??= new SnapPointSettings();
 
-                    profileHandler.MoveTo(eEnum);
-                    var canStop = profileHandler.CanStop;
+            var acceptableFunc = settings.AcceptableFunc(routerDb);
 
-                    return canStop;
-                });
-                if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
+            // calculate search box.
+            var box = location.BoxAround(settings.MaxOffsetInMeter);
 
-                offset *= 2;
-            }
+            // make sure data is loaded.
+            routerDb.UsageNotifier?.NotifyBox(box);
+
+            // snap to closest edge.
+            var snapPoint = routerDb.SnapInBox(box, acceptableFunc);
+            if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
+
             return new Result<SnapPoint>($"Could not snap to location: {location.longitude},{location.latitude}");
         }
 
@@ -85,7 +88,31 @@ namespace Itinero
             }
             return new Result<SnapPoint>("Cannot snap to a vertex that has no edges.");
         }
-        
+
+        /// <summary>
+        /// Snaps to all edge within a given offset around the given location.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="settings">The snap point settings.</param>
+        /// <returns>The snap points.</returns>
+        public static Result<IEnumerable<SnapPoint>> SnapAll(this RouterDb routerDb,
+            (double longitude, double latitude) location, SnapPointSettings settings = null)
+        {
+            settings ??= new SnapPointSettings();
+            settings.Profiles ??= new Profile[0];
+
+
+            // calculate search box.
+            var box = location.BoxAround(settings.MaxOffsetInMeter);
+
+            // make sure data is loaded.
+            routerDb.UsageNotifier?.NotifyBox(box);
+
+            // snap to closest edge.
+            return new Result<IEnumerable<SnapPoint>>(routerDb.SnapAllInBox(box, settings.AcceptableFunc(routerDb)));
+        }
+
         /// <summary>
         /// Returns the location on the given edge using the given offset.
         /// </summary>
