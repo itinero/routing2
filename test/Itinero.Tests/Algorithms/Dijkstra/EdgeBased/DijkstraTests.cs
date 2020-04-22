@@ -103,8 +103,23 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb,
                 (snapPoint, true),(snapPoint, false),(e) => 1);
             Assert.NotNull(path);
-            Assert.Equal(ushort.MaxValue / 2, path.Offset1);
-            Assert.Equal(ushort.MaxValue / 2, path.Offset2);
+            using var enumerator = path.GetEnumerator();
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge1, enumerator.Current.edge);
+            Assert.True(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge2, enumerator.Current.edge);
+            Assert.True(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge3, enumerator.Current.edge);
+            //Assert.True(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge2, enumerator.Current.edge);
+            Assert.False(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge1, enumerator.Current.edge);
+            Assert.False(enumerator.Current.forward);
+            Assert.False(enumerator.MoveNext());
         }
 
         [Fact]
