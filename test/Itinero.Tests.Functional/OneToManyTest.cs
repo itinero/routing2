@@ -1,4 +1,3 @@
-using Itinero.Algorithms;
 using Itinero.Profiles;
 
 namespace Itinero.Tests.Functional
@@ -11,7 +10,11 @@ namespace Itinero.Tests.Functional
         protected override Route[] Execute((RouterDb routerDb, SnapPoint source, SnapPoint[] targets, Profile profile) input)
         {
             var (routerDb, source, targets, profile) = input;
-            var results = routerDb.Calculate( new RoutingSettings() { Profile = profile }, source, targets);
+
+            var results = routerDb.Route(new RoutingSettings() {Profile = profile})
+                .From(source)
+                .To(targets)
+                .Calculate();
 
             var routes = new Route[targets.Length];
             for (var r = 0; r < routes.Length; r++)

@@ -62,8 +62,10 @@ namespace Itinero.Tests.Profiles.TestBench
             var sourceSnap = routerDb.Snap((source.X, source.Y), profile: vehicle);
             var targetSnap = routerDb.Snap((target.X, target.Y), profile: vehicle);
 
-            var route = routerDb.Calculate(new RoutingSettings() {Profile = vehicle},
-                sourceSnap, targetSnap);
+            var route = routerDb.Route(new RoutingSettings() {Profile = vehicle})
+                    .From(sourceSnap)
+                    .To(targetSnap)
+                    .Calculate();
 
             if (route.IsError)
             {

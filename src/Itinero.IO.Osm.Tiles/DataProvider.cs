@@ -9,13 +9,13 @@ namespace Itinero.IO.Osm.Tiles
     /// <summary>
     /// A data provider loading routable tiles on demand.
     /// </summary>
-    public class DataProvider
+    internal class DataProvider
     {
         private readonly RouterDb _routerDb;
         private readonly GlobalIdMap _idMap;
         private readonly string _baseUrl;
         private readonly HashSet<uint> _loadedTiles;
-        private readonly int _zoom;
+        private readonly uint _zoom;
 
         /// <summary>
         /// Creates a new data provider.
@@ -23,7 +23,7 @@ namespace Itinero.IO.Osm.Tiles
         /// <param name="routerDb">The router db.</param>
         /// <param name="baseUrl">The base url to load tiles from.</param>
         /// <param name="zoom">The zoom level.</param>
-        public DataProvider(RouterDb routerDb, string baseUrl = TileParser.BaseUrl, int zoom = 14)
+        internal DataProvider(RouterDb routerDb, string baseUrl = TileParser.BaseUrl, uint zoom = 14)
         {
             _routerDb = routerDb;
             _baseUrl = baseUrl;
@@ -52,7 +52,7 @@ namespace Itinero.IO.Osm.Tiles
                     return;
                 }
 
-                var tile = Tile.FromLocalId(vertexId.TileId, _zoom);
+                var tile = Tile.FromLocalId(vertexId.TileId, (int)_zoom);
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
                 using var stream = TileParser.DownloadFunc(url);
                 
@@ -70,7 +70,7 @@ namespace Itinero.IO.Osm.Tiles
         internal void TouchBox(((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             // build the tile range.
-            var tileRange = new TileRange(box, _zoom);
+            var tileRange = new TileRange(box, (int)_zoom);
 
 //            Parallel.ForEach(tileRange, (tile) =>
 //            {

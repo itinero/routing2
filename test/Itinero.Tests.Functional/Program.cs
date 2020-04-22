@@ -39,7 +39,8 @@ namespace Itinero.Tests.Functional
             {
                 Zoom = 14
             });
-            var dataProvider = new DataProvider(routerDb);
+            routerDb.UseRouteableTiles();
+            
 
             var factor = bicycle.Factor(new [] {
                 ("highway", "pedestrian") });
@@ -246,7 +247,7 @@ namespace Itinero.Tests.Functional
                 {
                     Zoom = 14
                 });
-                dataProvider = new DataProvider(routerDb);
+                routerDb.UseRouteableTiles();
 
                 var deSterre = SnappingTest.Default.Run((routerDb, 3.715675, 51.026164, profile: bicycle),
                     $"Snapping cold: deSterre");

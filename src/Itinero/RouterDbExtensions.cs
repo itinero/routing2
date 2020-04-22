@@ -17,7 +17,7 @@ namespace Itinero
     /// </summary>
     public static class RouterDbExtensions
     {
-        public static IEnumerable<(string key, string value)> GetAttributes(this RouterDb routerDb, EdgeId edge)
+        internal static IEnumerable<(string key, string value)> GetAttributes(this RouterDb routerDb, EdgeId edge)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             if (!enumerator.MoveToEdge(edge)) return Enumerable.Empty<(string key, string value)>();
@@ -33,7 +33,7 @@ namespace Itinero
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-        public static IEnumerable<(double longitude, double latitude)> GetShapeBetween(this RouterDbEdgeEnumerator enumerator,
+        internal static IEnumerable<(double longitude, double latitude)> GetShapeBetween(this RouterDbEdgeEnumerator enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
         {
             if (offset1 > offset2) throw new ArgumentException($"{nameof(offset1)} has to smaller than or equal to {nameof(offset2)}");
@@ -170,165 +170,14 @@ namespace Itinero
         }
 
         /// <summary>
-        /// Calculates a route between two snap points.
+        /// Configure a route with the given settings.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="settings">The routing settings.</param>
-        /// <param name="source">The source location.</param>
-        /// <param name="target">The target location.</param>
+        /// <param name="settings">The settings.</param>
         /// <returns>A route.</returns>
-        public static Result<Route> Calculate(this RouterDb routerDb, RoutingSettings settings, SnapPoint source, SnapPoint target)
+        public static Router Route(this RouterDb routerDb, RoutingSettings settings)
         {
-            var profile = settings.Profile;
-            var profileHandler = routerDb.GetProfileHandler(profile);
-
-            // if there is max distance don't search outside the box.
-            var sourceLocation = source.LocationOnNetwork(routerDb);
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
-                null;
-            if (settings.MaxDistance < double.MaxValue)
-            {
-                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
-            }
-            
-            bool checkMaxDistance(VertexId v)
-            {
-                if (maxBox == null) return false;
-                    
-                var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
-                    return true;
-                }
-                return false;
-            }
-            
-            // run dijkstra.
-            var path = Dijkstra.Default.Run(routerDb, source, target,
-                profileHandler.GetForwardWeight,
-                settled: (v) =>
-                {
-                    routerDb.UsageNotifier.NotifyVertex(v);
-                    return checkMaxDistance(v);
-                });
-
-            if (path == null) return new Result<Route>($"Route not found!");
-            return RouteBuilder.Default.Build(routerDb, profile, path);
-        }
-
-        /// <summary>
-        /// Calculates a route between one snap point and multiple targets.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="settings">The routing settings.</param>
-        /// <param name="source">The source location.</param>
-        /// <param name="targets">The target locations.</param>
-        /// <returns>The routes.</returns>
-        public static Result<Route>[] Calculate(this RouterDb routerDb, RoutingSettings settings, SnapPoint source, SnapPoint[] targets)
-        {
-            var profile = settings.Profile;
-            var profileHandler = routerDb.GetProfileHandler(profile);
-
-            // if there is max distance don't search outside the box.
-            var sourceLocation = source.LocationOnNetwork(routerDb);
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
-                null;
-            if (settings.MaxDistance < double.MaxValue)
-            {
-                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
-            }
-            bool checkMaxDistance(VertexId v)
-            {
-                if (maxBox == null) return false;
-                    
-                var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
-                    return true;
-                }
-                return false;
-            }
-            
-            var paths = Dijkstra.Default.Run(routerDb, source, targets,
-                profileHandler.GetForwardWeight,
-                settled: (v) =>
-                {
-                    routerDb.UsageNotifier.NotifyVertex(v);
-                    return checkMaxDistance(v);
-                });
-
-            var results = new Result<Route>[paths.Length];
-            for (var r = 0; r < results.Length; r++)
-            {
-                var path = paths[r];
-                if (path == null)
-                {
-                    results[r] = new Result<Route>($"Routes not found!");
-                }
-                else
-                {
-                    results[r] = RouteBuilder.Default.Build(routerDb, profile, path);
-                }
-            }
-            return results;
-        }
-
-        /// <summary>
-        /// Calculates a route between multiple snap point and one target.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="settings">The routing settings.</param>
-        /// <param name="sources">The source locations.</param>
-        /// <param name="target">The target location.</param>
-        /// <returns>The routes.</returns>
-        public static Result<Route>[] Calculate(this RouterDb routerDb, RoutingSettings settings, SnapPoint[] sources, SnapPoint target)
-        {
-            var profile = settings.Profile;
-            var profileHandler = routerDb.GetProfileHandler(profile);
-
-            // if there is max distance don't search outside the box.
-            var sourceLocation = target.LocationOnNetwork(routerDb);
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
-                null;
-            if (settings.MaxDistance < double.MaxValue)
-            {
-                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
-            }
-            bool checkMaxDistance(VertexId v)
-            {
-                if (maxBox == null) return false;
-                    
-                var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
-                    return true;
-                }
-
-                return false;
-            }
-            
-            var paths = Dijkstra.Default.Run(routerDb, target, sources,
-                profileHandler.GetBackwardWeight,
-                settled: (v) =>
-                {
-                    routerDb.UsageNotifier.NotifyVertex(v);
-                    return checkMaxDistance(v);
-                });
-
-            var results = new Result<Route>[paths.Length];
-            for (var r = 0; r < results.Length; r++)
-            {
-                var path = paths[r];
-                if (path == null)
-                {
-                    results[r] = new Result<Route>($"Routes not found!");
-                }
-                else
-                {
-                    results[r] = RouteBuilder.Default.Build(routerDb, profile, path);
-                }
-            }
-            return results;
+            return new Router(routerDb, settings);
         }
 
         internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)

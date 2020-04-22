@@ -223,7 +223,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// Calculates a path.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path[] Run(RouterDb routerDb, SnapPoint source, SnapPoint[] targets,
+        public Path[] Run(RouterDb routerDb, SnapPoint source, IReadOnlyList<SnapPoint> targets,
             Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
@@ -258,10 +258,10 @@ namespace Itinero.Algorithms.Dijkstra
             // add targets.
             // TODO: cater to the default first, one target per vertex.
             var worstTargetCost = double.MaxValue;
-            var bestTargets = new (uint pointer, double cost, bool forward, SnapPoint target)[targets.Length];
+            var bestTargets = new (uint pointer, double cost, bool forward, SnapPoint target)[targets.Count];
             var targetMaxCost = 0d;
             var targetsPerVertex = new Dictionary<VertexId, List<(int t, double cost, bool forward, SnapPoint target)>>();
-            for (var t = 0; t < targets.Length; t++)
+            for (var t = 0; t < targets.Count; t++)
             {
                 bestTargets[t] = (uint.MaxValue, double.MaxValue, false, default);
                 var target = targets[t];
@@ -410,7 +410,7 @@ namespace Itinero.Algorithms.Dijkstra
                 }
             }
 
-            var paths = new Path[targets.Length];
+            var paths = new Path[targets.Count];
             for (var p = 0; p < paths.Length; p++)
             {
                 var bestTarget = bestTargets[p];

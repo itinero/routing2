@@ -19,7 +19,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 routerDb.Snap(vertex2),
                 (e) => 1);
             Assert.NotNull(path);
-            Assert.Equal(0, path.Offset1);
+            Assert.Equal(0,path.Offset1);
             Assert.Equal(ushort.MaxValue, path.Offset2);
             using var enumerator = path.GetEnumerator();
             Assert.True(enumerator.MoveNext());
