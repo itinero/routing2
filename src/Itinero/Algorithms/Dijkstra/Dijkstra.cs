@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Itinero.Algorithms.DataStructures;
 using Itinero.Data.Graphs;
 
+[assembly: InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 namespace Itinero.Algorithms.Dijkstra
 {
     /// <summary>
     /// A dijkstra implementation.
     /// </summary>
-    public class Dijkstra
+    internal class Dijkstra
     {
         private readonly PathTree _tree = new PathTree();
         private readonly HashSet<VertexId> _visits = new HashSet<VertexId>();
@@ -53,11 +57,11 @@ namespace Itinero.Algorithms.Dijkstra
             }
 
             // add targets.
-            (uint pointer, float cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, float.MaxValue,
+            (uint pointer, double cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, double.MaxValue,
                 false,
                 default);
-            var targetMaxCost = 0f;
-            var targetsPerVertex = new Dictionary<VertexId, (float cost, bool forward, SnapPoint target)>();
+            var targetMaxCost = 0d;
+            var targetsPerVertex = new Dictionary<VertexId, (double cost, bool forward, SnapPoint target)>();
             // add forward.
             if (!enumerator.MoveToEdge(target.EdgeId, true)) throw new Exception($"Edge in target {target} not found!");
             var targetCostForward = getWeight(enumerator);
@@ -158,7 +162,7 @@ namespace Itinero.Algorithms.Dijkstra
                 while (enumerator.MoveNext())
                 {
                     var neighbourCost = getWeight(enumerator);
-                    if (neighbourCost >= float.MaxValue ||
+                    if (neighbourCost >= double.MaxValue ||
                         neighbourCost <= 0) continue;
 
                     var neighbourEdge = enumerator.Id;
@@ -253,13 +257,13 @@ namespace Itinero.Algorithms.Dijkstra
 
             // add targets.
             // TODO: cater to the default first, one target per vertex.
-            var worstTargetCost = float.MaxValue;
-            var bestTargets = new (uint pointer, float cost, bool forward, SnapPoint target)[targets.Length];
-            var targetMaxCost = 0f;
-            var targetsPerVertex = new Dictionary<VertexId, List<(int t, float cost, bool forward, SnapPoint target)>>();
+            var worstTargetCost = double.MaxValue;
+            var bestTargets = new (uint pointer, double cost, bool forward, SnapPoint target)[targets.Length];
+            var targetMaxCost = 0d;
+            var targetsPerVertex = new Dictionary<VertexId, List<(int t, double cost, bool forward, SnapPoint target)>>();
             for (var t = 0; t < targets.Length; t++)
             {
-                bestTargets[t] = (uint.MaxValue, float.MaxValue, false, default);
+                bestTargets[t] = (uint.MaxValue, double.MaxValue, false, default);
                 var target = targets[t];
                 
                 // add forward.
@@ -271,7 +275,7 @@ namespace Itinero.Algorithms.Dijkstra
                     var targetCostForwardOffset = targetCostForward * target.OffsetFactor();
                     if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
                     {
-                        targetsAtVertex = new List<(int t, float cost, bool forward, SnapPoint target)>();
+                        targetsAtVertex = new List<(int t, double cost, bool forward, SnapPoint target)>();
                         targetsPerVertex[enumerator.From] = targetsAtVertex;
                     }
                     targetsAtVertex.Add((t, targetCostForwardOffset, false, target));
@@ -291,7 +295,7 @@ namespace Itinero.Algorithms.Dijkstra
                     var targetCostBackwardOffset = targetCostBackward * target.OffsetFactor();
                     if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
                     {
-                        targetsAtVertex = new List<(int t, float cost, bool forward, SnapPoint target)>();
+                        targetsAtVertex = new List<(int t, double cost, bool forward, SnapPoint target)>();
                         targetsPerVertex[enumerator.From] = targetsAtVertex;
                     }
                     targetsAtVertex.Add((t, targetCostBackwardOffset, false, target));
@@ -366,13 +370,13 @@ namespace Itinero.Algorithms.Dijkstra
                         t++;
                     }
 
-                    var worst = 0f;
+                    var worst = 0d;
                     for (t = 0; t < bestTargets.Length; t++)
                     {
                         if (!(bestTargets[t].cost > worst)) continue;
                         
                         worst = bestTargets[t].cost;
-                        if (worst >= float.MaxValue) break;
+                        if (worst >= double.MaxValue) break;
                     }
                     worstTargetCost = worst;
 
@@ -389,7 +393,7 @@ namespace Itinero.Algorithms.Dijkstra
                 while (enumerator.MoveNext())
                 {
                     var neighbourCost = getWeight(enumerator);
-                    if (neighbourCost >= float.MaxValue ||
+                    if (neighbourCost >= double.MaxValue ||
                         neighbourCost <= 0) continue;
 
                     var neighbourEdge = enumerator.Id;

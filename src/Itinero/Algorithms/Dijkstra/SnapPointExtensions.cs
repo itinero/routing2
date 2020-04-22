@@ -4,16 +4,16 @@ using Itinero.Profiles;
 
 namespace Itinero.Algorithms.Dijkstra
 {
-    public static class SnapPointExtensions
+    internal static class SnapPointExtensions
     {
         /// <summary>
         /// Returns a factor in the range [0, 1] representing the position on the edge.
         /// </summary>
         /// <param name="snapPoint">The snap point.</param>
         /// <returns>The factor.</returns>
-        internal static float OffsetFactor(this SnapPoint snapPoint)
+        internal static double OffsetFactor(this SnapPoint snapPoint)
         {
-            return (float) snapPoint.Offset / (float) ushort.MaxValue;
+            return snapPoint.Offset / (double) ushort.MaxValue;
         }
     }
 }

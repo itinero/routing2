@@ -9,7 +9,7 @@ namespace Itinero.Algorithms.DataStructures
         where T : struct
     {
         private T[] _heap; // The objects per priority.
-        private float[] _priorities; // Holds the priorities of this heap.
+        private double[] _priorities; // Holds the priorities of this heap.
         private int _count; // The current count of elements.
         private uint _latestIndex; // The latest unused index
 
@@ -28,7 +28,7 @@ namespace Itinero.Algorithms.DataStructures
         public BinaryHeap(uint initialSize)
         {
             _heap = new T[initialSize];
-            _priorities = new float[initialSize];
+            _priorities = new double[initialSize];
 
             _count = 0;
             _latestIndex = 1;
@@ -42,7 +42,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <summary>
         /// Enqueues a given item.
         /// </summary>
-        public void Push(T item, float priority)
+        public void Push(T item, double priority)
         {
             _count++; // another item was added!
 
@@ -50,8 +50,8 @@ namespace Itinero.Algorithms.DataStructures
             if (_latestIndex == _priorities.Length - 1)
             {
                 // time to increase size!
-                Array.Resize<T>(ref _heap, _heap.Length + 100);
-                Array.Resize<float>(ref _priorities, _priorities.Length + 100);
+                Array.Resize(ref _heap, _heap.Length + 100);
+                Array.Resize(ref _priorities, _priorities.Length + 100);
             }
 
             // add the item at the first free point 
@@ -63,7 +63,7 @@ namespace Itinero.Algorithms.DataStructures
             _latestIndex++;
             while (bubbleIndex != 1)
             {
-                // bubble until the indx is one.
+                // bubble until the index is one.
                 var parentIdx = bubbleIndex / 2;
                 if (_priorities[bubbleIndex] < _priorities[parentIdx])
                 {
@@ -88,7 +88,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <summary>
         /// Returns the smallest weight in the queue.
         /// </summary>
-        public float PeekWeight()
+        public double PeekWeight()
         {
             return _priorities[1];
         }
@@ -104,7 +104,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <summary>
         /// Returns the object with the smallest weight and removes it.
         /// </summary>
-        public T Pop(out float priority)
+        public T Pop(out double priority)
         {
             priority = 0;
             if (_count <= 0) return default(T);
@@ -115,32 +115,32 @@ namespace Itinero.Algorithms.DataStructures
             _count--; // reduce the element count.
             _latestIndex--; // reduce the latest index.
 
-            int swapitem = 1, parent = 1;
+            var swapItem = 1;
             var parentPriority = _priorities[_latestIndex];
             var parentItem = _heap[_latestIndex];
             _heap[1] = parentItem; // place the last element on top.
             _priorities[1] = parentPriority; // place the last element on top.
             do
             {
-                parent = swapitem;
-                var swapItemPriority = 0f;
+                var parent = swapItem;
+                var swapItemPriority = 0d;
                 if ((2 * parent + 1) <= _latestIndex)
                 {
                     swapItemPriority = _priorities[2 * parent];
                     var potentialSwapItem = _priorities[2 * parent + 1];
                     if (parentPriority >= swapItemPriority)
                     {
-                        swapitem = 2 * parent;
-                        if (_priorities[swapitem] >= potentialSwapItem)
+                        swapItem = 2 * parent;
+                        if (_priorities[swapItem] >= potentialSwapItem)
                         {
                             swapItemPriority = potentialSwapItem;
-                            swapitem = 2 * parent + 1;
+                            swapItem = 2 * parent + 1;
                         }
                     }
                     else if (parentPriority >= potentialSwapItem)
                     {
                         swapItemPriority = potentialSwapItem;
-                        swapitem = 2 * parent + 1;
+                        swapItem = 2 * parent + 1;
                     }
                     else
                     {
@@ -153,7 +153,7 @@ namespace Itinero.Algorithms.DataStructures
                     swapItemPriority = _priorities[2 * parent];
                     if (parentPriority >= swapItemPriority)
                     {
-                        swapitem = 2 * parent;
+                        swapItem = 2 * parent;
                     }
                     else
                     {
@@ -166,9 +166,9 @@ namespace Itinero.Algorithms.DataStructures
                 }
 
                 _priorities[parent] = swapItemPriority;
-                _priorities[swapitem] = parentPriority;
-                _heap[parent] = _heap[swapitem];
-                _heap[swapitem] = parentItem;
+                _priorities[swapItem] = parentPriority;
+                _heap[parent] = _heap[swapItem];
+                _heap[swapItem] = parentItem;
 
             } while (true);
 

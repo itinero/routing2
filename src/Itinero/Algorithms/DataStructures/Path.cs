@@ -238,7 +238,7 @@ namespace Itinero.Algorithms.DataStructures
 
             for (var e = 1; e < _edges.Count - 1; e++)
             {
-                var edgeAndDirection = _edges[0];
+                var edgeAndDirection = _edges[e];
                 _graphEnumerator.MoveToEdge(edgeAndDirection.edge, edgeAndDirection.forward);
                 builder.Append("->");
                 builder.Append($"{edgeAndDirection.edge}");
@@ -250,12 +250,16 @@ namespace Itinero.Algorithms.DataStructures
             if (_edges.Count > 0)
             { // there is a last edge.
                 var last = _edges[_edges.Count - 1];
+                builder.Append("->");
+                builder.Append($"{last.edge}");
+                builder.Append(last.forward ? "F" : "B");
                 if ((last.forward && this.Offset2 != ushort.MaxValue) ||
                     (!last.forward && this.Offset2 != 0))
                 {
                     builder.Append("-");
                     builder.Append(OffsetPer(this.Offset2, last.forward));
                 }
+                _graphEnumerator.MoveToEdge(last.edge, last.forward);
                 builder.Append("->");
                 builder.Append($"[{_graphEnumerator.To}]");
                 return builder.ToString();
