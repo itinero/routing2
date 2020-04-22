@@ -1,3 +1,4 @@
+using System.Linq;
 using Itinero.Algorithms.Search;
 using Itinero.Data;
 using Itinero.Data.Graphs;
@@ -77,7 +78,7 @@ namespace Itinero.Tests.Algorithms.Search
         }
 
         [Fact]
-        public void EdgeSearch_SnapInBox_ShouldSnapToClosetSegment()
+        public void EdgeSearch_SnapInBox_ShouldSnapToClosestSegment()
         {
             var network = new RouterDb();
             var vertex1 = network.AddVertex(4.796154499053955,51.26912479079087);
@@ -90,6 +91,48 @@ namespace Itinero.Tests.Algorithms.Search
             var snapPoint = network.SnapInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01), 
                 (4.798600673675537 + 0.01, 51.268748881579405 - 0.01)));
             Assert.Equal(edge2, snapPoint.EdgeId);
+        }
+
+        [Fact]
+        public void EdgeSearch_SnapAllInBox_NonOrthogonal_ShouldSnapToAll()
+        {
+            var network = new RouterDb();
+            var vertex1 = network.AddVertex(4.796154499053955,51.26912479079087);
+            var vertex2 = network.AddVertex(4.799630641937256,51.27015852526688);
+            var vertex3 = network.AddVertex(4.796798229217529,51.26835954379726);
+            var vertex4 = network.AddVertex(4.800124168395996,51.26937987029022);
+            var vertex5 = network.AddVertex(4.799898862838745,51.269762486884446);
+            var vertex6 = network.AddVertex(4.802924394607544,51.27068880860352);
+            var edge1 = network.AddEdge(vertex1, vertex2);
+            var edge2 = network.AddEdge(vertex3, vertex4);
+            var edge3 = network.AddEdge(vertex5, vertex6);
+
+            var snapPoints = network.SnapAllInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01), 
+                (4.798600673675537 + 0.01, 51.268748881579405 - 0.01)), nonOrthogonalEdges: true).ToList();
+            Assert.True(snapPoints.Exists(x => x.EdgeId == edge1));
+            Assert.True(snapPoints.Exists(x => x.EdgeId == edge2));
+            Assert.True(snapPoints.Exists(x => x.EdgeId == edge3));
+        }
+
+        [Fact]
+        public void EdgeSearch_SnapAllInBox_ShouldSnapToOrthogonal()
+        {
+            var network = new RouterDb();
+            var vertex1 = network.AddVertex(4.796154499053955,51.26912479079087);
+            var vertex2 = network.AddVertex(4.799630641937256,51.27015852526688);
+            var vertex3 = network.AddVertex(4.796798229217529,51.26835954379726);
+            var vertex4 = network.AddVertex(4.800124168395996,51.26937987029022);
+            var vertex5 = network.AddVertex(4.799898862838745,51.269762486884446);
+            var vertex6 = network.AddVertex(4.802924394607544,51.27068880860352);
+            var edge1 = network.AddEdge(vertex1, vertex2);
+            var edge2 = network.AddEdge(vertex3, vertex4);
+            var edge3 = network.AddEdge(vertex5, vertex6);
+
+            var snapPoints = network.SnapAllInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01), 
+                (4.798600673675537 + 0.01, 51.268748881579405 - 0.01))).ToList();
+            Assert.True(snapPoints.Exists(x => x.EdgeId == edge1));
+            Assert.True(snapPoints.Exists(x => x.EdgeId == edge2));
+            Assert.False(snapPoints.Exists(x => x.EdgeId == edge3));
         }
     }
 }
