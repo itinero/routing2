@@ -27,10 +27,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.IO.Osm.Tiles", "src\Itinero.IO.Osm.Tiles\Itinero.IO.Osm.Tiles.csproj", "{EBB62F91-B255-4E48-A933-BDA3A5ECAA84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{06B47317-FE05-4B5E-BC50-47DA1DC8B151}"
-ProjectSection(SolutionItems) = preProject
-	docs\routable-tiles-ghent.png = docs\routable-tiles-ghent.png
-	docs\ROADMAP.md = docs\ROADMAP.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		docs\routable-tiles-ghent.png = docs\routable-tiles-ghent.png
+		docs\ROADMAP.md = docs\ROADMAP.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Tests.Profiles", "test\Itinero.Tests.Profiles\Itinero.Tests.Profiles.csproj", "{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Geo", "src\Itinero.Geo\Itinero.Geo.csproj", "{71EA15B8-8FE1-47DE-8694-FBC964A346B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -105,6 +109,30 @@ Global
 		{EBB62F91-B255-4E48-A933-BDA3A5ECAA84}.Release|x64.Build.0 = Release|Any CPU
 		{EBB62F91-B255-4E48-A933-BDA3A5ECAA84}.Release|x86.ActiveCfg = Release|Any CPU
 		{EBB62F91-B255-4E48-A933-BDA3A5ECAA84}.Release|x86.Build.0 = Release|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Debug|x64.Build.0 = Debug|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Debug|x86.Build.0 = Debug|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Release|x64.ActiveCfg = Release|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Release|x64.Build.0 = Release|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Release|x86.ActiveCfg = Release|Any CPU
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}.Release|x86.Build.0 = Release|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Debug|x64.Build.0 = Debug|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Release|x64.ActiveCfg = Release|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Release|x64.Build.0 = Release|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1ACD2D53-1CDC-4F32-84C7-721457181EC7} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
@@ -112,5 +140,7 @@ Global
 		{A57C1E7A-54AD-435B-A2FC-25BCCF6D4AB4} = {0EFCE06D-E8CE-461C-A1E1-0AECC1BE06E5}
 		{FA495F36-10D1-49C5-BBBF-55D9DFE02679} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 		{EBB62F91-B255-4E48-A933-BDA3A5ECAA84} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
+		{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C} = {0EFCE06D-E8CE-461C-A1E1-0AECC1BE06E5}
+		{71EA15B8-8FE1-47DE-8694-FBC964A346B3} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 	EndGlobalSection
 EndGlobal
