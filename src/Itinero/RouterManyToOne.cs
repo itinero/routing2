@@ -14,7 +14,7 @@ namespace Itinero
     {
         internal Router Router { get; set; }
         
-        internal IReadOnlyList<SnapPoint> Sources { get; set; }
+        internal IReadOnlyList<(SnapPoint sp, bool? direction)> Sources { get; set; }
         
         internal (SnapPoint sp, bool? direction) Target { get; set; }
         
@@ -64,7 +64,7 @@ namespace Itinero
                 return false;
             }
             
-            var paths = Dijkstra.Default.Run(routerDb, target.sp, sources,
+            var paths = Dijkstra.Default.Run(routerDb, target.sp, sources.ToUndirected(),
                 profileHandler.GetBackwardWeight,
                 settled: (v) =>
                 {
@@ -105,7 +105,7 @@ namespace Itinero
             return new RouterManyToOne()
             {
                 Router = router,
-                Sources = points
+                Sources = points.ToDirected()
             };
         }
     }
