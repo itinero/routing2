@@ -164,6 +164,62 @@ namespace Itinero.Geo
             return ((box.topLeft.longitude + box.bottomRight.longitude) / 2,
                 (box.topLeft.latitude + box.bottomRight.latitude) / 2);
         }
+
+        /// <summary>
+        /// Expands the given box with the other box to encompass both.
+        /// </summary>
+        /// <param name="box">The original box.</param>
+        /// <param name="other">The other box.</param>
+        /// <returns>The expand box or the original box if the other was already contained.</returns>
+        public static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)
+            Expand(
+                this ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box,
+                ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) other)
+        {
+            if (!box.Overlaps(other.topLeft))
+            {
+                var center = box.Center();
+                
+                // handle left.
+                var left = box.topLeft.longitude;
+                if (!box.Overlaps((other.topLeft.longitude, center.latitude)))
+                {
+                    left = other.topLeft.longitude;
+                }
+                
+                // handle top.
+                var top = box.topLeft.longitude;
+                if (!box.Overlaps((center.longitude, other.topLeft.latitude)))
+                {
+                    top = other.topLeft.latitude;
+                }
+                
+                box = ((left, top), box.bottomRight);
+            }
+
+            if (!box.Overlaps(other.bottomRight))
+            {
+                var center = box.Center();
+                
+                // handle right.
+                var right = box.bottomRight.longitude;
+                if (!box.Overlaps((other.bottomRight.longitude, center.latitude)))
+                {
+                    right = other.bottomRight.longitude;
+                }
+                
+                // handle bottom.
+                var bottom = box.bottomRight.latitude;
+                if (!box.Overlaps((center.longitude, other.bottomRight.latitude)))
+                {
+                    bottom = other.bottomRight.latitude;
+                }
+                
+                box = (box.topLeft, (right, bottom));
+            }
+            
+            return box;
+        }
         
         /// <summary>
         /// Calculates the intersection point of the given line with this line. 
