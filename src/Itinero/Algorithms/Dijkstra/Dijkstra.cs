@@ -21,10 +21,25 @@ namespace Itinero.Algorithms.Dijkstra
         private readonly BinaryHeap<uint> _heap = new BinaryHeap<uint>();
 
         /// <summary>
-        /// Calculates a path.
+        /// Calculates one path between a single source and target.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path? Run(RouterDb routerDb, SnapPoint source, SnapPoint target, 
+        public Path? Run(RouterDb routerDb, SnapPoint source, SnapPoint target,
+            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null,
+            Func<VertexId, bool>? queued = null)
+        {
+            var paths = Run(routerDb, source, new[] {target}, getWeight, settled, queued);
+            if (paths == null) return null;
+            if (paths.Length < 1) return null;
+
+            return paths[0];
+        }
+
+        /// <summary>
+        /// Calculates one path between a single source and target.
+        /// </summary>
+        /// <returns>The path.</returns>
+        public Path? Run2(RouterDb routerDb, SnapPoint source, SnapPoint target, 
             Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
@@ -220,7 +235,7 @@ namespace Itinero.Algorithms.Dijkstra
         }
 
         /// <summary>
-        /// Calculates a path.
+        /// Calculates all paths from a single source to many targets.
         /// </summary>
         /// <returns>The path.</returns>
         public Path[] Run(RouterDb routerDb, SnapPoint source, IReadOnlyList<SnapPoint> targets,

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Itinero.Geo;
 
 namespace Itinero.Routers
@@ -33,8 +34,34 @@ namespace Itinero.Routers
             return sps;
         }
 
+        internal static bool TryToUndirected(
+            this IEnumerable<(SnapPoint sp, bool? directed)> directedSps, out IReadOnlyList<SnapPoint> undirected)
+        {            
+            var sps = new List<SnapPoint>();
+            foreach (var (sp, direction) in directedSps)
+            {
+                if (direction != null)
+                {
+                    sps.Clear();
+                    undirected = sps;
+                    return false;
+                }
+                sps.Add(sp);
+            }
+
+            undirected = sps;
+            return true;
+        }
+
+        internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)?
+            MaxBoxFor(this RoutingSettings settings,
+                RouterDb routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sps)
+        {
+            return settings.MaxBoxFor(routerDb, sps.Select(x => x.sp));
+        }
+
         internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? MaxBoxFor(this RoutingSettings settings, 
-            RouterDb routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sp)
+            RouterDb routerDb, IEnumerable<SnapPoint> sp)
         {
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
                 null;
@@ -43,7 +70,7 @@ namespace Itinero.Routers
             
             foreach (var source in sp)
             {
-                var sourceLocation = source.sp.LocationOnNetwork(routerDb);
+                var sourceLocation = source.LocationOnNetwork(routerDb);
                 var sourceBox = sourceLocation.BoxAround(settings.MaxDistance);
                 maxBox = maxBox?.Expand(sourceBox) ?? sourceBox;
             }

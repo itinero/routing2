@@ -1,4 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using Itinero.Algorithms;
+using Itinero.Algorithms.DataStructures;
+using Itinero.Algorithms.Dijkstra;
+using Itinero.Algorithms.Routes;
+using Itinero.Data.Graphs;
+using Itinero.Geo;
 
 namespace Itinero.Routers
 {
@@ -54,6 +62,252 @@ namespace Itinero.Routers
             {
                 Sources = directedSnapPoints
             };
+        }
+        
+        internal static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouter manyToManyRouter,
+            IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
+        {
+            var settings = manyToManyRouter.Settings;
+            var routerDb = manyToManyRouter.RouterDb;
+            
+            var profile = settings.Profile;
+            var profileHandler = routerDb.GetProfileHandler(profile);
+
+            var maxBox = settings.MaxBoxFor(routerDb, sources);
+
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+
+                if (routerDb == null) throw new Exception("Router cannot be null here.");
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            var results = new IReadOnlyList<Result<Route>>[sources.Count];
+            var edgeEnumerator = routerDb.GetEdgeEnumerator();
+            for (var s = 0; s < sources.Count; s++)
+            {
+                var source = sources[s];
+                var paths = Dijkstra.Default.Run(routerDb, source, targets,
+                    profileHandler.GetForwardWeight,
+                    settled: (v) =>
+                    {
+                        routerDb.UsageNotifier.NotifyVertex(v);
+                        return checkMaxDistance(v);
+                    });
+
+                var sourceResults = new Result<Route>[paths.Length];
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
+                    var path = paths[r];
+                    if (path == null)
+                    {
+                        sourceResults[r] = new Result<Route>($"Routes not found!");
+                    }
+                    else
+                    {
+                        sourceResults[r] = RouteBuilder.Default.Build(routerDb, profile, path);
+                    }
+                }
+
+                results[s] = sourceResults;
+            }
+
+            return results;
+        }
+
+        internal static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouter manyToManyRouter,
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
+        {
+            var settings = manyToManyRouter.Settings;
+            var routerDb = manyToManyRouter.RouterDb;
+            
+            var profile = settings.Profile;
+            var profileHandler = routerDb.GetProfileHandler(profile);
+
+            var maxBox = settings.MaxBoxFor(routerDb, sources);
+
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+
+                if (routerDb == null) throw new Exception("Router cannot be null here.");
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            var results = new IReadOnlyList<Result<Route>>[sources.Count];
+            var edgeEnumerator = routerDb.GetEdgeEnumerator();
+            for (var s = 0; s < sources.Count; s++)
+            {
+                var source = sources[s];
+                var paths = Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb, source, targets,
+                    e => profileHandler.GetForwardWeight(e),
+                    settled: e =>
+                    {
+                        routerDb.UsageNotifier.NotifyVertex(e.vertexId);
+                        return checkMaxDistance(e.vertexId);
+                    });
+
+                var sourceResults = new Result<Route>[paths.Length];
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
+                    var path = paths[r];
+                    if (path == null)
+                    {
+                        sourceResults[r] = new Result<Route>($"Routes not found!");
+                    }
+                    else
+                    {
+                        sourceResults[r] = RouteBuilder.Default.Build(routerDb, profile, path);
+                    }
+                }
+
+                results[s] = sourceResults;
+            }
+
+            return results;
+        }
+        
+        internal static Result<double?[][]> Calculate(this IRouterWeights<IRouter> manyToManyWeightRouter,
+            IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
+        {
+            var manyToManyRouter = manyToManyWeightRouter.Router;
+            
+            var settings = manyToManyRouter.Settings;
+            var routerDb = manyToManyRouter.RouterDb;
+            
+            var profile = settings.Profile;
+            var profileHandler = routerDb.GetProfileHandler(profile);
+
+            var maxBox = settings.MaxBoxFor(routerDb, sources);
+
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+
+                if (routerDb == null) throw new Exception("Router cannot be null here.");
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            var results = new double?[sources.Count][];
+            var edgeEnumerator = routerDb.GetEdgeEnumerator();
+            for (var s = 0; s < sources.Count; s++)
+            {
+                var source = sources[s];
+                var paths = Dijkstra.Default.Run(routerDb, source, targets,
+                    profileHandler.GetForwardWeight,
+                    settled: (v) =>
+                    {
+                        routerDb.UsageNotifier.NotifyVertex(v);
+                        return checkMaxDistance(v);
+                    });
+
+                var sourceResults = new double?[paths.Length];
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
+                    var path = paths[r];
+                    if (path == null)
+                    {
+                        sourceResults[r] = null;
+                    }
+                    else
+                    {
+                        sourceResults[r] = path.Weight((edge) =>
+                        {
+                            if (!edgeEnumerator.MoveToEdge(edge.edge, edge.direction)) throw new InvalidDataException($"Edge {edge} not found!");
+
+                            return profileHandler.GetForwardWeight(edgeEnumerator);
+                        });
+                    }
+                }
+
+                results[s] = sourceResults;
+            }
+
+            return results;
+        }
+
+        internal static Result<double?[][]> Calculate(this IRouterWeights<IRouter> manyToManyWeightRouter,
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
+        {
+            var manyToManyRouter = manyToManyWeightRouter.Router;
+            
+            var settings = manyToManyRouter.Settings;
+            var routerDb = manyToManyRouter.RouterDb;
+            
+            var profile = settings.Profile;
+            var profileHandler = routerDb.GetProfileHandler(profile);
+
+            var maxBox = settings.MaxBoxFor(routerDb, sources);
+
+            bool checkMaxDistance(VertexId v)
+            {
+                if (maxBox == null) return false;
+
+                if (routerDb == null) throw new Exception("Router cannot be null here.");
+                var vertex = routerDb.GetVertex(v);
+                if (!maxBox.Value.Overlaps(vertex))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            var results = new double?[sources.Count][];
+            var edgeEnumerator = routerDb.GetEdgeEnumerator();
+            for (var s = 0; s < sources.Count; s++)
+            {
+                var source = sources[s];
+                var paths = Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb, source, targets,
+                    e => profileHandler.GetForwardWeight(e),
+                    settled: e =>
+                    {
+                        routerDb.UsageNotifier.NotifyVertex(e.vertexId);
+                        return checkMaxDistance(e.vertexId);
+                    });
+
+                var sourceResults = new double?[paths.Length];
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
+                    var path = paths[r];
+                    if (path == null)
+                    {
+                        sourceResults[r] = null;
+                    }
+                    else
+                    {
+                        sourceResults[r] = path.Weight((edge) =>
+                        {
+                            if (!edgeEnumerator.MoveToEdge(edge.edge, edge.direction)) throw new InvalidDataException($"Edge {edge} not found!");
+
+                            return profileHandler.GetForwardWeight(edgeEnumerator);
+                        });
+                    }
+                }
+
+                results[s] = sourceResults;
+            }
+
+            return results;
         }
     }
 }

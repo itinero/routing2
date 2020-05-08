@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Itinero.Algorithms;
 using Itinero.Algorithms.Dijkstra;
@@ -15,61 +16,39 @@ namespace Itinero.Routers
         /// <summary>
         /// Calculates the routes.
         /// </summary>
-        /// <param name="routerManyToOne">The router.</param>
-        /// <returns>The routes.</returns>
-        public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerManyToOne)
+        /// <param name="routerOneToMany">The router.</param>
+        /// <returns></returns>
+        public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerOneToMany)
         {
-            var settings = routerManyToOne.Settings;
-            var sources = routerManyToOne.Sources;
-            var target = routerManyToOne.Target;
-            var routerDb = routerManyToOne.RouterDb;
-            
-            var profile = settings.Profile;
-            var profileHandler = routerDb.GetProfileHandler(profile);
+            var sources = routerOneToMany.Sources;
+            var target = routerOneToMany.Target;
 
-            // if there is max distance don't search outside the box.
-            var sourceLocation = target.sp.LocationOnNetwork(routerDb);
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
-                null;
-            if (settings.MaxDistance < double.MaxValue)
+            if (target.direction.HasValue ||
+                !sources.TryToUndirected(out var sourcesUndirected))
             {
-                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
-            }
-            bool checkMaxDistance(VertexId v)
-            {
-                if (maxBox == null) return false;
-                    
-                var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
-                    return true;
-                }
+                var routes = routerOneToMany.Calculate(
+                    sources,  new []{target});
+                if (routes == null) throw new Exception("Could not calculate routes.") ;
 
-                return false;
-            }
-            
-            var paths = Dijkstra.Default.Run(routerDb, target.sp, sources.ToUndirected(),
-                profileHandler.GetBackwardWeight,
-                settled: (v) =>
+                var manyToOne = new Result<Route>[sources.Count];
+                for (var s = 0; s < manyToOne.Length; s++)
                 {
-                    routerDb.UsageNotifier.NotifyVertex(v);
-                    return checkMaxDistance(v);
-                });
-
-            var results = new Result<Route>[paths.Length];
-            for (var r = 0; r < results.Length; r++)
+                    manyToOne[s] = routes[s][0];
+                }
+                return manyToOne;
+            }
+            else
             {
-                var path = paths[r];
-                if (path == null)
+                var routes = routerOneToMany.Calculate(sourcesUndirected, new [] {target.sp});
+                if (routes == null) throw new Exception("Could not calculate routes.");
+
+                var manyToOne = new Result<Route>[sources.Count];
+                for (var s = 0; s < manyToOne.Length; s++)
                 {
-                    results[r] = new Result<Route>($"Routes not found!");
+                    manyToOne[s] = routes[s][0];
                 }
-                else
-                {
-                    results[r] = RouteBuilder.Default.Build(routerDb, profile, path);
-                }
+                return manyToOne;
             }
-            return results;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Itinero
     /// - offset=X => offset relative to ushort.MaxValue.
     /// - offset=ushort.MaxValue => the last vertex of the edge.
     /// </remarks>
-    public struct SnapPoint
+    public readonly struct SnapPoint
     {
         /// <summary>
         /// Creates a new snap point.

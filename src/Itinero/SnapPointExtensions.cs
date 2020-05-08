@@ -39,7 +39,7 @@ namespace Itinero
         /// <param name="settings">The snap point settings.</param>
         /// <returns>The snap point.</returns>
         public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location,
-            SnapPointSettings settings = null)
+            SnapPointSettings? settings = null)
         {
             settings ??= new SnapPointSettings();
 
@@ -97,7 +97,7 @@ namespace Itinero
         /// <param name="settings">The snap point settings.</param>
         /// <returns>The snap points.</returns>
         public static Result<IEnumerable<SnapPoint>> SnapAll(this RouterDb routerDb,
-            (double longitude, double latitude) location, SnapPointSettings settings = null)
+            (double longitude, double latitude) location, SnapPointSettings? settings = null)
         {
             settings ??= new SnapPointSettings();
             settings.Profiles ??= new Profile[0];
