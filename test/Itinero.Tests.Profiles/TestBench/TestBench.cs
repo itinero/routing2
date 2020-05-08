@@ -5,6 +5,7 @@ using Itinero.Geo;
 using Itinero.IO.Osm;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua;
+using Itinero.Routers;
 using Itinero.Tests.Profiles.TestBench.Domain;
 using NetTopologySuite.Operation.Buffer;
 

@@ -24,12 +24,12 @@ namespace Itinero.Tests.Functional
                 Directory.CreateDirectory("results");
             }
             
-//            // do some local caching.
-//            if (!Directory.Exists("cache"))
-//            {
-//                Directory.CreateDirectory("cache");
-//            }
-//            TileParser.DownloadFunc = Download.DownloadHelper.Download;
+            // do some local caching.
+            if (!Directory.Exists("cache"))
+            {
+                Directory.CreateDirectory("cache");
+            }
+            TileParser.DownloadFunc = Download.DownloadHelper.Download;
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
@@ -76,7 +76,7 @@ namespace Itinero.Tests.Functional
             var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
                 $"Snapping cold: middelburg");
             var hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
-                $"Snapping cold: hermain teirlinck");
+                $"Snapping cold: herman teirlinck");
             hermanTeirlinck = SnappingTest.Default.Run((routerDb, 4.35016, 50.86595, profile: bicycle),
                 $"Snapping hot: hermain teirlinck");
             var mechelenNeckerspoel = SnappingTest.Default.Run((routerDb, 4.48991060256958, 51.0298871358546, profile: bicycle),
@@ -218,27 +218,41 @@ namespace Itinero.Tests.Functional
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
                 route.ToGeoJson());
 
-            var routes = RouterManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
-                $"Routes (many to one) cold: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
-            routes = RouterManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
-                $"Routes (many to one) hot: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
-            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-0.geojson"),
-                routes[0].ToGeoJson());
-            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-1.geojson"),
-                routes[1].ToGeoJson());
-            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-2.geojson"),
-                routes[2].ToGeoJson());
-            
-            routes = RouterOneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+            var oneToManyRoutes = RouterOneToManyTest.Default.Run(
+                (routerDb, heldergem, new[] {ninove, pepingen, lebbeke}, bicycle),
                 $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-            routes = RouterOneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+            oneToManyRoutes = RouterOneToManyTest.Default.Run(
+                (routerDb, heldergem, new[] {ninove, pepingen, lebbeke}, bicycle),
                 $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
-                routes[0].ToGeoJson());
+                oneToManyRoutes[0].ToGeoJson());
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-                routes[1].ToGeoJson());
+                oneToManyRoutes[1].ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-2.geojson"),
+                oneToManyRoutes[2].ToGeoJson());
+            
+            // tests for many to one routing.
+            var manyToOneRoutes = RouterManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
+                $"Routes (many to one) cold: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
+            manyToOneRoutes = RouterManyToOneTest.Default.Run((routerDb, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
+                $"Routes (many to one) hot: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
+            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-0.geojson"),
+                manyToOneRoutes[0].ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-1.geojson"),
+                manyToOneRoutes[1].ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-2.geojson"),
+                manyToOneRoutes[2].ToGeoJson());
+            
+            manyToOneRoutes = RouterOneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+                $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
+            manyToOneRoutes = RouterOneToManyTest.Default.Run((routerDb, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
+                $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
+                manyToOneRoutes[0].ToGeoJson());
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-                routes[2].ToGeoJson());
+                manyToOneRoutes[1].ToGeoJson());
+            File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
+                manyToOneRoutes[2].ToGeoJson());
 
             for (var j = 0; j < 5; j++)
             {
@@ -286,9 +300,9 @@ namespace Itinero.Tests.Functional
                 
                 Parallel.For(0, 10, (i) =>
                 {
-                    routes = RouterManyToOneTest.Default.Run((routerDb, targets, deSterre, bicycle),
+                    manyToOneRoutes = RouterManyToOneTest.Default.Run((routerDb, targets, deSterre, bicycle),
                         $"Route cold: many to one to {nameof(deSterre)}");
-                    routes = RouterManyToOneTest.Default.Run((routerDb, targets, deSterre, bicycle),
+                    manyToOneRoutes = RouterManyToOneTest.Default.Run((routerDb, targets, deSterre, bicycle),
                         $"Route hot: many to one to {nameof(deSterre)}");
                 });
             }

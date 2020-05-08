@@ -1,29 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Algorithms;
-using Itinero.Algorithms.Dijkstra;
-using Itinero.Algorithms.Routes;
-using Itinero.Data.Graphs;
 using Itinero.Geo;
 
-namespace Itinero
+namespace Itinero.Routers
 {
-    /// <summary>
-    /// A router.
-    /// </summary>
-    public class Router
-    {
-        internal Router(RouterDb routerDb, RoutingSettings settings)
-        {
-            this.RouterDb = routerDb;
-            this.Settings = settings;
-        }
-        
-        internal RouterDb RouterDb { get; }
-        
-        internal RoutingSettings Settings { get; }
-    }
-    
     /// <summary>
     /// Contains extension methods for the route promise.
     /// </summary>
@@ -51,6 +31,24 @@ namespace Itinero
             }
 
             return sps;
+        }
+
+        internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? MaxBoxFor(this RoutingSettings settings, 
+            RouterDb routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sp)
+        {
+            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
+                null;
+
+            if (!(settings.MaxDistance < double.MaxValue)) return null;
+            
+            foreach (var source in sp)
+            {
+                var sourceLocation = source.sp.LocationOnNetwork(routerDb);
+                var sourceBox = sourceLocation.BoxAround(settings.MaxDistance);
+                maxBox = maxBox?.Expand(sourceBox) ?? sourceBox;
+            }
+
+            return maxBox;
         }
     }
 }

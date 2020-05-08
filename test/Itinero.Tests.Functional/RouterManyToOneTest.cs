@@ -1,4 +1,5 @@
 using Itinero.Profiles;
+using Itinero.Routers;
 
 namespace Itinero.Tests.Functional
 {
@@ -11,7 +12,7 @@ namespace Itinero.Tests.Functional
         {
             var (routerDb, sources, target, profile) = input;
 
-            var results = routerDb.Route(new RoutingSettings() { Profile = profile })
+            var results = routerDb.Route(new RoutingSettings() {Profile = profile})
                 .From(sources)
                 .To(target)
                 .Calculate();

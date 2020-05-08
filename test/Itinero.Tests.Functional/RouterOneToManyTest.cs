@@ -1,4 +1,5 @@
 using Itinero.Profiles;
+using Itinero.Routers;
 
 namespace Itinero.Tests.Functional
 {

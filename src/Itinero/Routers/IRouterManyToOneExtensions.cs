@@ -5,40 +5,24 @@ using Itinero.Algorithms.Routes;
 using Itinero.Data.Graphs;
 using Itinero.Geo;
 
-namespace Itinero
+namespace Itinero.Routers
 {
     /// <summary>
-    /// A many to one router.
+    /// Many to one extensions.
     /// </summary>
-    public class RouterManyToOne
+    public static class IRouterManyToOneExtensions
     {
-        internal Router Router { get; set; }
-        
-        internal IReadOnlyList<(SnapPoint sp, bool? direction)> Sources { get; set; }
-        
-        internal (SnapPoint sp, bool? direction) Target { get; set; }
-        
         /// <summary>
-        /// Configures a route with the given arrival location.
+        /// Calculates the routes.
         /// </summary>
-        /// <param name="point">The departure location.</param>
-        /// <returns>A route.</returns>
-        public RouterManyToOne To(SnapPoint point)
-        {
-            this.Target = (point, null);
-            return this;
-        }
-
-        /// <summary>
-        /// Calculates the many to one routes.
-        /// </summary>
+        /// <param name="routerManyToOne">The router.</param>
         /// <returns>The routes.</returns>
-        public IReadOnlyList<Result<Route>> Calculate()
+        public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerManyToOne)
         {
-            var settings = this.Router.Settings;
-            var sources = this.Sources;
-            var target = this.Target;
-            var routerDb = this.Router.RouterDb;
+            var settings = routerManyToOne.Settings;
+            var sources = routerManyToOne.Sources;
+            var target = routerManyToOne.Target;
+            var routerDb = routerManyToOne.RouterDb;
             
             var profile = settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);
@@ -86,27 +70,6 @@ namespace Itinero
                 }
             }
             return results;
-        }
-    }
-
-    /// <summary>
-    /// Contains extension methods for the many to one router.
-    /// </summary>
-    public static class ManyToOneRouterExtensions
-    {
-        /// <summary>
-        /// Configures a many to one route.
-        /// </summary>
-        /// <param name="router">The router.</param>
-        /// <param name="points">The departure locations.</param>
-        /// <returns>A route.</returns>
-        public static RouterManyToOne From(this Router router, IReadOnlyList<SnapPoint> points)
-        {
-            return new RouterManyToOne()
-            {
-                Router = router,
-                Sources = points.ToDirected()
-            };
         }
     }
 }

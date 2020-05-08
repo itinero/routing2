@@ -5,25 +5,16 @@ using Itinero.Algorithms.Routes;
 using Itinero.Data.Graphs;
 using Itinero.Geo;
 
-namespace Itinero
+namespace Itinero.Routers
 {
-    /// <summary>
-    /// A one to many router.
-    /// </summary>
-    public class RouterOneToMany
+    public static class IRouterOneToManyExtensions
     {
-        internal Router Router { get; set; }
-        
-        internal (SnapPoint sp, bool? direction) Source { get; set; }
-        
-        internal IReadOnlyList<SnapPoint> Targets { get; set; }
-
-        public IReadOnlyList<Result<Route>> Calculate()
+        public static IReadOnlyList<Result<Route>> Calculate(this IRouterOneToMany routerOneToMany)
         {
-            var settings = this.Router.Settings;
-            var routerDb = this.Router.RouterDb;
-            var source = this.Source;
-            var targets = this.Targets;
+            var settings = routerOneToMany.Settings;
+            var routerDb = routerOneToMany.RouterDb;
+            var source = routerOneToMany.Source;
+            var targets = routerOneToMany.Targets.ToUndirected();
             
             var profile =  settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);
@@ -70,28 +61,6 @@ namespace Itinero
                 }
             }
             return results;
-        }
-    }
-    
-    /// <summary>
-    /// Contains extension methods related to the one to many router.
-    /// </summary>
-    public static class RouterOneToManyExtensions
-    {
-        /// <summary>
-        /// Creates a one to many router.
-        /// </summary>
-        /// <param name="router">The router.</param>
-        /// <param name="points">The destinations.</param>
-        /// <returns>The router.</returns>
-        public static RouterOneToMany To(this RouterOneToOne router, IReadOnlyList<SnapPoint> points)
-        {
-            return new RouterOneToMany()
-            {
-                Router = router.Router,
-                Source = router.Source,
-                Targets = points
-            };
         }
     }
 }

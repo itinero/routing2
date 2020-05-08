@@ -9,6 +9,7 @@ using Itinero.Data.Graphs;
 using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Profiles.Handlers;
+using Itinero.Routers;
 
 namespace Itinero
 {
@@ -170,12 +171,12 @@ namespace Itinero
         }
 
         /// <summary>
-        /// Configure a route with the given settings.
+        /// Configure a router with the given settings.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
         /// <param name="settings">The settings.</param>
-        /// <returns>A route.</returns>
-        public static Router Route(this RouterDb routerDb, RoutingSettings settings)
+        /// <returns>A router.</returns>
+        public static IRouter Route(this RouterDb routerDb, RoutingSettings settings)
         {
             return new Router(routerDb, settings);
         }
