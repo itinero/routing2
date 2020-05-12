@@ -291,8 +291,8 @@ namespace Itinero.Algorithms.Dijkstra
 
                 // add the offsets.
                 var target = targets[p];
-                path.Offset1 = path[0].forward ? source.Offset : (ushort) (ushort.MaxValue - source.Offset);
-                path.Offset2 = path[path.Count - 1].forward
+                path.Offset1 = path.First.direction ? source.Offset : (ushort) (ushort.MaxValue - source.Offset);
+                path.Offset2 = path.Last.direction
                     ? target.Offset
                     : (ushort) (ushort.MaxValue - target.Offset);
 

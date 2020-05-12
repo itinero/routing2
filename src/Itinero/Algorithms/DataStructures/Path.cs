@@ -10,7 +10,7 @@ namespace Itinero.Algorithms.DataStructures
     /// <summary>
     /// Represents a path in a graph as a collection of edges.
     /// </summary>
-    public class Path : IReadOnlyList<(EdgeId edge, bool forward)>
+    public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
     {
         private readonly List<(EdgeId edge, bool forward)> _edges;
         private readonly Graph.Enumerator _graphEnumerator;
@@ -44,7 +44,17 @@ namespace Itinero.Algorithms.DataStructures
         /// - 0   : means the edge is not included.
         /// - max : means the edge is fully included. 
         /// </remarks>
-        public ushort Offset2 { get; set; } = 0;
+        public ushort Offset2 { get; set; } = ushort.MaxValue;
+
+        /// <summary>
+        /// Gets the first edge.
+        /// </summary>
+        public (EdgeId edge, bool direction) First => _edges[0];
+
+        /// <summary>
+        /// Gets the last edge.
+        /// </summary>
+        public (EdgeId edge, bool direction) Last => _edges[this.Count - 1];
 
         internal void RemoveFirst()
         {
@@ -57,12 +67,6 @@ namespace Itinero.Algorithms.DataStructures
             if (_edges.Count == 0) throw new InvalidOperationException("Cannot remove last from an already empty path.");
             _edges.RemoveAt(_edges.Count - 1);
         }
-
-        /// <summary>
-        /// Gets the edge at the given index.
-        /// </summary>
-        /// <param name="i"></param>
-        public (EdgeId edge, bool forward) this[int i] => _edges[i];
 
         /// <summary>
         /// Returns the number of edges.
@@ -81,11 +85,11 @@ namespace Itinero.Algorithms.DataStructures
 
             if (_graphEnumerator.From == first)
             {
-                _edges.Insert(0, (edge, true));
+                this.AppendInternal(edge, true);
             }
             else if (_graphEnumerator.To == first)
             {
-                _edges.Insert(0, (edge, false));
+                this.AppendInternal(edge, false);
             }
             else
             {
@@ -105,11 +109,11 @@ namespace Itinero.Algorithms.DataStructures
 
             if (_graphEnumerator.From == last)
             {
-                _edges.Insert(0, (edge, false));
+                this.PrependInternal(edge, false);
             }
             else if (_graphEnumerator.To == last)
             {
-                _edges.Insert(0, (edge, true));
+                this.PrependInternal(edge, true);
             }
             else
             {
@@ -117,99 +121,29 @@ namespace Itinero.Algorithms.DataStructures
             }
         }
 
-        /// <summary>
-        /// Appends the given edge and calculates the proper direction.
-        /// </summary>
-        /// <param name="edge">The edge.</param>
-        /// <param name="offset">The offset.</param>
-        public void Append(EdgeId edge, ushort? offset = null)
-        {
-            if (_edges.Count == 0)
-            {
-                _edges.Add((edge, true));
-                return;
-            }
-
-            if (!_graphEnumerator.MoveToEdge(_edges[0].edge))
-                throw new Exception($"Edge in path does not exist.");
-
-            var last = _edges[0].forward ? _graphEnumerator.To : _graphEnumerator.From;
-            
-            if (!_graphEnumerator.MoveToEdge(edge))
-                throw new Exception($"Edge in path does not exist.");
-
-            if (_graphEnumerator.From == last)
-            {
-                _edges.Insert(0, (edge, true));
-            }
-            else if (_graphEnumerator.To == last)
-            {
-                _edges.Insert(0, (edge, false));
-            }
-            else
-            {
-                throw new Exception($"Cannot append edge, the it has no vertex in common with the last edge."); 
-            }
-        }
-
-        /// <summary>
-        /// Prepends the given edge and calculates the proper direction.
-        /// </summary>
-        /// <param name="edge">The edge.</param>
-        /// <param name="offset">The offset.</param>
-        public void Prepend(EdgeId edge, ushort? offset = null)
-        {
-            if (_edges.Count == 0)
-            {
-                _edges.Add((edge, true));
-                return;
-            }
-
-            if (!_graphEnumerator.MoveToEdge(_edges[_edges.Count - 1].edge))
-                throw new Exception($"Edge in path does not exist.");
-
-            var first = _edges[_edges.Count].forward ? _graphEnumerator.From : _graphEnumerator.To;
-            
-            if (!_graphEnumerator.MoveToEdge(edge))
-                throw new Exception($"Edge in path does not exist.");
-
-            if (_graphEnumerator.To == first)
-            {
-                _edges.Add((edge, true));
-            }
-            else if (_graphEnumerator.From == first)
-            {
-                _edges.Add((edge, false));
-            }
-            else
-            {
-                throw new Exception($"Cannot prepend edge, the it has no vertex in common with the first edge."); 
-            }
-        }
-
-        /// <summary>
-        /// Appends the given edge, without checking if the path is valid.
-        /// </summary>
-        /// <param name="edge">The edge.</param>
-        /// <param name="forward">The forward flag.</param>
         internal void AppendInternal(EdgeId edge, bool forward)
-        {
-            _edges.Insert(0, (edge, forward));
-        }
-
-        /// <summary>
-        /// Prepends the given edge, without checking if the path is valid.
-        /// </summary>
-        /// <param name="edge">The edge.</param>
-        /// <param name="forward">The forward flag.</param>
-        internal void PrependInternal(EdgeId edge, bool forward)
         {
             _edges.Add((edge, forward));
         }
 
-        public IEnumerator<(EdgeId edge, bool forward)> GetEnumerator()
+        internal void PrependInternal(EdgeId edge, bool forward)
         {
-            return _edges.GetEnumerator();
+            _edges.Insert(0, (edge, forward));
+        }
+
+        public IEnumerator<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> GetEnumerator()
+        {
+            for (var i = 0; i < this.Count; i++)
+            {
+                var edge = _edges[i];
+                var offset1 = (ushort)0;
+                var offset2 = ushort.MaxValue;
+                
+                if (i == 0) offset1 = this.Offset1;
+                if (i == this.Count - 1) offset2 = this.Offset2;
+
+                yield return (edge.edge, edge.forward, offset1, offset2);
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

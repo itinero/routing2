@@ -135,5 +135,135 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             Assert.False(enumerator.Current.forward);
             Assert.False(enumerator.MoveNext());
         }
+        
+        [Fact]
+        public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths()
+        {
+            var routerDb = new RouterDb();
+            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+
+            var edge = routerDb.AddEdge(vertex1, vertex2);
+
+            var snap1 = routerDb.Snap(vertex1).Value;
+            var snap2 = routerDb.Snap(vertex2).Value;
+            var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
+            var snap4 = new SnapPoint(edge, ushort.MaxValue / 2);
+            var snap5 = new SnapPoint(edge, ushort.MaxValue / 4 + ushort.MaxValue / 2);
+
+            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
+                snap1, new[] {snap2, snap3, snap4, snap5},
+                (e) => 1);
+            Assert.NotNull(paths);
+            Assert.Equal(4, paths.Length);
+
+            var path2 = paths[0];
+            Assert.Equal(0,path2.Offset1);
+            Assert.Equal(ushort.MaxValue, path2.Offset2);
+            using var enumerator2 = path2.GetEnumerator();
+            Assert.True(enumerator2.MoveNext());
+            Assert.Equal(edge, enumerator2.Current.edge);
+            Assert.True(enumerator2.Current.forward);
+            Assert.False(enumerator2.MoveNext());
+
+            var path3 = paths[1];
+            Assert.Equal(0,path3.Offset1);
+            Assert.Equal(ushort.MaxValue / 4, path3.Offset2);
+            using var enumerator3 = path3.GetEnumerator();
+            Assert.True(enumerator3.MoveNext());
+            Assert.Equal(edge, enumerator3.Current.edge);
+            Assert.True(enumerator3.Current.forward);
+            Assert.False(enumerator3.MoveNext());
+
+            var path4 = paths[2];
+            Assert.Equal(0,path4.Offset1);
+            Assert.Equal(ushort.MaxValue / 2, path4.Offset2);
+            using var enumerator4 = path4.GetEnumerator();
+            Assert.True(enumerator4.MoveNext());
+            Assert.Equal(edge, enumerator4.Current.edge);
+            Assert.True(enumerator4.Current.forward);
+            Assert.False(enumerator4.MoveNext());
+
+            var path5 = paths[3];
+            Assert.Equal(0,path5.Offset1);
+            Assert.Equal(ushort.MaxValue / 2 + ushort.MaxValue / 4, path5.Offset2);
+            using var enumerator5 = path5.GetEnumerator();
+            Assert.True(enumerator5.MoveNext());
+            Assert.Equal(edge, enumerator5.Current.edge);
+            Assert.True(enumerator5.Current.forward);
+            Assert.False(enumerator5.MoveNext());
+        }
+
+        [Fact]
+        public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths()
+        {
+            var routerDb = new RouterDb();
+            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+
+            var edge1 = routerDb.AddEdge(vertex1, vertex2);
+            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+            
+            var snap1 = routerDb.Snap(vertex1).Value;
+            var snap2 = routerDb.Snap(vertex3).Value;
+            var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);
+            var snap4 = new SnapPoint(edge2, ushort.MaxValue / 2);
+            var snap5 = new SnapPoint(edge2, ushort.MaxValue / 4 + ushort.MaxValue / 2);
+
+            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
+                snap1, new[] {snap2, snap3, snap4, snap5},
+                (e) => 1);
+            Assert.NotNull(paths);
+            Assert.Equal(4, paths.Length);
+
+            var path2 = paths[0];
+            Assert.Equal(0,path2.Offset1);
+            Assert.Equal(ushort.MaxValue, path2.Offset2);
+            using var enumerator2 = path2.GetEnumerator();
+            Assert.True(enumerator2.MoveNext());
+            Assert.Equal(edge1, enumerator2.Current.edge);
+            Assert.True(enumerator2.Current.forward);
+            Assert.True(enumerator2.MoveNext());
+            Assert.Equal(edge2, enumerator2.Current.edge);
+            Assert.True(enumerator2.Current.forward);
+            Assert.False(enumerator2.MoveNext());
+
+            var path3 = paths[1];
+            Assert.Equal(0,path3.Offset1);
+            Assert.Equal(ushort.MaxValue / 4, path3.Offset2);
+            using var enumerator3 = path3.GetEnumerator();
+            Assert.True(enumerator3.MoveNext());
+            Assert.Equal(edge1, enumerator3.Current.edge);
+            Assert.True(enumerator3.Current.forward);
+            Assert.True(enumerator3.MoveNext());
+            Assert.Equal(edge2, enumerator3.Current.edge);
+            Assert.True(enumerator3.Current.forward);
+            Assert.False(enumerator3.MoveNext());
+
+            var path4 = paths[2];
+            Assert.Equal(0,path4.Offset1);
+            Assert.Equal(ushort.MaxValue / 2, path4.Offset2);
+            using var enumerator4 = path4.GetEnumerator();
+            Assert.True(enumerator4.MoveNext());
+            Assert.Equal(edge1, enumerator4.Current.edge);
+            Assert.True(enumerator4.Current.forward);
+            Assert.True(enumerator4.MoveNext());
+            Assert.Equal(edge2, enumerator4.Current.edge);
+            Assert.True(enumerator4.Current.forward);
+            Assert.False(enumerator4.MoveNext());
+
+            var path5 = paths[3];
+            Assert.Equal(0,path5.Offset1);
+            Assert.Equal(ushort.MaxValue / 2 + ushort.MaxValue / 4, path5.Offset2);
+            using var enumerator5 = path5.GetEnumerator();
+            Assert.True(enumerator5.MoveNext());
+            Assert.Equal(edge1, enumerator5.Current.edge);
+            Assert.True(enumerator5.Current.forward);
+            Assert.True(enumerator5.MoveNext());
+            Assert.Equal(edge2, enumerator5.Current.edge);
+            Assert.True(enumerator5.Current.forward);
+            Assert.False(enumerator5.MoveNext());
+        }
     }
 }

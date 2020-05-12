@@ -273,8 +273,8 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
             }
 
             // add the offsets.
-            path.Offset1 = path[0].forward ? source.sp.Offset : (ushort) (ushort.MaxValue - source.sp.Offset);
-            path.Offset2 = path[path.Count - 1].forward
+            path.Offset1 = path.First.direction ? source.sp.Offset : (ushort) (ushort.MaxValue - source.sp.Offset);
+            path.Offset2 = path.Last.direction
                 ? bestTarget.target.Offset
                 : (ushort) (ushort.MaxValue - bestTarget.target.Offset);
 
@@ -390,7 +390,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     {
                         enumerator.MoveToEdge(e.edge, e.direction);
                         return getWeight(enumerator);
-                    }), path[0].forward, target.sp);
+                    }), path.First.direction, target.sp);
                 }
                 else
                 {
@@ -598,8 +598,8 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 }
 
                 // add the offsets.
-                path.Offset1 = path[0].forward ? source.sp.Offset : (ushort) (ushort.MaxValue - source.sp.Offset);
-                path.Offset2 = path[path.Count - 1].forward
+                path.Offset1 = path.First.direction ? source.sp.Offset : (ushort) (ushort.MaxValue - source.sp.Offset);
+                path.Offset2 = path.Last.direction
                     ? bestTarget.target.Offset
                     : (ushort) (ushort.MaxValue - bestTarget.target.Offset);
 

@@ -8,20 +8,13 @@ namespace Itinero.Algorithms.DataStructures
         public static double Weight(this Path path, Func<(EdgeId edge, bool direction), double> getWeight)
         {
             var weight = 0.0;
-            
-            for (var i = 0; i < path.Count; i++)
+
+            foreach (var (edge, direction, offset1, offset2) in path)
             {
-                var edge = path[i];
-
-                var edgeWeight = getWeight(edge);
-
-                if (i == 0)
+                var edgeWeight = getWeight((edge, direction));
+                if (offset1 != 0 || offset2 != ushort.MaxValue)
                 {
-                    edgeWeight *= (1 - ((double) path.Offset1 / ushort.MaxValue));
-                }
-                else if (i == path.Count - 1)
-                {
-                    edgeWeight *= (1 - ((double) path.Offset2 / ushort.MaxValue));
+                    edgeWeight *= ((double) (offset2 - offset1) / ushort.MaxValue);
                 }
 
                 weight += edgeWeight;
@@ -38,24 +31,18 @@ namespace Itinero.Algorithms.DataStructures
         {
             if (path.Count <= 1) return;
             
-            var first = path[0];
-            if ((first.forward && path.Offset1 == ushort.MaxValue) ||
-                (!first.forward && path.Offset1 == 0))
+            if (path.Offset1 == ushort.MaxValue)
             {
                 path.RemoveFirst();
-                first = path[0];
-                path.Offset1 = first.forward ? (ushort)0 : ushort.MaxValue;
+                path.Offset1 = 0;
             }
             
             if (path.Count <= 1) return;
-
-            var last = path[path.Count - 1];
-            if ((last.forward && path.Offset1 == 0) ||
-                (!last.forward && path.Offset1 == ushort.MaxValue))
+            
+            if (path.Offset2 == 0)
             {
                 path.RemoveLast();
-                last = path[path.Count - 1];
-                path.Offset2 = last.forward ? ushort.MaxValue : (ushort)0;
+                path.Offset2 = ushort.MaxValue;
             }
         }
     }

@@ -20,43 +20,24 @@ namespace Itinero.Algorithms.Routes
         public Result<Route> Build(RouterDb db, Profile profile, Path path, bool forward = true)
         {
             var edgeEnumerator = db.GetEdgeEnumerator();
-            var route = new Route();
-            route.Profile = profile.Name;
+            var route = new Route {Profile = profile.Name};
 
-            for (var i = 0; i < path.Count; i++)
+            foreach (var (edge, direction, offset1, offset2) in path)
             {
-                var segment = path[i];
-                
-                // determine offsets if any.
-                ushort offset1 = 0;
-                ushort offset2 = ushort.MaxValue;
-                if (i == 0)
-                {
-                    offset1 = path.Offset1;
-                    if (path.Count == 1)
-                    {
-                        offset2 = path.Offset2;
-                    }
-                }
-                else if (i == path.Count - 1)
-                {
-                    offset2 = path.Offset2;
-                }
-
                 if (forward)
                 {
-                    edgeEnumerator.MoveToEdge(segment.edge, segment.forward);
+                    edgeEnumerator.MoveToEdge(edge, direction);
                 }
                 else
                 {
-                    edgeEnumerator.MoveToEdge(segment.edge, !segment.forward);
+                    edgeEnumerator.MoveToEdge(edge, !direction);
                 }
                 var attributes = edgeEnumerator.Attributes;
                 var factor = profile.Factor(attributes);
                 var distance = edgeEnumerator.EdgeLength() / 100.0;
                 distance = ((offset2 - offset1) / (double)ushort.MaxValue) * distance;
                 route.TotalDistance += distance;
-                if (segment.forward)
+                if (direction)
                 {
                     if (factor.ForwardSpeed > 0)
                     { // ok factor makes sense.

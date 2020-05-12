@@ -76,8 +76,8 @@ namespace Itinero.Tests.Geo
             var intersection = line1.Intersect(line2);
             
             Assert.NotNull(intersection);
-            Assert.Equal(3.73131212057064,intersection.Value.longitude,6);
-            Assert.Equal(51.0535153604835,intersection.Value.latitude,6);
+            Assert.Equal(3.73131212057064, intersection.Value.longitude, 6);
+            Assert.Equal(51.0535153604835, intersection.Value.latitude, 6);
         }
         
         [Fact]
