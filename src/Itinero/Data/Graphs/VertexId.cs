@@ -5,7 +5,7 @@ namespace Itinero.Data.Graphs
     /// <summary>
     /// Represents a vertex ID composed of a tile ID and a vertex ID.
     /// </summary>
-    public struct VertexId : IEquatable<VertexId>
+    public readonly struct VertexId : IEquatable<VertexId>
     {
         /// <summary>
         /// Creates a new vertex id.
@@ -21,21 +21,17 @@ namespace Itinero.Data.Graphs
         /// <summary>
         /// Gets or sets the tile id.
         /// </summary>
-        public uint TileId { get;  private set; }
+        public uint TileId { get; }
         
         /// <summary>
         /// Gets or sets the local id.
         /// </summary>
-        public uint LocalId { get; private set; }
+        public uint LocalId { get; }
 
         /// <summary>
         /// Returns an empty vertex id.
         /// </summary>
-        public static VertexId Empty => new VertexId()
-        {
-            LocalId = uint.MaxValue,
-            TileId = uint.MaxValue
-        };
+        public static VertexId Empty => new VertexId(uint.MaxValue, uint.MaxValue);
 
         /// <summary>
         /// Returns true if this vertex id is empty.

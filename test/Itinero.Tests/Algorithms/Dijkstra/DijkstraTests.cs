@@ -6,7 +6,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
     public class DijkstraTests
     {
         [Fact]
-        public void Dijkstra_ShouldFindOneHopPath()
+        public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath()
         {
             var routerDb = new RouterDb();
             var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
@@ -29,7 +29,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_ShouldFindTwoHopPath()
+        public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath()
         {
             var routerDb = new RouterDb();
             var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
@@ -56,9 +56,8 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             Assert.False(enumerator.MoveNext());
         }
         
-
         [Fact]
-        public void Dijkstra_ShouldFindThreeHopPath()
+        public void Dijkstra_OneToOne_TheeHopsShortest_ShouldFindThreeHopPath()
         {
             var routerDb = new RouterDb();
             var vertex1 = routerDb.AddVertex(4.792613983154297,51.26535213392538);
@@ -87,6 +86,53 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             Assert.True(enumerator.MoveNext());
             Assert.Equal(edge3, enumerator.Current.edge);
             Assert.True(enumerator.Current.forward);
+            Assert.False(enumerator.MoveNext());
+        }
+
+        [Fact]
+        public void Dijkstra_OneToOne_PathWithinEdge_NotShortest_ShouldFindShortest()
+        {
+            var routerDb = new RouterDb();
+            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+
+            var edge1 = routerDb.AddEdge(vertex1, vertex2);
+            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+            var edge3 = routerDb.AddEdge(vertex1, vertex3); // this edge has a weight of 10.
+
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
+                routerDb.Snap(vertex1, edge3),
+                routerDb.Snap(vertex3, edge3),
+                e =>
+                {
+                    if (e.Id == edge3) return 10;
+                    return 1;
+                });
+            
+            // the path generate is from (vertex1 -> vertex2 -> vertex3) 
+            // but it includes edge3 with:
+            //  - an offset max at the start, the edge is not included.
+            // -  an offset 0 at the end, the edge is not included.
+            // the 'snapping' was done on edge3 and it should always be included in the output. 
+            Assert.NotNull(path);
+            Assert.Equal(4, path.Count);
+            Assert.Equal(ushort.MaxValue, path.Offset1);
+            Assert.Equal(0, path.Offset2);
+            
+            using var enumerator = path.GetEnumerator();
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge3, enumerator.Current.edge);
+            Assert.False(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge1, enumerator.Current.edge);
+            Assert.True(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge2, enumerator.Current.edge);
+            Assert.True(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge3, enumerator.Current.edge);
+            Assert.False(enumerator.Current.forward);
             Assert.False(enumerator.MoveNext());
         }
     }
