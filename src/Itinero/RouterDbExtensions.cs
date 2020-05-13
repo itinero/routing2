@@ -18,6 +18,17 @@ namespace Itinero
     /// </summary>
     public static class RouterDbExtensions
     {
+        /// <summary>
+        /// Adds a new vertex and returns its id.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="location">The location.</param>
+        /// <returns>The ID of the new vertex.</returns>
+        public static VertexId AddVertex(this RouterDb routerDb, (double longitude, double latitude) location)
+        {
+            return routerDb.AddVertex(location.longitude, location.latitude);
+        }
+        
         internal static IEnumerable<(string key, string value)> GetAttributes(this RouterDb routerDb, EdgeId edge)
         {
             var enumerator = routerDb.GetEdgeEnumerator();

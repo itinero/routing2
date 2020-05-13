@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Itinero.Data;
-using Itinero.Navigation.Directions;
+using Itinero.Geo.Directions;
 
 namespace Itinero
 {

@@ -1,9 +1,6 @@
-namespace Itinero.Navigation.Directions
+namespace Itinero.Geo.Directions
 {
-    /// <summary>
-    /// Calculates direction.
-    /// </summary>
-    public static class DirectionCalculator
+    internal static class DirectionCalculator
     {
         /// <summary>
         /// Calculates the angle in radians at coordinate2.
@@ -79,9 +76,6 @@ namespace Itinero.Navigation.Directions
             return angle;
         }
 
-        /// <summary>
-        /// Calculates the direction of one line segment relative to another.
-        /// </summary>
         public static RelativeDirection Calculate((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2, 
             (double longitude, double latitude) coordinate3)
         {
@@ -178,28 +172,22 @@ namespace Itinero.Navigation.Directions
             return DirectionEnum.North;
         }
         
-        /// <summary>
-        /// Converts radians to degrees.
-        /// </summary>
-        private static double ToDegrees(this double radians)
+        internal static double ToDegrees(this double radians)
         {
             return (radians / System.Math.PI) * 180d;
         }
-
-        /// <summary>
-        /// Normalizes this angle to the range of [0-360[.
-        /// </summary>
-        private static double NormalizeDegrees(this double degrees)
+        
+        internal static double NormalizeDegrees(this double degrees)
         {
             if (degrees >= 360)
             {
                 var count = System.Math.Floor(degrees / 360.0);
-                degrees = degrees - (360.0 * count);
+                degrees -= (360.0 * count);
             }
             else if(degrees < 0)
             {
                 var count = System.Math.Floor(-degrees / 360.0) + 1;
-                degrees = degrees + (360.0 * count);
+                degrees += (360.0 * count);
             }
             return degrees;
         }

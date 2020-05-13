@@ -1,4 +1,4 @@
-namespace Itinero.Navigation.Directions
+namespace Itinero.Geo.Directions
 {
     /// <summary>
     /// Relative direction enumeration.

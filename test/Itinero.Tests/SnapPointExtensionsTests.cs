@@ -1,5 +1,6 @@
 using Itinero.Data.Graphs;
 using Itinero.Geo;
+using Itinero.Geo.Directions;
 using Xunit;
 
 namespace Itinero.Tests
@@ -170,6 +171,75 @@ namespace Itinero.Tests
             Assert.False(result.IsError);
             Assert.True(result.Value.LocationOnNetwork(routerDb).DistanceEstimateInMeter(location) < 1);
             Assert.Equal(edge, result.Value.EdgeId);
+        }
+
+        [Fact]
+        public void Snap_Direction_0Degrees_PerfectForward_ShouldReturnForward()
+        {
+            var routerDb = new RouterDb();
+            
+            // add a perfect horizontal edge.
+            var vertex1 = routerDb.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = routerDb.AddVertex(routerDb.GetVertex(vertex1).OffsetWithDistanceX(100));
+            var edge = routerDb.AddEdge(vertex1, vertex2);
+            
+            // calculate direction.
+            var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDb, DirectionEnum.East);
+            Assert.NotNull(direction);
+            Assert.True(direction.Value);
+        }
+
+        [Fact]
+        public void Snap_Direction_0Degrees_45OffsetForward_ShouldReturnForward()
+        {
+            var routerDb = new RouterDb();
+            
+            // add a perfect horizontal edge.
+            var vertex1 = routerDb.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = routerDb.AddVertex(routerDb.GetVertex(vertex1).OffsetWithDistanceX(100));
+            var edge = routerDb.AddEdge(vertex1, vertex2);
+            
+            // calculate direction.
+            var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDb, DirectionEnum.NorthEast);
+            Assert.NotNull(direction);
+            Assert.True(direction.Value);
+            
+            // calculate direction.
+            direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDb, DirectionEnum.SouthEast);
+            Assert.NotNull(direction);
+            Assert.True(direction.Value);
+        }
+
+        [Fact]
+        public void Snap_Direction_0Degrees_180OffsetForward_ShouldReturnBackward()
+        {
+            var routerDb = new RouterDb();
+            
+            // add a perfect horizontal edge.
+            var vertex1 = routerDb.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = routerDb.AddVertex(routerDb.GetVertex(vertex1).OffsetWithDistanceX(100));
+            var edge = routerDb.AddEdge(vertex1, vertex2);
+            
+            // calculate direction.
+            var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDb, DirectionEnum.West);
+            Assert.NotNull(direction);
+            Assert.False(direction.Value);
+        }
+
+        [Fact]
+        public void Snap_Direction_180Degrees_PerfectForward_ShouldReturnForward()
+        {
+            var routerDb = new RouterDb();
+            
+            // add a perfect horizontal edge.
+            var vertex1 = routerDb.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = routerDb.AddVertex(routerDb.GetVertex(vertex1).OffsetWithDistanceX(100));
+            var edge = routerDb.AddEdge(vertex2, vertex1);
+            
+            // calculate direction.
+            var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDb, DirectionEnum.West);
+            Assert.NotNull(direction);
+            Assert.True(direction.Value);
         }
     }
 }
