@@ -37,249 +37,6 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
 
             return paths[0];
         }
-        
-        /// <summary>
-        /// Calculates a path.
-        /// </summary>
-        /// <returns>The path.</returns>
-        public Path? Run2(RouterDb routerDb, (SnapPoint sp, bool? direction) source,
-            (SnapPoint sp, bool? direction) target,
-            Func<RouterDbEdgeEnumerator, double> getWeight,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
-        {
-            var enumerator = routerDb.GetEdgeEnumerator();
-            var path = new Path(routerDb.Network);
-
-            if (source.sp.EdgeId == target.sp.EdgeId)
-            {
-                if (!enumerator.MoveToEdge(source.sp.EdgeId))
-                    throw new Exception($"Edge in source {source} not found!");
-                if (source.sp.Offset < target.sp.Offset &&
-                    source.Forward() && target.Forward())
-                {
-                    path.Prepend(source.sp.EdgeId, enumerator.To);
-                    path.Offset1 = source.sp.Offset;
-                    path.Offset2 = target.sp.Offset;
-
-                    return path;
-                }
-                else if (source.Backward() && target.Backward())
-                {
-                    path.Prepend(source.sp.EdgeId, enumerator.From);
-                    path.Offset1 = (ushort) (ushort.MaxValue - source.sp.Offset);
-                    path.Offset2 = (ushort) (ushort.MaxValue - target.sp.Offset);
-
-                    return path;
-                }
-            }
-
-            // ok we need to calculate things, clear things first.
-            _tree.Clear();
-            _visits.Clear();
-            _heap.Clear();
-
-            // add sources.
-            if (source.Forward())
-            {
-                // add forward.
-                if (!enumerator.MoveToEdge(source.sp.EdgeId, true))
-                    throw new Exception($"Edge in source {source} not found!");
-                var sourceCostForward = getWeight(enumerator);
-                if (sourceCostForward > 0)
-                {
-                    // can traverse edge in the forward direction.
-                    var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
-                    var p = _tree.AddVisit(enumerator.To, source.sp.EdgeId, uint.MaxValue);
-                    _heap.Push(p, sourceOffsetCostForward);
-                }
-            }
-
-            if (source.Backward())
-            {
-                // add backward.
-                if (!enumerator.MoveToEdge(source.sp.EdgeId, false))
-                    throw new Exception($"Edge in source {source} not found!");
-                var sourceCostBackward = getWeight(enumerator);
-                if (sourceCostBackward > 0)
-                {
-                    // can traverse edge in the backward direction.
-                    var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
-                    var p = _tree.AddVisit(enumerator.To, source.sp.EdgeId, uint.MaxValue);
-                    _heap.Push(p, sourceOffsetCostBackward);
-                }
-            }
-
-            // add targets.
-            (uint pointer, double cost, bool forward, SnapPoint target) bestTarget = (uint.MaxValue, double.MaxValue,
-                false,
-                default);
-            var targetMaxCost = 0d;
-            (double costForward, double costBackward) targetOnEdge = (double.MaxValue, double.MaxValue);
-
-            if (target.Forward())
-            {
-                // add forward.
-                if (!enumerator.MoveToEdge(target.sp.EdgeId, true))
-                    throw new Exception($"Edge in target {target} not found!");
-                var targetCostForward = getWeight(enumerator);
-                if (targetCostForward > 0)
-                {
-                    // can traverse edge in the forward direction, we can the from vertex.
-                    targetCostForward *= target.sp.OffsetFactor();
-                    if (targetCostForward > targetMaxCost)
-                    {
-                        targetMaxCost = targetCostForward;
-                    }
-
-                    targetOnEdge = (targetCostForward, targetOnEdge.costBackward);
-                }
-            }
-
-            if (target.Backward())
-            {
-                // add backward.
-                if (!enumerator.MoveToEdge(target.sp.EdgeId, false))
-                    throw new Exception($"Edge in target {target} not found!");
-                var targetCostBackward = getWeight(enumerator);
-                if (targetCostBackward > 0)
-                {
-                    // can traverse edge in the forward direction, we can the from vertex.
-                    targetCostBackward *= target.sp.OffsetFactor();
-                    if (targetCostBackward > targetMaxCost)
-                    {
-                        targetMaxCost = targetCostBackward;
-                    }
-
-                    targetOnEdge = (targetOnEdge.costForward, targetCostBackward);
-                }
-            }
-
-            // keep going until heap is empty.
-            while (_heap.Count > 0)
-            {
-                if (_visits.Count > (1 << 20))
-                {
-                    // TODO: come up with a stop condition that makes more sense to prevent the global network being loaded
-                    // when a route is not found.
-                    break;
-                }
-
-                // dequeue new visit.
-                var currentPointer = _heap.Pop(out var currentCost);
-                var currentVisit = _tree.GetVisit(currentPointer);
-                while (_visits.Contains((currentVisit.edge, currentVisit.vertex)))
-                {
-                    // visited before, skip.
-                    currentPointer = uint.MaxValue;
-                    if (_heap.Count == 0)
-                    {
-                        break;
-                    }
-
-                    currentPointer = _heap.Pop(out currentCost);
-                    currentVisit = _tree.GetVisit(currentPointer);
-                }
-
-                if (currentPointer == uint.MaxValue)
-                {
-                    break;
-                }
-
-                // log visit.
-                if (currentVisit.previousPointer != uint.MaxValue)
-                {
-                    _visits.Add((currentVisit.edge, currentVisit.vertex));
-                }
-
-                if (settled != null && settled((currentVisit.edge, currentVisit.vertex)))
-                {
-                    // break if requested.
-                    continue;
-                }
-
-                // check if the search needs to stop.
-                if (currentCost + targetMaxCost > bestTarget.cost)
-                {
-                    // impossible to improve on cost to any target.
-                    break;
-                }
-
-                // check if this is a target.
-                if (currentVisit.edge == target.sp.EdgeId &&
-                    currentVisit.previousPointer != uint.MaxValue)
-                {
-                    enumerator.MoveToEdge(currentVisit.edge);
-                    var forward = enumerator.To == currentVisit.vertex;
-
-                    var targetCost = targetOnEdge.costForward;
-                    if (!forward) targetCost = targetOnEdge.costBackward;
-
-                    // this vertex is a target, check for an improvement.
-                    targetCost += currentCost;
-                    targetCost -= getWeight(enumerator);
-                    if (targetCost < bestTarget.cost)
-                    {
-                        bestTarget = (currentPointer, targetCost, forward, target.sp);
-                    }
-                }
-
-                // check neighbours.
-                if (!enumerator.MoveTo(currentVisit.vertex))
-                {
-                    // no edges, move on!
-                    continue;
-                }
-
-                while (enumerator.MoveNext())
-                {
-                    var neighbourCost = getWeight(enumerator);
-                    if (neighbourCost >= double.MaxValue ||
-                        neighbourCost <= 0) continue;
-
-                    var neighbourEdge = enumerator.Id;
-                    if (neighbourEdge == currentVisit.edge) continue; // don't consider u-turns.
-
-                    if (queued != null &&
-                        queued.Invoke((enumerator.Id, enumerator.To)))
-                    {
-                        // don't queue this vertex if the queued function returns true.
-                        continue;
-                    }
-
-                    var neighbourPointer = _tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
-                    _heap.Push(neighbourPointer, neighbourCost + currentCost);
-                }
-            }
-
-            if (bestTarget.pointer == uint.MaxValue) return null;
-
-            // build resulting path.
-            var visit = _tree.GetVisit(bestTarget.pointer);
-
-            if (!enumerator.MoveToEdge(bestTarget.target.EdgeId, bestTarget.forward))
-                throw new Exception($"Edge in bestTarget {bestTarget} not found!");
-            while (true)
-            {
-                if (visit.previousPointer == uint.MaxValue)
-                {
-                    enumerator.MoveToEdge(visit.edge);
-                    path.Prepend(visit.edge, visit.vertex);
-                    break;
-                }
-
-                path.Prepend(visit.edge, visit.vertex);
-                visit = _tree.GetVisit(visit.previousPointer);
-            }
-
-            // add the offsets.
-            path.Offset1 = path.First.direction ? source.sp.Offset : (ushort) (ushort.MaxValue - source.sp.Offset);
-            path.Offset2 = path.Last.direction
-                ? bestTarget.target.Offset
-                : (ushort) (ushort.MaxValue - bestTarget.target.Offset);
-
-            return path;
-        }
 
         /// <summary>
         /// Calculates a path.
@@ -291,56 +48,29 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
         {
+            double GetWorst((uint pointer, double cost)[] targets)
+            {
+                var worst = 0d;
+                for (var i = 0; i < targets.Length; i++)
+                {
+                    if (!(targets[i].cost > worst)) continue;
+                        
+                    worst = targets[i].cost;
+                    if (worst >= double.MaxValue) break;
+                }
+
+                return worst;
+            }
+            
             var enumerator = routerDb.GetEdgeEnumerator();
             var paths = new Path[targets.Count];
-            var allPathsFound = true;
-            for (var t = 0; t < targets.Count; t++)
-            {
-                var target = targets[t];
-                var path = new Path(routerDb.Network);
 
-                if (source.sp.EdgeId != target.sp.EdgeId)
-                {
-                    allPathsFound = false;
-                    continue;
-                }
-                
-                if (!enumerator.MoveToEdge(source.sp.EdgeId))
-                    throw new Exception($"Edge in source {source} not found!");
-                if (source.sp.Offset < target.sp.Offset &&
-                    source.Forward() && target.Forward())
-                {
-                    path.Prepend(source.sp.EdgeId, enumerator.To);
-                    path.Offset1 = source.sp.Offset;
-                    path.Offset2 = target.sp.Offset;
-
-                    paths[t] = path;
-                }
-                else if (source.Backward() && target.Backward())
-                {
-                    path.Prepend(source.sp.EdgeId, enumerator.From);
-                    path.Offset1 = (ushort) (ushort.MaxValue - source.sp.Offset);
-                    path.Offset2 = (ushort) (ushort.MaxValue - target.sp.Offset);
-
-                    paths[t] = path;
-                }
-                else
-                {
-                    allPathsFound = false;
-                }
-            }
-
-            if (allPathsFound)
-            {
-                return paths;
-            }
-
-            // ok we need to calculate things, clear things first.
             _tree.Clear();
             _visits.Clear();
             _heap.Clear();
 
             // add sources.
+            var sourceForwardVisit = uint.MaxValue;
             if (source.Forward())
             {
                 // add forward.
@@ -351,11 +81,12 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 {
                     // can traverse edge in the forward direction.
                     var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
-                    var p = _tree.AddVisit(enumerator.To, source.sp.EdgeId, uint.MaxValue);
-                    _heap.Push(p, sourceOffsetCostForward);
+                    sourceForwardVisit = _tree.AddVisit(enumerator.To, source.sp.EdgeId, uint.MaxValue);
+                    _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
                 }
             }
 
+            var sourceBackwardVisit = uint.MaxValue;
             if (source.Backward())
             {
                 // add backward.
@@ -366,73 +97,93 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 {
                     // can traverse edge in the backward direction.
                     var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
-                    var p = _tree.AddVisit(enumerator.To, source.sp.EdgeId, uint.MaxValue);
-                    _heap.Push(p, sourceOffsetCostBackward);
+                    sourceBackwardVisit = _tree.AddVisit(enumerator.To, source.sp.EdgeId, uint.MaxValue);
+                    _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
                 }
             }
-
+            
             // add targets.
-            var bestTargets = new (uint pointer, double cost, bool forward, SnapPoint target)[targets.Count];
-            var worstTargetCost = double.MaxValue;
-            var targetMaxCost = 0d;
-            var targetsOnEdges = new Dictionary<EdgeId, List<(int t, double costForward, double costBackward)>>();
-
+            var bestTargets = new (uint pointer, double cost)[targets.Count];
+            var targetsPerVertex = new Dictionary<VertexId, List<int>>();
             for (var t = 0; t < targets.Count; t++)
             {
+                bestTargets[t] = (uint.MaxValue, double.MaxValue);
                 var target = targets[t];
-
-                // take into account existing paths.
-                var path = paths[t];
-                if (path != null)
-                {
-                    // paths have max one edge.
-                    bestTargets[t] = (uint.MaxValue, path.Weight(e =>
-                    {
-                        enumerator.MoveToEdge(e.edge, e.direction);
-                        return getWeight(enumerator);
-                    }), path.First.direction, target.sp);
-                }
-                else
-                {
-                    bestTargets[t] = (uint.MaxValue, double.MaxValue, false, target.sp);
-                }
-
-                var targetCostForward = double.MaxValue;
-                var targetCostBackward = double.MaxValue;
                 
                 if (target.Forward())
                 {
                     // add forward.
                     if (!enumerator.MoveToEdge(target.sp.EdgeId, true))
                         throw new Exception($"Edge in target {target} not found!");
-                    targetCostForward = getWeight(enumerator);
+                    var targetCostForward = getWeight(enumerator);
+                    if (targetCostForward > 0)
+                    {
+                        if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
+                        {
+                            targetsAtVertex = new List<int>();
+                            targetsPerVertex[enumerator.From] = targetsAtVertex;
+                        }
+                        targetsAtVertex.Add(t);
+                    }
                 }
+
                 if (target.Backward())
                 {
                     // add backward.
                     if (!enumerator.MoveToEdge(target.sp.EdgeId, false))
-                        throw new Exception($"Edge in target {target} not found!");
-                    targetCostBackward = getWeight(enumerator);
+                        throw new Exception($"Edge in source {source} not found!");
+                    var targetCostBackward = getWeight(enumerator);
+                    if (targetCostBackward > 0)
+                    {
+                        if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
+                        {
+                            targetsAtVertex = new List<int>();
+                            targetsPerVertex[enumerator.From] = targetsAtVertex;
+                        }
+
+                        targetsAtVertex.Add(t);
+                    }
                 }
-
-                if (targetCostForward < double.MaxValue || targetCostBackward < double.MaxValue)
+                
+                // consider paths 'within' a single edge.
+                if (source.sp.EdgeId != target.sp.EdgeId) continue;
+                if (source.sp.Offset == target.sp.Offset)
                 {
-                    // can traverse edge in the forward direction, we can the from vertex.
-                    targetCostForward *= target.sp.OffsetFactor();
-                    if (targetCostForward > targetMaxCost)
+                    // source and target are identical.
+                    if (sourceForwardVisit != uint.MaxValue &&
+                        target.Forward())
                     {
-                        targetMaxCost = targetCostForward;
+                        bestTargets[t] = (sourceForwardVisit, 0);
                     }
-
-                    if (!targetsOnEdges.TryGetValue(target.sp.EdgeId, out var targetsOnEdge))
+                    else if (sourceBackwardVisit != uint.MaxValue &&
+                             target.Backward())
                     {
-                        targetsOnEdge = new List<(int t, double costForward, double costBackward)>();
-                        targetsOnEdges.Add(target.sp.EdgeId, targetsOnEdge);
+                        bestTargets[t] = (sourceForwardVisit, 0);
                     }
-
-                    targetsOnEdge.Add((t, targetCostForward, targetCostBackward));
+                }
+                else if (source.sp.Offset < target.sp.Offset &&
+                         source.Forward() && target.Forward())
+                {
+                    // the source is earlier in the direction of the edge
+                    // and the edge can be traversed in this direction.
+                    if (!enumerator.MoveToEdge(source.sp.EdgeId, true))
+                        throw new Exception($"Edge in source {source} not found!");
+                    var weight = getWeight(enumerator) * (target.sp.OffsetFactor() - source.sp.OffsetFactor());
+                    bestTargets[t] = (sourceForwardVisit, weight);
+                }
+                else if (source.Backward() && target.Backward())
+                {
+                    // the source is earlier against the direction of the edge
+                    // and the edge can be traversed in this direction.
+                    if (!enumerator.MoveToEdge(source.sp.EdgeId, false))
+                        throw new Exception($"Edge in source {source} not found!");
+                    var weight = getWeight(enumerator) * (source.sp.OffsetFactor() - target.sp.OffsetFactor());
+                    bestTargets[t] = (sourceBackwardVisit, weight);
                 }
             }
+            
+            // update worst target cost.
+            var worstTargetCost = GetWorst(bestTargets);
 
             // keep going until heap is empty.
             while (_heap.Count > 0)
@@ -478,71 +229,10 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 }
                 
                 // check if the search needs to stop.
-                if (currentCost + targetMaxCost > worstTargetCost)
+                if (currentCost > worstTargetCost)
                 {
                     // impossible to improve on cost to any target.
                     break;
-                }
-
-                // check if this is a target.
-                if (currentVisit.previousPointer != uint.MaxValue &&
-                    targetsOnEdges.TryGetValue(currentVisit.edge, out var targetsOnEdge))
-                {
-                    // this edge has a target.
-                    enumerator.MoveToEdge(currentVisit.edge);
-                    var forward = enumerator.To == currentVisit.vertex;
-                    
-                    var i = 0;
-                    while (i < targetsOnEdge.Count)
-                    {
-                        var targetOnEdge = targetsOnEdge[i];
-                        
-                        // get the target cost.
-                        var targetCost = targetOnEdge.costForward;
-                        if (!forward) targetCost = targetOnEdge.costBackward;
-                        
-                        // this edge has a target, the target on the edge has been reached.
-                        // check for an improvement.
-                        targetCost += currentCost;
-                        targetCost -= getWeight(enumerator);
-                        var currentTarget = bestTargets[targetOnEdge.t];
-                        if (targetCost < currentTarget.cost)
-                        {
-                            bestTargets[i] = (currentPointer, targetCost, forward, currentTarget.target);
-                        }
-                        
-                        // remove target cost if both are infinite.
-                        if ((forward && targetOnEdge.costBackward >= double.MaxValue) ||
-                            (!forward && targetOnEdge.costForward >= double.MaxValue))
-                        {
-                            targetsOnEdge.RemoveAt(i);
-                        }
-                        else
-                        {
-                            targetsOnEdge[i] = (targetOnEdge.t,
-                                forward ? double.MaxValue : targetOnEdge.costForward,
-                                !forward ? double.MaxValue : targetOnEdge.costBackward);
-                            i++;
-                        }
-                    }
-
-                    // update worst.
-                    var worst = 0d;
-                    for (i = 0; i < bestTargets.Length; i++)
-                    {
-                        if (!(bestTargets[i].cost > worst)) continue;
-                        
-                        worst = bestTargets[i].cost;
-                        if (worst >= double.MaxValue) break;
-                    }
-                    worstTargetCost = worst;
-
-                    // remove target if there is no more to search.
-                    if (targetsOnEdge.Count == 0)
-                    {
-                        targetsOnEdges.Remove(currentVisit.edge);
-                        if (targetsOnEdges.Count == 0) break;
-                    }
                 }
 
                 // check neighbours.
@@ -552,38 +242,86 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     continue;
                 }
 
+                // check if this is a target.
+                if (!targetsPerVertex.TryGetValue(currentVisit.vertex, out var targetsAtVertex))
+                {
+                    targetsAtVertex = null;
+                }
+
                 while (enumerator.MoveNext())
                 {
+                    // filter out if u-turns or visits on the same edge.
+                    var neighbourEdge = enumerator.Id;
+                    if (neighbourEdge == currentVisit.edge) continue; 
+                    
+                    // gets the cost of the current edge.
                     var neighbourCost = getWeight(enumerator);
                     if (neighbourCost >= double.MaxValue ||
                         neighbourCost <= 0) continue;
+                    
+                    // if the vertex has targets, check if this edge is a match.
+                    var neighbourPointer = uint.MaxValue;
+                    if (targetsAtVertex != null)
+                    {
+                        // only consider targets when found for the 'from' vertex.
+                        // and when this in not a u-turn.
+                        foreach (var t in targetsAtVertex)
+                        {
+                            var target = targets[t];
+                            if (target.sp.EdgeId != neighbourEdge) continue;
+                            
+                            // check directions.
+                            if (enumerator.Forward && !target.Forward()) continue;
+                            if (!enumerator.Forward && !target.Backward()) continue;
 
-                    var neighbourEdge = enumerator.Id;
-                    if (neighbourEdge == currentVisit.edge) continue; // don't consider u-turns.
+                            // there is a target on this edge, calculate the cost.
+                            // calculate the cost from the 'from' vertex to the target.
+                            var targetCost = enumerator.Forward
+                                ? neighbourCost * (target.sp.OffsetFactor())
+                                : neighbourCost * (1 - target.sp.OffsetFactor());
+                            // this is the case where the target is on this edge 
+                            // and there is a path to 'from' before.
+                            targetCost += currentCost;
+
+                            // if this is an improvement, use it!
+                            var targetBestCost = bestTargets[t].cost;
+                            if (!(targetCost < targetBestCost)) continue;
+
+                            // this is an improvement.
+                            neighbourPointer = _tree.AddVisit(enumerator.To,
+                                enumerator.Id, currentPointer);
+                            bestTargets[t] = (neighbourPointer, targetCost);
+                            
+                            // update worst.
+                            worstTargetCost = GetWorst(bestTargets);
+                        }
+                    }
 
                     if (queued != null &&
                         queued.Invoke((enumerator.Id, enumerator.To)))
                     {
-                        // don't queue this vertex if the queued function returns true.
+                        // don't queue this edge if the queued function returns true.
                         continue;
                     }
 
-                    var neighbourPointer = _tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
+                    // add visit if not added yet.
+                    if (neighbourPointer == uint.MaxValue) neighbourPointer = _tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
+                    
+                    // add visit to heap.
                     _heap.Push(neighbourPointer, neighbourCost + currentCost);
                 }
             }
 
-            for (var t = 0; t < targets.Count; t++)
+            for (var p = 0; p < paths.Length; p++)
             {
-                var bestTarget = bestTargets[t];
+                var bestTarget = bestTargets[p];
                 if (bestTarget.pointer == uint.MaxValue) continue;
 
-                // build resulting paths.
+                // build resulting path.
                 var path = new Path(routerDb.Network);
                 var visit = _tree.GetVisit(bestTarget.pointer);
 
-                if (!enumerator.MoveToEdge(bestTarget.target.EdgeId, bestTarget.forward))
-                    throw new Exception($"Edge in bestTarget {bestTarget} not found!");
+                // path is at least two edges.
                 while (true)
                 {
                     if (visit.previousPointer == uint.MaxValue)
@@ -598,12 +336,13 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 }
 
                 // add the offsets.
+                var target = targets[p];
                 path.Offset1 = path.First.direction ? source.sp.Offset : (ushort) (ushort.MaxValue - source.sp.Offset);
                 path.Offset2 = path.Last.direction
-                    ? bestTarget.target.Offset
-                    : (ushort) (ushort.MaxValue - bestTarget.target.Offset);
+                    ? target.sp.Offset
+                    : (ushort) (ushort.MaxValue - target.sp.Offset);
 
-                paths[t] = path;
+                paths[p] = path;
             }
 
             return paths;

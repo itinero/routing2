@@ -57,7 +57,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         }
         
         [Fact]
-        public void Dijkstra_OneToOne_TheeHopsShortest_ShouldFindThreeHopPath()
+        public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath()
         {
             var routerDb = new RouterDb();
             var vertex1 = routerDb.AddVertex(4.792613983154297,51.26535213392538);

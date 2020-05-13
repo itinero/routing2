@@ -91,7 +91,6 @@ namespace Itinero.Algorithms.Dijkstra
 
             // add targets.
             var bestTargets = new (uint pointer, double cost)[targets.Count];
-            var targetMaxCost = 0d;
             var targetsPerVertex = new Dictionary<VertexId, List<int>>();
             for (var t = 0; t < targets.Count; t++)
             {
@@ -188,16 +187,10 @@ namespace Itinero.Algorithms.Dijkstra
                 }
                 
                 // check if the search needs to stop.
-                if (currentCost + targetMaxCost >= worstTargetCost)
+                if (currentCost >= worstTargetCost)
                 {
                     // impossible to improve on cost to any target.
                     break;
-                }
-
-                // check if this is a target.
-                if (!targetsPerVertex.TryGetValue(currentVisit.vertex, out var targetsAtVertex))
-                {
-                    targetsAtVertex = null;
                 }
 
                 // check neighbours.
@@ -207,16 +200,22 @@ namespace Itinero.Algorithms.Dijkstra
                     continue;
                 }
 
+                // check if this is a target.
+                if (!targetsPerVertex.TryGetValue(currentVisit.vertex, out var targetsAtVertex))
+                {
+                    targetsAtVertex = null;
+                }
+
                 while (enumerator.MoveNext())
                 {
+                    // filter out if u-turns or visits on the same edge.
+                    var neighbourEdge = enumerator.Id;
+                    if (neighbourEdge == currentVisit.edge) continue;
+                    
                     // gets the cost of the current edge.
                     var neighbourCost = getWeight(enumerator);
                     if (neighbourCost >= double.MaxValue ||
                         neighbourCost <= 0) continue;
-
-                    // filter out if u-turns or visits on the same edge.
-                    var neighbourEdge = enumerator.Id;
-                    if (neighbourEdge == currentVisit.edge) continue;
                     
                     // if the vertex has targets, check if this edge is a match.
                     var neighbourPointer = uint.MaxValue;
