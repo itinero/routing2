@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Itinero.Geo;
+using Itinero.Geo.Directions;
 using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
@@ -71,6 +72,10 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: wechelderzande2");
             var wechelderzande3 = SnappingTest.Default.Run((routerDb, 4.783204793930054, 51.266842437522904, profile: bicycle),
                 $"Snapping cold: wechelderzande3");
+            var wechelderzande4 = SnappingTest.Default.Run((routerDb, 4.796256422996521, 51.261015209797186, profile: bicycle),
+                $"Snapping cold: wechelderzande4");
+            var wechelderzande5 = SnappingTest.Default.Run((routerDb, 4.795172810554504, 51.267413036466706, profile: bicycle),
+                $"Snapping cold: wechelderzande5");
             var vorselaar1 = SnappingTest.Default.Run((routerDb, 4.7668540477752686, 51.23757128291549, profile: bicycle),
                 $"Snapping cold: vorselaar1");
             var middelburg = SnappingTest.Default.Run((routerDb, 3.61363, 51.49967, profile: bicycle),
@@ -121,7 +126,7 @@ namespace Itinero.Tests.Functional
                 $"Route hot: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
                 route.ToGeoJson());
-
+            
             route = RouterOneToOneTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
                 $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
             route = RouterOneToOneTest.Default.Run((routerDb, bruggeStation, stationDuinberge, bicycle),
@@ -135,7 +140,7 @@ namespace Itinero.Tests.Functional
                 $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
                 route.ToGeoJson());
-
+            
             route = RouterOneToOneTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
                 $"Route cold: {nameof(zellik2)} -> {nameof(zellik1)}");
             route = RouterOneToOneTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
@@ -149,7 +154,7 @@ namespace Itinero.Tests.Functional
                 $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}.geojson"), 
                 route.ToGeoJson());
-
+            
             Parallel.For(0, 10, (i) =>
             {
                 RouterOneToOneTest.Default.Run((routerDb, heldergem, ninove, bicycle),
@@ -169,7 +174,7 @@ namespace Itinero.Tests.Functional
                 $"Route (after deserialization) host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
             File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}-deserialized.geojson"), 
                 route.ToGeoJson());
-
+            
             route = RouterOneToOneTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
                 $"Route (after deserialization) cold: {nameof(zellik2)} -> {nameof(zellik1)}");
             route = RouterOneToOneTest.Default.Run((routerDb, zellik2, zellik1, bicycle),
@@ -183,7 +188,7 @@ namespace Itinero.Tests.Functional
                 $"Route (after deserialization) hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}-deserialized.geojson"), 
                 route.ToGeoJson());
-
+            
             Parallel.For(0, 10, (i) =>
             {
                 RouterOneToOneTest.Default.Run((routerDb, heldergem, ninove, bicycle),
@@ -217,6 +222,28 @@ namespace Itinero.Tests.Functional
                 $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
                 route.ToGeoJson());
+
+            route = RouterOneToOneDirectedTest.Default.Run((routerDb, (wechelderzande5, DirectionEnum.East),
+                (wechelderzande2, DirectionEnum.West), bicycle));
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.East)}-" +
+                                                      $"{nameof(wechelderzande2)}_{nameof(DirectionEnum.West)}.geojson"),route.ToGeoJson());
+            route = RouterOneToOneDirectedTest.Default.Run((routerDb, (wechelderzande5, DirectionEnum.East),
+                (wechelderzande2, null), bicycle));
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.East)}-" +
+                                                      $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
+            route = RouterOneToOneDirectedTest.Default.Run((routerDb, (wechelderzande5, DirectionEnum.West),
+                (wechelderzande2, null), bicycle));
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.West)}-" +
+                                                      $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
+
+            route = RouterOneToOneDirectedTest.Default.Run((routerDb, (wechelderzande4, DirectionEnum.South),
+                (wechelderzande2, null), bicycle));
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande4)}_{nameof(DirectionEnum.South)}-" +
+                                                      $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
+            route = RouterOneToOneDirectedTest.Default.Run((routerDb, (wechelderzande4, DirectionEnum.North),
+                (wechelderzande2, null), bicycle));
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande4)}_{nameof(DirectionEnum.North)}-" +
+                                                      $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
 
             var oneToManyRoutes = RouterOneToManyTest.Default.Run(
                 (routerDb, heldergem, new[] {ninove, pepingen, lebbeke}, bicycle),

@@ -1,12 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Itinero.Algorithms;
-using Itinero.Algorithms.DataStructures;
-using Itinero.Algorithms.Dijkstra;
-using Itinero.Algorithms.Routes;
-using Itinero.Data.Graphs;
-using Itinero.Geo;
 
 namespace Itinero.Routers
 {

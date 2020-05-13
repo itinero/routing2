@@ -7,6 +7,7 @@ using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Routes;
 using Itinero.Data.Graphs;
 using Itinero.Geo;
+using Itinero.Geo.Directions;
 
 namespace Itinero.Routers
 {
@@ -23,7 +24,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, SnapPoint snapPoint)
         {
-            return router.From((snapPoint, null));
+            return router.From((snapPoint, (bool?)null));
         }
 
         /// <summary>
@@ -36,9 +37,21 @@ namespace Itinero.Routers
         {
             return new Router(router.RouterDb, router.Settings)
             {
-                Source =directedSnapPoint
+                Source = directedSnapPoint
             };
         }
+
+        /// <summary>
+        /// Configures the router to route from the given point.
+        /// </summary>
+        /// <param name="router">The router.</param>
+        /// <param name="directedSnapPoint">The point to route from.</param>
+        /// <returns>A configured router.</returns>
+        public static IHasSource From(this IRouter router, (SnapPoint snapPoint, DirectionEnum? direction) directedSnapPoint)
+        {
+            return router.From(directedSnapPoint.ToDirected(router.RouterDb));
+        }
+        
         /// <summary>
         /// Configures the router to route from the given point.
         /// </summary>
@@ -48,6 +61,17 @@ namespace Itinero.Routers
         public static IHasSources From(this IRouter router, IReadOnlyList<SnapPoint> snapPoints)
         {
             return router.From(snapPoints.ToDirected());
+        }
+
+        /// <summary>
+        /// Configures the router to route from the given point.
+        /// </summary>
+        /// <param name="router">The router.</param>
+        /// <param name="directedSnapPoints">The points to route from.</param>
+        /// <returns>A configured router.</returns>
+        public static IHasSources From(this IRouter router, IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
+        {
+            return router.From(directedSnapPoints.ToDirected(router.RouterDb));
         }
 
         /// <summary>

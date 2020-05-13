@@ -171,7 +171,8 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     var weight = getWeight(enumerator) * (target.sp.OffsetFactor() - source.sp.OffsetFactor());
                     bestTargets[t] = (sourceForwardVisit, weight);
                 }
-                else if (source.Backward() && target.Backward())
+                else if (source.sp.Offset > target.sp.Offset &&
+                         source.Backward() && target.Backward())
                 {
                     // the source is earlier against the direction of the edge
                     // and the edge can be traversed in this direction.

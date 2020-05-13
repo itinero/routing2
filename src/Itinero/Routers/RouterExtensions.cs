@@ -2,14 +2,49 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Itinero.Geo;
+using Itinero.Geo.Directions;
 
 namespace Itinero.Routers
 {
-    /// <summary>
-    /// Contains extension methods for the route promise.
-    /// </summary>
-    public static class RouterExtensions
+    internal static class RouterExtensions
     {
+        internal static (SnapPoint snapPoint, bool? direction) ToDirected(
+            this (SnapPoint snapPoint, DirectionEnum? angle) snapPointAndDirection, RouterDb routerDb)
+        {
+            if (snapPointAndDirection.angle == null) return (snapPointAndDirection.snapPoint, null);
+            return (snapPointAndDirection.snapPoint,
+                snapPointAndDirection.snapPoint.DirectionFromAngle(routerDb, (double)snapPointAndDirection.angle, out _));
+        }
+        
+        internal static (SnapPoint snapPoint, bool? direction) ToDirected(
+            this (SnapPoint snapPoint, double angle) snapPointAndDirection, RouterDb routerDb)
+        {
+            return (snapPointAndDirection.snapPoint,
+                snapPointAndDirection.snapPoint.DirectionFromAngle(routerDb, snapPointAndDirection.angle, out _));
+        }
+        
+        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? directionEnum)> sps, RouterDb routerDb)
+        {
+            var directedSps = new List<(SnapPoint sp, bool? directed)>();
+            foreach (var sp in sps)
+            {
+                directedSps.Add((sp.snapPoint, (double)sp.directionEnum).ToDirected(routerDb));
+            }
+
+            return directedSps;
+        }
+        
+        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<(SnapPoint snapPoint, double angle)> sps, RouterDb routerDb)
+        {
+            var directedSps = new List<(SnapPoint sp, bool? directed)>();
+            foreach (var sp in sps)
+            {
+                directedSps.Add(sp.ToDirected(routerDb));
+            }
+
+            return directedSps;
+        }
+        
         internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<SnapPoint> sps)
         {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();

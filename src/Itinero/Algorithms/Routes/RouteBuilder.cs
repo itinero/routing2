@@ -51,7 +51,7 @@ namespace Itinero.Algorithms.Routes
                         route.TotalTime += distance / factor.BackwardSpeedMeterPerSecond;
                     }
                 }
-                
+
                 route.Shape.AddRange(edgeEnumerator.GetShapeBetween(offset1, offset2));
             }
             

@@ -1,53 +1,56 @@
+using System.Linq;
 using Itinero.Algorithms;
-using Itinero.Algorithms.Dijkstra;
-using Itinero.Algorithms.Routes;
-using Itinero.Data.Graphs;
-using Itinero.Geo;
 
 namespace Itinero.Routers
 {
+    /// <summary>
+    /// One to one extensions.
+    /// </summary>
     public static class IRouterOneToOneExtensions
     {
+        /// <summary>
+        /// Calculates the routes.
+        /// </summary>
+        /// <param name="oneToOneRouter">The router.</param>
+        /// <returns>The route.</returns>
         public static Result<Route> Calculate(this IRouterOneToOne oneToOneRouter)
         {
-            var routerDb = oneToOneRouter.RouterDb;
-            var settings = oneToOneRouter.Settings;
-            
-            var profile = settings.Profile;
-            var profileHandler = routerDb.GetProfileHandler(profile);
+            var sources = new []  { oneToOneRouter.Source };
+            var targets = new [] { oneToOneRouter.Target };
 
-            // if there is max distance don't search outside the box.
-            var sourceLocation = oneToOneRouter.Source.sp.LocationOnNetwork(routerDb);
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
-                null;
-            if (settings.MaxDistance < double.MaxValue)
+            if (!sources.TryToUndirected(out var sourcesUndirected) ||
+                !targets.TryToUndirected(out var targetsUndirected))
             {
-                maxBox = sourceLocation.BoxAround(settings.MaxDistance);
+                return oneToOneRouter.Calculate(sources, targets).First().First();
             }
-            
-            bool checkMaxDistance(VertexId v)
+            else
             {
-                if (maxBox == null) return false;
-                    
-                var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
-                    return true;
-                }
-                return false;
+                return oneToOneRouter.Calculate(sourcesUndirected, targetsUndirected).First().First();;
             }
-            
-            // run dijkstra.
-            var path = Dijkstra.Default.Run(routerDb, oneToOneRouter.Source.sp, oneToOneRouter.Target.sp,
-                profileHandler.GetForwardWeight,
-                settled: (v) =>
-                {
-                    routerDb.UsageNotifier.NotifyVertex(v);
-                    return checkMaxDistance(v);
-                });
-
-            if (path == null) return new Result<Route>($"Route not found!");
-            return RouteBuilder.Default.Build(routerDb, profile, path);
         }
+        
+        /// <summary>
+        /// Calculates the weights.
+        /// </summary>
+        /// <param name="oneToOneWeightRouter">The router.</param>
+        /// <returns>The weight</returns>
+        public static Result<double?[][]> Calculate(this IRouterWeights<IRouterOneToOne> oneToOneWeightRouter)
+        {
+            var oneToOneRouter = oneToOneWeightRouter.Router;
+            
+            var sources = new []  { oneToOneRouter.Source };
+            var targets = new [] { oneToOneRouter.Target };
+
+            if (!sources.TryToUndirected(out var sourcesUndirected) ||
+                !targets.TryToUndirected(out var targetsUndirected))
+            {
+                return oneToOneWeightRouter.Calculate(sources, targets);
+            }
+            else
+            {
+                return oneToOneWeightRouter.Calculate(sourcesUndirected, targetsUndirected);
+            }
+        }
+
     }
 }
