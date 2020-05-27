@@ -192,6 +192,20 @@ namespace Itinero
             return new Router(routerDb, settings);
         }
 
+        /// <summary>
+        /// Configure a router with the given profile.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="profile">The profile.</param>
+        /// <returns>A router.</returns>
+        public static IRouter Route(this RouterDb routerDb, Profile profile)
+        {
+            return routerDb.Route(new RoutingSettings()
+            {
+                Profile = profile
+            });
+        }
+
         internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
         {
             return new ProfileHandlerDefault(profile);

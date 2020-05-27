@@ -6,7 +6,7 @@ using Itinero.Data.Tiles;
 
 namespace Itinero.Data.Graphs
 {
-    public sealed class Graph
+    internal sealed class Graph
     {
         // The tile pointers index, a sparse array containing pointer t
         private readonly SparseArray<GraphTile> _tiles;

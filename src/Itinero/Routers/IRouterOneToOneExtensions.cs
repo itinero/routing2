@@ -1,5 +1,7 @@
 using System.Linq;
 using Itinero.Algorithms;
+using Itinero.Algorithms.DataStructures;
+using Itinero.Algorithms.Routes;
 
 namespace Itinero.Routers
 {
@@ -9,24 +11,33 @@ namespace Itinero.Routers
     public static class IRouterOneToOneExtensions
     {
         /// <summary>
-        /// Calculates the routes.
+        /// Calculates the path.
         /// </summary>
         /// <param name="oneToOneRouter">The router.</param>
-        /// <returns>The route.</returns>
-        public static Result<Route> Calculate(this IRouterOneToOne oneToOneRouter)
+        /// <returns>The path.</returns>
+        public static Result<Path> Path(this IRouterOneToOne oneToOneRouter)
         {
-            var sources = new []  { oneToOneRouter.Source };
-            var targets = new [] { oneToOneRouter.Target };
+            var sources = new[] {oneToOneRouter.Source};
+            var targets = new[] {oneToOneRouter.Target};
 
             if (!sources.TryToUndirected(out var sourcesUndirected) ||
                 !targets.TryToUndirected(out var targetsUndirected))
             {
                 return oneToOneRouter.Calculate(sources, targets).First().First();
             }
-            else
-            {
-                return oneToOneRouter.Calculate(sourcesUndirected, targetsUndirected).First().First();;
-            }
+
+            return oneToOneRouter.Calculate(sourcesUndirected, targetsUndirected).First().First();
+        }
+
+        /// <summary>
+        /// Calculates the route.
+        /// </summary>
+        /// <param name="oneToOneRouter">The router.</param>
+        /// <returns>The route.</returns>
+        public static Result<Route> Calculate(this IRouterOneToOne oneToOneRouter)
+        {
+            return RouteBuilder.Default.Build(oneToOneRouter.RouterDb, oneToOneRouter.Settings.Profile,
+                oneToOneRouter.Path(), true);
         }
         
         /// <summary>
@@ -34,23 +45,11 @@ namespace Itinero.Routers
         /// </summary>
         /// <param name="oneToOneWeightRouter">The router.</param>
         /// <returns>The weight</returns>
-        public static Result<double?[][]> Calculate(this IRouterWeights<IRouterOneToOne> oneToOneWeightRouter)
+        public static Result<double?> Calculate(this IRouterWeights<IRouterOneToOne> oneToOneWeightRouter)
         {
-            var oneToOneRouter = oneToOneWeightRouter.Router;
-            
-            var sources = new []  { oneToOneRouter.Source };
-            var targets = new [] { oneToOneRouter.Target };
-
-            if (!sources.TryToUndirected(out var sourcesUndirected) ||
-                !targets.TryToUndirected(out var targetsUndirected))
-            {
-                return oneToOneWeightRouter.Calculate(sources, targets);
-            }
-            else
-            {
-                return oneToOneWeightRouter.Calculate(sourcesUndirected, targetsUndirected);
-            }
+            var profileHandler = oneToOneWeightRouter.Router.RouterDb.GetProfileHandler(
+                oneToOneWeightRouter.Router.Settings.Profile);
+            return oneToOneWeightRouter.Router.Path().Weight(profileHandler.GetForwardWeight);
         }
-
     }
 }

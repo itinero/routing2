@@ -167,7 +167,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 {
                     Itinero.Logging.Logger.Log($"{nameof(TileParser)}.{nameof(AddOsmTile)}",
                         TraceEventType.Warning,
-                        $"A way was detected with <= 1 nodes.");
+                        $"Way {wayPairs.Key} has <= 1 nodes.");
                     continue;
                 }
 

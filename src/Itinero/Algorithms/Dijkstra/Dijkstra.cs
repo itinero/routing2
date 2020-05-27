@@ -25,7 +25,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path? Run(RouterDb routerDb, SnapPoint source, SnapPoint target,
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null,
+            Func<RouterDbEdgeEnumerator, double> getWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
             var paths = Run(routerDb, source, new[] {target}, getWeight, settled, queued);
@@ -40,7 +40,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// </summary>
         /// <returns>The path.</returns>
         public Path[] Run(RouterDb routerDb, SnapPoint source, IReadOnlyList<SnapPoint> targets,
-            Func<RouterDbEdgeEnumerator, uint> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
+            Func<RouterDbEdgeEnumerator, double> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             double GetWorst((uint pointer, double cost)[] targets)
             {
@@ -271,7 +271,7 @@ namespace Itinero.Algorithms.Dijkstra
                 if (bestTarget.pointer == uint.MaxValue) continue;
 
                 // build resulting path.
-                var path = new Path(routerDb.Network);
+                var path = new Path(routerDb);
                 var visit = _tree.GetVisit(bestTarget.pointer);
 
                 // path is at least two edges.

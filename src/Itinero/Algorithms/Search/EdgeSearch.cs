@@ -169,7 +169,7 @@ namespace Itinero.Algorithms.Search
         /// <returns>All edges that could potentially be relevant snapping points, not only the closest.</returns>
         public static IEnumerable<SnapPoint> SnapAllInBox(this RouterDb routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
-            Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null, bool nonOrthogonalEdges = false)
+            Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
         {
             var edges = new HashSet<EdgeId>();
             bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
@@ -201,7 +201,6 @@ namespace Itinero.Algorithms.Search
                 var length = 0.0;
                 using (var completeShapeEnumerator = completeShape.GetEnumerator())
                 {
-                    
                     completeShapeEnumerator.MoveNext();
                     var previous = completeShapeEnumerator.Current;
                     

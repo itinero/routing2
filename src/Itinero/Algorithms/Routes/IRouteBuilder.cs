@@ -9,8 +9,13 @@ namespace Itinero.Algorithms.Routes
     public interface IRouteBuilder
     {
         /// <summary>
-        /// Tries to build a route for the given profile/source/target and path.
+        /// Builds a route for the given path.
         /// </summary>
+        /// <param name="db">The router db.</param>
+        /// <param name="profile">The profile.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="forward">Forward flag.</param>
+        /// <returns>The route.</returns>
         Result<Route> Build(RouterDb db, Profile profile, Path path, bool forward = true);
     }
 }

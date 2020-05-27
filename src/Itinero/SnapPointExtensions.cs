@@ -101,7 +101,6 @@ namespace Itinero
             settings ??= new SnapPointSettings();
             settings.Profiles ??= new Profile[0];
 
-
             // calculate search box.
             var box = location.BoxAround(settings.MaxOffsetInMeter);
 

@@ -8,7 +8,7 @@ namespace Itinero.Data.Tiles
     /// <summary>
     /// An enumerator that enumerates all vertices in a tile range.
     /// </summary>
-    public class TileRangeVertexEnumerator : IEnumerator<VertexId>
+    internal class TileRangeVertexEnumerator : IEnumerator<VertexId>
     {
         private readonly Graph _graph;
         private readonly TileRange _tileRange;

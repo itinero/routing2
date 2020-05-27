@@ -104,7 +104,8 @@ namespace Itinero.Data.Graphs
         internal static void Decode(ulong encoded, out uint tileId, out uint localId)
         {
             tileId = (uint) (encoded >> 32);
-            localId = (uint) (encoded - ((ulong)tileId << 32));
+            var tileOffset = ((ulong) tileId) << 32;
+            localId = (uint) (encoded - tileOffset);
         }
 
         /// <summary>

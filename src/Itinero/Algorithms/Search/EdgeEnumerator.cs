@@ -6,7 +6,7 @@ namespace Itinero.Algorithms.Search
     /// <summary>
     /// An enumerator that enumerates all edges that have at least one vertex in a tile range.
     /// </summary>
-    public class EdgeEnumerator
+    internal class EdgeEnumerator
     {
         private readonly Graph.Enumerator _graphEnumerator;
         private readonly IEnumerator<VertexId> _vertexEnumerator;

@@ -319,7 +319,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 if (bestTarget.pointer == uint.MaxValue) continue;
 
                 // build resulting path.
-                var path = new Path(routerDb.Network);
+                var path = new Path(routerDb);
                 var visit = _tree.GetVisit(bestTarget.pointer);
 
                 // path is at least two edges.

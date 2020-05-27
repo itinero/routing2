@@ -41,13 +41,13 @@ namespace Itinero.Profiles.Handlers
         /// </summary>
         public abstract bool CanStop { get; }
 
-        internal uint GetForwardWeight(RouterDbEdgeEnumerator enumerator)
+        internal double GetForwardWeight(RouterDbEdgeEnumerator enumerator)
         {
             this.MoveTo(enumerator);
             return this.ForwardWeight;
         }
 
-        internal uint GetBackwardWeight(RouterDbEdgeEnumerator enumerator)
+        internal double GetBackwardWeight(RouterDbEdgeEnumerator enumerator)
         {
             this.MoveTo(enumerator);
             return this.ForwardWeight;

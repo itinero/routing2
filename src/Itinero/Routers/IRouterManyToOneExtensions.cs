@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Algorithms;
+using Itinero.Algorithms.DataStructures;
 using Itinero.Algorithms.Dijkstra;
 using Itinero.Algorithms.Routes;
 using Itinero.Data.Graphs;
@@ -14,11 +16,11 @@ namespace Itinero.Routers
     public static class IRouterManyToOneExtensions
     {
         /// <summary>
-        /// Calculates the routes.
+        /// Calculates the paths.
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
-        /// <returns></returns>
-        public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerOneToMany)
+        /// <returns>The paths.</returns>
+        public static IReadOnlyList<Result<Path>> Paths(this IRouterManyToOne routerOneToMany)
         {
             var sources = routerOneToMany.Sources;
             var target = routerOneToMany.Target;
@@ -30,7 +32,7 @@ namespace Itinero.Routers
                     sources,  new []{target});
                 if (routes == null) throw new Exception("Could not calculate routes.") ;
 
-                var manyToOne = new Result<Route>[sources.Count];
+                var manyToOne = new Result<Path>[sources.Count];
                 for (var s = 0; s < manyToOne.Length; s++)
                 {
                     manyToOne[s] = routes[s][0];
@@ -42,13 +44,36 @@ namespace Itinero.Routers
                 var routes = routerOneToMany.Calculate(sourcesUndirected, new [] {target.sp});
                 if (routes == null) throw new Exception("Could not calculate routes.");
 
-                var manyToOne = new Result<Route>[sources.Count];
+                var manyToOne = new Result<Path>[sources.Count];
                 for (var s = 0; s < manyToOne.Length; s++)
                 {
                     manyToOne[s] = routes[s][0];
                 }
                 return manyToOne;
             }
+        }
+        
+        /// <summary>
+        /// Calculates the routes.
+        /// </summary>
+        /// <param name="routerManyToOne">The router.</param>
+        /// <returns>The routes.</returns>
+        public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerManyToOne)
+        {
+            return routerManyToOne.Paths().Select(x => RouteBuilder.Default.Build(routerManyToOne.RouterDb,
+                routerManyToOne.Settings.Profile, x)).ToArray();
+        }
+        
+        /// <summary>
+        /// Calculates the weights.
+        /// </summary>
+        /// <param name="routerManyToOne">The router.</param>
+        /// <returns>The weights.</returns>
+        public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
+        {
+            var profileHandler = routerManyToOne.Router.RouterDb.GetProfileHandler(
+                routerManyToOne.Router.Settings.Profile);
+            return routerManyToOne.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();
         }
     }
 }

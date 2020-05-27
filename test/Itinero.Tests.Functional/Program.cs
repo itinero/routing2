@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Itinero.Geo;
 using Itinero.Geo.Directions;
 using Itinero.IO.Json.GeoJson;
+using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
@@ -35,13 +35,32 @@ namespace Itinero.Tests.Functional
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
             
-            // setup a router db with a routable tiles data provider.
+            // setup a router db with a local osm file.
             var routerDb = new RouterDb(new RouterDbConfiguration()
             {
                 Zoom = 14
             });
-            routerDb.UseRouteableTiles();
+            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+                "http://download.geofabrik.de/europe/luxembourg-latest.osm.pbf"));
+            routerDb.UseOsmData(new OsmSharp.Streams.PBFOsmStreamSource(osmStream));
+
+            var location1 = SnappingTest.Default.Run((routerDb, 6.142258644104003, 49.86815622289359,
+                bicycle));
+            var location2 = SnappingTest.Default.Run((routerDb, 6.151978969573975, 49.86843283237664,
+                bicycle));
+            var route = RouterOneToOneTest.Default.Run((routerDb, location1, location2, bicycle));
+            File.WriteAllText(Path.Combine("results", $"{nameof(location1)}-{nameof(location1)}.geojson"), 
+                route.ToGeoJson());
             
+            // setup a router db with a routable tiles data provider.
+            routerDb = new RouterDb(new RouterDbConfiguration()
+            {
+                Zoom = 14
+            });
+            routerDb.UseRouteableTiles(s =>
+            {
+                s.Url = "http://data1.anyways.eu/tiles/20200511-080000";
+            });
 
             var factor = bicycle.Factor(new [] {
                 ("highway", "pedestrian") });
@@ -113,7 +132,7 @@ namespace Itinero.Tests.Functional
                     $"Snapping parallel: zellik2");
             });
             
-            var route = RouterOneToOneTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
+            route = RouterOneToOneTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
                 $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
             route = RouterOneToOneTest.Default.Run((routerDb, zellik1, zellik2, bicycle),
                 $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);

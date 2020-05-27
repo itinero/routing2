@@ -13,18 +13,23 @@ namespace Itinero.Algorithms.DataStructures
     public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
     {
         private readonly List<(EdgeId edge, bool forward)> _edges;
-        private readonly Graph.Enumerator _graphEnumerator;
+        private readonly RouterDbEdgeEnumerator _edgeEnumerator;
 
         /// <summary>
         /// Creates a new empty path.
         /// </summary>
-        /// <param name="graph">The graph.</param>
-        public Path(Graph graph)
+        /// <param name="routerDb">The routerDb.</param>
+        public Path(RouterDb routerDb)
         {
-            _graphEnumerator = graph.GetEnumerator();
+            _edgeEnumerator = routerDb.GetEdgeEnumerator();
             
             _edges = new List<(EdgeId edge, bool forward)>();
         }
+
+        /// <summary>
+        /// Gets the router db.
+        /// </summary>
+        public RouterDb RouterDb => _edgeEnumerator.RouterDb;
 
         /// <summary>
         /// Gets the offset at the start of the path.
@@ -80,14 +85,14 @@ namespace Itinero.Algorithms.DataStructures
         /// <param name="first">The vertex that should occur first.</param>
         public void Append(EdgeId edge, VertexId first)
         {
-            if (!_graphEnumerator.MoveToEdge(edge))
+            if (!_edgeEnumerator.MoveToEdge(edge))
                 throw new Exception($"Edge does not exist.");
 
-            if (_graphEnumerator.From == first)
+            if (_edgeEnumerator.From == first)
             {
                 this.AppendInternal(edge, true);
             }
-            else if (_graphEnumerator.To == first)
+            else if (_edgeEnumerator.To == first)
             {
                 this.AppendInternal(edge, false);
             }
@@ -104,14 +109,14 @@ namespace Itinero.Algorithms.DataStructures
         /// <param name="last">The vertex that should occur last.</param>
         public void Prepend(EdgeId edge, VertexId last)
         {
-            if (!_graphEnumerator.MoveToEdge(edge)) 
+            if (!_edgeEnumerator.MoveToEdge(edge)) 
                 throw new Exception($"Edge does not exist.");
 
-            if (_graphEnumerator.From == last)
+            if (_edgeEnumerator.From == last)
             {
                 this.PrependInternal(edge, false);
             }
-            else if (_graphEnumerator.To == last)
+            else if (_edgeEnumerator.To == last)
             {
                 this.PrependInternal(edge, true);
             }
@@ -163,8 +168,8 @@ namespace Itinero.Algorithms.DataStructures
             if (_edges.Count > 0)
             { // there is a first edge.
                 var first = _edges[0];
-                _graphEnumerator.MoveToEdge(first.edge, first.forward);
-                builder.Append($"[{_graphEnumerator.From}]");
+                _edgeEnumerator.MoveToEdge(first.edge, first.forward);
+                builder.Append($"[{_edgeEnumerator.From}]");
                 builder.Append("->");
                 if (this.Offset1 != 0)
                 {
@@ -184,22 +189,22 @@ namespace Itinero.Algorithms.DataStructures
                         builder.Append(OffsetPer(this.Offset2, first.forward));
                     }
                     builder.Append("->");
-                    builder.Append($"[{_graphEnumerator.To}]");
+                    builder.Append($"[{_edgeEnumerator.To}]");
                     return builder.ToString();
                 }
                 builder.Append("->");
-                builder.Append($"[{_graphEnumerator.To}]");
+                builder.Append($"[{_edgeEnumerator.To}]");
             }
 
             for (var e = 1; e < _edges.Count - 1; e++)
             {
                 var edgeAndDirection = _edges[e];
-                _graphEnumerator.MoveToEdge(edgeAndDirection.edge, edgeAndDirection.forward);
+                _edgeEnumerator.MoveToEdge(edgeAndDirection.edge, edgeAndDirection.forward);
                 builder.Append("->");
                 builder.Append($"{edgeAndDirection.edge}");
                 builder.Append(edgeAndDirection.forward ? "F" : "B");
                 builder.Append("->");
-                builder.Append($"[{_graphEnumerator.To}]");
+                builder.Append($"[{_edgeEnumerator.To}]");
             }
 
             if (_edges.Count > 0)
@@ -213,9 +218,9 @@ namespace Itinero.Algorithms.DataStructures
                     builder.Append("-");
                     builder.Append(OffsetPer(this.Offset2, true));
                 }
-                _graphEnumerator.MoveToEdge(last.edge, last.forward);
+                _edgeEnumerator.MoveToEdge(last.edge, last.forward);
                 builder.Append("->");
-                builder.Append($"[{_graphEnumerator.To}]");
+                builder.Append($"[{_edgeEnumerator.To}]");
                 return builder.ToString();
             }
             
