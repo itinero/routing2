@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
-using Itinero.Data;
 using Itinero.Data.Events;
 using Itinero.Data.Graphs;
 
