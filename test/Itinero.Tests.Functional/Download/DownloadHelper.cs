@@ -16,7 +16,7 @@ namespace Itinero.Tests.Functional.Download
         /// </summary>
         /// <param name="url">The url.</param>
         /// <returns>An open stream for the content at the given url.</returns>
-        public static Stream Download(string url)
+        public static Stream? Download(string url)
         {
             var fileName = HttpUtility.UrlEncode(url) + ".tile.zip";
             fileName = Path.Combine(".", "cache", fileName);
@@ -28,19 +28,39 @@ namespace Itinero.Tests.Functional.Download
                 
             try
             {
-                var client = new HttpClient();
+                var handler = new HttpClientHandler {AllowAutoRedirect = false};
+
+                var client = new HttpClient(handler);
                 client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 var response = client.GetAsync(url);
-                if (response.Result.StatusCode == HttpStatusCode.NotFound)
+                switch (response.Result.StatusCode)
                 {
-                    return null;
+                    case HttpStatusCode.NotFound:
+                        return null;
+                    case HttpStatusCode.Moved:
+                    {
+                        return Download(response.Result.Headers.Location.ToString());
+                    }
+                    case HttpStatusCode.Redirect:
+                    {
+                        var uri = new Uri(url);
+                        Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Verbose, 
+                            $"Redirecting from {url}.");
+                        var redirected = new Uri($"{uri.Scheme}://{uri.Host}{response.Result.Headers.Location}");
+                        return Download(redirected.ToString());
+                    }
                 }
+
+                var temp = $"{Guid.NewGuid()}.temp";
                 using (var stream = response.GetAwaiter().GetResult().Content.ReadAsStreamAsync().GetAwaiter()
-                    .GetResult()) 
-                using (var fileStream = File.Open(fileName, FileMode.Create))
+                    .GetResult())
+                using (var fileStream = File.Open(temp, FileMode.Create))
                 {
                     stream.CopyTo(fileStream);    
                 }
+                
+                if (File.Exists(fileName)) File.Delete(fileName);
+                File.Move(temp, fileName);
                 
                 Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Verbose, 
                     $"Downloaded from {url}.");
