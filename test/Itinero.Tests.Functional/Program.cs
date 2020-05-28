@@ -59,7 +59,7 @@ namespace Itinero.Tests.Functional
             });
             routerDb.UseRouteableTiles(s =>
             {
-                s.Url = "http://data1.anyways.eu/tiles/20200511-080000";
+                s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
             });
 
             var factor = bicycle.Factor(new [] {
