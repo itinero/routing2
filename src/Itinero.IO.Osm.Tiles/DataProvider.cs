@@ -72,10 +72,10 @@ namespace Itinero.IO.Osm.Tiles
             // build the tile range.
             var tileRange = new TileRange(box, (int)_zoom);
 
-//            Parallel.ForEach(tileRange, (tile) =>
-//            {
-            foreach (var tile in tileRange)
+            Parallel.ForEach(tileRange, (tile) =>
             {
+            // foreach (var tile in tileRange)
+            // {
                 if (_loadedTiles.Contains(tile.LocalId)) return;
 
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
@@ -85,7 +85,7 @@ namespace Itinero.IO.Osm.Tiles
                 var parse = stream?.Parse(tile);
                 if (parse == null)
                 {
-                    continue;
+                    return;
                 }
 
                 lock (_loadedTiles)
@@ -94,9 +94,9 @@ namespace Itinero.IO.Osm.Tiles
 
                     _loadedTiles.Add(tile.LocalId);
                 }
-            }
+            // }
 
-            //});
+            });
         }
 
 //        /// <inheritdoc/>
