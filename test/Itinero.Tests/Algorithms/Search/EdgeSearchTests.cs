@@ -129,7 +129,7 @@ namespace Itinero.Tests.Algorithms.Search
             var edge3 = network.AddEdge(vertex5, vertex6);
 
             var snapPoints = network.SnapAllInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01), 
-                (4.798600673675537 + 0.01, 51.268748881579405 - 0.01))).ToList();
+                (4.798600673675537 + 0.01, 51.268748881579405 - 0.01)), nonOrthogonalEdges: false).ToList();
             Assert.True(snapPoints.Exists(x => x.EdgeId == edge1));
             Assert.True(snapPoints.Exists(x => x.EdgeId == edge2));
             Assert.False(snapPoints.Exists(x => x.EdgeId == edge3));
