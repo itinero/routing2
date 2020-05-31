@@ -12,34 +12,29 @@ namespace Itinero.Profiles.Handlers
         public abstract void MoveTo(RouterDbEdgeEnumerator enumerator);
         
         /// <summary>
+        /// Gets the length (in cm) for the current edge.
+        /// </summary>
+        public abstract uint Length { get; }
+        
+        /// <summary>
+        /// Gets the edge factor of the current edge.
+        /// </summary>
+        public abstract EdgeFactor EdgeFactor { get; }
+        
+        /// <summary>
         /// Gets the forward weight.
         /// </summary>
-        public abstract uint ForwardWeight { get; }
+        public uint ForwardWeight => this.EdgeFactor.ForwardFactor * this.Length;
         
         /// <summary>
         /// Gets the backward weight.
         /// </summary>
-        public abstract uint BackwardWeight { get; }
-        
-        /// <summary>
-        /// Gets the forward speed.
-        /// </summary>
-        public abstract uint ForwardSpeed { get; }
-        
-        /// <summary>
-        /// Gets the backward speed.
-        /// </summary>
-        public abstract uint BackwardSpeed { get; }
+        public uint BackwardWeight => this.EdgeFactor.BackwardFactor * this.Length;
 
         /// <summary>
         /// Returns true if the current edge can be accessed.
         /// </summary>
-        public virtual bool CanAccess => this.ForwardWeight > 0 || this.BackwardWeight > 0;
-        
-        /// <summary>
-        /// Gets the can stop flag.
-        /// </summary>
-        public abstract bool CanStop { get; }
+        public virtual bool CanAccess => this.EdgeFactor.BackwardFactor > 0 || this.EdgeFactor.ForwardFactor > 0;
 
         internal double GetForwardWeight(RouterDbEdgeEnumerator enumerator)
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Itinero.Data.Edges;
 using Itinero.Data.Events;
 using Itinero.Data.Graphs;
 
@@ -15,6 +16,7 @@ namespace Itinero
     public class RouterDb
     {
         private readonly Graph _network;
+        private readonly EdgeProfiles _edgeProfiles;
 
         /// <summary>
         /// Creates a new router db.
@@ -24,12 +26,15 @@ namespace Itinero
         {
             configuration ??= RouterDbConfiguration.Default;
 
+            _edgeProfiles = new EdgeProfiles();
             _network = new Graph(configuration.Zoom);
         }
 
         private RouterDb(Graph network)
         {
             _network = network;
+            
+            _edgeProfiles = new EdgeProfiles();
         }
 
         /// <summary>
@@ -66,6 +71,11 @@ namespace Itinero
         internal Graph Network => _network;
 
         /// <summary>
+        /// Gets the edge profiles handler.
+        /// </summary>
+        internal EdgeProfiles EdgeProfiles => _edgeProfiles;
+
+        /// <summary>
         /// Adds a new edge and returns its id.
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>
@@ -76,7 +86,9 @@ namespace Itinero
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)> shape = null, 
             IEnumerable<(string key, string value)> attributes = null)
         {
-            return _network.AddEdge(vertex1, vertex2, shape, attributes);
+            var edgeProfileId = attributes == null ? null : _edgeProfiles.Get(attributes);
+            
+            return _network.AddEdge(vertex1, vertex2, shape, attributes, edgeProfileId);
         }
 
         /// <summary>

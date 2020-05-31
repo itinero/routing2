@@ -11,8 +11,8 @@ namespace Itinero
     public class RouterDbEdgeEnumerator
     {
         private readonly RouterDb _routerDb;
-        private readonly Graph.Enumerator _enumerator;
-        private readonly EdgeEnumerator _edgeEnumerator;
+        private readonly Graph.Enumerator? _enumerator;
+        private readonly EdgeEnumerator? _edgeEnumerator;
 
         internal RouterDbEdgeEnumerator(RouterDb routerDb)
         {

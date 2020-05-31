@@ -44,7 +44,7 @@ namespace Itinero
                     profileHandler.MoveTo(eEnum);
 
                     var profileIsOk = profileHandler.CanAccess &&
-                                      (!this.CheckCanStopOn || profileHandler.CanStop);
+                                      (!this.CheckCanStopOn || profileHandler.EdgeFactor.CanStop);
 
                     if (this.AnyProfile && profileIsOk) return true;
 

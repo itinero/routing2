@@ -22,10 +22,7 @@ namespace Itinero.Profiles.Handlers
             _length = (uint)(enumerator.EdgeLength() * 100);
         }
 
-        public override uint ForwardWeight => _edgeFactor.ForwardFactor * _length;
-        public override uint BackwardWeight => _edgeFactor.ForwardFactor * _length;
-        public override uint ForwardSpeed  => _edgeFactor.ForwardSpeed;
-        public override uint BackwardSpeed => _edgeFactor.BackwardSpeed;
-        public override bool CanStop  => _edgeFactor.CanStop;
+        public override uint Length => _length;
+        public override EdgeFactor EdgeFactor => _edgeFactor;
     }
 }

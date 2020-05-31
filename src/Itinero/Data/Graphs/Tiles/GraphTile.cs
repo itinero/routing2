@@ -39,8 +39,6 @@ namespace Itinero.Data.Graphs.Tiles
             
             _pointers = new MemoryArray<uint>(0);
             _edges = new MemoryArray<byte>(0);
-            
-            
             _coordinates = new MemoryArray<byte>(0);
             _shapes = new MemoryArray<byte>(0);
             _attributes = new MemoryArray<byte>(0);
@@ -100,12 +98,13 @@ namespace Itinero.Data.Graphs.Tiles
         /// </summary>
         /// <param name="vertex1">The first vertex.</param>
         /// <param name="vertex2">The second vertex.</param>
-        /// <param name="shape">The shape."</param>
-        /// <param name="attributes">The attributes."</param>
-        /// <param name="edgeId">The edge id if this edge is a part of another tile.</param>
+        /// <param name="shape">The shape, if any.</param>
+        /// <param name="attributes">The attributes, if any.</param>
+        /// <param name="edgeId">The edge id if this edge is a part of another tile, if any.</param>
+        /// <param name="edgeProfileId">The edge profile id, if any.</param>
         /// <returns>The new edge id.</returns>
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null,
-            IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null)
+            IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeProfileId = null)
         {
             if (vertex1.TileId != _tileId)
             { // this is a special case, an edge is added that is not part of this tile.
@@ -163,6 +162,10 @@ namespace Itinero.Data.Graphs.Tiles
                 size = EncodeEdgeId(_nextEdgeId, edgeId.Value);
                 _nextEdgeId += size;
             }
+            
+            // write edge profile id.
+            size = (uint)_edges.SetDynamicUInt32Nullable(_nextEdgeId, edgeProfileId);
+            _nextEdgeId += size;
 
             // take care of shape if any.
             uint? shapePointer = null;
@@ -296,6 +299,11 @@ namespace Itinero.Data.Graphs.Tiles
             }
             
             return size;
+        }
+
+        internal uint DecodeEdgePointerId(uint location, out uint? edgeProfileId)
+        {
+            return (uint) _edges.GetDynamicInt32Nullable(location, out edgeProfileId);
         }
     }
 }
