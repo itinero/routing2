@@ -34,8 +34,8 @@ namespace Itinero.Profiles.Lua.Interop
 		/// <param name="enumType">Type of the enum.</param>
 		/// <param name="friendlyName">Name of the friendly.</param>
 		/// <exception cref="System.ArgumentException">enumType must be an enum!</exception>
-		public StandardEnumUserDataDescriptor(Type enumType, string friendlyName = null,
-			string[] names = null, object[] values = null, Type underlyingType = null)
+		public StandardEnumUserDataDescriptor(Type enumType, string? friendlyName = null,
+			string[]? names = null, object[]? values = null, Type? underlyingType = null)
 			: base(enumType, friendlyName)
 		{
 			if (!Framework.Do.IsEnum(enumType))

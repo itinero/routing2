@@ -664,8 +664,8 @@ namespace Itinero.Profiles.Lua.Execution.VM
 
 
 
-		private int Internal_ExecCall(int argsCount, int instructionPtr, CallbackFunction handler = null,
-			CallbackFunction continuation = null, bool thisCall = false, string debugText = null, DynValue unwindHandler = null)
+		private int Internal_ExecCall(int argsCount, int instructionPtr, CallbackFunction? handler = null,
+			CallbackFunction? continuation = null, bool thisCall = false, string? debugText = null, DynValue? unwindHandler = null)
 		{
 			DynValue fn = m_ValueStack.Peek(argsCount);
 			CallStackItemFlags flags = (thisCall ? CallStackItemFlags.MethodCall : CallStackItemFlags.None);

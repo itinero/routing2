@@ -58,7 +58,7 @@ namespace Itinero.Profiles.Lua
 		/// <typeparam name="T">The type to be registered</typeparam>
 		/// <param name="accessMode">The access mode (optional).</param>
 		/// <param name="friendlyName">Friendly name for the type (optional)</param>
-		public static IUserDataDescriptor RegisterType<T>(InteropAccessMode accessMode = InteropAccessMode.Default, string friendlyName = null)
+		public static IUserDataDescriptor RegisterType<T>(InteropAccessMode accessMode = InteropAccessMode.Default, string? friendlyName = null)
 		{
 			return TypeDescriptorRegistry.RegisterType_Impl(typeof(T), accessMode, friendlyName, null);
 		}
@@ -69,7 +69,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="type">The type to be registered</param>
 		/// <param name="accessMode">The access mode (optional).</param>
 		/// <param name="friendlyName">Friendly name for the type (optional)</param>
-		public static IUserDataDescriptor RegisterType(Type type, InteropAccessMode accessMode = InteropAccessMode.Default, string friendlyName = null)
+		public static IUserDataDescriptor RegisterType(Type type, InteropAccessMode accessMode = InteropAccessMode.Default, string? friendlyName = null)
 		{
 			return TypeDescriptorRegistry.RegisterType_Impl(type, accessMode, friendlyName, null);
 		}
@@ -82,7 +82,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="accessMode">The access mode.</param>
 		/// <param name="friendlyName">A friendly name for the descriptor.</param>
 		/// <returns></returns>
-		public static IUserDataDescriptor RegisterProxyType(IProxyFactory proxyFactory, InteropAccessMode accessMode = InteropAccessMode.Default, string friendlyName = null)
+		public static IUserDataDescriptor RegisterProxyType(IProxyFactory proxyFactory, InteropAccessMode accessMode = InteropAccessMode.Default, string? friendlyName = null)
 		{
 			return TypeDescriptorRegistry.RegisterProxyType_Impl(proxyFactory, accessMode, friendlyName);
 		}
@@ -96,7 +96,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="accessMode">The access mode.</param>
 		/// <param name="friendlyName">A friendly name for the descriptor.</param>
 		/// <returns></returns>
-		public static IUserDataDescriptor RegisterProxyType<TProxy, TTarget>(Func<TTarget, TProxy> wrapDelegate, InteropAccessMode accessMode = InteropAccessMode.Default, string friendlyName = null)
+		public static IUserDataDescriptor RegisterProxyType<TProxy, TTarget>(Func<TTarget, TProxy> wrapDelegate, InteropAccessMode accessMode = InteropAccessMode.Default, string? friendlyName = null)
 			where TProxy : class
 			where TTarget : class
 		{
@@ -140,7 +140,7 @@ namespace Itinero.Profiles.Lua
 		/// </summary>
 		/// <param name="asm">The assembly.</param>
 		/// <param name="includeExtensionTypes">if set to <c>true</c> extension types are registered to the appropriate registry.</param>
-		public static void RegisterAssembly(Assembly asm = null, bool includeExtensionTypes = false)
+		public static void RegisterAssembly(Assembly? asm = null, bool includeExtensionTypes = false)
 		{
 			if (asm == null)
 			{

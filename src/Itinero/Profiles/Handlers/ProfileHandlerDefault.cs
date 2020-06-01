@@ -22,7 +22,7 @@ namespace Itinero.Profiles.Handlers
             _length = (uint)(enumerator.EdgeLength() * 100);
         }
 
-        public override uint Length => _length;
+        protected override uint Length => _length;
         public override EdgeFactor EdgeFactor => _edgeFactor;
     }
 }

@@ -80,7 +80,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// <param name="scriptDataType">The script data type</param>
 		/// <param name="clrDataType">The CLR data type.</param>
 		/// <param name="converter">The converter, or null.</param>
-		public void SetScriptToClrCustomConversion(DataType scriptDataType, Type clrDataType, Func<DynValue, object> converter = null)
+		public void SetScriptToClrCustomConversion(DataType scriptDataType, Type clrDataType, Func<DynValue, object>? converter = null)
 		{
 			if ((int)scriptDataType > m_Script2Clr.Length)
 				throw new ArgumentException("scriptDataType");
@@ -118,7 +118,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// </summary>
 		/// <param name="clrDataType">The CLR data type.</param>
 		/// <param name="converter">The converter, or null.</param>
-		public void SetClrToScriptCustomConversion(Type clrDataType, Func<Script, object, DynValue> converter = null)
+		public void SetClrToScriptCustomConversion(Type clrDataType, Func<Script, object, DynValue>? converter = null)
 		{
 			if (converter == null)
 			{
@@ -136,7 +136,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// </summary>
 		/// <typeparam name="T">The CLR data type.</typeparam>
 		/// <param name="converter">The converter, or null.</param>
-		public void SetClrToScriptCustomConversion<T>(Func<Script, T, DynValue> converter = null)
+		public void SetClrToScriptCustomConversion<T>(Func<Script, T, DynValue>? converter = null)
 		{
 			SetClrToScriptCustomConversion(typeof(T), (s, o) => converter(s, (T)o));
 		}
@@ -157,7 +157,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// <param name="clrDataType">The CLR data type.</param>
 		/// <param name="converter">The converter, or null.</param>
 		[Obsolete("This method is deprecated. Use the overloads accepting functions with a Script argument.")]
-		public void SetClrToScriptCustomConversion(Type clrDataType, Func<object, DynValue> converter = null)
+		public void SetClrToScriptCustomConversion(Type clrDataType, Func<object, DynValue>? converter = null)
 		{
 			SetClrToScriptCustomConversion(clrDataType, (s, o) => converter(o));
 		}
@@ -168,7 +168,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// <typeparam name="T">The CLR data type.</typeparam>
 		/// <param name="converter">The converter, or null.</param>
 		[Obsolete("This method is deprecated. Use the overloads accepting functions with a Script argument.")]
-		public void SetClrToScriptCustomConversion<T>(Func<T, DynValue> converter = null)
+		public void SetClrToScriptCustomConversion<T>(Func<T, DynValue>? converter = null)
 		{
 			SetClrToScriptCustomConversion(typeof(T), o => converter((T)o));
 		}

@@ -558,7 +558,7 @@ namespace Itinero.Profiles.Lua.Tree
 		}
 
 
-		private Token CreateToken(TokenType tokenType, int fromLine, int fromCol, string text = null)
+		private Token CreateToken(TokenType tokenType, int fromLine, int fromCol, string? text = null)
 		{
 			Token t = new Token(tokenType, m_SourceId, fromLine, fromCol, m_Line, m_Col, m_PrevLineTo, m_PrevColTo)
 			{

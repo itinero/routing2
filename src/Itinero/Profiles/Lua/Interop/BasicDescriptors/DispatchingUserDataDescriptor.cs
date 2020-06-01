@@ -55,7 +55,7 @@ namespace Itinero.Profiles.Lua.Interop.BasicDescriptors
 		/// </summary>
 		/// <param name="type">The type this descriptor refers to.</param>
 		/// <param name="friendlyName">A friendly name for the type, or null.</param>
-		protected DispatchingUserDataDescriptor(Type type, string friendlyName = null)
+		protected DispatchingUserDataDescriptor(Type type, string? friendlyName = null)
 		{
 			Type = type;
 			Name = type.FullName;

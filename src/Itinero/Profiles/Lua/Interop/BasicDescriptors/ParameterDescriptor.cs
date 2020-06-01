@@ -63,7 +63,7 @@ namespace Itinero.Profiles.Lua.Interop.BasicDescriptors
 		/// <param name="isOut">if set to <c>true</c>, is an out param.</param>
 		/// <param name="isRef">if set to <c>true</c> is a ref param.</param>
 		/// <param name="isVarArgs">if set to <c>true</c> is variable arguments param.</param>
-		public ParameterDescriptor(string name, Type type, bool hasDefaultValue = false, object defaultValue = null, bool isOut = false,
+		public ParameterDescriptor(string name, Type type, bool hasDefaultValue = false, object? defaultValue = null, bool isOut = false,
 			bool isRef = false, bool isVarArgs = false)
 		{
 			Name = name;

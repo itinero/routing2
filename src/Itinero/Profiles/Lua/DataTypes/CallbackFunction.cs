@@ -30,7 +30,7 @@ namespace Itinero.Profiles.Lua
 		/// </summary>
 		/// <param name="callBack">The callback function to be called.</param>
 		/// <param name="name">The callback name, used in stacktraces, debugger, etc..</param>
-		public CallbackFunction(Func<ScriptExecutionContext, CallbackArguments, DynValue> callBack, string name = null)
+		public CallbackFunction(Func<ScriptExecutionContext, CallbackArguments, DynValue> callBack, string? name = null)
 		{
 			ClrCallback = callBack;
 			Name = name;
@@ -107,7 +107,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="accessMode">The access mode.</param>
 		/// <returns></returns>
 		/// <exception cref="System.ArgumentException">The method is not static.</exception>
-		public static CallbackFunction FromMethodInfo(Script script, System.Reflection.MethodInfo mi, object obj = null, InteropAccessMode accessMode = InteropAccessMode.Default)
+		public static CallbackFunction FromMethodInfo(Script script, System.Reflection.MethodInfo mi, object? obj = null, InteropAccessMode accessMode = InteropAccessMode.Default)
 		{
 			if (accessMode == InteropAccessMode.Default)
 				accessMode = m_DefaultAccessMode;

@@ -34,7 +34,7 @@ namespace Itinero.Profiles.Lua
 		/// </summary>
 		/// <param name="context">The context.</param>
 		/// <returns></returns>
-		public DynValue Evaluate(ScriptExecutionContext context = null)
+		public DynValue Evaluate(ScriptExecutionContext? context = null)
 		{
 			context = context ?? OwnerScript.CreateDynamicExecutionContext();
 

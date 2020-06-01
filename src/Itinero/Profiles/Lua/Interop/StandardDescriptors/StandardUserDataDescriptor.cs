@@ -23,7 +23,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// <param name="type">The type this descriptor refers to.</param>
 		/// <param name="accessMode">The interop access mode this descriptor uses for members access</param>
 		/// <param name="friendlyName">A human readable friendly name of the descriptor.</param>
-		public StandardUserDataDescriptor(Type type, InteropAccessMode accessMode, string friendlyName = null)
+		public StandardUserDataDescriptor(Type type, InteropAccessMode accessMode, string? friendlyName = null)
 			: base(type, friendlyName)
 		{
 			if (accessMode == InteropAccessMode.NoReflectionAllowed)

@@ -14,7 +14,7 @@ namespace Itinero.Profiles.Handlers
         /// <summary>
         /// Gets the length (in cm) for the current edge.
         /// </summary>
-        public abstract uint Length { get; }
+        protected abstract uint Length { get; }
         
         /// <summary>
         /// Gets the edge factor of the current edge.

@@ -325,7 +325,7 @@ namespace Itinero.Profiles.Lua.Interop
 				if (i == method.Parameters.Length - 1 && method.VarArgsArrayType != null)
 				{
 					int varargCnt = 0;
-					DynValue firstArg = null;
+					DynValue? firstArg = null;
 					int scoreBeforeVargars = totalScore;
 
 					// update score for varargs
@@ -347,7 +347,7 @@ namespace Itinero.Profiles.Lua.Interop
 					// check if exact-match
 					if (varargCnt == 1)
 					{
-						if (firstArg.Type == DataType.UserData && firstArg.UserData.Object != null)
+						if (firstArg != null && (firstArg.Type == DataType.UserData && firstArg.UserData.Object != null))
 						{
 							if (Framework.Do.IsAssignableFrom(method.VarArgsArrayType, firstArg.UserData.Object.GetType()))
 							{
@@ -438,7 +438,7 @@ namespace Itinero.Profiles.Lua.Interop
 		/// <param name="script">The script for which the callback must be generated.</param>
 		/// <param name="obj">The object (null for static).</param>
 		/// <returns></returns>
-		public CallbackFunction GetCallbackFunction(Script script, object obj = null)
+		public CallbackFunction GetCallbackFunction(Script script, object? obj = null)
 		{
 			return new CallbackFunction(GetCallback(script, obj), this.Name);
 		}

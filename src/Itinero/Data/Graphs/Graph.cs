@@ -8,8 +8,8 @@ namespace Itinero.Data.Graphs
 {
     internal sealed class Graph
     {
-        // The tile pointers index, a sparse array containing pointer t
-        private readonly SparseArray<GraphTile> _tiles;
+        private readonly SparseArray<(GraphTile tile, uint edgeTypesId)> _tiles;
+        private readonly GraphEdgeTypes _graphEdgeTypes;
 
         /// <summary>
         /// Creates a new graph.
@@ -19,14 +19,38 @@ namespace Itinero.Data.Graphs
         {
             Zoom = zoom;
 
-            _tiles = new SparseArray<GraphTile>(0);
+            _tiles = new SparseArray<(GraphTile tile, uint edgeTypesId)>(0);
+            _graphEdgeTypes = new GraphEdgeTypes();
         }
 
-        // TODO: make this internal because it exposes the internal data structure of the graph.
         /// <summary>
         /// Gets the zoom.
         /// </summary>
         public int Zoom { get; }
+
+        private uint _toEdgeTypeId = 0;
+        private Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? _toEdgeType;
+        
+        internal void SetEdgeTypeFunc(
+            Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> toEdgeType)
+        {
+            _toEdgeType = toEdgeType;
+            _toEdgeTypeId++;
+        }
+
+        internal GraphTile GetTile(uint tileId)
+        {
+            var (tile, edgeTypesId) = _tiles[tileId];
+            
+            // return tile when it's nice and up-to-date.
+            if (edgeTypesId == _toEdgeTypeId || _toEdgeType == null) return tile;
+            
+            // update the tile here!
+            tile = tile.ApplyNewEdgeTypeFunc(_graphEdgeTypes, _toEdgeType);
+            _tiles[tileId] = (tile, _toEdgeTypeId);
+
+            return tile;
+        }
 
         /// <summary>
         /// Adds a new vertex and returns its ID.
@@ -44,11 +68,11 @@ namespace Itinero.Data.Graphs
             _tiles.EnsureMinimumSize(localTileId);
             
             // get the tile (or create it).
-            var tile = _tiles[localTileId];
+            var (tile, _) = _tiles[localTileId];
             if (tile == null)
             {
                 tile = new GraphTile(this.Zoom, localTileId);
-                _tiles[localTileId] = tile;
+                _tiles[localTileId] = (tile, _toEdgeTypeId);
             }
 
             return tile.AddVertex(longitude, latitude);
@@ -72,7 +96,7 @@ namespace Itinero.Data.Graphs
                 latitude = default;
                 return false;
             }
-            var tile = _tiles[localTileId];
+            var (tile, _) = _tiles[localTileId];
             if (tile == null)
             {
                 longitude = default;
@@ -91,23 +115,44 @@ namespace Itinero.Data.Graphs
         /// <param name="vertex2">The second vertex.</param>
         /// <param name="attributes">The attributes.</param>
         /// <param name="shape">The shape points.</param>
-        /// <param name="edgeProfileId">The edge profile id, if any.</param>
         /// <returns>The edge id.</returns>
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
-            IEnumerable<(string key, string value)>? attributes = null, uint? edgeProfileId = null)
+            IEnumerable<(string key, string value)>? attributes = null)
         {
-            var tile = _tiles[vertex1.TileId];
+            var tile = this.GetTile(vertex1.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
             
-            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeProfileId);
+            // get edge type id.
+            uint? edgeTypeId = null;
+            if (attributes != null)
+            {
+                var edgeType = _toEdgeType?.Invoke(attributes);
+                if (edgeType != null)
+                {
+                    edgeTypeId = _graphEdgeTypes.Get(edgeType);
+                }
+            }
+
+            // add the edge.
+            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
             if (vertex1.TileId != vertex2.TileId)
             {
                 // this edge crosses tiles, also add an extra edge to the other tile.
-                tile = _tiles[vertex2.TileId];
-                tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeProfileId);
+                tile = this.GetTile(vertex2.TileId);         
+                tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId);
             }
             
             return edge1;
+        }
+
+        /// <summary>
+        /// Gets the attributes for the given edge type.
+        /// </summary>
+        /// <param name="edgeTypeId">The edge type id.</param>
+        /// <returns>The attributes for the given edge type.</returns>
+        public IEnumerable<(string key, string value)> GetEdgeType(uint edgeTypeId)
+        {
+            return _graphEdgeTypes.GetById(edgeTypeId);
         }
 
         /// <summary>
@@ -142,7 +187,7 @@ namespace Itinero.Data.Graphs
                 
                 // move to the tile.
                 if (_graph._tiles.Length <= vertex.TileId) return false;
-                var tile = _graph._tiles[vertex.TileId];
+                var tile = _graph.GetTile(vertex.TileId);
                 if (tile == null) return false;
                 _tileEnumerator.MoveTo(tile);
 
@@ -159,7 +204,7 @@ namespace Itinero.Data.Graphs
                 if (_tileEnumerator.TileId == edgeId.TileId) return _tileEnumerator.MoveTo(edgeId, forward);
                 
                 // move to the tile.
-                var tile = _graph._tiles[edgeId.TileId];
+                var tile = _graph.GetTile(edgeId.TileId);
                 if (tile == null) return false;
                 _tileEnumerator.MoveTo(tile);
 
@@ -222,9 +267,9 @@ namespace Itinero.Data.Graphs
             public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes;
 
             /// <summary>
-            /// Gets the edge profile id.
+            /// Gets the edge type id.
             /// </summary>
-            public uint? EdgeProfileId => _tileEnumerator.EdgeProfileId;
+            public uint? EdgeTypeId => _tileEnumerator.EdgeTypeId;
         }
     }
 }

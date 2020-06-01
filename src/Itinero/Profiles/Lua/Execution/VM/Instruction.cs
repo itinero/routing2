@@ -12,7 +12,7 @@ namespace Itinero.Profiles.Lua.Execution.VM
 		internal SymbolRef Symbol;
 		internal SymbolRef[] SymbolList;
 		internal string Name;
-		internal DynValue Value;
+		internal DynValue? Value;
 		internal int NumVal;
 		internal int NumVal2;
 		internal SourceRef SourceCodeRef;

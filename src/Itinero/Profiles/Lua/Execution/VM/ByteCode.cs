@@ -221,7 +221,7 @@ namespace Itinero.Profiles.Lua.Execution.VM
 			return AppendInstruction(new Instruction(m_CurrentSourceRef) { OpCode = OpCode.IterUpd });
 		}
 
-		public Instruction Emit_Meta(string funcName, OpCodeMetadataType metaType, DynValue value = null)
+		public Instruction Emit_Meta(string funcName, OpCodeMetadataType metaType, DynValue? value = null)
 		{
 			return AppendInstruction(new Instruction(m_CurrentSourceRef)
 			{
@@ -297,7 +297,7 @@ namespace Itinero.Profiles.Lua.Execution.VM
 			return AppendInstruction(new Instruction(m_CurrentSourceRef) { OpCode = OpCode.TblInitI, NumVal = lastpos ? 1 : 0 });
 		}
 
-		public Instruction Emit_Index(DynValue index = null, bool isNameIndex = false, bool isExpList = false)
+		public Instruction Emit_Index(DynValue? index = null, bool isNameIndex = false, bool isExpList = false)
 		{
 			OpCode o;
 			if (isNameIndex) o = OpCode.IndexN;
@@ -307,7 +307,7 @@ namespace Itinero.Profiles.Lua.Execution.VM
 			return AppendInstruction(new Instruction(m_CurrentSourceRef) { OpCode = o, Value = index });
 		}
 
-		public Instruction Emit_IndexSet(int stackofs, int tupleidx, DynValue index = null, bool isNameIndex = false, bool isExpList = false)
+		public Instruction Emit_IndexSet(int stackofs, int tupleidx, DynValue? index = null, bool isNameIndex = false, bool isExpList = false)
 		{
 			OpCode o;
 			if (isNameIndex) o = OpCode.IndexSetN;

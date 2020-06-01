@@ -11,7 +11,7 @@ namespace Itinero.Profiles.Lua.Interop
 		IUserDataDescriptor m_ProxyDescriptor;
 		IProxyFactory m_ProxyFactory;
 
-		internal ProxyUserDataDescriptor(IProxyFactory proxyFactory, IUserDataDescriptor proxyDescriptor, string friendlyName = null)
+		internal ProxyUserDataDescriptor(IProxyFactory proxyFactory, IUserDataDescriptor proxyDescriptor, string? friendlyName = null)
 		{
 			m_ProxyFactory = proxyFactory;
 			Name = friendlyName ?? (proxyFactory.TargetType.Name + "::proxy");

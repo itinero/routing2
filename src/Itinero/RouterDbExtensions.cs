@@ -204,23 +204,7 @@ namespace Itinero
 
         internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
         {
-            var edgeProfiles = routerDb.EdgeProfiles;
-            if (edgeProfiles.AppliesTo(profile))
-            {
-                
-            }
-            
             return new ProfileHandlerDefault(profile);
-        }
-
-        /// <summary>
-        /// Prepares the router db for use with the given profile.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="profile">The profile.</param>
-        public static void PrepareFor(this RouterDb routerDb, Profile profile)
-        {
-            routerDb.EdgeProfiles.Apply(profile);
         }
     }
 }

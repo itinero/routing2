@@ -25,7 +25,7 @@ namespace Itinero.Profiles.Lua.Interop.UserDataRegistries
 		/// </summary>
 		/// <param name="asm">The assembly.</param>
 		/// <param name="includeExtensionTypes">if set to <c>true</c> extension types are registered to the appropriate registry.</param>
-		internal static void RegisterAssembly(Assembly asm = null, bool includeExtensionTypes = false)
+		internal static void RegisterAssembly(Assembly? asm = null, bool includeExtensionTypes = false)
 		{
 			if (asm == null)
 			{
@@ -123,7 +123,7 @@ namespace Itinero.Profiles.Lua.Interop.UserDataRegistries
 		/// <param name="accessMode">The access mode.</param>
 		/// <param name="friendlyName">Name of the friendly.</param>
 		/// <returns></returns>
-		internal static IUserDataDescriptor RegisterProxyType_Impl(IProxyFactory proxyFactory, InteropAccessMode accessMode, string friendlyName)
+		internal static IUserDataDescriptor RegisterProxyType_Impl(IProxyFactory proxyFactory, InteropAccessMode accessMode, string? friendlyName)
 		{
 			IUserDataDescriptor proxyDescriptor = RegisterType_Impl(proxyFactory.ProxyType, accessMode, friendlyName, null);
 			return RegisterType_Impl(proxyFactory.TargetType, accessMode, friendlyName, new ProxyUserDataDescriptor(proxyFactory, proxyDescriptor, friendlyName));
@@ -138,13 +138,13 @@ namespace Itinero.Profiles.Lua.Interop.UserDataRegistries
 		/// <param name="friendlyName">Friendly name of the descriptor.</param>
 		/// <param name="descriptor">The descriptor, or null to use a default one.</param>
 		/// <returns></returns>
-		internal static IUserDataDescriptor RegisterType_Impl(Type type, InteropAccessMode accessMode, string friendlyName, IUserDataDescriptor descriptor)
+		internal static IUserDataDescriptor? RegisterType_Impl(Type type, InteropAccessMode accessMode, string? friendlyName, IUserDataDescriptor? descriptor)
 		{
 			accessMode = ResolveDefaultAccessModeForType(accessMode, type);
 
 			lock (s_Lock)
 			{
-				IUserDataDescriptor oldDescriptor = null;
+				IUserDataDescriptor? oldDescriptor = null;
 				s_TypeRegistry.TryGetValue(type, out oldDescriptor);
 
 				if (descriptor == null)

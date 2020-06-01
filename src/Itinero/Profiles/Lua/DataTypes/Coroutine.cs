@@ -252,7 +252,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="skip">The skip.</param>
 		/// <param name="entrySourceRef">The entry source reference.</param>
 		/// <returns></returns>
-		public WatchItem[] GetStackTrace(int skip, SourceRef entrySourceRef = null)
+		public WatchItem[] GetStackTrace(int skip, SourceRef? entrySourceRef = null)
 		{
 			if (this.State != CoroutineState.Running)
 			{

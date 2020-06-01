@@ -115,7 +115,7 @@ namespace Itinero.Profiles.Lua
 		/// <returns>
 		/// A DynValue containing a function which will execute the loaded code.
 		/// </returns>
-		public DynValue LoadFunction(string code, Table globalTable = null, string funcFriendlyName = null)
+		public DynValue LoadFunction(string code, Table? globalTable = null, string? funcFriendlyName = null)
 		{
 			this.CheckScriptOwnership(globalTable);
 
@@ -159,7 +159,7 @@ namespace Itinero.Profiles.Lua
 		/// <returns>
 		/// A DynValue containing a function which will execute the loaded code.
 		/// </returns>
-		public DynValue LoadString(string code, Table globalTable = null, string codeFriendlyName = null)
+		public DynValue LoadString(string code, Table? globalTable = null, string? codeFriendlyName = null)
 		{
 			this.CheckScriptOwnership(globalTable);
 
@@ -323,7 +323,7 @@ namespace Itinero.Profiles.Lua
 		/// <returns>
 		/// A DynValue containing the result of the processing of the loaded chunk.
 		/// </returns>
-		public DynValue DoString(string code, Table globalContext = null, string codeFriendlyName = null)
+		public DynValue DoString(string code, Table? globalContext = null, string? codeFriendlyName = null)
 		{
 			DynValue func = LoadString(code, globalContext, codeFriendlyName);
 			return Call(func);
@@ -390,7 +390,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="address">The address.</param>
 		/// <param name="envTable">The env table to create a 0-upvalue</param>
 		/// <returns></returns>
-		private DynValue MakeClosure(int address, Table envTable = null)
+		private DynValue MakeClosure(int address, Table? envTable = null)
 		{
 			this.CheckScriptOwnership(envTable);
 			Closure c;
@@ -617,7 +617,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="globalContext">The global context.</param>
 		/// <returns></returns>
 		/// <exception cref="ScriptRuntimeException">Raised if module is not found</exception>
-		public DynValue RequireModule(string modname, Table globalContext = null)
+		public DynValue RequireModule(string modname, Table? globalContext = null)
 		{
 			this.CheckScriptOwnership(globalContext);
 
@@ -706,7 +706,7 @@ namespace Itinero.Profiles.Lua
 		/// those cases where the execution engine is not really running - for example for dynamic expression
 		/// or calls from CLR to CLR callbacks
 		/// </summary>
-		internal ScriptExecutionContext CreateDynamicExecutionContext(CallbackFunction func = null)
+		internal ScriptExecutionContext CreateDynamicExecutionContext(CallbackFunction? func = null)
 		{
 			return new ScriptExecutionContext(m_MainProcessor, func, null, isDynamic: true);
 		}
@@ -728,7 +728,7 @@ namespace Itinero.Profiles.Lua
 		/// <summary>
 		/// Gets a banner string with copyright info, link to website, version, etc.
 		/// </summary>
-		public static string GetBanner(string subproduct = null)
+		public static string GetBanner(string? subproduct = null)
 		{
 			subproduct = (subproduct != null) ? (subproduct + " ") : "";
 

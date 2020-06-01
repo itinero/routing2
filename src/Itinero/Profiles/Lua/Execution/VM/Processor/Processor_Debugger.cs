@@ -356,7 +356,7 @@ namespace Itinero.Profiles.Lua.Execution.VM
 			}
 		}
 
-		internal List<WatchItem> Debugger_GetCallStack(SourceRef startingRef)
+		internal List<WatchItem> Debugger_GetCallStack(SourceRef? startingRef)
 		{
 			List<WatchItem> wis = new List<WatchItem>();
 

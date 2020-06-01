@@ -111,7 +111,7 @@ namespace Itinero.Data.Graphs.Tiles
             // get edge profile id.
             size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
             _nextEdgePointer += size;
-            this.EdgeProfileId = edgeProfileId;
+            this.EdgeTypeId = edgeProfileId;
             
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
@@ -202,9 +202,9 @@ namespace Itinero.Data.Graphs.Tiles
             }
             
             // get edge profile id.
-            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeTypeId);
             _nextEdgePointer += size;
-            this.EdgeProfileId = edgeProfileId;
+            this.EdgeTypeId = edgeTypeId;
             
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
@@ -282,6 +282,6 @@ namespace Itinero.Data.Graphs.Tiles
         /// <summary>
         /// Gets the edge profile id.
         /// </summary>
-        public uint? EdgeProfileId { get; private set; }
+        public uint? EdgeTypeId { get; private set; }
     }
 }

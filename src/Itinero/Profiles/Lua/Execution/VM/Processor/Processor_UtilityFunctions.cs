@@ -76,7 +76,7 @@ namespace Itinero.Profiles.Lua.Execution.VM
 				return -1;
 			}
 		}
-		private int Internal_InvokeBinaryMetaMethod(DynValue l, DynValue r, string eventName, int instructionPtr, DynValue extraPush = null)
+		private int Internal_InvokeBinaryMetaMethod(DynValue l, DynValue r, string? eventName, int instructionPtr, DynValue? extraPush = null)
 		{
 			var m = GetBinaryMetamethod(l, r, eventName);
 

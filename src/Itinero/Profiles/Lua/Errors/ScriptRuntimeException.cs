@@ -63,7 +63,7 @@ namespace Itinero.Profiles.Lua
 		/// <param name="r">The right operand (or null).</param>
 		/// <returns>The exception to be raised.</returns>
 		/// <exception cref="InternalErrorException">If both are numbers</exception>
-		public static ScriptRuntimeException ArithmeticOnNonNumber(DynValue l, DynValue r = null)
+		public static ScriptRuntimeException ArithmeticOnNonNumber(DynValue l, DynValue? r = null)
 		{
 			if (l.Type != DataType.Number && l.Type != DataType.String)
 				return new ScriptRuntimeException("attempt to perform arithmetic on a {0} value", l.Type.ToLuaTypeString());
@@ -473,9 +473,9 @@ namespace Itinero.Profiles.Lua
 		/// <param name="type">The lua non-function data type.</param>
 		/// <param name="debugText">The debug text to aid location (appears as "near 'xxx'").</param>
 		/// <returns></returns>
-		public static ScriptRuntimeException AttemptToCallNonFunc(DataType type, string debugText = null)
+		public static ScriptRuntimeException AttemptToCallNonFunc(DataType type, string? debugText = null)
 		{
-			string functype = type.ToErrorTypeString();
+			string? functype = type.ToErrorTypeString();
 
 			if (debugText != null)
 				return new ScriptRuntimeException("attempt to call a {0} value near '{1}'", functype, debugText);

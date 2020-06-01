@@ -51,7 +51,7 @@ namespace Itinero.Profiles.Lua.Interop
 		public ReflectionSpecialNameType Type { get; private set; }
 		public string Argument { get; private set; }
 
-		public ReflectionSpecialName(ReflectionSpecialNameType type, string argument = null)
+		public ReflectionSpecialName(ReflectionSpecialNameType type, string? argument = null)
 			: this()
 		{
 			Type = type;

@@ -269,10 +269,10 @@ namespace Itinero.Profiles.Lua.Interop
 		}
 
 		private void DispatchEvent(object sender, 
-			object o01 = null, object o02 = null, object o03 = null, object o04 = null,
-			object o05 = null, object o06 = null, object o07 = null, object o08 = null,
-			object o09 = null, object o10 = null, object o11 = null, object o12 = null,
-			object o13 = null, object o14 = null, object o15 = null, object o16 = null)
+			object? o01 = null, object? o02 = null, object? o03 = null, object? o04 = null,
+			object? o05 = null, object? o06 = null, object? o07 = null, object? o08 = null,
+			object? o09 = null, object? o10 = null, object? o11 = null, object? o12 = null,
+			object? o13 = null, object? o14 = null, object? o15 = null, object? o16 = null)
 		{
 			Closure[] closures = null;
 			lock (m_Lock)
