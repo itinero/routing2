@@ -3,7 +3,7 @@
 namespace Itinero.Data.Tiles
 {
     // TODO: do we get rid of this or internalize it.
-    public class Tile
+    internal class Tile
     {
         public Tile(uint x, uint y, int zoom)
         {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Itinero.Data.Tiles
 {
-    public struct TileRange : IEnumerable<Tile>
+    internal struct TileRange : IEnumerable<Tile>
     {
         public TileRange(((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, int zoom)
         {
