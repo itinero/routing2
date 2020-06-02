@@ -44,8 +44,6 @@ namespace Itinero.Tests.Functional.Download
                     case HttpStatusCode.Redirect:
                     {
                         var uri = new Uri(url);
-                        Itinero.Logging.Logger.Log(nameof(DownloadHelper), TraceEventType.Verbose, 
-                            $"Redirecting from {url}.");
                         var redirected = new Uri($"{uri.Scheme}://{uri.Host}{response.Result.Headers.Location}");
                         return Download(redirected.ToString());
                     }

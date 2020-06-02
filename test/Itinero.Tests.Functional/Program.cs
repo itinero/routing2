@@ -125,6 +125,10 @@ namespace Itinero.Tests.Functional
                 $"Snapping cold: brugge-station");
             var stationDuinberge = SnappingTest.Default.Run((latest, 3.26358318328857, 51.3381990351222, profile: bicycle),
                 $"Snapping cold: duinberge");
+            var lesotho1 = SnappingTest.Default.Run((latest, 27.449684143066406, -30.147205394735842, profile: bicycle),
+                $"Snapping cold: lesotho1");
+            var lesotho2 = SnappingTest.Default.Run((latest, 27.464404106140133, -30.153625306867017, profile: bicycle),
+                $"Snapping cold: lesotho2");
 
             Parallel.For(0, 10, (i) =>
             {
@@ -133,6 +137,13 @@ namespace Itinero.Tests.Functional
                 SnappingTest.Default.Run((latest, 4.275886416435242, 50.88336336674239, profile: bicycle),
                     $"Snapping parallel: zellik2");
             });
+            
+            route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
+                $"Route cold: {nameof(lesotho1)} -> {nameof(lesotho2)}");
+            route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
+                $"Route hot: {nameof(lesotho1)} -> {nameof(lesotho2)}", 10);
+            File.WriteAllText(Path.Combine("results", $"{nameof(lesotho1)}-{nameof(lesotho2)}.geojson"), 
+                route.ToGeoJson());
             
             route = RouterOneToOneTest.Default.Run((latest, zellik1, zellik2, bicycle),
                 $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
