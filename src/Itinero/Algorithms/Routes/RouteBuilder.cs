@@ -17,7 +17,7 @@ namespace Itinero.Algorithms.Routes
         /// <param name="path">The path.</param>
         /// <param name="forward">The forward flag.</param>
         /// <returns>The route.</returns>
-        public Result<Route> Build(RouterDbInstance db, Profile profile, Path path, bool forward = true)
+        public Result<Route> Build(Network db, Profile profile, Path path, bool forward = true)
         {
             var edgeEnumerator = db.GetEdgeEnumerator();
             var route = new Route {Profile = profile.Name};

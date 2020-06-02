@@ -5,7 +5,13 @@ using Itinero.Data.Graphs;
 namespace Itinero
 {
     /// <summary>
-    /// Writes to a router db by creating a new instance. This writer can change (update or delete) existing data on top of adding.
+    /// Writes to a router db by creating a new instance.
+    ///
+    /// This writer can:
+    /// - mutate the network (update or delete) data.
+    /// - add new data to the network.
+    ///
+    /// The data can only be used for routing after the data has been fully written.
     /// </summary>
     public class RouterDbWriter : IDisposable
     {
@@ -14,6 +20,10 @@ namespace Itinero
         internal RouterDbWriter(RouterDb routerDb)
         {
             _routerDb = routerDb;
+
+            // make a copy of the latest network to write to.
+            var latest = routerDb.Latest;
+            
         }
         
         // TODO: implement all the writing/updating functionality and what not.
@@ -61,7 +71,7 @@ namespace Itinero
 
     internal interface IRouterDbWritable
     {
-        void SetLatest(RouterDbInstance latest);
+        void SetLatest(Network latest);
 
         void ClearWriter();
     }

@@ -29,7 +29,7 @@ namespace Itinero
         /// </summary>
         public double MaxOffsetInMeter { get; set; } = 1000;
 
-        internal Func<RouterDbEdgeEnumerator, bool> AcceptableFunc(RouterDbInstance routerDb)
+        internal Func<NetworkEdgeEnumerator, bool> AcceptableFunc(Network routerDb)
         {
             var hasProfiles = this.Profiles != null && this.Profiles.Length > 0;
 

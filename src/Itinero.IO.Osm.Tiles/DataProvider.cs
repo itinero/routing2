@@ -36,7 +36,7 @@ namespace Itinero.IO.Osm.Tiles
             _routerDb.UsageNotifier.OnBoxTouched += TouchBox;
         }
 
-        internal void VertexTouched(RouterDbInstance routerDbInstance, VertexId vertexId)
+        internal void VertexTouched(Network network, VertexId vertexId)
         {
             if (_loadedTiles.Contains(vertexId.TileId))
             {
@@ -65,7 +65,7 @@ namespace Itinero.IO.Osm.Tiles
                 }
 
                 // add the data from the tile.
-                using (var routerDbInstanceWriter = routerDbInstance.GetWriter())
+                using (var routerDbInstanceWriter = network.GetWriter())
                 {
                     routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
                 }
@@ -73,7 +73,7 @@ namespace Itinero.IO.Osm.Tiles
             }
         }
 
-        internal void TouchBox(RouterDbInstance routerDbInstance, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+        internal void TouchBox(Network network, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             // build the tile range.
             var tileRange = new TileRange(box, (int)_zoom);
@@ -95,7 +95,7 @@ namespace Itinero.IO.Osm.Tiles
                 lock (_loadedTiles)
                 {
                     // add the data from the tile.
-                    using (var routerDbInstanceWriter = routerDbInstance.GetWriter())
+                    using (var routerDbInstanceWriter = network.GetWriter())
                     {
                         routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
                     }

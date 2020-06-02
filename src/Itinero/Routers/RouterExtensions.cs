@@ -9,7 +9,7 @@ namespace Itinero.Routers
     internal static class RouterExtensions
     {
         internal static (SnapPoint snapPoint, bool? direction) ToDirected(
-            this (SnapPoint snapPoint, DirectionEnum? angle) snapPointAndDirection, RouterDbInstance routerDb)
+            this (SnapPoint snapPoint, DirectionEnum? angle) snapPointAndDirection, Network routerDb)
         {
             if (snapPointAndDirection.angle == null) return (snapPointAndDirection.snapPoint, null);
             return (snapPointAndDirection.snapPoint,
@@ -17,13 +17,13 @@ namespace Itinero.Routers
         }
         
         internal static (SnapPoint snapPoint, bool? direction) ToDirected(
-            this (SnapPoint snapPoint, double angle) snapPointAndDirection, RouterDbInstance routerDb)
+            this (SnapPoint snapPoint, double angle) snapPointAndDirection, Network routerDb)
         {
             return (snapPointAndDirection.snapPoint,
                 snapPointAndDirection.snapPoint.DirectionFromAngle(routerDb, snapPointAndDirection.angle, out _));
         }
         
-        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? directionEnum)> sps, RouterDbInstance routerDb)
+        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? directionEnum)> sps, Network routerDb)
         {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
             foreach (var sp in sps)
@@ -34,7 +34,7 @@ namespace Itinero.Routers
             return directedSps;
         }
         
-        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<(SnapPoint snapPoint, double angle)> sps, RouterDbInstance routerDb)
+        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<(SnapPoint snapPoint, double angle)> sps, Network routerDb)
         {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
             foreach (var sp in sps)
@@ -90,13 +90,13 @@ namespace Itinero.Routers
 
         internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)?
             MaxBoxFor(this RoutingSettings settings,
-                RouterDbInstance routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sps)
+                Network routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sps)
         {
             return settings.MaxBoxFor(routerDb, sps.Select(x => x.sp));
         }
 
         internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? MaxBoxFor(this RoutingSettings settings, 
-            RouterDbInstance routerDb, IEnumerable<SnapPoint> sp)
+            Network routerDb, IEnumerable<SnapPoint> sp)
         {
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
                 null;

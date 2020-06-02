@@ -43,7 +43,7 @@ namespace Itinero.Routers
             var paths = manyToManyRouter.Paths();
             return paths.Select(x =>
             {
-                return x.Select(y => RouteBuilder.Default.Build(manyToManyRouter.RouterDb, manyToManyRouter.Settings.Profile, y)).ToArray();
+                return x.Select(y => RouteBuilder.Default.Build(manyToManyRouter.Network, manyToManyRouter.Settings.Profile, y)).ToArray();
             }).ToArray();
         }
 
@@ -55,7 +55,7 @@ namespace Itinero.Routers
         /// <exception cref="Exception"></exception>
         public static Result<IReadOnlyList<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter)
         {
-            var profileHandler = manyToManyWeightRouter.Router.RouterDb.GetProfileHandler(
+            var profileHandler = manyToManyWeightRouter.Router.Network.GetProfileHandler(
                 manyToManyWeightRouter.Router.Settings.Profile);
             var paths = manyToManyWeightRouter.Router.Paths();
             return paths.Select(x =>

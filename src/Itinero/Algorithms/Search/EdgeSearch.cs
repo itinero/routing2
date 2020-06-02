@@ -11,28 +11,28 @@ namespace Itinero.Algorithms.Search
         /// <summary>
         /// Enumerates all edges that have at least one vertex in the given bounding box.
         /// </summary>
-        /// <param name="routerDb">The router db.</param>
+        /// <param name="network">The network.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDbInstance routerDb, 
+        public static NetworkEdgeEnumerator SearchEdgesInBox(this Network network, 
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
-            var vertices = routerDb.Network.SearchVerticesInBox(box);
-            return new RouterDbEdgeEnumerator(routerDb, new EdgeEnumerator(routerDb.Network, vertices.Select((i) => i.vertex)));
+            var vertices = network.Graph.SearchVerticesInBox(box);
+            return new NetworkEdgeEnumerator(network, new EdgeEnumerator(network.Graph, vertices.Select((i) => i.vertex)));
         }
 
         /// <summary>
         /// Returns the closest edge to the center of the given box that has at least one vertex inside the given box.
         /// </summary>
-        /// <param name="routerDb">The router db.</param>
+        /// <param name="network">The network.</param>
         /// <param name="box">The box.</param>
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
-        public static SnapPoint SnapInBox(this RouterDbInstance routerDb,
+        public static SnapPoint SnapInBox(this Network network,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
-            Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null)
+            Func<NetworkEdgeEnumerator, bool>? acceptableFunc = null)
         {
-            bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
+            bool CheckAcceptable(bool? isAcceptable, NetworkEdgeEnumerator eEnum)
             {
                 if (isAcceptable.HasValue) return isAcceptable.Value;
                 
@@ -45,7 +45,7 @@ namespace Itinero.Algorithms.Search
                 return true;
             }
             
-            var edgeEnumerator = routerDb.SearchEdgesInBox(box);
+            var edgeEnumerator = network.SearchEdgesInBox(box);
             var center = box.Center();
 
             const double exactTolerance = 1;
@@ -167,12 +167,12 @@ namespace Itinero.Algorithms.Search
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <param name="nonOrthogonalEdges">When true the best potential location on each edge is returned, when false only orthogonal projected points.</param>
         /// <returns>All edges that could potentially be relevant snapping points, not only the closest.</returns>
-        public static IEnumerable<SnapPoint> SnapAllInBox(this RouterDbInstance routerDb,
+        public static IEnumerable<SnapPoint> SnapAllInBox(this Network routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
-            Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
+            Func<NetworkEdgeEnumerator, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
         {
             var edges = new HashSet<EdgeId>();
-            bool CheckAcceptable(bool? isAcceptable, RouterDbEdgeEnumerator eEnum)
+            bool CheckAcceptable(bool? isAcceptable, NetworkEdgeEnumerator eEnum)
             {
                 if (isAcceptable.HasValue) return isAcceptable.Value;
                 

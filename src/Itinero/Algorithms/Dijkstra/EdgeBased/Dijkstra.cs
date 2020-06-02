@@ -20,31 +20,22 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
         private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new HashSet<(EdgeId edgeId, VertexId vertexId)>();
         private readonly BinaryHeap<uint> _heap = new BinaryHeap<uint>();
 
-
-        /// <summary>
-        /// Calculates a path.
-        /// </summary>
-        /// <returns>The path.</returns>
-        public Path? Run(RouterDbInstance routerDb, (SnapPoint sp, bool? direction) source,
+        public Path? Run(Network network, (SnapPoint sp, bool? direction) source,
             (SnapPoint sp, bool? direction) target,
-            Func<RouterDbEdgeEnumerator, double> getWeight,
+            Func<NetworkEdgeEnumerator, double> getWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
         {
-            var paths = Run(routerDb, source, new[] {target}, getWeight, settled, queued);
+            var paths = Run(network, source, new[] {target}, getWeight, settled, queued);
             if (paths == null) return null;
             if (paths.Length < 1) return null;
 
             return paths[0];
         }
 
-        /// <summary>
-        /// Calculates a path.
-        /// </summary>
-        /// <returns>The path.</returns>
-        public Path[] Run(RouterDbInstance routerDb, (SnapPoint sp, bool? direction) source,
+        public Path[] Run(Network network, (SnapPoint sp, bool? direction) source,
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
-            Func<RouterDbEdgeEnumerator, double> getWeight,
+            Func<NetworkEdgeEnumerator, double> getWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
         {
@@ -62,7 +53,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 return worst;
             }
             
-            var enumerator = routerDb.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             var paths = new Path[targets.Count];
 
             _tree.Clear();
@@ -319,7 +310,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 if (bestTarget.pointer == uint.MaxValue) continue;
 
                 // build resulting path.
-                var path = new Path(routerDb);
+                var path = new Path(network);
                 var visit = _tree.GetVisit(bestTarget.pointer);
 
                 // path is at least two edges.

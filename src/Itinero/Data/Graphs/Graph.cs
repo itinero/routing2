@@ -21,7 +21,6 @@ namespace Itinero.Data.Graphs
             _tiles = new SparseArray<GraphTile>(0);
         }
 
-        // TODO: make this internal because it exposes the internal data structure of the graph.
         /// <summary>
         /// Gets the zoom.
         /// </summary>
@@ -38,10 +37,10 @@ namespace Itinero.Data.Graphs
             // get the local tile id.
             var (x, y) = TileStatic.WorldToTile(longitude, latitude, this.Zoom);
             var localTileId = TileStatic.ToLocalId(x, y, this.Zoom);
-            
+
             // ensure minimum size.
             _tiles.EnsureMinimumSize(localTileId);
-            
+
             // get the tile (or create it).
             var tile = _tiles[localTileId];
             if (tile == null)
@@ -63,7 +62,7 @@ namespace Itinero.Data.Graphs
         public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
         {
             var localTileId = vertex.TileId;
-            
+
             // get tile.
             if (_tiles.Length <= localTileId)
             {
@@ -71,6 +70,7 @@ namespace Itinero.Data.Graphs
                 latitude = default;
                 return false;
             }
+
             var tile = _tiles[localTileId];
             if (tile == null)
             {
@@ -78,7 +78,7 @@ namespace Itinero.Data.Graphs
                 latitude = default;
                 return false;
             }
-            
+
             // check if the vertex exists.
             return tile.TryGetVertex(vertex, out longitude, out latitude);
         }
@@ -91,12 +91,13 @@ namespace Itinero.Data.Graphs
         /// <param name="attributes">The attributes.</param>
         /// <param name="shape">The shape points.</param>
         /// <returns>The edge id.</returns>
-        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
+        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
+            IEnumerable<(double longitude, double latitude)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null)
         {
             var tile = _tiles[vertex1.TileId];
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-            
+
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
             if (vertex1.TileId != vertex2.TileId)
             {
@@ -104,7 +105,7 @@ namespace Itinero.Data.Graphs
                 tile = _tiles[vertex2.TileId];
                 tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
             }
-            
+
             return edge1;
         }
 
@@ -125,10 +126,10 @@ namespace Itinero.Data.Graphs
             internal Enumerator(Graph graph)
             {
                 _graph = graph;
-                
+
                 _tileEnumerator = new GraphTileEnumerator();
             }
-            
+
             /// <summary>
             /// Moves the enumerator to the first edge of the given vertex.
             /// </summary>
@@ -137,7 +138,7 @@ namespace Itinero.Data.Graphs
             public bool MoveTo(VertexId vertex)
             {
                 if (_tileEnumerator.TileId == vertex.TileId) return _tileEnumerator.MoveTo(vertex);
-                
+
                 // move to the tile.
                 if (_graph._tiles.Length <= vertex.TileId) return false;
                 var tile = _graph._tiles[vertex.TileId];
@@ -155,7 +156,7 @@ namespace Itinero.Data.Graphs
             public bool MoveToEdge(EdgeId edgeId, bool forward = true)
             {
                 if (_tileEnumerator.TileId == edgeId.TileId) return _tileEnumerator.MoveTo(edgeId, forward);
-                
+
                 // move to the tile.
                 var tile = _graph._tiles[edgeId.TileId];
                 if (tile == null) return false;
@@ -206,18 +207,137 @@ namespace Itinero.Data.Graphs
             /// Gets the edge id.
             /// </summary>
             public EdgeId Id => _tileEnumerator.EdgeId;
-            
+
             /// <summary>
             /// Gets the shape.
             /// </summary>
             /// <returns>The shape.</returns>
-            public IEnumerable<(double longitude, double latitude)> Shape => _tileEnumerator.Shape; 
-            
+            public IEnumerable<(double longitude, double latitude)> Shape => _tileEnumerator.Shape;
+
             /// <summary>
             /// Gets the attributes.
             /// </summary>
             /// <returns>The attributes.</returns>
             public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes;
+        }
+        
+        internal class MutableGraph
+        {
+            private readonly Graph _graph;
+            private readonly SparseArray<GraphTile> _tiles;
+
+            public MutableGraph(Graph graph)
+            {
+                _graph = graph;
+                _tiles = new SparseArray<GraphTile>(0);
+            }
+
+            private GraphTile? GetTile(uint localTileId, bool create = false)
+            {
+                // ensure minimum size.
+                _tiles.EnsureMinimumSize(localTileId);
+                
+                // check if there is already a modified version.
+                var tile = _tiles[localTileId];
+                if (tile != null) return tile;
+                
+                // there is no tile, get the one from the graph.
+                if (_graph._tiles.Length > localTileId) tile = _graph._tiles[localTileId];
+                if (!create) return tile;
+                if (tile != null)
+                {
+                    // create a copy of the graph tile.
+                    
+                }
+                else
+                {
+                    // create a new tile.
+                    tile = new GraphTile(_graph.Zoom, localTileId);
+                }
+                
+                // store in the local tiles.
+                _tiles[localTileId] = tile;
+                return tile;
+            }
+
+            /// <summary>
+            /// Adds a new vertex and returns its ID.
+            /// </summary>
+            /// <param name="longitude">The longitude.</param>
+            /// <param name="latitude">The latitude.</param>
+            /// <returns>The ID of the new vertex.</returns>
+            public VertexId AddVertex(double longitude, double latitude)
+            {
+                // get the local tile id.
+                var (x, y) = TileStatic.WorldToTile(longitude, latitude, _graph.Zoom);
+                var localTileId = TileStatic.ToLocalId(x, y, _graph.Zoom);
+
+                // ensure minimum size.
+                _tiles.EnsureMinimumSize(localTileId);
+
+                // get the tile (or create it).
+                var tile = this.GetTile(localTileId, true);
+                
+                // add the vertex.
+                return tile.AddVertex(longitude, latitude);
+            }
+
+            /// <summary>
+            /// Tries to get the given vertex.
+            /// </summary>
+            /// <param name="vertex">The vertex.</param>
+            /// <param name="longitude">The longitude.</param>
+            /// <param name="latitude">The latitude.</param>
+            /// <returns>The vertex.</returns>
+            public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
+            {
+                var localTileId = vertex.TileId;
+
+                // get tile.
+                if (_tiles.Length <= localTileId)
+                {
+                    longitude = default;
+                    latitude = default;
+                    return false;
+                }
+
+                var tile = this.GetTile(localTileId);
+                if (tile == null)
+                {
+                    longitude = default;
+                    latitude = default;
+                    return false;
+                }
+
+                // check if the vertex exists.
+                return tile.TryGetVertex(vertex, out longitude, out latitude);
+            }
+
+            /// <summary>
+            /// Adds a new edge.
+            /// </summary>
+            /// <param name="vertex1">The first vertex.</param>
+            /// <param name="vertex2">The second vertex.</param>
+            /// <param name="attributes">The attributes.</param>
+            /// <param name="shape">The shape points.</param>
+            /// <returns>The edge id.</returns>
+            public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
+                IEnumerable<(double longitude, double latitude)>? shape = null,
+                IEnumerable<(string key, string value)>? attributes = null)
+            {
+                var tile = _tiles[vertex1.TileId];
+                if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
+
+                var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
+                if (vertex1.TileId != vertex2.TileId)
+                {
+                    // this edge crosses tiles, also add an extra edge to the other tile.
+                    tile = _tiles[vertex2.TileId];
+                    tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
+                }
+
+                return edge1;
+            }
         }
     }
 }

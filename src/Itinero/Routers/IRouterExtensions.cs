@@ -33,7 +33,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, (SnapPoint snapPoint, bool? direction) directedSnapPoint)
         {
-            return new Router(router.RouterDb, router.Settings)
+            return new Router(router.Network, router.Settings)
             {
                 Source = directedSnapPoint
             };
@@ -47,7 +47,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, (SnapPoint snapPoint, DirectionEnum? direction) directedSnapPoint)
         {
-            return router.From(directedSnapPoint.ToDirected(router.RouterDb));
+            return router.From(directedSnapPoint.ToDirected(router.Network));
         }
         
         /// <summary>
@@ -69,7 +69,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IHasSources From(this IRouter router, IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
         {
-            return router.From(directedSnapPoints.ToDirected(router.RouterDb));
+            return router.From(directedSnapPoints.ToDirected(router.Network));
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IHasSources From(this IRouter router, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> directedSnapPoints)
         {
-            return new Router(router.RouterDb, router.Settings)
+            return new Router(router.Network, router.Settings)
             {
                 Sources = directedSnapPoints
             };
@@ -90,7 +90,7 @@ namespace Itinero.Routers
             IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
         {
             var settings = manyToManyRouter.Settings;
-            var routerDb = manyToManyRouter.RouterDb;
+            var routerDb = manyToManyRouter.Network;
             
             var profile = settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);
@@ -148,7 +148,7 @@ namespace Itinero.Routers
             IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
         {
             var settings = manyToManyRouter.Settings;
-            var routerDb = manyToManyRouter.RouterDb;
+            var routerDb = manyToManyRouter.Network;
             
             var profile = settings.Profile;
             var profileHandler = routerDb.GetProfileHandler(profile);

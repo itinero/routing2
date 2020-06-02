@@ -9,7 +9,7 @@ namespace Itinero.Profiles.Handlers
         /// Moves this profile handler to the given edge.
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
-        public abstract void MoveTo(RouterDbEdgeEnumerator enumerator);
+        public abstract void MoveTo(NetworkEdgeEnumerator enumerator);
         
         /// <summary>
         /// Gets the forward weight.
@@ -41,13 +41,13 @@ namespace Itinero.Profiles.Handlers
         /// </summary>
         public abstract bool CanStop { get; }
 
-        internal double GetForwardWeight(RouterDbEdgeEnumerator enumerator)
+        internal double GetForwardWeight(NetworkEdgeEnumerator enumerator)
         {
             this.MoveTo(enumerator);
             return this.ForwardWeight;
         }
 
-        internal double GetBackwardWeight(RouterDbEdgeEnumerator enumerator)
+        internal double GetBackwardWeight(NetworkEdgeEnumerator enumerator)
         {
             this.MoveTo(enumerator);
             return this.ForwardWeight;

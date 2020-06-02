@@ -16,7 +16,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource, SnapPoint target)
         {
-            return new Router(hasSource.RouterDb, hasSource.Settings)
+            return new Router(hasSource.Network, hasSource.Settings)
             {
                 Source = hasSource.Source,
                 Target = (target, null)
@@ -31,10 +31,10 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource,  (SnapPoint snapPoint, DirectionEnum? direction) target)
         {
-            return new Router(hasSource.RouterDb, hasSource.Settings)
+            return new Router(hasSource.Network, hasSource.Settings)
             {
                 Source = hasSource.Source,
-                Target = target.ToDirected(hasSource.RouterDb)
+                Target = target.ToDirected(hasSource.Network)
             };
         }
         
@@ -46,7 +46,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource, (SnapPoint snapPoint, bool? direction) target)
         {
-            return new Router(hasSource.RouterDb, hasSource.Settings)
+            return new Router(hasSource.Network, hasSource.Settings)
             {
                 Source = hasSource.Source,
                 Target = target
@@ -72,7 +72,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IRouterOneToMany To(this IHasSource hasSource, IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
         {
-            return hasSource.To(directedSnapPoints.ToDirected(hasSource.RouterDb));
+            return hasSource.To(directedSnapPoints.ToDirected(hasSource.Network));
         }
         
         /// <summary>
@@ -83,7 +83,7 @@ namespace Itinero.Routers
         /// <returns>A configured router.</returns>
         public static IRouterOneToMany To(this IHasSource hasSource, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
         {
-            return new Router(hasSource.RouterDb, hasSource.Settings)
+            return new Router(hasSource.Network, hasSource.Settings)
             {
                 Source = hasSource.Source,
                 Targets = targets

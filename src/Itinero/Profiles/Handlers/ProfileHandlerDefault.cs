@@ -15,7 +15,7 @@ namespace Itinero.Profiles.Handlers
         private EdgeFactor _edgeFactor = EdgeFactor.NoFactor;
         private uint _length;
 
-        public override void MoveTo(RouterDbEdgeEnumerator enumerator)
+        public override void MoveTo(NetworkEdgeEnumerator enumerator)
         {
             _edgeFactor = enumerator.FactorInEdgeDirection(_profile);
 

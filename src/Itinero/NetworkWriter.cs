@@ -6,14 +6,19 @@ namespace Itinero
 {
     /// <summary>
     /// A writer to write to an instance. This writer will never change existing data, only add new data.
+    ///
+    /// This writer can:
+    /// - add new vertices and edges.
+    ///
+    /// This writer cannot mutate existing data, only add new.
     /// </summary>
-    public class RouterDbInstanceWriter : IDisposable
+    public class NetworkWriter : IDisposable
     {
-        private readonly RouterDbInstance _routerDbInstance;
+        private readonly Network _network;
 
-        internal RouterDbInstanceWriter(RouterDbInstance routerDbInstance)
+        internal NetworkWriter(Network network)
         {
-            _routerDbInstance = routerDbInstance;
+            _network = network;
         }
 
         /// <summary>
@@ -24,7 +29,7 @@ namespace Itinero
         /// <returns>The ID of the new vertex.</returns>
         public VertexId AddVertex(double longitude, double latitude)
         {
-            return _routerDbInstance.Network.AddVertex(longitude, latitude);
+            return _network.Graph.AddVertex(longitude, latitude);
         }
         
         /// <summary>
@@ -38,12 +43,12 @@ namespace Itinero
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
             IEnumerable<(string key, string value)>? attributes = null)
         {
-            return _routerDbInstance.Network.AddEdge(vertex1, vertex2, shape, attributes);
+            return _network.Graph.AddEdge(vertex1, vertex2, shape, attributes);
         }
 
         public void Dispose()
         {
-            (_routerDbInstance as IRouterDbInstanceWritable).ClearWriter();
+            (_network as IRouterDbInstanceWritable).ClearWriter();
         }
     }
 

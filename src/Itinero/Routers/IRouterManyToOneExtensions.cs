@@ -60,7 +60,7 @@ namespace Itinero.Routers
         /// <returns>The routes.</returns>
         public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerManyToOne)
         {
-            return routerManyToOne.Paths().Select(x => RouteBuilder.Default.Build(routerManyToOne.RouterDb,
+            return routerManyToOne.Paths().Select(x => RouteBuilder.Default.Build(routerManyToOne.Network,
                 routerManyToOne.Settings.Profile, x)).ToArray();
         }
         
@@ -71,7 +71,7 @@ namespace Itinero.Routers
         /// <returns>The weights.</returns>
         public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
         {
-            var profileHandler = routerManyToOne.Router.RouterDb.GetProfileHandler(
+            var profileHandler = routerManyToOne.Router.Network.GetProfileHandler(
                 routerManyToOne.Router.Settings.Profile);
             return routerManyToOne.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();
         }

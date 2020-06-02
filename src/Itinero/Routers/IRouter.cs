@@ -6,9 +6,9 @@ namespace Itinero.Routers
     public interface IRouter
     {
         /// <summary>
-        /// Gets the router db.
+        /// Gets the network.
         /// </summary>
-        RouterDbInstance RouterDb { get; }
+        Network Network { get; }
         
         /// <summary>
         /// Gets the settings.

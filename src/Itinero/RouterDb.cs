@@ -20,13 +20,13 @@ namespace Itinero
         {
             configuration ??= RouterDbConfiguration.Default;
             
-            Latest = new RouterDbInstance(this, configuration.Zoom);
+            Latest = new Network(this, configuration.Zoom);
         }
 
         /// <summary>
         /// Gets the latest.
         /// </summary>
-        public RouterDbInstance Latest { get; private set; }
+        public Network Latest { get; private set; }
 
         /// <summary>
         /// Gets the usage notifier.
@@ -52,7 +52,7 @@ namespace Itinero
             return _writer;
         }
         
-        void IRouterDbWritable.SetLatest(RouterDbInstance latest)
+        void IRouterDbWritable.SetLatest(Network latest)
         {
             this.Latest = latest;
         }

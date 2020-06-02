@@ -6,21 +6,20 @@ namespace Itinero
     /// <summary>
     /// A single consistent snapshot of the routing network.
     /// </summary>
-    public class RouterDbInstance : IRouterDbInstanceWritable
+    public class Network : IRouterDbInstanceWritable
     {
-        private readonly Graph _network;
         private readonly RouterDb _routerDb;
 
-        internal RouterDbInstance(RouterDb routerDb, int zoom = 14)
+        internal Network(RouterDb routerDb, int zoom = 14)
         {
             _routerDb = routerDb;
-            _network = new Graph(zoom);
+            Graph = new Graph(zoom);
         }
 
         /// <summary>
         /// Gets the network graph.
         /// </summary>
-        internal Graph Network => _network;
+        internal Graph Graph { get; }
 
         /// <summary>
         /// Gets the router db.
@@ -31,9 +30,9 @@ namespace Itinero
         /// Gets the edge enumerator for the graph in this network.
         /// </summary>
         /// <returns>The edge enumerator.</returns>
-        public RouterDbEdgeEnumerator GetEdgeEnumerator()
+        public NetworkEdgeEnumerator GetEdgeEnumerator()
         {
-            return new RouterDbEdgeEnumerator(this);
+            return new NetworkEdgeEnumerator(this);
         }
 
         /// <summary>
@@ -43,12 +42,12 @@ namespace Itinero
         /// <returns>The vertex.</returns>
         public (double longitude, double latitude) GetVertex(VertexId vertex)
         {
-            if (!_network.TryGetVertex(vertex, out var longitude, out var latitude)) throw new ArgumentException($"{nameof(vertex)} does not exist.");
+            if (!Graph.TryGetVertex(vertex, out var longitude, out var latitude)) throw new ArgumentException($"{nameof(vertex)} does not exist.");
             
             return (longitude, latitude);
         }
 
-        private RouterDbInstanceWriter? _writer;
+        private NetworkWriter? _writer;
         
         /// <summary>
         /// Returns true if there is already a writer.
@@ -59,11 +58,11 @@ namespace Itinero
         /// Gets a writer.
         /// </summary>
         /// <returns>The writer.</returns>
-        public RouterDbInstanceWriter GetWriter()
+        public NetworkWriter GetWriter()
         {
             if (_writer != null) throw new InvalidOperationException($"Only one writer is allowed at one time." +
                                                                      $"Check {nameof(HasWriter)} to check for a current writer.");
-            _writer = new RouterDbInstanceWriter(this);
+            _writer = new NetworkWriter(this);
             return _writer;
         }
         

@@ -13,13 +13,13 @@ namespace Itinero.Algorithms.DataStructures
     public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
     {
         private readonly List<(EdgeId edge, bool forward)> _edges;
-        private readonly RouterDbEdgeEnumerator _edgeEnumerator;
+        private readonly NetworkEdgeEnumerator _edgeEnumerator;
 
         /// <summary>
         /// Creates a new empty path.
         /// </summary>
         /// <param name="routerDb">The routerDb.</param>
-        public Path(RouterDbInstance routerDb)
+        public Path(Network routerDb)
         {
             _edgeEnumerator = routerDb.GetEdgeEnumerator();
             
@@ -29,7 +29,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <summary>
         /// Gets the router db.
         /// </summary>
-        public RouterDbInstance RouterDb => _edgeEnumerator.RouterDb;
+        public Network RouterDb => _edgeEnumerator.RouterDb;
 
         /// <summary>
         /// Gets the offset at the start of the path.

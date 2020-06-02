@@ -48,6 +48,15 @@ namespace Itinero.Data.Graphs.Tiles
         }
 
         /// <summary>
+        /// Clones this graph tile.
+        /// </summary>
+        /// <returns>The copy of this tile.</returns>
+        public GraphTile Clone()
+        {
+            
+        }
+
+        /// <summary>
         /// Gets the tile id.
         /// </summary>
         public uint TileId => _tileId;

@@ -15,7 +15,7 @@ namespace Itinero
     public static class RouterDbExtensions
     {
         
-        internal static IEnumerable<(string key, string value)> GetAttributes(this RouterDbInstance routerDb, EdgeId edge)
+        internal static IEnumerable<(string key, string value)> GetAttributes(this Network routerDb, EdgeId edge)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             if (!enumerator.MoveToEdge(edge)) return Enumerable.Empty<(string key, string value)>();
@@ -42,7 +42,7 @@ namespace Itinero
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-        internal static IEnumerable<(double longitude, double latitude)> GetShapeBetween(this RouterDbEdgeEnumerator enumerator,
+        internal static IEnumerable<(double longitude, double latitude)> GetShapeBetween(this NetworkEdgeEnumerator enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
         {
             if (offset1 > offset2) throw new ArgumentException($"{nameof(offset1)} has to smaller than or equal to {nameof(offset2)}");
@@ -124,7 +124,7 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The length in meters.</returns>
-        internal static double EdgeLength(this RouterDbEdgeEnumerator enumerator)
+        internal static double EdgeLength(this NetworkEdgeEnumerator enumerator)
         {
             var distance = 0.0;
 
@@ -150,7 +150,7 @@ namespace Itinero
         /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
-        internal static (double longitude, double latitude) LocationOnEdge(this RouterDbEdgeEnumerator enumerator, in ushort offset)
+        internal static (double longitude, double latitude) LocationOnEdge(this NetworkEdgeEnumerator enumerator, in ushort offset)
         {
             // TODO: this can be optimized, build a performance test.
             var shape = enumerator.GetShapeBetween().ToList();
@@ -184,7 +184,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="settings">The settings.</param>
         /// <returns>A router.</returns>
-        public static IRouter Route(this RouterDbInstance routerDb, RoutingSettings settings)
+        public static IRouter Route(this Network routerDb, RoutingSettings settings)
         {
             return new Router(routerDb, settings);
         }
@@ -195,7 +195,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="profile">The profile.</param>
         /// <returns>A router.</returns>
-        public static IRouter Route(this RouterDbInstance routerDb, Profile profile)
+        public static IRouter Route(this Network routerDb, Profile profile)
         {
             return routerDb.Route(new RoutingSettings()
             {
@@ -203,7 +203,7 @@ namespace Itinero
             });
         }
 
-        internal static ProfileHandler GetProfileHandler(this RouterDbInstance routerDb, Profile profile)
+        internal static ProfileHandler GetProfileHandler(this Network routerDb, Profile profile)
         {
             return new ProfileHandlerDefault(profile);
         }

@@ -8,20 +8,20 @@ namespace Itinero
     /// <summary>
     /// An edge enumerator for the router db.
     /// </summary>
-    public class RouterDbEdgeEnumerator
+    public class NetworkEdgeEnumerator
     {
-        private readonly RouterDbInstance _routerDb;
-        private readonly Graph.Enumerator _enumerator;
-        private readonly EdgeEnumerator _edgeEnumerator;
+        private readonly Network _routerDb;
+        private readonly Graph.Enumerator? _enumerator;
+        private readonly EdgeEnumerator? _edgeEnumerator;
 
-        internal RouterDbEdgeEnumerator(RouterDbInstance routerDb)
+        internal NetworkEdgeEnumerator(Network routerDb)
         {
             _routerDb = routerDb ?? throw new ArgumentNullException(nameof(routerDb));
 
-            _enumerator = _routerDb.Network.GetEnumerator();
+            _enumerator = _routerDb.Graph.GetEnumerator();
         }
 
-        internal RouterDbEdgeEnumerator(RouterDbInstance routerDb, EdgeEnumerator edgeEnumerator)
+        internal NetworkEdgeEnumerator(Network routerDb, EdgeEnumerator edgeEnumerator)
         {
             _routerDb = routerDb ?? throw new ArgumentNullException(nameof(routerDb));
             _edgeEnumerator = edgeEnumerator ?? throw new ArgumentNullException(nameof(edgeEnumerator));;
@@ -33,11 +33,12 @@ namespace Itinero
             get
             {
                 if (_edgeEnumerator != null) return _edgeEnumerator.GraphEnumerator;
+                if (_enumerator == null) throw new InvalidOperationException("Enumerator in an impossible state!");
                 return _enumerator;
             }
         }
 
-        internal RouterDbInstance RouterDb => _routerDb;
+        internal Network RouterDb => _routerDb;
         
         /// <summary>
         /// Moves the enumerator to the first edge of the given vertex.
@@ -73,6 +74,7 @@ namespace Itinero
             {
                 return _edgeEnumerator.MoveNext();
             }
+            if (_enumerator == null) throw new InvalidOperationException("Enumerator in an impossible state!");
             return _enumerator.MoveNext();
         }
 
@@ -112,14 +114,14 @@ namespace Itinero
     /// <summary>
     /// Contains extension methods for the router db edge enumerator.
     /// </summary>
-    public static class RouterDbEdgeEnumeratorExtensions
+    public static class NetworkEdgeEnumeratorExtensions
     {
         /// <summary>
         /// Gets the location of the to vertex.
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The location.</returns>
-        public static (double longitude, double latitude) ToLocation(this RouterDbEdgeEnumerator enumerator)
+        public static (double longitude, double latitude) ToLocation(this NetworkEdgeEnumerator enumerator)
         {
             return enumerator.RouterDb.GetVertex(enumerator.To);
         }
@@ -129,7 +131,7 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The location.</returns>
-        public static (double longitude, double latitude) FromLocation(this RouterDbEdgeEnumerator enumerator)
+        public static (double longitude, double latitude) FromLocation(this NetworkEdgeEnumerator enumerator)
         {
             return enumerator.RouterDb.GetVertex(enumerator.From);
         }
@@ -139,7 +141,7 @@ namespace Itinero
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The complete shape.</returns>
-        public static IEnumerable<(double longitude, double latitude)> GetCompleteShape(this RouterDbEdgeEnumerator enumerator)
+        public static IEnumerable<(double longitude, double latitude)> GetCompleteShape(this NetworkEdgeEnumerator enumerator)
         {
             yield return enumerator.FromLocation();
 
