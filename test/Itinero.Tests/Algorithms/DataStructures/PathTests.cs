@@ -1,5 +1,6 @@
 using System.Linq;
 using Itinero.Algorithms.DataStructures;
+using Itinero.Data.Graphs;
 using Xunit;
 
 namespace Itinero.Tests.Algorithms.DataStructures
@@ -10,7 +11,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_New_Offsets_ShouldIncludeByDefault()
         {
             var routerDb = new RouterDb();
-            var path = new Path(routerDb);
+            var path = new Path(routerDb.Latest);
 
             Assert.Equal(0, path.Offset1);
             Assert.Equal(ushort.MaxValue, path.Offset2);
@@ -20,30 +21,42 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Append_OneEdge_ShouldBeOneEdgePath()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge;
+            VertexId vertex1;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            
-            var path = new Path(routerDb);
-            path.Append(edge1, vertex1);
+                edge = writer.AddEdge(vertex1, vertex2);
+            }
+
+            var path = new Path(routerDb.Latest);
+            path.Append(edge, vertex1);
 
             Assert.Single(path);
-            Assert.Equal(edge1, path.First.edge);
+            Assert.Equal(edge, path.First.edge);
         }
         
         [Fact]
         public void Path_Append_SecondEdge_ShouldBeSecondEdge()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1;
+            EdgeId edge2;
+            VertexId vertex1;
+            VertexId vertex2;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
-            
-            var path = new Path(routerDb);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
+
+            var path = new Path(routerDb.Latest);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
 
@@ -56,14 +69,21 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Enumerate_TwoEdges_ShouldEnumerateEdges()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1;
+            EdgeId edge2;
+            VertexId vertex1;
+            VertexId vertex2;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
-            
-            var path = new Path(routerDb);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
+
+            var path = new Path(routerDb.Latest);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
 
@@ -77,12 +97,18 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Prepend_OneEdge_ShouldBeOneEdgePath()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1;
+            VertexId vertex1;
+            VertexId vertex2;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            
-            var path = new Path(routerDb);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+            }
+
+            var path = new Path(routerDb.Latest);
             path.Prepend(edge1, vertex1);
 
             Assert.Single(path);
@@ -93,14 +119,19 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Prepend_SecondEdge_ShouldBeSecondEdge()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
             
-            var path = new Path(routerDb);
+            var path = new Path(routerDb.Latest);
             path.Prepend(edge2, vertex3);
             path.Prepend(edge1, vertex2);
 
@@ -113,14 +144,19 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Trim_NormalOffset_ShouldNotTrim()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
             
-            var path = new Path(routerDb);
+            var path = new Path(routerDb.Latest);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
             path.Offset1 = (ushort.MaxValue / 2);
@@ -135,14 +171,19 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Trim_Offset1Max_ShouldRemoveFirst()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
             
-            var path = new Path(routerDb);
+            var path = new Path(routerDb.Latest);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
             path.Offset1 = ushort.MaxValue;
@@ -159,14 +200,19 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_Trim_Offset2Is0_ShouldRemoveLast()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
             
-            var path = new Path(routerDb);
+            var path = new Path(routerDb.Latest);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
             path.Offset1 = (ushort.MaxValue / 2);

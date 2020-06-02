@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using Itinero.Data.Graphs;
 using Xunit;
 
 namespace Itinero.Tests
@@ -10,12 +11,18 @@ namespace Itinero.Tests
         public void RouterDbGraphEnumerator_ShouldEnumerateEdgesInGraph()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            VertexId vertex1;
+            VertexId vertex2;
+            using (var routerDbWriter = routerDb.GetWriter())
+            {
+                vertex1 = routerDbWriter.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = routerDbWriter.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edgeId = routerDb.AddEdge(vertex1, vertex2);
+                routerDbWriter.AddEdge(vertex1, vertex2);
+            }
 
-            var enumerator = routerDb.GetEdgeEnumerator();
+            var routerDbLatest = routerDb.Latest;
+            var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex1, enumerator.From);
@@ -26,18 +33,26 @@ namespace Itinero.Tests
         [Fact]
         public void RouterDb_ShouldStoreShape()
         {
-            var network = new RouterDb();
-            var vertex1 = network.AddVertex(
-                4.792613983154297,
-                51.26535213392538);
-            var vertex2 = network.AddVertex(
-                4.797506332397461,
-                51.26674845584085);
+            var routerDb = new RouterDb();
+            EdgeId edge;
+            using (var routerDbWriter = routerDb.GetWriter())
+            {
+                var vertex1 = routerDbWriter.AddVertex(
+                    4.792613983154297,
+                    51.26535213392538);
+                var vertex2 = routerDbWriter.AddVertex(
+                    4.797506332397461,
+                    51.26674845584085);
 
-            var edge = network.AddEdge(vertex1, vertex2, shape: new [] { (4.795167446136475,
-                51.26580191532799) });
+                edge = routerDbWriter.AddEdge(vertex1, vertex2, shape: new[]
+                {
+                    (4.795167446136475,
+                        51.26580191532799)
+                });
+            }
 
-            var enumerator = network.GetEdgeEnumerator();
+            var routerDbLatest = routerDb.Latest;
+            var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             var shape = enumerator.Shape;
             Assert.NotNull(shape);
@@ -51,16 +66,20 @@ namespace Itinero.Tests
         public void RouterDb_ShouldStoreAttributes()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(
-                4.792613983154297,
-                51.26535213392538);
-            var vertex2 = routerDb.AddVertex(
-                4.797506332397461,
-                51.26674845584085);
+            EdgeId edge;
+            using (var routerDbWriter = routerDb.GetWriter())
+            {
+                var vertex1 = routerDbWriter.AddVertex(
+                    4.792613983154297,
+                    51.26535213392538);
+                var vertex2 = routerDbWriter.AddVertex(
+                    4.797506332397461,
+                    51.26674845584085);
 
-            var edge = routerDb.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
+                edge = routerDbWriter.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
+            }
 
-            var attributes = routerDb.GetAttributes(edge);
+            var attributes = routerDb.Latest.GetAttributes(edge);
             Assert.NotNull(attributes);
             Assert.Single(attributes);
             Assert.Equal("highway", attributes.First().key);

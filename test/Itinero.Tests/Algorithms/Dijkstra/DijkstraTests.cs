@@ -9,14 +9,20 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge;
+            VertexId vertex1, vertex2;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge = routerDb.AddEdge(vertex1, vertex2);
+                edge = writer.AddEdge(vertex1, vertex2);
+            }
 
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
-                routerDb.Snap(vertex1),
-                routerDb.Snap(vertex2),
+            var latest = routerDb.Latest;
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap(vertex1),
+                latest.Snap(vertex2),
                 (e) => 1);
             Assert.NotNull(path);
             Assert.Equal(0,path.Offset1);
@@ -32,16 +38,22 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
 
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
-                routerDb.Snap(vertex1),
-                routerDb.Snap(vertex3),
+            var latest = routerDb.Latest;
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap(vertex1),
+                latest.Snap(vertex3),
                 (e) => 1);
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -60,18 +72,24 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297,51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461,51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.792141914367670,51.26297560389227);
-            var vertex4 = routerDb.AddVertex(4.797334671020508,51.26241166347257);
+            EdgeId edge1, edge2, edge3;
+            VertexId vertex1, vertex2, vertex3, vertex4;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227);
+                vertex4 = writer.AddVertex(4.797334671020508, 51.26241166347257);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
-            var edge3 = routerDb.AddEdge(vertex3, vertex4);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+                edge3 = writer.AddEdge(vertex3, vertex4);
+            }
 
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
-                routerDb.Snap(vertex1),
-                routerDb.Snap(vertex4),
+            var latest = routerDb.Latest;
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap(vertex1),
+                latest.Snap(vertex4),
                 (e) => 1);
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -93,17 +111,23 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         public void Dijkstra_OneToOne_PathWithinEdge_NotShortest_ShouldFindShortest()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2, edge3;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
-            var edge3 = routerDb.AddEdge(vertex1, vertex3); // this edge has a weight of 10.
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+                edge3 = writer.AddEdge(vertex1, vertex3); // this edge has a weight of 10.
+            }
 
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
-                routerDb.Snap(vertex1, edge3),
-                routerDb.Snap(vertex3, edge3),
+            var latest = routerDb.Latest;
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap(vertex1, edge3),
+                latest.Snap(vertex3, edge3),
                 e =>
                 {
                     if (e.Id == edge3) return 10;
@@ -140,18 +164,24 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge;
+            VertexId vertex1, vertex2;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge = routerDb.AddEdge(vertex1, vertex2);
+                edge = writer.AddEdge(vertex1, vertex2);
+            }
 
-            var snap1 = routerDb.Snap(vertex1).Value;
-            var snap2 = routerDb.Snap(vertex2).Value;
+            var latest = routerDb.Latest;
+            var snap1 = latest.Snap(vertex1).Value;
+            var snap2 = latest.Snap(vertex2).Value;
             var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
             var snap4 = new SnapPoint(edge, ushort.MaxValue / 2);
             var snap5 = new SnapPoint(edge, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
-            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
+            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 snap1, new[] {snap2, snap3, snap4, snap5},
                 (e) => 1);
             Assert.NotNull(paths);
@@ -198,20 +228,26 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths()
         {
             var routerDb = new RouterDb();
-            var vertex1 = routerDb.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = routerDb.AddVertex(4.797506332397461, 51.26674845584085);
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var writer = routerDb.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            var edge1 = routerDb.AddEdge(vertex1, vertex2);
-            var edge2 = routerDb.AddEdge(vertex2, vertex3);
+                edge1 = writer.AddEdge(vertex1, vertex2);
+                edge2 = writer.AddEdge(vertex2, vertex3);
+            }
             
-            var snap1 = routerDb.Snap(vertex1).Value;
-            var snap2 = routerDb.Snap(vertex3).Value;
+            var latest = routerDb.Latest;
+            var snap1 = latest.Snap(vertex1).Value;
+            var snap2 = latest.Snap(vertex3).Value;
             var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);
             var snap4 = new SnapPoint(edge2, ushort.MaxValue / 2);
             var snap5 = new SnapPoint(edge2, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
-            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(routerDb,
+            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 snap1, new[] {snap2, snap3, snap4, snap5},
                 (e) => 1);
             Assert.NotNull(paths);

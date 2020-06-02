@@ -19,7 +19,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="routerDb">The router db.</param>
         /// <param name="box">The bounding box.</param>
         /// <returns>Geojson for the network.</returns>
-        public static string ToGeoJson(this RouterDb routerDb,
+        public static string ToGeoJson(this RouterDbInstance routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             using var stream = new MemoryStream();
@@ -39,7 +39,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="routerDb">The router db.</param>
         /// <param name="box">The bounding box.</param>
         /// <param name="jsonWriter">The json writer.</param>
-        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, RouterDb routerDb, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, RouterDbInstance routerDb, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             var vertices = new HashSet<VertexId>();
             var edges = new HashSet<EdgeId>();
@@ -76,7 +76,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="jsonWriter">The json writer.</param>
         /// <param name="routerDb">The router db.</param>
         /// <param name="vertexId">The vertex id.</param>
-        public static void WriteVertexFeature(this Utf8JsonWriter jsonWriter, VertexId vertexId, RouterDb routerDb)
+        public static void WriteVertexFeature(this Utf8JsonWriter jsonWriter, VertexId vertexId, RouterDbInstance routerDb)
         {
             jsonWriter.WriteFeatureStart();
             jsonWriter.WriteProperties(new (string key, string value)[]

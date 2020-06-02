@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Itinero.IO.Osm.Tiles.Parsers
 {
-    public static class TileParser
+    internal static class TileParser
     {
         /// <summary>
         /// The base url to fetch the tiles from.
@@ -28,18 +28,11 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
         internal static JObject Parse(this Stream stream, Tile tile)
         {
-//            if (stream.Length == 0)
-//            { // TODO: do we need a different condition, no need to retry an empty tile.
-//                return null;
-//            }
-
             try
             {
-                using (var textReader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(textReader))
-                {
-                    return JObject.Load(jsonReader);
-                }
+                using var textReader = new StreamReader(stream);
+                using var jsonReader = new JsonTextReader(textReader);
+                return JObject.Load(jsonReader);
             }
             catch (JsonReaderException e)
             {
@@ -50,7 +43,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             return null;
         }
         
-        internal static bool AddOsmTile(this RouterDb routerDb, GlobalIdMap globalIdMap, Tile tile,
+        internal static bool AddOsmTile(this RouterDbInstanceWriter routerDbInstanceWriter, GlobalIdMap globalIdMap, Tile tile,
             JObject jsonObject)
         {
             Logger.Log(nameof(TileParser), Logging.TraceEventType.Verbose,
@@ -206,7 +199,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         // add node1 as vertex but check if it already exists.
                         if (!globalIdMap.TryGet(node1Id, out var vertex))
                         {
-                            vertex = routerDb.AddVertex(node1Data.location.longitude,
+                            vertex = routerDbInstanceWriter.AddVertex(node1Data.location.longitude,
                                 node1Data.location.latitude);
                             globalIdMap.Set(node1Id, vertex);
                             updated = true;
@@ -218,7 +211,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             // close previous segment if any.
                             if (!previousVertex.IsEmpty())
                             {
-                                routerDb.AddEdge(previousVertex, vertex, shape, attributes);
+                                routerDbInstanceWriter.AddEdge(previousVertex, vertex, shape, attributes);
                                 updated = true;
                                 shape.Clear();
                             }
@@ -238,7 +231,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         // add node2 as vertex but check if it already exists.
                         if (!globalIdMap.TryGet(node2Id, out var vertex))
                         {
-                            vertex = routerDb.AddVertex(node2Data.location.longitude,
+                            vertex = routerDbInstanceWriter.AddVertex(node2Data.location.longitude,
                                 node2Data.location.latitude);
                             
                             globalIdMap.Set(node2Id, vertex);
@@ -251,7 +244,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             if (!globalIdMap.TryGet(node1Id, out previousVertex))
                                 throw new Exception(
                                     "Cannot add segment overlapping tile boundary, node should have already been added.");
-                            routerDb.AddEdge(previousVertex, vertex, shape, attributes);
+                            routerDbInstanceWriter.AddEdge(previousVertex, vertex, shape, attributes);
                             updated = true;
                             shape.Clear();
                         }
@@ -260,7 +253,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             // close previous segment if any.
                             if (!previousVertex.IsEmpty())
                             {
-                                routerDb.AddEdge(previousVertex, vertex, shape, attributes);
+                                routerDbInstanceWriter.AddEdge(previousVertex, vertex, shape, attributes);
                                 updated = true;
                                 shape.Clear();
                             }

@@ -16,7 +16,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="snapPoint">The snap point.</param>
         /// <param name="routerDb">The router db.</param>
         /// <returns>A geojson string.</returns>
-        public static string ToGeoJson(this SnapPoint snapPoint, RouterDb routerDb)
+        public static string ToGeoJson(this SnapPoint snapPoint, RouterDbInstance routerDb)
         {
             using (var stream = new MemoryStream())
             {
@@ -37,7 +37,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="snapPoint">The snap point.</param>
         /// <param name="routerDb">The router db.</param>
         /// <param name="jsonWriter">The json writer.</param>
-        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, SnapPoint snapPoint, RouterDb routerDb)
+        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, SnapPoint snapPoint, RouterDbInstance routerDb)
         {
             if (jsonWriter == null) jsonWriter = new Utf8JsonWriter(new MemoryStream());
             

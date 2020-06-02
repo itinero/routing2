@@ -10,18 +10,18 @@ namespace Itinero
     /// </summary>
     public class RouterDbEdgeEnumerator
     {
-        private readonly RouterDb _routerDb;
+        private readonly RouterDbInstance _routerDb;
         private readonly Graph.Enumerator _enumerator;
         private readonly EdgeEnumerator _edgeEnumerator;
 
-        internal RouterDbEdgeEnumerator(RouterDb routerDb)
+        internal RouterDbEdgeEnumerator(RouterDbInstance routerDb)
         {
             _routerDb = routerDb ?? throw new ArgumentNullException(nameof(routerDb));
 
             _enumerator = _routerDb.Network.GetEnumerator();
         }
 
-        internal RouterDbEdgeEnumerator(RouterDb routerDb, EdgeEnumerator edgeEnumerator)
+        internal RouterDbEdgeEnumerator(RouterDbInstance routerDb, EdgeEnumerator edgeEnumerator)
         {
             _routerDb = routerDb ?? throw new ArgumentNullException(nameof(routerDb));
             _edgeEnumerator = edgeEnumerator ?? throw new ArgumentNullException(nameof(edgeEnumerator));;
@@ -37,7 +37,7 @@ namespace Itinero
             }
         }
 
-        internal RouterDb RouterDb => _routerDb;
+        internal RouterDbInstance RouterDb => _routerDb;
         
         /// <summary>
         /// Moves the enumerator to the first edge of the given vertex.

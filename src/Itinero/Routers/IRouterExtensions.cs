@@ -120,7 +120,7 @@ namespace Itinero.Routers
                     profileHandler.GetForwardWeight,
                     settled: (v) =>
                     {
-                        routerDb.UsageNotifier.NotifyVertex(v);
+                        routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, v);
                         return checkMaxDistance(v);
                     });
 
@@ -178,7 +178,7 @@ namespace Itinero.Routers
                     e => profileHandler.GetForwardWeight(e),
                     settled: e =>
                     {
-                        routerDb.UsageNotifier.NotifyVertex(e.vertexId);
+                        routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                         return checkMaxDistance(e.vertexId);
                     });
 

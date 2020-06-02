@@ -14,7 +14,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="routerDb">The router db.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDb routerDb, 
+        public static RouterDbEdgeEnumerator SearchEdgesInBox(this RouterDbInstance routerDb, 
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             var vertices = routerDb.Network.SearchVerticesInBox(box);
@@ -28,7 +28,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="box">The box.</param>
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
-        public static SnapPoint SnapInBox(this RouterDb routerDb,
+        public static SnapPoint SnapInBox(this RouterDbInstance routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
             Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null)
         {
@@ -167,7 +167,7 @@ namespace Itinero.Algorithms.Search
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <param name="nonOrthogonalEdges">When true the best potential location on each edge is returned, when false only orthogonal projected points.</param>
         /// <returns>All edges that could potentially be relevant snapping points, not only the closest.</returns>
-        public static IEnumerable<SnapPoint> SnapAllInBox(this RouterDb routerDb,
+        public static IEnumerable<SnapPoint> SnapAllInBox(this RouterDbInstance routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
             Func<RouterDbEdgeEnumerator, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
         {

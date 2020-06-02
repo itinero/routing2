@@ -11,11 +11,11 @@ namespace Itinero.IO.Osm
     {
         private readonly Dictionary<long, VertexId> _vertexPerNode;
         private readonly NodeIndex _nodeIndex;
-        private readonly RouterDb _routerDb;
+        private readonly RouterDbWriter _routerDbWriter;
 
-        public RouterDbStreamTarget(RouterDb routerDb)
+        public RouterDbStreamTarget(RouterDbWriter routerDbWriter)
         {
-            _routerDb = routerDb;
+            _routerDbWriter = routerDbWriter;
             
             _vertexPerNode = new Dictionary<long, VertexId>();
             _nodeIndex = new NodeIndex();
@@ -93,7 +93,7 @@ namespace Itinero.IO.Osm
                         }
                         else
                         { // node is a core vertex, add it as a vertex.
-                            vertex2 = _routerDb.AddVertex(longitude, latitude);
+                            vertex2 = _routerDbWriter.AddVertex(longitude, latitude);
                             _vertexPerNode[node] = vertex2;
                         }
                     }
@@ -104,7 +104,7 @@ namespace Itinero.IO.Osm
                         continue;
                     }
 
-                    _routerDb.AddEdge(vertex1, vertex2,
+                    _routerDbWriter.AddEdge(vertex1, vertex2,
                         shape: shape,
                         attributes: way.Tags.Select(x => (x.Key, x.Value)));
                     vertex1 = vertex2;

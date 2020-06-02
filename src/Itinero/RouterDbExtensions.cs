@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Algorithms;
-using Itinero.Algorithms.Dijkstra;
-using Itinero.Algorithms.Routes;
-using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
 using Itinero.Geo;
 using Itinero.Profiles;
@@ -18,23 +14,24 @@ namespace Itinero
     /// </summary>
     public static class RouterDbExtensions
     {
-        /// <summary>
-        /// Adds a new vertex and returns its id.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="location">The location.</param>
-        /// <returns>The ID of the new vertex.</returns>
-        public static VertexId AddVertex(this RouterDb routerDb, (double longitude, double latitude) location)
-        {
-            return routerDb.AddVertex(location.longitude, location.latitude);
-        }
         
-        internal static IEnumerable<(string key, string value)> GetAttributes(this RouterDb routerDb, EdgeId edge)
+        internal static IEnumerable<(string key, string value)> GetAttributes(this RouterDbInstance routerDb, EdgeId edge)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             if (!enumerator.MoveToEdge(edge)) return Enumerable.Empty<(string key, string value)>();
 
             return enumerator.Attributes;
+        }
+
+        /// <summary>
+        /// Write to the router db using a delegate.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <param name="writeAction">The delegate.</param>
+        public static void Write(this RouterDb routerDb, Action<RouterDbWriter> writeAction)
+        {
+            using var writer = routerDb.GetWriter();
+            writeAction(writer);
         }
 
         /// <summary>
@@ -133,7 +130,7 @@ namespace Itinero
 
             // compose geometry.
             var shape = enumerator.GetCompleteShape();
-            var shapeEnumerator = shape.GetEnumerator();
+            using var shapeEnumerator = shape.GetEnumerator();
             shapeEnumerator.MoveNext();
             var previous = shapeEnumerator.Current;
 
@@ -187,7 +184,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="settings">The settings.</param>
         /// <returns>A router.</returns>
-        public static IRouter Route(this RouterDb routerDb, RoutingSettings settings)
+        public static IRouter Route(this RouterDbInstance routerDb, RoutingSettings settings)
         {
             return new Router(routerDb, settings);
         }
@@ -198,7 +195,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="profile">The profile.</param>
         /// <returns>A router.</returns>
-        public static IRouter Route(this RouterDb routerDb, Profile profile)
+        public static IRouter Route(this RouterDbInstance routerDb, Profile profile)
         {
             return routerDb.Route(new RoutingSettings()
             {
@@ -206,7 +203,7 @@ namespace Itinero
             });
         }
 
-        internal static ProfileHandler GetProfileHandler(this RouterDb routerDb, Profile profile)
+        internal static ProfileHandler GetProfileHandler(this RouterDbInstance routerDb, Profile profile)
         {
             return new ProfileHandlerDefault(profile);
         }

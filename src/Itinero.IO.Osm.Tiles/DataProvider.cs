@@ -36,7 +36,7 @@ namespace Itinero.IO.Osm.Tiles
             _routerDb.UsageNotifier.OnBoxTouched += TouchBox;
         }
 
-        internal void VertexTouched(VertexId vertexId)
+        internal void VertexTouched(RouterDbInstance routerDbInstance, VertexId vertexId)
         {
             if (_loadedTiles.Contains(vertexId.TileId))
             {
@@ -52,30 +52,34 @@ namespace Itinero.IO.Osm.Tiles
                     return;
                 }
 
+                // download the tile.
                 var tile = Tile.FromLocalId(vertexId.TileId, (int)_zoom);
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
                 using var stream = TileParser.DownloadFunc(url);
                 
+                // parse the tile.
                 var parse = stream?.Parse(tile);
                 if (parse == null)
                 {
                     return;
                 }
 
-                var result = _routerDb.AddOsmTile(_idMap, tile, parse);
+                // add the data from the tile.
+                using (var routerDbInstanceWriter = routerDbInstance.GetWriter())
+                {
+                    routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
+                }
                 _loadedTiles.Add(vertexId.TileId);
             }
         }
 
-        internal void TouchBox(((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+        internal void TouchBox(RouterDbInstance routerDbInstance, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             // build the tile range.
             var tileRange = new TileRange(box, (int)_zoom);
 
             Parallel.ForEach(tileRange, (tile) =>
             {
-            // foreach (var tile in tileRange)
-            // {
                 if (_loadedTiles.Contains(tile.LocalId)) return;
 
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
@@ -90,66 +94,16 @@ namespace Itinero.IO.Osm.Tiles
 
                 lock (_loadedTiles)
                 {
-                    _routerDb.AddOsmTile(_idMap, tile, parse);
+                    // add the data from the tile.
+                    using (var routerDbInstanceWriter = routerDbInstance.GetWriter())
+                    {
+                        routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
+                    }
 
+                    // mark tile as loaded.
                     _loadedTiles.Add(tile.LocalId);
                 }
-            // }
-
             });
         }
-
-//        /// <inheritdoc/>
-//        public long WriteTo(Stream stream)
-//        {
-//            lock (_loadedTiles)
-//            {
-//                var p = stream.Position;
-//            
-//                // write header and version.
-//                stream.WriteWithSize($"{nameof(DataProvider)}");
-//                stream.WriteByte(1);
-//            
-//                // write loaded tiles.
-//                var tilesArray = new MemoryArray<uint>(_loadedTiles.Count);
-//                var t = 0;
-//                foreach (var loadedTile in _loadedTiles)
-//                {
-//                    tilesArray[t] = loadedTile;
-//                    t++;
-//                }
-//                tilesArray.CopyToWithSize(stream);
-//                
-//                // write global id map.
-//                _idMap.WriteTo(stream);
-//
-//                return stream.Position - p;
-//            }
-//        }
-//
-//        /// <inheritdoc/>
-//        public void ReadFrom(Stream stream)
-//        {
-//            // read & verify header.
-//            var header = stream.ReadWithSizeString();
-//            var version = stream.ReadByte();
-//            if (header != nameof(DataProvider)) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Header invalid.");
-//            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Version # invalid.");
-//            
-//            // read load tiles.
-//            var tilesArray = MemoryArray<uint>.CopyFromWithSize(stream);
-//            
-//            // read global id map.
-//            var globalIdMap = GlobalIdMap.ReadFrom(stream);
-//
-//            lock (_loadedTiles)
-//            {
-//                _idMap = globalIdMap;
-//                for (var t = 0; t < tilesArray.Length; t++)
-//                {
-//                    _loadedTiles.Add(tilesArray[t]);
-//                }
-//            }
-//        }
     }
 }

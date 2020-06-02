@@ -8,7 +8,6 @@ namespace Itinero.Data.Graphs
 {
     internal sealed class Graph
     {
-        // The tile pointers index, a sparse array containing pointer t
         private readonly SparseArray<GraphTile> _tiles;
 
         /// <summary>

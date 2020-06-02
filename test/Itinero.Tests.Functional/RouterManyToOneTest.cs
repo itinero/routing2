@@ -6,9 +6,9 @@ namespace Itinero.Tests.Functional
     /// <summary>
     /// A many-to-one routing test.
     /// </summary>
-    public class RouterManyToOneTest : FunctionalTest<Route[], (RouterDb routerDb, SnapPoint[] sources, SnapPoint target, Profile profile)>
+    public class RouterManyToOneTest : FunctionalTest<Route[], (RouterDbInstance routerDb, SnapPoint[] sources, SnapPoint target, Profile profile)>
     {
-        protected override Route[] Execute((RouterDb routerDb, SnapPoint[] sources, SnapPoint target, Profile profile) input)
+        protected override Route[] Execute((RouterDbInstance routerDb, SnapPoint[] sources, SnapPoint target, Profile profile) input)
         {
             var (routerDb, sources, target, profile) = input;
 

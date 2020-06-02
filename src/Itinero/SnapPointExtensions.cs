@@ -21,7 +21,7 @@ namespace Itinero
         /// <param name="location">The location.</param>
         /// <param name="profile">The profile.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location,
+        public static Result<SnapPoint> Snap(this RouterDbInstance routerDb, (double longitude, double latitude) location,
             Profile profile)
         {
             return routerDb.Snap(location, new SnapPointSettings()
@@ -37,7 +37,7 @@ namespace Itinero
         /// <param name="location">The location.</param>
         /// <param name="settings">The snap point settings.</param>
         /// <returns>The snap point.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, (double longitude, double latitude) location,
+        public static Result<SnapPoint> Snap(this RouterDbInstance routerDb, (double longitude, double latitude) location,
             SnapPointSettings? settings = null)
         {
             settings ??= new SnapPointSettings();
@@ -48,7 +48,7 @@ namespace Itinero
             var box = location.BoxAround(settings.MaxOffsetInMeter);
 
             // make sure data is loaded.
-            routerDb.UsageNotifier?.NotifyBox(box);
+            routerDb.RouterDb.UsageNotifier?.NotifyBox(routerDb, box);
 
             // snap to closest edge.
             var snapPoint = routerDb.SnapInBox(box, acceptableFunc);
@@ -64,7 +64,7 @@ namespace Itinero
         /// <param name="vertexId">The vertex to snap to.</param>
         /// <param name="edgeId">The edge to prefer if any.</param>
         /// <returns>The result if any. Snapping will fail if a vertex has no edges.</returns>
-        public static Result<SnapPoint> Snap(this RouterDb routerDb, VertexId vertexId, EdgeId? edgeId = null)
+        public static Result<SnapPoint> Snap(this RouterDbInstance routerDb, VertexId vertexId, EdgeId? edgeId = null)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             if (!enumerator.MoveTo(vertexId)) return new Result<SnapPoint>($"Vertex {vertexId} not found.");
@@ -95,7 +95,7 @@ namespace Itinero
         /// <param name="location">The location.</param>
         /// <param name="settings">The snap point settings.</param>
         /// <returns>The snap points.</returns>
-        public static Result<IEnumerable<SnapPoint>> SnapAll(this RouterDb routerDb,
+        public static Result<IEnumerable<SnapPoint>> SnapAll(this RouterDbInstance routerDb,
             (double longitude, double latitude) location, SnapPointSettings? settings = null)
         {
             settings ??= new SnapPointSettings();
@@ -105,7 +105,7 @@ namespace Itinero
             var box = location.BoxAround(settings.MaxOffsetInMeter);
 
             // make sure data is loaded.
-            routerDb.UsageNotifier?.NotifyBox(box);
+            routerDb.RouterDb.UsageNotifier?.NotifyBox(routerDb, box);
 
             // snap to closest edge.
             return new Result<IEnumerable<SnapPoint>>(routerDb.SnapAllInBox(box, settings.AcceptableFunc(routerDb)));
@@ -117,7 +117,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="snapPoint">The snap point.</param>
         /// <returns>The location on the network.</returns>
-        public static (double longitude, double latitude) LocationOnNetwork(this SnapPoint snapPoint, RouterDb routerDb)
+        public static (double longitude, double latitude) LocationOnNetwork(this SnapPoint snapPoint, RouterDbInstance routerDb)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             enumerator.MoveToEdge(snapPoint.EdgeId);
@@ -136,7 +136,7 @@ namespace Itinero
         /// If the difference in angle is too big null is returned.</param>
         /// <returns>The direction on the edge at the location of the snap point that best matches the given direction.
         /// Returns null if the difference is too big relative to the tolerance or the edge is too small to properly calculate an angle.</returns>
-        public static bool? Direction(this SnapPoint snapPoint, RouterDb routerDb, DirectionEnum direction,
+        public static bool? Direction(this SnapPoint snapPoint, RouterDbInstance routerDb, DirectionEnum direction,
             double distance = 10, double tolerance = 90)
         {
             return snapPoint.DirectionFromAngle(routerDb, (double) direction, out _, distance, tolerance);
@@ -154,7 +154,7 @@ namespace Itinero
         /// If the difference in angle is too big null is returned.</param>
         /// <returns>The direction on the edge at the location of the snap point that best matches the given direction.
         /// Returns null if the difference is too big relative to the tolerance or the edge is too small to properly calculate an angle.</returns>
-        public static bool? Direction(this SnapPoint snapPoint, RouterDb routerDb, DirectionEnum direction,
+        public static bool? Direction(this SnapPoint snapPoint, RouterDbInstance routerDb, DirectionEnum direction,
             out double difference, double distance = 10, double tolerance = 90)
         {
             return snapPoint.DirectionFromAngle(routerDb, (double) direction, out difference, distance, tolerance);
@@ -172,7 +172,7 @@ namespace Itinero
         /// If the difference in angle is too big null is returned.</param>
         /// <returns>The direction on the edge at the location of the snap point that best matches the given direction.
         /// Returns null if the difference is too big relative to the tolerance or the edge is too small to properly calculate an angle.</returns>
-        public static bool? DirectionFromAngle(this SnapPoint snapPoint, RouterDb routerDb, double degreesMeridian, out double difference, double distance = 10,
+        public static bool? DirectionFromAngle(this SnapPoint snapPoint, RouterDbInstance routerDb, double degreesMeridian, out double difference, double distance = 10,
             double tolerance = 90)
         {
             if (tolerance <= 0 || tolerance > 90) throw new ArgumentOutOfRangeException(nameof(tolerance), "The tolerance has to be in range of ]0,90]");
@@ -211,7 +211,7 @@ namespace Itinero
         /// <param name="routerDb">The router db.</param>
         /// <param name="distance">The distance to average the edge angle over in the range of ]0,∞[.</param>
         /// <returns>The angle in degrees with the meridian clockwise.</returns>
-        public static double? Angle(this SnapPoint snapPoint, RouterDb routerDb, double distance = 10)
+        public static double? Angle(this SnapPoint snapPoint, RouterDbInstance routerDb, double distance = 10)
         {
             if (distance <= 0) throw new ArgumentOutOfRangeException(nameof(distance), "The distance has to be in the range ]0,∞[");
             

@@ -8,7 +8,7 @@ namespace Itinero.Routers
         /// <summary>
         /// Gets the router db.
         /// </summary>
-        RouterDb RouterDb { get; }
+        RouterDbInstance RouterDb { get; }
         
         /// <summary>
         /// Gets the settings.

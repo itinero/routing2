@@ -25,7 +25,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
         /// Calculates a path.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path? Run(RouterDb routerDb, (SnapPoint sp, bool? direction) source,
+        public Path? Run(RouterDbInstance routerDb, (SnapPoint sp, bool? direction) source,
             (SnapPoint sp, bool? direction) target,
             Func<RouterDbEdgeEnumerator, double> getWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
@@ -42,7 +42,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
         /// Calculates a path.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path[] Run(RouterDb routerDb, (SnapPoint sp, bool? direction) source,
+        public Path[] Run(RouterDbInstance routerDb, (SnapPoint sp, bool? direction) source,
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
             Func<RouterDbEdgeEnumerator, double> getWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,

@@ -34,20 +34,23 @@ namespace Itinero.Tests.Profiles.TestBench
 
             // load data using vehicle.
             var routerDb = new RouterDb();
-            var routerDbStreamTarget = new RouterDbStreamTarget(routerDb);
-            using (var stream = File.OpenRead(test.OsmDataFile))
+            using (var writer = routerDb.GetWriter())
             {
-                if (test.OsmDataFile.EndsWith("osm.pbf"))
+                var routerDbStreamTarget = new RouterDbStreamTarget(writer);
+                await using (var stream = File.OpenRead(test.OsmDataFile))
                 {
-                    var osmSource = new OsmSharp.Streams.PBFOsmStreamSource(stream);
-                    routerDbStreamTarget.RegisterSource(osmSource);
-                    routerDbStreamTarget.Pull();
-                }
-                else
-                {
-                    var osmSource = new OsmSharp.Streams.XmlOsmStreamSource(stream);
-                    routerDbStreamTarget.RegisterSource(osmSource);
-                    routerDbStreamTarget.Pull();
+                    if (test.OsmDataFile.EndsWith("osm.pbf"))
+                    {
+                        var osmSource = new OsmSharp.Streams.PBFOsmStreamSource(stream);
+                        routerDbStreamTarget.RegisterSource(osmSource);
+                        routerDbStreamTarget.Pull();
+                    }
+                    else
+                    {
+                        var osmSource = new OsmSharp.Streams.XmlOsmStreamSource(stream);
+                        routerDbStreamTarget.RegisterSource(osmSource);
+                        routerDbStreamTarget.Pull();
+                    }
                 }
             }
 
@@ -60,10 +63,11 @@ namespace Itinero.Tests.Profiles.TestBench
             var source = test.Expected.Coordinates[0];
             var target = test.Expected.Coordinates[test.Expected.Coordinates.Length - 1];
 
-            var sourceSnap = routerDb.Snap((source.X, source.Y), profile: vehicle);
-            var targetSnap = routerDb.Snap((target.X, target.Y), profile: vehicle);
+            var latest = routerDb.Latest;
+            var sourceSnap = latest.Snap((source.X, source.Y), profile: vehicle);
+            var targetSnap = latest.Snap((target.X, target.Y), profile: vehicle);
 
-            var route = routerDb.Route(new RoutingSettings() {Profile = vehicle})
+            var route = latest.Route(new RoutingSettings() {Profile = vehicle})
                     .From(sourceSnap)
                     .To(targetSnap)
                     .Calculate();

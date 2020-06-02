@@ -16,6 +16,6 @@ namespace Itinero.Algorithms.Routes
         /// <param name="path">The path.</param>
         /// <param name="forward">Forward flag.</param>
         /// <returns>The route.</returns>
-        Result<Route> Build(RouterDb db, Profile profile, Path path, bool forward = true);
+        Result<Route> Build(RouterDbInstance db, Profile profile, Path path, bool forward = true);
     }
 }

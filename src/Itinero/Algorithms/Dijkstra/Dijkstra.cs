@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Itinero.Algorithms.DataStructures;
@@ -24,7 +23,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// Calculates one path between a single source and target.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path? Run(RouterDb routerDb, SnapPoint source, SnapPoint target,
+        public Path? Run(RouterDbInstance routerDb, SnapPoint source, SnapPoint target,
             Func<RouterDbEdgeEnumerator, double> getWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
@@ -39,7 +38,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// Calculates all paths from a single source to many targets.
         /// </summary>
         /// <returns>The path.</returns>
-        public Path[] Run(RouterDb routerDb, SnapPoint source, IReadOnlyList<SnapPoint> targets,
+        public Path[] Run(RouterDbInstance routerDb, SnapPoint source, IReadOnlyList<SnapPoint> targets,
             Func<RouterDbEdgeEnumerator, double> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             double GetWorst((uint pointer, double cost)[] targets)
