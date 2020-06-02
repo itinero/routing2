@@ -19,7 +19,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap(vertex1),
                 latest.Snap(vertex2),
@@ -50,7 +50,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap(vertex1),
                 latest.Snap(vertex3),
@@ -86,7 +86,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge3 = writer.AddEdge(vertex3, vertex4);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap(vertex1),
                 latest.Snap(vertex4),
@@ -124,7 +124,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge3 = writer.AddEdge(vertex1, vertex3); // this edge has a weight of 10.
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap(vertex1, edge3),
                 latest.Snap(vertex3, edge3),
@@ -174,7 +174,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var snap1 = latest.Snap(vertex1).Value;
             var snap2 = latest.Snap(vertex2).Value;
             var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
@@ -240,7 +240,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var snap1 = latest.Snap(vertex1).Value;
             var snap2 = latest.Snap(vertex3).Value;
             var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);

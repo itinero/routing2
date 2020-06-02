@@ -1,6 +1,6 @@
 ﻿namespace Itinero.Data.Graphs
 {
-    public static class GraphConstants
+    internal static class GraphConstants
     {
         /// <summary>
         /// A status to indicate that the tile was not loaded.

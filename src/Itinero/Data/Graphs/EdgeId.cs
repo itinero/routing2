@@ -5,7 +5,7 @@ namespace Itinero.Data.Graphs
     /// <summary>
     /// Represents a edge id composed of a tile id and a local id.
     /// </summary>
-    public struct EdgeId : IEquatable<EdgeId>
+    public readonly struct EdgeId : IEquatable<EdgeId>
     {
         /// <summary>
         /// Creates a new vertex id.

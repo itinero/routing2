@@ -11,7 +11,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
         public void Path_New_Offsets_ShouldIncludeByDefault()
         {
             var routerDb = new RouterDb();
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
 
             Assert.Equal(0, path.Offset1);
             Assert.Equal(ushort.MaxValue, path.Offset2);
@@ -31,7 +31,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Append(edge, vertex1);
 
             Assert.Single(path);
@@ -56,7 +56,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
 
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
 
@@ -83,7 +83,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
 
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
 
@@ -108,7 +108,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge1 = writer.AddEdge(vertex1, vertex2);
             }
 
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Prepend(edge1, vertex1);
 
             Assert.Single(path);
@@ -131,7 +131,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Prepend(edge2, vertex3);
             path.Prepend(edge1, vertex2);
 
@@ -156,7 +156,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
             path.Offset1 = (ushort.MaxValue / 2);
@@ -183,7 +183,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
             path.Offset1 = ushort.MaxValue;
@@ -212,7 +212,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var path = new Path(routerDb.Latest);
+            var path = new Path(routerDb.Network);
             path.Append(edge1, vertex1);
             path.Append(edge2, vertex2);
             path.Offset1 = (ushort.MaxValue / 2);

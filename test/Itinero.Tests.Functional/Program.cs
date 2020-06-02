@@ -44,7 +44,7 @@ namespace Itinero.Tests.Functional
                 "http://download.geofabrik.de/europe/luxembourg-latest.osm.pbf"));
             routerDb.UseOsmData(new OsmSharp.Streams.PBFOsmStreamSource(osmStream));
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var location1 = SnappingTest.Default.Run((latest, 6.142258644104003, 49.86815622289359,
                 bicycle));
             var location2 = SnappingTest.Default.Run((latest, 6.151978969573975, 49.86843283237664,
@@ -62,7 +62,7 @@ namespace Itinero.Tests.Functional
             {
                 s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
             });
-            latest = routerDb.Latest;
+            latest = routerDb.Network;
 
             var factor = bicycle.Factor(new [] {
                 ("highway", "pedestrian") });
@@ -310,7 +310,7 @@ namespace Itinero.Tests.Functional
                     Zoom = 14
                 });
                 routerDb.UseRouteableTiles();
-                latest = routerDb.Latest;
+                latest = routerDb.Network;
 
                 var deSterre = SnappingTest.Default.Run((latest, 3.715675, 51.026164, profile: bicycle),
                     $"Snapping cold: deSterre");

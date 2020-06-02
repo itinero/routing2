@@ -8,7 +8,7 @@ namespace Itinero.Tests
     public class RouterDbTests
     {
         [Fact]
-        public void RouterDbGraphEnumerator_ShouldEnumerateEdgesInGraph()
+        public void RouterDb_ShouldStoreEdge()
         {
             var routerDb = new RouterDb();
             VertexId vertex1;
@@ -21,7 +21,7 @@ namespace Itinero.Tests
                 routerDbWriter.AddEdge(vertex1, vertex2);
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
@@ -51,7 +51,7 @@ namespace Itinero.Tests
                 });
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             var shape = enumerator.Shape;
@@ -79,7 +79,7 @@ namespace Itinero.Tests
                 edge = routerDbWriter.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
             }
 
-            var attributes = routerDb.Latest.GetAttributes(edge);
+            var attributes = routerDb.Network.GetAttributes(edge);
             Assert.NotNull(attributes);
             Assert.Single(attributes);
             Assert.Equal("highway", attributes.First().key);

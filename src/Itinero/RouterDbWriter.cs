@@ -13,29 +13,30 @@ namespace Itinero
     ///
     /// The data can only be used for routing after the data has been fully written.
     /// </summary>
-    public class RouterDbWriter : IDisposable
+    public sealed class RouterDbWriter : IDisposable
     {
         private readonly RouterDb _routerDb;
+        private readonly IMutableNetwork _mutableNetwork;
 
         internal RouterDbWriter(RouterDb routerDb)
         {
             _routerDb = routerDb;
 
             // make a copy of the latest network to write to.
-            var latest = routerDb.Latest;
-            
+            var latest = routerDb.Network;
+            _mutableNetwork = latest.GetAsMutable();
         }
-        
-        // TODO: implement all the writing/updating functionality and what not.
-        
+
         /// <summary>
-        /// Gets the given vertex.
+        /// Gets the vertex with the given id.
         /// </summary>
         /// <param name="vertex">The vertex.</param>
-        /// <returns>The vertex.</returns>
-        public (double longitude, double latitude) GetVertex(VertexId vertex)
+        /// <param name="longitude">The longitude.</param>
+        /// <param name="latitude">The latitude.</param>
+        /// <returns>True if the vertex exists.</returns>
+        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
         {
-            throw new NotImplementedException();
+            return _mutableNetwork.TryGetVertex(vertex, out longitude, out latitude);
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace Itinero
         /// <returns>The ID of the new vertex.</returns>
         public VertexId AddVertex(double longitude, double latitude)
         {
-            throw new NotImplementedException();
+            return _mutableNetwork.AddVertex(longitude, latitude);
         }
         
         /// <summary>
@@ -60,12 +61,15 @@ namespace Itinero
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
             IEnumerable<(string key, string value)>? attributes = null)
         {
-            throw new NotImplementedException();
+            return _mutableNetwork.AddEdge(vertex1, vertex2, shape, attributes);
         }
         
         public void Dispose()
         {
-            (_routerDb as IRouterDbWritable).ClearWriter();
+            var routerDbWriteable = _routerDb as IRouterDbWritable;
+            routerDbWriteable.SetLatest(_mutableNetwork.ToNetwork());
+            _mutableNetwork.Dispose();
+            routerDbWriteable.ClearWriter();
         }
     }
 

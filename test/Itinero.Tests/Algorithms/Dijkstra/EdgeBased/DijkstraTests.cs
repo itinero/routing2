@@ -19,7 +19,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex1), null),
                 (latest.Snap(vertex2), null),
@@ -48,7 +48,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex1), true),
                 (latest.Snap(vertex2), true),
@@ -77,7 +77,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex1), true),
                 (latest.Snap(vertex2), false),
@@ -99,7 +99,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex1), true),
                 (latest.Snap(vertex2), false),
@@ -123,7 +123,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex1), null),
                 (latest.Snap(vertex3), null),
@@ -159,7 +159,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge3 = writer.AddEdge(vertex3, vertex4);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex1), null),
                 (latest.Snap(vertex4), null),
@@ -196,7 +196,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var snap1 = latest.Snap(vertex1).Value;
             var snap2 = latest.Snap(vertex3).Value;
             var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);
@@ -278,7 +278,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var snap1 = latest.Snap(vertex1).Value;
             var snap2 = latest.Snap(vertex2).Value;
             var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
@@ -353,7 +353,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 edge4 = writer.AddEdge(vertex4, vertex1);
             }
             
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (latest.Snap(vertex2, edge1), true),
                 (latest.Snap(vertex1, edge1), true),
@@ -400,7 +400,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
                 });
             }
             
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var snapPoint = new SnapPoint(edge1, (ushort.MaxValue / 2));
             var path = Itinero.Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
                 (snapPoint, true),(snapPoint, false),(e) => 1);

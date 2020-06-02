@@ -10,7 +10,7 @@ namespace Itinero
     /// <summary>
     /// Represents a router db.
     /// </summary>
-    public class RouterDb : IRouterDbWritable
+    public sealed class RouterDb : IRouterDbWritable
     {
         /// <summary>
         /// Creates a new router db.
@@ -20,13 +20,13 @@ namespace Itinero
         {
             configuration ??= RouterDbConfiguration.Default;
             
-            Latest = new Network(this, configuration.Zoom);
+            Network = new Network(this, configuration.Zoom);
         }
 
         /// <summary>
         /// Gets the latest.
         /// </summary>
-        public Network Latest { get; private set; }
+        public Network Network { get; private set; }
 
         /// <summary>
         /// Gets the usage notifier.
@@ -52,9 +52,9 @@ namespace Itinero
             return _writer;
         }
         
-        void IRouterDbWritable.SetLatest(Network latest)
+        void IRouterDbWritable.SetLatest(Network newNetwork)
         {
-            this.Latest = latest;
+            this.Network = newNetwork;
         }
 
         void IRouterDbWritable.ClearWriter()

@@ -21,6 +21,12 @@ namespace Itinero.Data.Graphs
             _tiles = new SparseArray<GraphTile>(0);
         }
 
+        private Graph(SparseArray<GraphTile> tiles, int zoom)
+        {
+            Zoom = zoom;
+            _tiles = tiles;
+        }
+
         /// <summary>
         /// Gets the zoom.
         /// </summary>
@@ -45,8 +51,14 @@ namespace Itinero.Data.Graphs
             var tile = _tiles[localTileId];
             if (tile == null)
             {
+                // create a new tile.
                 tile = new GraphTile(this.Zoom, localTileId);
                 _tiles[localTileId] = tile;
+            }
+            else
+            {
+                // check if there is a mutable graph.
+                this.CloneTileIfNeeded(tile);
             }
 
             return tile.AddVertex(longitude, latitude);
@@ -97,14 +109,15 @@ namespace Itinero.Data.Graphs
         {
             var tile = _tiles[vertex1.TileId];
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-
+            this.CloneTileIfNeeded(tile);
+            
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
-            if (vertex1.TileId != vertex2.TileId)
-            {
-                // this edge crosses tiles, also add an extra edge to the other tile.
-                tile = _tiles[vertex2.TileId];
-                tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
-            }
+            if (vertex1.TileId == vertex2.TileId) return edge1;
+            
+            // this edge crosses tiles, also add an extra edge to the other tile.
+            tile = _tiles[vertex2.TileId];
+            this.CloneTileIfNeeded(tile);
+            tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
 
             return edge1;
         }
@@ -220,19 +233,55 @@ namespace Itinero.Data.Graphs
             /// <returns>The attributes.</returns>
             public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes;
         }
-        
-        internal class MutableGraph
+
+        private MutableGraph? _mutableGraph = null;
+
+        internal IMutableGraph GetAsMutable()
         {
-            private readonly Graph _graph;
+            if (_mutableGraph != null) throw new InvalidOperationException($"Only one mutable graph is allowed at one time.");
+            
+            _mutableGraph = new MutableGraph(this);
+            return _mutableGraph;
+        }
+
+        internal void CloneTileIfNeeded(GraphTile tile)
+        {
+            var mutableGraph = _mutableGraph;
+            if (mutableGraph != null && !mutableGraph.HasTile(tile.TileId)) mutableGraph.SetTile(tile.Clone());
+        }
+
+        internal void ClearMutable()
+        {
+            _mutableGraph = null;
+        }
+        
+        internal class MutableGraph : IMutableGraph
+        {
+            private readonly SparseArray<bool> _modified;
             private readonly SparseArray<GraphTile> _tiles;
+            private readonly Graph _graph;
 
             public MutableGraph(Graph graph)
             {
                 _graph = graph;
-                _tiles = new SparseArray<GraphTile>(0);
+                _tiles = graph._tiles.Clone();
+                
+                _modified = new SparseArray<bool>(_tiles.Length);
             }
 
-            private GraphTile? GetTile(uint localTileId, bool create = false)
+            internal bool HasTile(uint localTileId)
+            {
+                return _tiles.Length > localTileId && 
+                       _modified[localTileId] == true;
+            }
+
+            internal void SetTile(GraphTile tile)
+            {
+                _tiles[tile.TileId] = tile;
+                _modified[tile.TileId] = true;
+            }
+
+            private GraphTile GetTileForWrite(uint localTileId)
             {
                 // ensure minimum size.
                 _tiles.EnsureMinimumSize(localTileId);
@@ -241,22 +290,21 @@ namespace Itinero.Data.Graphs
                 var tile = _tiles[localTileId];
                 if (tile != null) return tile;
                 
-                // there is no tile, get the one from the graph.
-                if (_graph._tiles.Length > localTileId) tile = _graph._tiles[localTileId];
-                if (!create) return tile;
-                if (tile != null)
-                {
-                    // create a copy of the graph tile.
-                    
-                }
-                else
-                {
-                    // create a new tile.
-                    tile = new GraphTile(_graph.Zoom, localTileId);
-                }
+                // there is no tile, get the one from the graph or create a new one.
+                tile = new GraphTile(_graph.Zoom, localTileId);
                 
                 // store in the local tiles.
                 _tiles[localTileId] = tile;
+                return tile;
+            }
+
+            private GraphTile? GetTileForRead(uint localTileId)
+            {
+                // ensure minimum size.
+                _tiles.EnsureMinimumSize(localTileId);
+                
+                // check if there is already a modified version.
+                var tile = _tiles.Length > localTileId ? _tiles[localTileId] : null;
                 return tile;
             }
 
@@ -276,7 +324,7 @@ namespace Itinero.Data.Graphs
                 _tiles.EnsureMinimumSize(localTileId);
 
                 // get the tile (or create it).
-                var tile = this.GetTile(localTileId, true);
+                var tile = this.GetTileForWrite(localTileId);
                 
                 // add the vertex.
                 return tile.AddVertex(longitude, latitude);
@@ -301,7 +349,7 @@ namespace Itinero.Data.Graphs
                     return false;
                 }
 
-                var tile = this.GetTile(localTileId);
+                var tile = this.GetTileForRead(localTileId);
                 if (tile == null)
                 {
                     longitude = default;
@@ -325,18 +373,28 @@ namespace Itinero.Data.Graphs
                 IEnumerable<(double longitude, double latitude)>? shape = null,
                 IEnumerable<(string key, string value)>? attributes = null)
             {
-                var tile = _tiles[vertex1.TileId];
+                var tile = this.GetTileForWrite(vertex1.TileId);
                 if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
                 var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
                 if (vertex1.TileId != vertex2.TileId)
                 {
                     // this edge crosses tiles, also add an extra edge to the other tile.
-                    tile = _tiles[vertex2.TileId];
+                    tile = this.GetTileForWrite(vertex2.TileId);
                     tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
                 }
 
                 return edge1;
+            }
+
+            public Graph ToGraph()
+            {
+                return new Graph(_tiles, _graph.Zoom);
+            }
+
+            public void Dispose()
+            {
+                _graph.ClearMutable();
             }
         }
     }

@@ -63,7 +63,7 @@ namespace Itinero.Tests.Profiles.TestBench
             var source = test.Expected.Coordinates[0];
             var target = test.Expected.Coordinates[test.Expected.Coordinates.Length - 1];
 
-            var latest = routerDb.Latest;
+            var latest = routerDb.Network;
             var sourceSnap = latest.Snap((source.X, source.Y), profile: vehicle);
             var targetSnap = latest.Snap((target.X, target.Y), profile: vehicle);
 

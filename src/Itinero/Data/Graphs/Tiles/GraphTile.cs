@@ -46,6 +46,27 @@ namespace Itinero.Data.Graphs.Tiles
             _attributes = new MemoryArray<byte>(0);
             _strings = new MemoryArray<string>(0);
         }
+        
+        private GraphTile(int zoom, uint tileId, ArrayBase<uint> pointers, ArrayBase<byte> edges,
+            ArrayBase<byte> coordinates, ArrayBase<byte> shapes, ArrayBase<byte> attributes,
+            ArrayBase<string> strings, uint nextVertexId, uint nextEdgeId, uint nextAttributePointer,
+            uint nextShapePointer, uint nextStringId)
+        {
+            _zoom = zoom;
+            _tileId = tileId;
+            _pointers = pointers;
+            _edges = edges;
+            _coordinates = coordinates;
+            _shapes = shapes;
+            _attributes = attributes;
+            _strings = strings;
+
+            _nextVertexId = nextVertexId;
+            _nextEdgeId = nextEdgeId;
+            _nextAttributePointer = nextAttributePointer;
+            _nextShapePointer = nextShapePointer;
+            _nextStringId = nextStringId;
+        }
 
         /// <summary>
         /// Clones this graph tile.
@@ -53,7 +74,8 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>The copy of this tile.</returns>
         public GraphTile Clone()
         {
-            
+            return new GraphTile(_zoom, _tileId, _pointers.Clone(), _edges.Clone(), _coordinates.Clone(),
+                _shapes.Clone(), _attributes.Clone(), _strings.Clone(), _nextVertexId, _nextEdgeId, _nextAttributePointer, _nextShapePointer, _nextStringId);
         }
 
         /// <summary>

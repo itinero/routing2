@@ -3,7 +3,7 @@
     /// <summary>
     /// The graph settings.
     /// </summary>
-    public class GraphSettings
+    internal class GraphSettings
     {
         /// <summary>
         /// The zoom level.

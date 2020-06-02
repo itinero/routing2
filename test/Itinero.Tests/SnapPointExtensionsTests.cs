@@ -21,7 +21,7 @@ namespace Itinero.Tests
                 edge = routerDbWriter.AddEdge(vertex1, vertex2);
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var snapPoint = new SnapPoint(edge, 0);
             var locationOnNetwork = snapPoint.LocationOnNetwork(routerDbLatest);
             Assert.True(locationOnNetwork.DistanceEstimateInMeter(routerDbLatest.GetVertex(vertex1)) < .1);
@@ -41,7 +41,7 @@ namespace Itinero.Tests
                 edge = routerDbWriter.AddEdge(vertex1, vertex2);
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var snapPoint = new SnapPoint(edge, ushort.MaxValue);
             var locationOnNetwork = snapPoint.LocationOnNetwork(routerDbLatest);
             Assert.True(locationOnNetwork.DistanceEstimateInMeter(routerDbLatest.GetVertex(vertex2)) < .1);
@@ -62,7 +62,7 @@ namespace Itinero.Tests
                 edge = routerDbWriter.AddEdge(vertex1, vertex2);
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var snapPoint = new SnapPoint(edge, ushort.MaxValue / 2);
             var locationOnNetwork = snapPoint.LocationOnNetwork(routerDbLatest);
             Assert.True(locationOnNetwork.DistanceEstimateInMeter((routerDbLatest.GetVertex(vertex1), routerDbLatest.GetVertex(vertex2)).Center()) < .1);
@@ -73,7 +73,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
 
-            var result = routerDb.Latest.Snap(new VertexId(0, 1));
+            var result = routerDb.Network.Snap(new VertexId(0, 1));
             Assert.True(result.IsError);
         }
         
@@ -87,7 +87,7 @@ namespace Itinero.Tests
                 vertex = routerDbWriter.AddVertex(3.146638870239258, 51.31060357805506);
             }
 
-            var result = routerDb.Latest.Snap(vertex);
+            var result = routerDb.Network.Snap(vertex);
             Assert.True(result.IsError);
         }
         
@@ -105,7 +105,7 @@ namespace Itinero.Tests
                 edge = routerDbWriter.AddEdge(vertex1, vertex2);
             }
 
-            var result = routerDb.Latest.Snap(vertex1);
+            var result = routerDb.Network.Snap(vertex1);
             Assert.False(result.IsError);
             Assert.Equal(0, result.Value.Offset);
             Assert.Equal(edge, result.Value.EdgeId);
@@ -125,7 +125,7 @@ namespace Itinero.Tests
                 edge = routerDbWriter.AddEdge(vertex1, vertex2);
             }
 
-            var result = routerDb.Latest.Snap(vertex2);
+            var result = routerDb.Network.Snap(vertex2);
             Assert.False(result.IsError);
             Assert.Equal(ushort.MaxValue, result.Value.Offset);
             Assert.Equal(edge, result.Value.EdgeId);
@@ -146,7 +146,7 @@ namespace Itinero.Tests
 
             var location = ((3.1074142456054688 + 3.1095707416534424) / 2,
                 (51.31012070202407 + 51.31076453560284) / 2);
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var result = routerDbLatest.Snap(location);
             Assert.False(result.IsError);
             Assert.True(result.Value.LocationOnNetwork(routerDbLatest).DistanceEstimateInMeter(location) < 1);
@@ -171,7 +171,7 @@ namespace Itinero.Tests
                 });
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var result = routerDbLatest.Snap(routerDbLatest.GetVertex(vertex1));
             Assert.False(result.IsError);
             Assert.Equal(0, result.Value.Offset);
@@ -196,7 +196,7 @@ namespace Itinero.Tests
                 });
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var result = routerDbLatest.Snap(routerDbLatest.GetVertex(vertex2));
             Assert.False(result.IsError);
             Assert.Equal(ushort.MaxValue, result.Value.Offset);
@@ -220,7 +220,7 @@ namespace Itinero.Tests
                 });
             }
 
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var location = (new SnapPoint(edge, ushort.MaxValue / 2)).LocationOnNetwork(routerDbLatest);
             var result = routerDbLatest.Snap(location);
             Assert.False(result.IsError);
@@ -241,7 +241,7 @@ namespace Itinero.Tests
             }
 
             // calculate direction.
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDbLatest, DirectionEnum.East);
             Assert.NotNull(direction);
             Assert.True(direction.Value);
@@ -263,7 +263,7 @@ namespace Itinero.Tests
             
 
             // calculate direction.
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDbLatest, DirectionEnum.NorthEast);
             Assert.NotNull(direction);
             Assert.True(direction.Value);
@@ -289,7 +289,7 @@ namespace Itinero.Tests
             }
 
             // calculate direction.
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDbLatest, DirectionEnum.West);
             Assert.NotNull(direction);
             Assert.False(direction.Value);
@@ -310,7 +310,7 @@ namespace Itinero.Tests
             }
 
             // calculate direction.
-            var routerDbLatest = routerDb.Latest;
+            var routerDbLatest = routerDb.Network;
             var direction = (new SnapPoint(edge, ushort.MaxValue / 2)).Direction(routerDbLatest, DirectionEnum.West);
             Assert.NotNull(direction);
             Assert.True(direction.Value);

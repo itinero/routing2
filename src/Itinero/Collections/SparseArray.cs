@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Itinero.Collections
@@ -25,6 +26,15 @@ namespace Itinero.Collections
 
             var blockCount = (long)System.Math.Ceiling((double)size / _blockSize);
             _blocks = new T[blockCount][];
+        }
+
+        private SparseArray(T[][] blocks, long size, int blockSize, int arrayPow, T @default)
+        {
+            _blocks = blocks;
+            _size = size;
+            _blockSize = blockSize;
+            _arrayPow = arrayPow;
+            _default = @default;
         }
 
         private static int ExpOf2(int powerOf2)
@@ -99,6 +109,24 @@ namespace Itinero.Collections
         /// Gets the length of this array.
         /// </summary>
         public long Length => _size;
+
+        /// <summary>
+        /// Creates a clone.
+        /// </summary>
+        /// <returns>A copy of this array.</returns>
+        public SparseArray<T> Clone()
+        {
+            var blocks = new T[_blocks.Length][];
+            for (var b = 0; b < blocks.Length; b++)
+            {
+                var block = _blocks[b];
+                if (block == null) continue;
+
+                blocks[b] = (block.Clone() as T[])!;
+            }
+            
+            return new SparseArray<T>(blocks, _size, _blockSize, _arrayPow, _default);
+        }
     }
 
     internal static class SparseArrayExtensions
