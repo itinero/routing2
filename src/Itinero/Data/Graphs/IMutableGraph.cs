@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Itinero.Data.Graphs.EdgeTypes;
 
 namespace Itinero.Data.Graphs
 {
@@ -32,6 +33,12 @@ namespace Itinero.Data.Graphs
         /// <returns>The edge id.</returns>
         EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
             IEnumerable<(double longitude, double latitude)>? shape = null, IEnumerable<(string key, string value)>? attributes = null);
+
+        /// <summary>
+        /// Sets the edge type function.
+        /// </summary>
+        /// <param name="graphEdgeTypeFunc">The edge type function.</param>
+        void SetEdgeTypeFunc(GraphEdgeTypeFunc graphEdgeTypeFunc);
         
         /// <summary>
         /// Gets the resulting graph.
