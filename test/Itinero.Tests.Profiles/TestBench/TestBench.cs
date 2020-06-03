@@ -34,7 +34,7 @@ namespace Itinero.Tests.Profiles.TestBench
 
             // load data using vehicle.
             var routerDb = new RouterDb();
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 var routerDbStreamTarget = new RouterDbStreamTarget(writer);
                 await using (var stream = File.OpenRead(test.OsmDataFile))

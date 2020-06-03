@@ -11,21 +11,21 @@ namespace Itinero.Profiles.Handlers
         {
             _profile = profile;
         }
-
-        private EdgeFactor _edgeFactor = EdgeFactor.NoFactor;
+        
+        internal EdgeFactor EdgeFactor = EdgeFactor.NoFactor;
         private uint _length;
 
         public override void MoveTo(NetworkEdgeEnumerator enumerator)
-        {
-            _edgeFactor = enumerator.FactorInEdgeDirection(_profile);
+        { 
+            EdgeFactor = enumerator.FactorInEdgeDirection(_profile);
 
             _length = (uint)(enumerator.EdgeLength() * 100);
         }
 
-        public override uint ForwardWeight => _edgeFactor.ForwardFactor * _length;
-        public override uint BackwardWeight => _edgeFactor.ForwardFactor * _length;
-        public override uint ForwardSpeed  => _edgeFactor.ForwardSpeed;
-        public override uint BackwardSpeed => _edgeFactor.BackwardSpeed;
-        public override bool CanStop  => _edgeFactor.CanStop;
+        public override uint ForwardWeight => EdgeFactor.ForwardFactor * _length;
+        public override uint BackwardWeight => EdgeFactor.ForwardFactor * _length;
+        public override uint ForwardSpeed  => EdgeFactor.ForwardSpeed;
+        public override uint BackwardSpeed => EdgeFactor.BackwardSpeed;
+        public override bool CanStop  => EdgeFactor.CanStop;
     }
 }

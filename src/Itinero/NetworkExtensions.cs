@@ -3,6 +3,7 @@ using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Profiles;
 using Itinero.Profiles.Handlers;
+using Itinero.Profiles.Handlers.EdgeTypes;
 using Itinero.Routers;
 
 namespace Itinero
@@ -37,9 +38,16 @@ namespace Itinero
             });
         }
 
-        internal static ProfileHandler GetProfileHandler(this Network routerDb, Profile profile)
+        internal static ProfileHandler GetProfileHandler(this Network network, Profile profile)
         {
-            return new ProfileHandlerDefault(profile);
+            var profileHandler = new ProfileHandlerDefault(profile);
+            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
+                cache == null)
+            {
+                return profileHandler;
+            }
+            
+            return new ProfileHandlerEdgeTypes(profileHandler, cache);
         }
         
         internal static IEnumerable<(string key, string value)> GetAttributes(this Network routerDb, EdgeId edge)

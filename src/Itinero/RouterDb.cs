@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Itinero.Data.Events;
+using Itinero.Profiles;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -10,7 +11,7 @@ namespace Itinero
     /// <summary>
     /// Represents a router db.
     /// </summary>
-    public sealed class RouterDb : IRouterDbWritable
+    public sealed class RouterDb : IRouterDbMutations
     {
         /// <summary>
         /// Creates a new router db.
@@ -32,8 +33,10 @@ namespace Itinero
         /// Gets the usage notifier.
         /// </summary>
         public DataUseNotifier UsageNotifier { get; } = new DataUseNotifier();
+        
+        internal RouterDbProfileConfiguration ProfileConfiguration { get; private set; } = new RouterDbProfileConfiguration();
 
-        private RouterDbWriter? _writer;
+        private MutableRouterDb? _writer;
         
         /// <summary>
         /// Returns true if there is already a writer.
@@ -44,22 +47,18 @@ namespace Itinero
         /// Gets a writer.
         /// </summary>
         /// <returns>The writer.</returns>
-        public RouterDbWriter GetWriter()
+        public IMutableRouterDb GetAsMutable()
         {
             if (_writer != null) throw new InvalidOperationException($"Only one writer is allowed at one time." +
                                                                      $"Check {nameof(HasWriter)} to check for a current writer.");
-            _writer = new RouterDbWriter(this);
+            _writer = new MutableRouterDb(this);
             return _writer;
         }
         
-        void IRouterDbWritable.SetLatest(Network newNetwork)
+        void IRouterDbMutations.Finish(Network newNetwork, RouterDbProfileConfiguration profileConfiguration)
         {
             this.Network = newNetwork;
-        }
-
-        void IRouterDbWritable.ClearWriter()
-        {
-            _writer = null;
+            this.ProfileConfiguration = profileConfiguration;
         }
     }
 }

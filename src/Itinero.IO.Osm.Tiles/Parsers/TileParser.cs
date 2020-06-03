@@ -46,9 +46,6 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         internal static bool AddOsmTile(this NetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
             JObject jsonObject)
         {
-            Logger.Log(nameof(TileParser), Logging.TraceEventType.Verbose,
-                $"Loading tile: {tile}({tile.LocalId})");
-
             var nodeLocations = new Dictionary<long, ((double longitude, double latitude) location, bool inTile)>();
             var waysData = new Dictionary<long, (List<long> nodes, IEnumerable<(string key, string value)> attributes)>();
             var nodes = new HashSet<long>();

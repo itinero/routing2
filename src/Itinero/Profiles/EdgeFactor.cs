@@ -3,7 +3,7 @@ namespace Itinero.Profiles
     /// <summary>
     /// A factor returned by a vehicle profile to influence routing augmented with estimated speed. 
     /// </summary>
-    public struct EdgeFactor
+    public readonly struct EdgeFactor
     {
         /// <summary>
         /// Creates a new edge factor.

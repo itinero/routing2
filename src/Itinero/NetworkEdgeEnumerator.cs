@@ -109,5 +109,10 @@ namespace Itinero
         /// </summary>
         /// <returns>The attributes.</returns>
         public IEnumerable<(string key, string value)> Attributes => this.Enumerator.Attributes; 
+
+        /// <summary>
+        /// Gets the edge profile id.
+        /// </summary>
+        public uint? EdgeTypeId => this.Enumerator.EdgeTypeId;
     }
 }

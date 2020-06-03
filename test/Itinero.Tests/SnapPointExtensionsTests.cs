@@ -13,7 +13,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             VertexId vertex1;
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 vertex1 = routerDbWriter.AddVertex(3.1074142456054688, 51.31012070202407);
                 var vertex2 = routerDbWriter.AddVertex(3.1095707416534424, 51.31076453560284);
@@ -33,7 +33,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             VertexId vertex2;
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(3.1074142456054688, 51.31012070202407);
                 vertex2 = routerDbWriter.AddVertex(3.1095707416534424, 51.31076453560284);
@@ -54,7 +54,7 @@ namespace Itinero.Tests
             VertexId vertex1;
             VertexId vertex2;
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 vertex1 = routerDbWriter.AddVertex(3.1074142456054688, 51.31012070202407);
                 vertex2 = routerDbWriter.AddVertex(3.1095707416534424, 51.31076453560284);
@@ -82,7 +82,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             VertexId vertex;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 vertex = routerDbWriter.AddVertex(3.146638870239258, 51.31060357805506);
             }
@@ -97,7 +97,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             VertexId vertex1;
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 vertex1 = routerDbWriter.AddVertex(3.1074142456054688, 51.31012070202407);
                 var vertex2 = routerDbWriter.AddVertex(3.1466388702392580, 51.31060357805506);
@@ -117,7 +117,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             VertexId vertex2;
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(3.1074142456054688, 51.31012070202407);
                 vertex2 = routerDbWriter.AddVertex(3.1466388702392580, 51.31060357805506);
@@ -136,7 +136,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(3.1074142456054688, 51.31012070202407);
                 var vertex2 = routerDbWriter.AddVertex(3.1095707416534424, 51.31076453560284);
@@ -159,7 +159,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 var vertex2 = routerDbWriter.AddVertex(4.801111221313477, 51.26676859478893);
@@ -184,7 +184,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex2;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 vertex2 = routerDbWriter.AddVertex(4.801111221313477, 51.26676859478893);
@@ -208,7 +208,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 var vertex2 = routerDbWriter.AddVertex(4.801111221313477, 51.26676859478893);
@@ -233,7 +233,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 var vertex2 = routerDbWriter.AddVertex(routerDbWriter.GetVertex(vertex1).OffsetWithDistanceX(100));
@@ -254,7 +254,7 @@ namespace Itinero.Tests
             EdgeId edge;
 
             // add a perfect horizontal edge.
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 var vertex2 = routerDbWriter.AddVertex(routerDbWriter.GetVertex(vertex1).OffsetWithDistanceX(100));
@@ -281,7 +281,7 @@ namespace Itinero.Tests
             EdgeId edge;
             
             // add a perfect horizontal edge.
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 var vertex2 = routerDbWriter.AddVertex(routerDbWriter.GetVertex(vertex1).OffsetWithDistanceX(100));
@@ -302,7 +302,7 @@ namespace Itinero.Tests
             EdgeId edge;
             
             // add a perfect horizontal edge.
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(4.800467491149902, 51.26896368721961);
                 var vertex2 = routerDbWriter.AddVertex(routerDbWriter.GetVertex(vertex1).OffsetWithDistanceX(100));

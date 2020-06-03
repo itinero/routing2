@@ -23,7 +23,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -46,7 +46,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             EdgeId edge2;
             VertexId vertex1;
             VertexId vertex2;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -73,7 +73,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             EdgeId edge2;
             VertexId vertex1;
             VertexId vertex2;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -100,7 +100,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             EdgeId edge1;
             VertexId vertex1;
             VertexId vertex2;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -121,7 +121,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -146,7 +146,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -173,7 +173,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -202,7 +202,7 @@ namespace Itinero.Tests.Algorithms.DataStructures
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetWriter())
+            using (var writer = routerDb.GetAsMutable())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);

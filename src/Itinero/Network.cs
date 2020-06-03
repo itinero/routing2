@@ -132,6 +132,11 @@ namespace Itinero
                 return _graph.AddEdge(vertex1, vertex2, shape, attributes);
             }
 
+            void IMutableNetwork.SetEdgeTypeFunc(Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> func)
+            {
+                _graph.SetEdgeTypeFunc(_graph.EdgeTypeFunc.NextVersion(func));
+            }
+
             public Network ToNetwork()
             {
                 return new Network(_network._routerDb, _graph.ToGraph());
@@ -178,6 +183,9 @@ namespace Itinero
         /// <returns>The edge id.</returns>
         EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
             IEnumerable<(double longitude, double latitude)>? shape = null, IEnumerable<(string key, string value)>? attributes = null);
+
+        internal void SetEdgeTypeFunc(
+            Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> func);
 
         /// <summary>
         /// Gets the resulting network.

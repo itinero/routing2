@@ -1,30 +1,26 @@
 using System;
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.EdgeTypes;
+using Itinero.Profiles;
+using Itinero.Profiles.EdgeTypes;
 
 namespace Itinero
 {
-    /// <summary>
-    /// Writes to a router db by creating a new instance.
-    ///
-    /// This writer can:
-    /// - mutate the network (update or delete) data.
-    /// - add new data to the network.
-    ///
-    /// The data can only be used for routing after the data has been fully written.
-    /// </summary>
-    public sealed class RouterDbWriter : IDisposable
+    internal sealed class MutableRouterDb : IMutableRouterDb
     {
         private readonly RouterDb _routerDb;
+        private readonly RouterDbProfileConfiguration _profileConfiguration;
         private readonly IMutableNetwork _mutableNetwork;
 
-        internal RouterDbWriter(RouterDb routerDb)
+        internal MutableRouterDb(RouterDb routerDb)
         {
             _routerDb = routerDb;
 
             // make a copy of the latest network to write to.
-            var latest = routerDb.Network;
+            var latest = _routerDb.Network;
             _mutableNetwork = latest.GetAsMutable();
+            _profileConfiguration = _routerDb.ProfileConfiguration.Clone();
         }
 
         /// <summary>
@@ -63,20 +59,30 @@ namespace Itinero
         {
             return _mutableNetwork.AddEdge(vertex1, vertex2, shape, attributes);
         }
-        
+
+        RouterDbProfileConfiguration IMutableRouterDb.ProfileConfiguration => _profileConfiguration;
+
         public void Dispose()
         {
-            var routerDbWriteable = _routerDb as IRouterDbWritable;
-            routerDbWriteable.SetLatest(_mutableNetwork.ToNetwork());
+            // update edge type function if needed.
+            if (!_routerDb.ProfileConfiguration.HasAll(_profileConfiguration.Profiles))
+            {
+                _mutableNetwork.SetEdgeTypeFunc(attributes => 
+                    _profileConfiguration.Profiles.GetEdgeProfileFor(attributes));
+            }
+            
+            // get network
+            var network = _mutableNetwork.ToNetwork();
             _mutableNetwork.Dispose();
-            routerDbWriteable.ClearWriter();
+            
+            // finish router db mutations.
+            var routerDbWriteable = _routerDb as IRouterDbMutations;
+            routerDbWriteable.Finish(network, _profileConfiguration);
         }
     }
 
-    internal interface IRouterDbWritable
+    internal interface IRouterDbMutations
     {
-        void SetLatest(Network latest);
-
-        void ClearWriter();
+        void Finish(Network latest, RouterDbProfileConfiguration profileConfiguration);
     }
 }

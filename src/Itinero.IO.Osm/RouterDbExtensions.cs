@@ -18,7 +18,7 @@ namespace Itinero.IO.Osm
         {
             // get writer.
             if (routerDb.HasWriter) throw new InvalidOperationException($"Cannot add data to a {nameof(RouterDb)} that is only being written to.");
-            using var routerDbWriter = routerDb.GetWriter();
+            using var routerDbWriter = routerDb.GetAsMutable();
             
             // create settings.
             var settings = new DataProviderSettings();

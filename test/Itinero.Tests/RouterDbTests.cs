@@ -13,7 +13,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             VertexId vertex1;
             VertexId vertex2;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 vertex1 = routerDbWriter.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = routerDbWriter.AddVertex(4.797506332397461, 51.26674845584085);
@@ -35,7 +35,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(
                     4.792613983154297,
@@ -67,7 +67,7 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetWriter())
+            using (var routerDbWriter = routerDb.GetAsMutable())
             {
                 var vertex1 = routerDbWriter.AddVertex(
                     4.792613983154297,

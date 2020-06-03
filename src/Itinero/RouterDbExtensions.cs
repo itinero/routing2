@@ -15,14 +15,14 @@ namespace Itinero
     public static class RouterDbExtensions
     {
         /// <summary>
-        /// Write to the router db using a delegate.
+        /// Mutate the router db using a delegate.
         /// </summary>
         /// <param name="routerDb">The router db.</param>
-        /// <param name="writeAction">The delegate.</param>
-        public static void Write(this RouterDb routerDb, Action<RouterDbWriter> writeAction)
+        /// <param name="mutate">The delegate.</param>
+        public static void Mutate(this RouterDb routerDb, Action<IMutableRouterDb> mutate)
         {
-            using var writer = routerDb.GetWriter();
-            writeAction(writer);
+            using var mutable = routerDb.GetAsMutable();
+            mutate(mutable);
         }
     }
 }

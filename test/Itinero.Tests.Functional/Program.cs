@@ -35,34 +35,38 @@ namespace Itinero.Tests.Functional
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
             
-            // setup a router db with a local osm file.
+            // // setup a router db with a local osm file.
+            // var routerDb = new RouterDb(new RouterDbConfiguration()
+            // {
+            //     Zoom = 14
+            // });
+            // using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+            //     "http://download.geofabrik.de/europe/luxembourg-latest.osm.pbf"));
+            // routerDb.UseOsmData(new OsmSharp.Streams.PBFOsmStreamSource(osmStream));
+            //
+            // var latest = routerDb.Network;
+            // var location1 = SnappingTest.Default.Run((latest, 6.142258644104003, 49.86815622289359,
+            //     bicycle));
+            // var location2 = SnappingTest.Default.Run((latest, 6.151978969573975, 49.86843283237664,
+            //     bicycle));
+            // var route = RouterOneToOneTest.Default.Run((latest, location1, location2, bicycle));
+            // File.WriteAllText(Path.Combine("results", $"{nameof(location1)}-{nameof(location1)}.geojson"), 
+            //     route.ToGeoJson());
+            
+            // setup a router db with a routable tiles data provider.
             var routerDb = new RouterDb(new RouterDbConfiguration()
             {
                 Zoom = 14
             });
-            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://download.geofabrik.de/europe/luxembourg-latest.osm.pbf"));
-            routerDb.UseOsmData(new OsmSharp.Streams.PBFOsmStreamSource(osmStream));
-
-            var latest = routerDb.Network;
-            var location1 = SnappingTest.Default.Run((latest, 6.142258644104003, 49.86815622289359,
-                bicycle));
-            var location2 = SnappingTest.Default.Run((latest, 6.151978969573975, 49.86843283237664,
-                bicycle));
-            var route = RouterOneToOneTest.Default.Run((latest, location1, location2, bicycle));
-            File.WriteAllText(Path.Combine("results", $"{nameof(location1)}-{nameof(location1)}.geojson"), 
-                route.ToGeoJson());
-            
-            // setup a router db with a routable tiles data provider.
-            routerDb = new RouterDb(new RouterDbConfiguration()
+            routerDb.Mutate(mutable =>
             {
-                Zoom = 14
+                mutable.PrepareFor(bicycle);
             });
             routerDb.UseRouteableTiles(s =>
             {
                 s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
             });
-            latest = routerDb.Network;
+            var latest = routerDb.Network;
 
             var factor = bicycle.Factor(new [] {
                 ("highway", "pedestrian") });
@@ -138,7 +142,7 @@ namespace Itinero.Tests.Functional
                     $"Snapping parallel: zellik2");
             });
             
-            route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
+            var route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
                 $"Route cold: {nameof(lesotho1)} -> {nameof(lesotho2)}");
             route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
                 $"Route hot: {nameof(lesotho1)} -> {nameof(lesotho2)}", 10);
@@ -320,7 +324,14 @@ namespace Itinero.Tests.Functional
                 {
                     Zoom = 14
                 });
-                routerDb.UseRouteableTiles();
+                routerDb.Mutate(mutable =>
+                {
+                    mutable.PrepareFor(bicycle);
+                });
+                routerDb.UseRouteableTiles(s =>
+                {
+                    s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
+                });
                 latest = routerDb.Network;
 
                 var deSterre = SnappingTest.Default.Run((latest, 3.715675, 51.026164, profile: bicycle),
