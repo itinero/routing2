@@ -22,6 +22,8 @@ namespace Itinero.Data.Graphs.EdgeTypes
 
         public int Id => _func.Id;
 
+        public GraphEdgeTypeFunc Func => _func;
+
         private GraphEdgeTypeIndex(GraphEdgeTypeCollection edgeTypes, GraphEdgeTypeFunc func)
         {
             _edgeTypes = edgeTypes;

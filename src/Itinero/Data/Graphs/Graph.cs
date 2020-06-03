@@ -139,13 +139,14 @@ namespace Itinero.Data.Graphs
             // get the tile (or create it).
             var tile = this.GetTileForWrite(vertex1.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-            
-            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
+
+            var edgeTypeId = attributes != null ? (uint?)_graphEdgeTypeIndex.Get(attributes) : null;
+            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
             if (vertex1.TileId == vertex2.TileId) return edge1;
             
             // this edge crosses tiles, also add an extra edge to the other tile.
             tile = this.GetTileForWrite(vertex2.TileId);
-            tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
+            tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId);
 
             return edge1;
         }
@@ -270,6 +271,11 @@ namespace Itinero.Data.Graphs
             /// </summary>
             /// <returns>The attributes.</returns>
             public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes;
+
+            /// <summary>
+            /// Gets the edge profile id.
+            /// </summary>
+            public uint? EdgeTypeId => _tileEnumerator.EdgeTypeId;
         }
 
         private MutableGraph? _mutableGraph = null;
@@ -408,16 +414,19 @@ namespace Itinero.Data.Graphs
                 var tile = this.GetTileForWrite(vertex1.TileId);
                 if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
-                var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes);
+                var edgeTypeId = attributes != null ? (uint?)_graphEdgeTypeIndex.Get(attributes) : null;
+                var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
                 if (vertex1.TileId != vertex2.TileId)
                 {
                     // this edge crosses tiles, also add an extra edge to the other tile.
                     tile = this.GetTileForWrite(vertex2.TileId);
-                    tile.AddEdge(vertex1, vertex2, shape, attributes, edge1);
+                    tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId);
                 }
 
                 return edge1;
             }
+
+            public GraphEdgeTypeFunc EdgeTypeFunc => _graphEdgeTypeIndex.Func;
 
             public void SetEdgeTypeFunc(GraphEdgeTypeFunc graphEdgeTypeFunc)
             {

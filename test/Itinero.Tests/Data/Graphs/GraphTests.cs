@@ -1,5 +1,6 @@
 using System.Linq;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Tiles;
 using Xunit;
 
@@ -165,6 +166,102 @@ namespace Itinero.Tests.Data.Graphs
             Assert.Equal(51.26832598004091, shape[1].latitude, 4);
             Assert.Equal(4.801368713378906, shape[0].longitude, 4);
             Assert.Equal(51.26782252075405, shape[0].latitude, 4);
+        }
+
+        [Fact]
+        public void Graph_EdgeType_AddEdge_NewType_ShouldAdd()
+        {
+            var graph = new Graph();
+            graph = graph.Mutate(mutable =>
+            {
+                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
+                    attr => attr.Where(x => x.key == "highway")));
+            });
+            
+            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
+            var edge = graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
+            
+            var enumerator = graph.GetEnumerator();
+            enumerator.MoveToEdge(edge);
+            
+            Assert.Equal(0U, enumerator.EdgeTypeId);
+        }
+
+        [Fact]
+        public void Graph_EdgeType_AddEdge_ExistingType_ShouldGet()
+        {
+            var graph = new Graph();
+            graph = graph.Mutate(mutable =>
+            {
+                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
+                    attr => attr.Where(x => x.key == "highway")));
+            });
+            
+            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
+            var vertex3 = graph.AddVertex(4.801111221313477,51.26676859478893);
+            graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
+            var edge = graph.AddEdge(vertex1, vertex3, attributes: new (string key, string value)[] { ("highway", "residential") });
+            
+            var enumerator = graph.GetEnumerator();
+            enumerator.MoveToEdge(edge);
+            
+            Assert.Equal(0U, enumerator.EdgeTypeId);
+        }
+
+        [Fact]
+        public void Graph_EdgeType_AddEdge_SecondType_ShouldAdd()
+        {
+            var graph = new Graph();
+            graph = graph.Mutate(mutable =>
+            {
+                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
+                    attr => attr.Where(x => x.key == "highway")));
+            });
+            
+            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
+            var vertex3 = graph.AddVertex(4.801111221313477,51.26676859478893);
+            graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
+            var edge = graph.AddEdge(vertex1, vertex3, attributes: new (string key, string value)[] { ("highway", "primary") });
+            
+            var enumerator = graph.GetEnumerator();
+            enumerator.MoveToEdge(edge);
+            
+            Assert.Equal(1U, enumerator.EdgeTypeId);
+        }
+
+        [Fact]
+        public void Graph_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId()
+        {
+            var graph = new Graph();
+            graph = graph.Mutate(mutable =>
+            {
+                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
+                    attr => attr.Where(x => x.key == "highway")));
+            });
+            
+            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
+            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
+
+            var edge = graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[]
+            {
+                ("highway", "residential"),
+                ("maxspeed", "50")
+            });
+            
+            // update edge type func.
+            graph = graph.Mutate(mutable =>
+            {
+                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
+                    attr => attr.Where(x => x.key == "highway" || x.key == "maxspeed")));
+            });
+            
+            var enumerator = graph.GetEnumerator();
+            enumerator.MoveToEdge(edge);
+            
+            Assert.Equal(1U, enumerator.EdgeTypeId);
         }
     }
 }

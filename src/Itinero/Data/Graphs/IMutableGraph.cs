@@ -35,6 +35,11 @@ namespace Itinero.Data.Graphs
             IEnumerable<(double longitude, double latitude)>? shape = null, IEnumerable<(string key, string value)>? attributes = null);
 
         /// <summary>
+        /// Gets the edge type function.
+        /// </summary>
+        GraphEdgeTypeFunc EdgeTypeFunc { get; }
+        
+        /// <summary>
         /// Sets the edge type function.
         /// </summary>
         /// <param name="graphEdgeTypeFunc">The edge type function.</param>

@@ -17,7 +17,7 @@ namespace Itinero.Data.Graphs.EdgeTypes
         
         private GraphEdgeTypeFunc(int id, Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> func)
         {
-            _id = 0;
+            _id = id;
             _func = func;
         }
 
