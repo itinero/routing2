@@ -355,6 +355,19 @@ namespace Itinero.Data
             value = FromUnsigned(unsigned);
             return c;
         }
+        
+        public static long SetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, uint? value)
+        {
+            value = (value == null) ? 0 : value + 1;
+            return data.SetDynamicUInt32(i, value.Value);
+        }
+
+        public static long GetDynamicInt32Nullable(this ArrayBase<byte> data, long i, out uint? value)
+        {
+            var c = data.GetDynamicUInt32(i, out var unsigned);
+            value = (unsigned == 0) ? null : (uint?)unsigned - 1;
+            return c;
+        }
 
         public static void SetFixed(this ArrayBase<byte> data, long i, int bytes, int value)
         {

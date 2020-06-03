@@ -82,7 +82,7 @@ namespace Itinero.Tests.Data.Graphs
 
             graph.AddEdge(vertex1, vertex2);
             var edges = graph.AddEdge(vertex1, vertex3);
-            Assert.Equal((uint)6, edges.LocalId);
+            Assert.Equal((uint)7, edges.LocalId);
         }
 
         [Fact]

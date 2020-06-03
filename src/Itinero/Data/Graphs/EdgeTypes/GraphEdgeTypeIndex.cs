@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Itinero.Data.Graphs.EdgeTypes
 {
     /// <summary>
@@ -24,6 +26,12 @@ namespace Itinero.Data.Graphs.EdgeTypes
         {
             _edgeTypes = edgeTypes;
             _func = func;
+        }
+
+        public uint Get(IEnumerable<(string key, string value)> attributes)
+        {
+            var edgeType = _func.ToEdgeType(attributes);
+            return _edgeTypes.Get(edgeType);
         }
 
         public GraphEdgeTypeIndex Next(GraphEdgeTypeFunc func)

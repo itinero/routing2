@@ -108,6 +108,11 @@ namespace Itinero.Data.Graphs.Tiles
                 }
             }
             
+            // get edge profile id.
+            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            _nextEdgePointer += size;
+            this.EdgeTypeId = edgeProfileId;
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -196,6 +201,11 @@ namespace Itinero.Data.Graphs.Tiles
                 }
             }
             
+            // get edge profile id.
+            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            _nextEdgePointer += size;
+            this.EdgeTypeId = edgeProfileId;
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -268,5 +278,10 @@ namespace Itinero.Data.Graphs.Tiles
         /// Gets the forward/backward flag.
         /// </summary>
         public bool Forward { get; private set; }
+        
+        /// <summary>
+        /// Gets the edge profile id.
+        /// </summary>
+        public uint? EdgeTypeId { get; private set; }
     }
 }

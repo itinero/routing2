@@ -81,7 +81,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             graphTile.AddEdge(vertex1, vertex2);
             // the second edge get the pointer as id.
             var edge = graphTile.AddEdge(vertex2, vertex1);
-            Assert.Equal((uint)6, edge.LocalId);
+            Assert.Equal((uint)7, edge.LocalId);
         }
 
         [Fact]
