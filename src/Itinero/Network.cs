@@ -53,6 +53,16 @@ namespace Itinero
             
             return (longitude, latitude);
         }
+        
+        /// <summary>
+        /// Gets the attributes for the given edge type.
+        /// </summary>
+        /// <param name="edgeTypeId">The edge type id.</param>
+        /// <returns>The attributes for the given edge type.</returns>
+        public IEnumerable<(string key, string value)> GetEdgeType(uint edgeTypeId)
+        {
+            return this.Graph.GetEdgeType(edgeTypeId);
+        }
 
         private NetworkWriter? _writer;
         
