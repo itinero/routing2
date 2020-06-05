@@ -32,19 +32,17 @@ namespace Itinero.Tests.Functional.IO.Osm
         {
             var routerDb = new RouterDb();
 
-            using (var stream = File.OpenRead(osmPbfFile))
-            {
-                var source = new OsmSharp.Streams.PBFOsmStreamSource(stream);
-                var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
-                progress.RegisterSource(source);
+            using var stream = File.OpenRead(osmPbfFile);
+            var source = new OsmSharp.Streams.PBFOsmStreamSource(stream);
+            var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
+            progress.RegisterSource(source);
 
-                var target = new RouterDbStreamTarget(routerDb.GetAsMutable());
-                target.RegisterSource(progress);
-                target.Initialize();
+            var target = new RouterDbStreamTarget(routerDb.GetAsMutable());
+            target.RegisterSource(progress);
+            target.Initialize();
 
-                target.Pull();
-            }
-            
+            target.Pull();
+
             return routerDb;
         }
     }

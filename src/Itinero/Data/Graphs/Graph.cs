@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Collections;
 using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Graphs.Tiles;
-using Itinero.Data.Tiles;
-using Itinero.Geo;
 
 namespace Itinero.Data.Graphs
 {

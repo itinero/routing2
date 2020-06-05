@@ -10,6 +10,8 @@ namespace Itinero.Data.Graphs
 {
     internal sealed partial class Graph : IGraphWritable
     {
+        private readonly object _writeSync = new object();
+        
         private GraphTile GetTileForWrite(uint localTileId)
         {
             // ensure minimum size.
@@ -90,10 +92,14 @@ namespace Itinero.Data.Graphs
         /// <returns>The writer.</returns>
         public GraphWriter GetWriter()
         {
-            if (_writer != null) throw new InvalidOperationException($"Only one writer is allowed at one time." +
-                                                                     $"Check {nameof(HasWriter)} to check for a current writer.");
-            _writer = new GraphWriter(this);
-            return _writer;
+            lock (_writeSync)
+            {
+                if (_writer != null)
+                    throw new InvalidOperationException($"Only one writer is allowed at one time." +
+                                                        $"Check {nameof(HasWriter)} to check for a current writer.");
+                _writer = new GraphWriter(this);
+                return _writer;
+            }
         }
         
         void IGraphWritable.ClearWriter()

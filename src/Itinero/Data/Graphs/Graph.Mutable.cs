@@ -13,10 +13,16 @@ namespace Itinero.Data.Graphs
 
         internal IMutableGraph GetAsMutable()
         {
-            if (_mutableGraph != null) throw new InvalidOperationException($"Only one mutable graph is allowed at one time.");
-            
-            _mutableGraph = new MutableGraph(this);
-            return _mutableGraph;
+            lock (_writeSync) // make sure no writer can be created while the mutable graph is being created.
+            {
+                if (_mutableGraph != null)
+                    throw new InvalidOperationException($"Only one mutable graph is allowed at one time.");
+                if (_writer != null)
+                    throw new InvalidOperationException("Cannot get mutable version when there is a writer active.");
+
+                _mutableGraph = new MutableGraph(this);
+                return _mutableGraph;
+            }
         }
 
         internal void CloneTileIfNeeded(GraphTile tile, int edgeTypesId)
