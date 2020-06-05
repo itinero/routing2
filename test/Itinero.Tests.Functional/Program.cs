@@ -88,9 +88,9 @@ namespace Itinero.Tests.Functional
             var hamme = SnappingTest.Default.Run((latest, 4.13418, 51.09707, profile: bicycle),
                 $"Snapping cold: hamme");
             var stekene = SnappingTest.Default.Run((latest, 4.03705, 51.20637, profile: bicycle),
-                $"Snapping cold: hamme");
+                $"Snapping cold: stekene");
             var leuven = SnappingTest.Default.Run((latest, 4.69575, 50.88040, profile: bicycle),
-                $"Snapping cold: hamme");
+                $"Snapping cold: leuven");
             var wechelderzande1 = SnappingTest.Default.Run((latest, 4.80129, 51.26774, profile: bicycle),
                 $"Snapping cold: wechelderzande1");
             var wechelderzande2 = SnappingTest.Default.Run((latest, 4.794577360153198, 51.26723850107129, profile: bicycle),
@@ -145,21 +145,21 @@ namespace Itinero.Tests.Functional
             var route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
                 $"Route cold: {nameof(lesotho1)} -> {nameof(lesotho2)}");
             route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
-                $"Route hot: {nameof(lesotho1)} -> {nameof(lesotho2)}", 10);
+                $"Route hot: {nameof(lesotho1)} -> {nameof(lesotho2)}", 100);
             File.WriteAllText(Path.Combine("results", $"{nameof(lesotho1)}-{nameof(lesotho2)}.geojson"), 
                 route.ToGeoJson());
             
             route = RouterOneToOneTest.Default.Run((latest, zellik1, zellik2, bicycle),
                 $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
             route = RouterOneToOneTest.Default.Run((latest, zellik1, zellik2, bicycle),
-                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
+                $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 100);
             File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
                 route.ToGeoJson());
             
             route = RouterOneToOneTest.Default.Run((latest, wechelderzande1, vorselaar1, bicycle),
                 $"Route cold: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}");
             route = RouterOneToOneTest.Default.Run((latest, wechelderzande1, vorselaar1, bicycle),
-                $"Route hot: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 10);
+                $"Route hot: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 100);
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
                 route.ToGeoJson());
             

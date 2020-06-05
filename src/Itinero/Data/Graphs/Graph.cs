@@ -4,6 +4,7 @@ using Itinero.Collections;
 using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Graphs.Tiles;
 using Itinero.Data.Tiles;
+using Itinero.Geo;
 
 namespace Itinero.Data.Graphs
 {
@@ -139,14 +140,20 @@ namespace Itinero.Data.Graphs
             // get the tile (or create it).
             var tile = this.GetTileForWrite(vertex1.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-
+            
+            // get the edge type id.
             var edgeTypeId = attributes != null ? (uint?)_graphEdgeTypeIndex.Get(attributes) : null;
-            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
+            
+            // get the edge length in centimeters.
+            var length = (uint)(this.GetVertex(vertex1).DistanceEstimateInMeterShape(
+                this.GetVertex(vertex2), shape) * 100);
+            
+            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
             if (vertex1.TileId == vertex2.TileId) return edge1;
             
             // this edge crosses tiles, also add an extra edge to the other tile.
             tile = this.GetTileForWrite(vertex2.TileId);
-            tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId);
+            tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId, length);
 
             return edge1;
         }
@@ -276,6 +283,11 @@ namespace Itinero.Data.Graphs
             /// Gets the edge profile id.
             /// </summary>
             public uint? EdgeTypeId => _tileEnumerator.EdgeTypeId;
+        
+            /// <summary>
+            /// Gets the length in centimeters, if any.
+            /// </summary>
+            public uint? Length => _tileEnumerator.Length;
         }
 
         private MutableGraph? _mutableGraph = null;

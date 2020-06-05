@@ -10,5 +10,12 @@ namespace Itinero.Data.Graphs
             mutate(mutable);
             return mutable.ToGraph();
         }
+
+        public static (double longitude, double latitude) GetVertex(this Graph graph, VertexId vertexId)
+        {
+            if (!graph.TryGetVertex(vertexId, out var longitude, out var latitude)) throw new ArgumentOutOfRangeException(nameof(vertexId), "Vertex not found!");
+
+            return (longitude, latitude);
+        }
     }
 }

@@ -113,6 +113,11 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer += size;
             this.EdgeTypeId = edgeProfileId;
             
+            // get length.
+            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
+            _nextEdgePointer += size;
+            this.Length = length;
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -206,6 +211,11 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer += size;
             this.EdgeTypeId = edgeProfileId;
             
+            // get length.
+            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
+            _nextEdgePointer += size;
+            this.Length = length;
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -280,8 +290,13 @@ namespace Itinero.Data.Graphs.Tiles
         public bool Forward { get; private set; }
         
         /// <summary>
-        /// Gets the edge profile id.
+        /// Gets the edge profile id, if any.
         /// </summary>
         public uint? EdgeTypeId { get; private set; }
+        
+        /// <summary>
+        /// Gets the length in centimeters, if any.
+        /// </summary>
+        public uint? Length { get; private set; }
     }
 }
