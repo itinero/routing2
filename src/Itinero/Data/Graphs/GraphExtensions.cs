@@ -11,6 +11,12 @@ namespace Itinero.Data.Graphs
             return mutable.ToGraph();
         }
 
+        public static void Write(this Graph graph, Action<Graph.GraphWriter> write)
+        {
+            using var writer = graph.GetWriter();
+            write(writer);
+        }
+
         public static (double longitude, double latitude) GetVertex(this Graph graph, VertexId vertexId)
         {
             if (!graph.TryGetVertex(vertexId, out var longitude, out var latitude)) throw new ArgumentOutOfRangeException(nameof(vertexId), "Vertex not found!");

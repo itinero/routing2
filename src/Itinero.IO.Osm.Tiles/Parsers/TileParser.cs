@@ -43,7 +43,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             return null;
         }
         
-        internal static bool AddOsmTile(this NetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
+        internal static bool AddOsmTile(this Network.NetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
             JObject jsonObject)
         {
             var nodeLocations = new Dictionary<long, ((double longitude, double latitude) location, bool inTile)>();

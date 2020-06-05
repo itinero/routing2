@@ -14,7 +14,11 @@ namespace Itinero.Tests.Data.Graphs
             // when adding a vertex to a tile the graph should always generate an id in the same tile.
             
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            VertexId vertex1;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            }
             Assert.Equal(Tile.WorldToTile(4.7868, 51.2643, graph.Zoom).LocalId, vertex1.TileId);
             Assert.Equal((uint)0, vertex1.LocalId);
         }
@@ -25,11 +29,18 @@ namespace Itinero.Tests.Data.Graphs
             // when adding a vertex to a tile the graph should always generate an id in the same tile.
             
             var graph = new Graph();
-            graph.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            using (var writer = graph.GetWriter())
+            {
+                writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            }
             
             // when adding the vertex a second time it should generate the same tile but a new local id.
             
-            var vertex1 = graph.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            VertexId vertex1;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            }
             Assert.Equal((uint)89546969, vertex1.TileId); 
             Assert.Equal((uint)1, vertex1.LocalId);
         }
@@ -40,7 +51,11 @@ namespace Itinero.Tests.Data.Graphs
             // when adding a vertex to a tile the graph should store the location accurately.
             
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            VertexId vertex1;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            }
             
             Assert.True(graph.TryGetVertex(vertex1, out var longitude, out var latitude));
             Assert.Equal(4.7868, longitude, 4);
@@ -54,7 +69,11 @@ namespace Itinero.Tests.Data.Graphs
             // local id.
             
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            VertexId vertex1;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            }
 
             var tile = Tile.FromLocalId(vertex1.TileId, graph.Zoom);
             Assert.Equal((uint)8409, tile.X);
@@ -66,24 +85,35 @@ namespace Itinero.Tests.Data.Graphs
         public void Graph_TwoVertices_AddEdge_ShouldReturn0()
         {
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
+            VertexId vertex1, vertex2;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                edge = writer.AddEdge(vertex1, vertex2);
+            }
 
-            var edges = graph.AddEdge(vertex1, vertex2);
-            Assert.Equal((uint)0, edges.LocalId); // first edge should have id 0.
+            Assert.Equal((uint)0, edge.LocalId);
         }
 
         [Fact]
         public void Graph_ThreeVertices_AddSecondEdge_ShouldReturnPointerAsId()
         {
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = graph.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = graph.AddVertex(4.797506332397461, 51.26674845584085);
+            VertexId vertex1, vertex2, vertex3;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
-            graph.AddEdge(vertex1, vertex2);
-            var edges = graph.AddEdge(vertex1, vertex3);
-            Assert.Equal((uint)10, edges.LocalId);
+                writer.AddEdge(vertex1, vertex2);
+                edge = writer.AddEdge(vertex1, vertex3);
+            }
+            
+            Assert.Equal((uint)10, edge.LocalId);
         }
 
         [Fact]
@@ -95,10 +125,15 @@ namespace Itinero.Tests.Data.Graphs
             // we test this by enumeration edges for both vertices.
             
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(3.1074142456054688,51.31012070202407);
-            var vertex2 = graph.AddVertex(3.146638870239258,51.31060357805506);
+            VertexId vertex1, vertex2;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(3.1074142456054688,51.31012070202407);
+                vertex2 = writer.AddVertex(3.146638870239258,51.31060357805506);
 
-            var edge = graph.AddEdge(vertex1, vertex2);
+                edge = writer.AddEdge(vertex1, vertex2);
+            }
             Assert.Equal(vertex1.TileId, edge.TileId);
             Assert.Equal((uint)0, edge.LocalId);
 
@@ -122,14 +157,19 @@ namespace Itinero.Tests.Data.Graphs
         public void GraphEnumerator_EdgeWithShape_ShouldEnumerateShapeForward()
         {
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
-            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
-
-            var edge = graph.AddEdge(vertex1, vertex2, shape: new (double longitude, double latitude)[]
+            VertexId vertex1, vertex2;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
             {
-                (4.800703525543213, 51.26832598004091),
-                (4.801368713378906, 51.26782252075405)
-            });
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
+
+                edge = writer.AddEdge(vertex1, vertex2, shape: new (double longitude, double latitude)[]
+                {
+                    (4.800703525543213, 51.26832598004091),
+                    (4.801368713378906, 51.26782252075405)
+                });
+            }
 
             var enumerator = graph.GetEnumerator();
             Assert.True(enumerator.MoveTo(vertex1));
@@ -147,14 +187,19 @@ namespace Itinero.Tests.Data.Graphs
         public void GraphEnumerator_EdgeWithShape_ShouldEnumerateShapeBackward()
         {
             var graph = new Graph();
-            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
-            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
-
-            var edge = graph.AddEdge(vertex1, vertex2, shape: new (double longitude, double latitude)[]
+            VertexId vertex1, vertex2;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
             {
-                (4.800703525543213, 51.26832598004091),
-                (4.801368713378906, 51.26782252075405)
-            });
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
+
+                edge = writer.AddEdge(vertex1, vertex2, shape: new (double longitude, double latitude)[]
+                {
+                    (4.800703525543213, 51.26832598004091),
+                    (4.801368713378906, 51.26782252075405)
+                });
+            }
 
             var enumerator = graph.GetEnumerator();
             Assert.True(enumerator.MoveTo(vertex2));
@@ -178,9 +223,15 @@ namespace Itinero.Tests.Data.Graphs
                     attr => attr.Where(x => x.key == "highway")));
             });
             
-            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
-            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
-            var edge = graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
+            VertexId vertex1, vertex2;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
+                edge = writer.AddEdge(vertex1, vertex2,
+                    attributes: new (string key, string value)[] {("highway", "residential")});
+            }
             
             var enumerator = graph.GetEnumerator();
             enumerator.MoveToEdge(edge);
@@ -198,11 +249,17 @@ namespace Itinero.Tests.Data.Graphs
                     attr => attr.Where(x => x.key == "highway")));
             });
             
-            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
-            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
-            var vertex3 = graph.AddVertex(4.801111221313477,51.26676859478893);
-            graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
-            var edge = graph.AddEdge(vertex1, vertex3, attributes: new (string key, string value)[] { ("highway", "residential") });
+            VertexId vertex1, vertex2, vertex3;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
+                vertex3 = writer.AddVertex(4.801111221313477,51.26676859478893);
+                writer.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
+                edge = writer.AddEdge(vertex1, vertex3,
+                    attributes: new (string key, string value)[] {("highway", "residential")});
+            }
             
             var enumerator = graph.GetEnumerator();
             enumerator.MoveToEdge(edge);
@@ -220,11 +277,18 @@ namespace Itinero.Tests.Data.Graphs
                     attr => attr.Where(x => x.key == "highway")));
             });
             
-            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
-            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
-            var vertex3 = graph.AddVertex(4.801111221313477,51.26676859478893);
-            graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] { ("highway", "residential") });
-            var edge = graph.AddEdge(vertex1, vertex3, attributes: new (string key, string value)[] { ("highway", "primary") });
+            VertexId vertex1, vertex2, vertex3;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
+                vertex3 = writer.AddVertex(4.801111221313477,51.26676859478893);
+                writer.AddEdge(vertex1, vertex2,
+                    attributes: new (string key, string value)[] {("highway", "residential")});
+                edge = writer.AddEdge(vertex1, vertex3,
+                    attributes: new (string key, string value)[] {("highway", "primary")});
+            }
             
             var enumerator = graph.GetEnumerator();
             enumerator.MoveToEdge(edge);
@@ -242,15 +306,20 @@ namespace Itinero.Tests.Data.Graphs
                     attr => attr.Where(x => x.key == "highway")));
             });
             
-            var vertex1 = graph.AddVertex(4.800467491149902,51.26896368721961);
-            var vertex2 = graph.AddVertex(4.801111221313477,51.26676859478893);
-
-            var edge = graph.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[]
+            VertexId vertex1, vertex2;
+            EdgeId edge;
+            using (var writer = graph.GetWriter())
             {
-                ("highway", "residential"),
-                ("maxspeed", "50")
-            });
-            
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
+
+                edge = writer.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[]
+                {
+                    ("highway", "residential"),
+                    ("maxspeed", "50")
+                });
+            }
+
             // update edge type func.
             graph = graph.Mutate(mutable =>
             {

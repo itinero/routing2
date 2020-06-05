@@ -48,58 +48,10 @@ namespace Itinero.Data.Graphs
             return tile;
         }
 
-        private GraphTile GetTileForWrite(uint localTileId)
-        {
-            // ensure minimum size.
-            _tiles.EnsureMinimumSize(localTileId);
-            
-            var (tile, edgeTypesId) = _tiles[localTileId];
-            if (tile != null)
-            {
-                if (edgeTypesId != _graphEdgeTypeIndex.Id)
-                {
-                    tile = _graphEdgeTypeIndex.Update(tile);
-                    _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
-                }
-                else
-                {
-                    // check if there is a mutable graph.
-                    this.CloneTileIfNeeded(tile, edgeTypesId);
-                }
-            }
-            
-            if (tile == null)
-            {
-                // create a new tile.
-                tile = new GraphTile(this.Zoom, localTileId);
-                _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
-            }
-
-            return tile;
-        }
-        
         /// <summary>
         /// Gets the zoom.
         /// </summary>
         public int Zoom { get; }
-
-        /// <summary>
-        /// Adds a new vertex and returns its ID.
-        /// </summary>
-        /// <param name="longitude">The longitude.</param>
-        /// <param name="latitude">The latitude.</param>
-        /// <returns>The ID of the new vertex.</returns>
-        public VertexId AddVertex(double longitude, double latitude)
-        {
-            // get the local tile id.
-            var (x, y) = TileStatic.WorldToTile(longitude, latitude, this.Zoom);
-            var localTileId = TileStatic.ToLocalId(x, y, this.Zoom);
-
-            // get the tile (or create it).
-            var tile = this.GetTileForWrite(localTileId);
-
-            return tile.AddVertex(longitude, latitude);
-        }
 
         /// <summary>
         /// Tries to get the given vertex.
@@ -123,39 +75,6 @@ namespace Itinero.Data.Graphs
 
             // check if the vertex exists.
             return tile.TryGetVertex(vertex, out longitude, out latitude);
-        }
-
-        /// <summary>
-        /// Adds a new edge.
-        /// </summary>
-        /// <param name="vertex1">The first vertex.</param>
-        /// <param name="vertex2">The second vertex.</param>
-        /// <param name="attributes">The attributes.</param>
-        /// <param name="shape">The shape points.</param>
-        /// <returns>The edge id.</returns>
-        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
-            IEnumerable<(double longitude, double latitude)>? shape = null,
-            IEnumerable<(string key, string value)>? attributes = null)
-        {
-            // get the tile (or create it).
-            var tile = this.GetTileForWrite(vertex1.TileId);
-            if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-            
-            // get the edge type id.
-            var edgeTypeId = attributes != null ? (uint?)_graphEdgeTypeIndex.Get(attributes) : null;
-            
-            // get the edge length in centimeters.
-            var length = (uint)(this.GetVertex(vertex1).DistanceEstimateInMeterShape(
-                this.GetVertex(vertex2), shape) * 100);
-            
-            var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
-            if (vertex1.TileId == vertex2.TileId) return edge1;
-            
-            // this edge crosses tiles, also add an extra edge to the other tile.
-            tile = this.GetTileForWrite(vertex2.TileId);
-            tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId, length);
-
-            return edge1;
         }
 
         /// <summary>
