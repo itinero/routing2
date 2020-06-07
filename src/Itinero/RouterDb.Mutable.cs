@@ -18,8 +18,8 @@ namespace Itinero
         /// <returns>The mutable version.</returns>
         public IMutableRouterDb GetAsMutable()
         {
-            if (_mutable != null) throw new InvalidOperationException($"Only one writer is allowed at one time." +
-                                                                     $"Check {nameof(HasMutable)} to check for a current writer.");
+            if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
+                                                                     $"Check {nameof(HasMutable)} to check for a current mutable.");
             _mutable = new MutableRouterDb(this);
             return _mutable;
         }

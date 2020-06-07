@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using Itinero.IO;
 using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs.Tiles
@@ -96,6 +98,38 @@ namespace Itinero.Data.Graphs.Tiles
             
             _strings[id] = s;
             return id;
+        }
+
+        private void SerializeAttributes(Stream stream)
+        {
+            stream.WriteVarUInt32(_nextAttributePointer);
+            for (var i = 0; i < _nextAttributePointer; i++)
+            {
+                stream.WriteByte(_attributes[i]);
+            }
+            
+            stream.WriteVarUInt32(_nextStringId);
+            for (var i = 0; i < _nextStringId; i++)
+            {
+                stream.WriteWithSize(_strings[i]);
+            }
+        }
+
+        private void DeserializeAttributes(Stream stream)
+        {
+            _nextAttributePointer = stream.ReadVarUInt32();
+            _attributes.Resize(_nextAttributePointer);
+            for (var i = 0; i < _nextAttributePointer; i++)
+            {
+                _attributes[i] = (byte)stream.ReadByte();
+            }
+
+            _nextStringId = stream.ReadVarUInt32();
+            _strings.Resize(_nextStringId);
+            for (var i = 0; i < _nextStringId; i++)
+            {
+                _strings[i] = stream.ReadWithSizeString();
+            }
         }
     }
 }

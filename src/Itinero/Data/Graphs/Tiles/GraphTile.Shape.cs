@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
 using Itinero.Data.Tiles;
+using Itinero.IO;
 using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs.Tiles
@@ -102,6 +104,25 @@ namespace Itinero.Data.Graphs.Tiles
                     previous = (x, y);
                 }
             } while (count == 255);
+        }
+
+        private void SerializeShapes(Stream stream)
+        {
+            stream.WriteVarUInt32(_nextShapePointer);
+            for (var i = 0; i < _nextShapePointer; i++)
+            {
+                stream.WriteByte(_shapes[i]);
+            }
+        }
+
+        private void DeserializeShapes(Stream stream)
+        {
+            _nextShapePointer = stream.ReadVarUInt32();
+            _shapes.Resize(_nextShapePointer);
+            for (var i = 0; i < _nextShapePointer; i++)
+            {
+                _shapes[i] = (byte)stream.ReadByte();
+            }
         }
     }
 }

@@ -104,6 +104,21 @@ namespace Itinero.Data.Graphs
                 return tile;
             }
 
+            internal IEnumerable<uint> GetTiles()
+            {
+                foreach (var (i, value) in _tiles)
+                {
+                    if (value.tile == null) continue;
+
+                    yield return (uint) i;
+                }
+            }
+            
+            internal GraphTile? GetTile(uint localTileId)
+            {
+                return GetTileForRead(localTileId);
+            }
+
             public VertexId AddVertex(double longitude, double latitude)
             {
                 // get the local tile id.

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Tiles;
+using Itinero.IO;
 using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs.Tiles
@@ -21,6 +23,7 @@ namespace Itinero.Data.Graphs.Tiles
         private readonly ArrayBase<byte> _coordinates;
         // the pointers, per vertex, to their first edge.
         // TODO: investigate if it's worth storing these with less precision, one tile will never contain this much data.
+        // TODO: investigate if we can not use one-increasing vertex ids but also use their pointers like with the edges.
         private readonly ArrayBase<uint> _pointers;
         
         // the next edge id.
@@ -40,8 +43,7 @@ namespace Itinero.Data.Graphs.Tiles
             
             _pointers = new MemoryArray<uint>(0);
             _edges = new MemoryArray<byte>(0);
-            
-            
+
             _coordinates = new MemoryArray<byte>(0);
             _shapes = new MemoryArray<byte>(0);
             _attributes = new MemoryArray<byte>(0);
@@ -412,6 +414,57 @@ namespace Itinero.Data.Graphs.Tiles
         internal uint DecodeEdgePointerId(uint location, out uint? edgeProfileId)
         {
             return (uint) _edges.GetDynamicInt32Nullable(location, out edgeProfileId);
+        }
+
+        private void SerializeEdgesAndVertices(Stream stream)
+        {
+            // write vertex pointers.
+            stream.WriteVarUInt32(_nextVertexId);
+            for (var i = 0; i < _nextVertexId; i++)
+            {
+                stream.WriteVarUInt32(_pointers[i]);
+            }
+            
+            // write edges.
+            stream.WriteVarUInt32(_nextEdgeId);
+            for (var i = 0; i < _nextEdgeId; i++)
+            {
+                stream.WriteByte(_edges[i]);
+            }
+
+            // write vertex locations.
+            var coordinateBytes = _nextVertexId * CoordinateSizeInBytes * 2;
+            for (var i = 0; i < coordinateBytes; i++)
+            {
+                stream.WriteByte(_coordinates[i]);
+            }
+        }
+
+        private void DeserializeEdgesAndVertices(Stream stream)
+        {
+            // read vertex pointers.
+            _nextVertexId = stream.ReadVarUInt32();
+            _pointers.Resize(_nextVertexId);
+            for (var i = 0; i < _nextVertexId; i++)
+            {
+                _pointers[i] = stream.ReadVarUInt32();
+            }
+            
+            // read edges.
+            _nextEdgeId = stream.ReadVarUInt32();
+            _edges.Resize(_nextEdgeId);
+            for (var i = 0; i < _nextEdgeId; i++)
+            {
+                _edges[i] = (byte)stream.ReadByte();
+            }
+            
+            // read vertex locations.
+            var coordinateBytes = _nextVertexId * CoordinateSizeInBytes * 2;
+            _coordinates.Resize(coordinateBytes);
+            for (var i = 0; i < coordinateBytes; i++)
+            {
+                _coordinates[i] = (byte)stream.ReadByte();
+            }
         }
     }
 }

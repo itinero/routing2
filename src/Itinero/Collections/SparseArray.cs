@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Itinero.Collections
 {
-    internal class SparseArray<T>
+    internal class SparseArray<T> : IEnumerable<(long i, T value)>
     {
         private T[][] _blocks;
         private readonly int _blockSize; // Holds the maximum array size, always needs to be a power of 2.
@@ -126,6 +126,25 @@ namespace Itinero.Collections
             }
             
             return new SparseArray<T>(blocks, _size, _blockSize, _arrayPow, _default);
+        }
+
+        public IEnumerator<(long i, T value)> GetEnumerator()
+        {
+            for (var b = 0; b < _blocks.Length; b++)
+            {
+                var block = _blocks[b];
+                if (block == null) continue;
+
+                for (var i = 0; i < block.Length; i++)
+                {
+                    yield return (_blockSize * b + i, block[i]);
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 
