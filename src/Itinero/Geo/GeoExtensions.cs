@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Itinero.Geo
 {
     /// <summary>
@@ -25,6 +27,51 @@ namespace Itinero.Geo
             var m = System.Math.Sqrt(x * x + y * y) * Constants.RadiusOfEarth;
 
             return m;
+        }
+        
+        internal static double DistanceEstimateInMeterShape(this (double longitude, double latitude) coordinate1, 
+            (double longitude, double latitude) coordinate2, IEnumerable<(double longitude, double latitude)>? shape = null)
+        {
+            if (shape == null) return coordinate1.DistanceEstimateInMeter(coordinate2);
+            
+            var distance = 0.0;
+            
+            using var shapeEnumerator = shape.GetEnumerator();
+            var previous = coordinate1;
+
+            while (shapeEnumerator.MoveNext())
+            {
+                var current = shapeEnumerator.Current;
+                distance += previous.DistanceEstimateInMeter(current);
+                previous = current;
+            }
+
+            distance += previous.DistanceEstimateInMeter(coordinate2);
+
+            return distance;
+        }
+        
+        /// <summary>
+        /// Returns an estimate of the length of the given linestring.
+        /// </summary>
+        /// <param name="lineString">The linestring.</param>
+        /// <remarks>Accuracy decreases with distance.</remarks>
+        public static double DistanceEstimateInMeter(this IEnumerable<(double longitude, double latitude)> lineString)
+        {
+            var distance = 0.0;
+            
+            using var shapeEnumerator = lineString.GetEnumerator();
+            shapeEnumerator.MoveNext();
+            var previous = shapeEnumerator.Current;
+
+            while (shapeEnumerator.MoveNext())
+            {
+                var current = shapeEnumerator.Current;
+                distance += previous.DistanceEstimateInMeter(current);
+                previous = current;
+            }
+
+            return distance;
         }
         
         /// <summary>

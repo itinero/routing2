@@ -143,22 +143,7 @@ namespace Itinero
         /// <returns>The length in meters.</returns>
         internal static double EdgeLength(this NetworkEdgeEnumerator enumerator)
         {
-            var distance = 0.0;
-
-            // compose geometry.
-            var shape = enumerator.GetCompleteShape();
-            using var shapeEnumerator = shape.GetEnumerator();
-            shapeEnumerator.MoveNext();
-            var previous = shapeEnumerator.Current;
-
-            while (shapeEnumerator.MoveNext())
-            {
-                var current = shapeEnumerator.Current;
-                distance += previous.DistanceEstimateInMeter(current);
-                previous = current;
-            }
-
-            return distance;
+            return enumerator.GetCompleteShape().DistanceEstimateInMeter();
         }
 
         /// <summary>
