@@ -11,24 +11,32 @@ using NetTopologySuite.Operation.Buffer;
 
 namespace Itinero.Tests.Profiles
 {
-    internal static class TestBench
+    internal class TestBench
     {
-        private static readonly Dictionary<string, Profile> Profiles = new Dictionary<string, Profile>();
+        private readonly string _profilesDir;
+        private readonly string _dataDir;
+        private readonly Dictionary<string, Profile> Profiles = new Dictionary<string, Profile>();
 
-        private static async Task<Profile> LoadVehicle(string vehicleFile)
+        public TestBench(string profilesDir, string dataDir)
+        {
+            _profilesDir = profilesDir;
+            _dataDir = dataDir;
+        }
+        private async Task<Profile> LoadVehicle(string vehicleFile)
         {
             if (Profiles.TryGetValue(vehicleFile, out var vehicle))
             {
                 return vehicle;
             }
 
-            var profile = LuaProfile.Load(await File.ReadAllTextAsync(vehicleFile));
+            var profile = LuaProfile.Load(await File.ReadAllTextAsync(_profilesDir+vehicleFile));
             Profiles[vehicleFile] = profile;
             return profile;
         }
         
-        public static async Task<(bool success, string message)> Run(this TestData test, string testFile)
+        public async Task<(bool success, string message)> Run((TestData test, string path) testdata)
         {
+            var (test, path) = testdata;
             // load vehicle.
             var vehicle = await LoadVehicle(test.Profile.File);
 
@@ -37,7 +45,7 @@ namespace Itinero.Tests.Profiles
             using (var writer = routerDb.GetAsMutable())
             {
                 var routerDbStreamTarget = new RouterDbStreamTarget(writer);
-                await using (var stream = File.OpenRead(test.OsmDataFile))
+                await using (var stream = File.OpenRead(this._dataDir + test.OsmDataFile))
                 {
                     if (test.OsmDataFile.EndsWith("osm.pbf"))
                     {
@@ -54,10 +62,6 @@ namespace Itinero.Tests.Profiles
                 }
             }
 
-//            File.WriteAllText(test.OsmDataFile + ".geojson", 
-//                routerDb.ToGeoJson().AddColours());
-
-//            Console.Write($" {test.Profile.Name}");
 
             // test route.
             var source = test.Expected.Coordinates[0];
@@ -89,9 +93,9 @@ namespace Itinero.Tests.Profiles
             if (!expectedBuffered.Covers(routeLineString))
             {
                 
-                File.WriteAllText(testFile + ".failed.geojson", 
+                File.WriteAllText(path + ".failed.geojson", 
                     routeLineString.ToJson());
-                File.WriteAllText(testFile + ".expected.geojson", 
+                File.WriteAllText(path + ".expected.geojson", 
                     test.Expected.ToJson());
                 return (false, "Route outside of expected buffer.");
             }
