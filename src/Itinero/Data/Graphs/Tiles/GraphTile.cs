@@ -136,9 +136,10 @@ namespace Itinero.Data.Graphs.Tiles
         /// <param name="attributes">The attributes."</param>
         /// <param name="edgeId">The edge id if this edge is a part of another tile.</param>
         /// <param name="edgeTypeId">The edge type id, if any.</param>
+        /// <param name="length">The length in centimeters.</param>
         /// <returns>The new edge id.</returns>
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null,
-            IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeTypeId = null)
+            IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeTypeId = null, uint? length = null)
         {
             if (vertex1.TileId != _tileId)
             { // this is a special case, an edge is added that is not part of this tile.
@@ -198,9 +199,11 @@ namespace Itinero.Data.Graphs.Tiles
             }
             
             // write edge profile id.
-            size = (uint)_edges.SetDynamicUInt32Nullable(_nextEdgeId, edgeTypeId);
-            _nextEdgeId += size;
+            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, edgeTypeId);
 
+            // write length.
+            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, length);
+            
             // take care of shape if any.
             uint? shapePointer = null;
             if (shape != null)
@@ -243,13 +246,14 @@ namespace Itinero.Data.Graphs.Tiles
                 {
                     p += DecodeEdgeId(p, out edgeId);
                 }
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var edgeTypeId);
+                p += (uint)_edges.GetDynamicInt32Nullable(p, out var _);
+                p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
                 p += DecodePointer(p, out var shapePointer);
                 p += DecodePointer(p, out var attributePointer);
                 
                 // generate new edge type id.
                 var newEdgeTypeId = edgeTypeIndex.Get(this.GetAttributes(attributePointer));
-
+                
                 // write edge data again.
                 var newEdgePointer = newP;
                 newP += EncodeVertex(edges, _tileId, newP, vertex1);
@@ -274,6 +278,7 @@ namespace Itinero.Data.Graphs.Tiles
                     newP += EncodeEdgeId(edges, _tileId, newP, edgeId.Value);
                 }
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, newEdgeTypeId);
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
                 newP += EncodePointer(edges, newP, shapePointer);
                 newP += EncodePointer(edges, newP, attributePointer);
             }
@@ -379,6 +384,15 @@ namespace Itinero.Data.Graphs.Tiles
             }
             return (uint) edges.SetDynamicUInt64(location, 
                 encoded.EncodeAsNullableData());
+        }
+
+        internal static uint SetDynamicUIn32Nullable(ArrayBase<byte> edges, uint pointer, uint? data)
+        {
+            while (edges.Length <= pointer + 5)
+            {
+                edges.Resize(edges.Length + 1024);
+            }
+            return (uint) edges.SetDynamicUInt32Nullable(pointer, data);
         }
 
         internal uint DecodeEdgeId(uint location, out EdgeId? edgeId)

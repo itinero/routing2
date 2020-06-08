@@ -18,12 +18,22 @@ namespace Itinero.Tests.Functional.Download
         /// <returns>An open stream for the content at the given url.</returns>
         public static Stream? Download(string url)
         {
+            
             var fileName = HttpUtility.UrlEncode(url) + ".tile.zip";
             fileName = Path.Combine(".", "cache", fileName);
 
             if (File.Exists(fileName))
             {
                 return new GZipStream(File.OpenRead(fileName), CompressionMode.Decompress);
+            }
+            
+            var redirectFileName = HttpUtility.UrlEncode(url) + ".tile.redirect";
+            redirectFileName = Path.Combine(".", "cache", redirectFileName);
+
+            if (File.Exists(redirectFileName))
+            {
+                var newUrl = File.ReadAllText(redirectFileName);
+                return Download(newUrl);
             }
                 
             try
@@ -45,6 +55,11 @@ namespace Itinero.Tests.Functional.Download
                     {
                         var uri = new Uri(url);
                         var redirected = new Uri($"{uri.Scheme}://{uri.Host}{response.Result.Headers.Location}");
+
+                        using var stream = File.Open(redirectFileName, FileMode.Create);
+                        using var streamWriter = new StreamWriter(stream);
+                        streamWriter.Write(redirected);
+                        
                         return Download(redirected.ToString());
                     }
                 }

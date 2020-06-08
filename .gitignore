@@ -47,3 +47,4 @@ TestResult*.xml
 *.geojson
 *.tile
 *.tile.zip
+*.tile.redirect

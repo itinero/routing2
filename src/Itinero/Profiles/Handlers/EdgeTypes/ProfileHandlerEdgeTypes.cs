@@ -35,8 +35,16 @@ namespace Itinero.Profiles.Handlers.EdgeTypes
             {
                 _edgeFactor = edgeFactor.Value;
             }
-
-            _length = (uint)(enumerator.EdgeLength() * 100);
+            
+            var length = enumerator.Length;
+            if (length.HasValue)
+            {
+                _length = length.Value;
+            }
+            else
+            {
+                _length = (uint)(enumerator.EdgeLength() * 100);
+            }
         }
 
         public override uint ForwardWeight => _edgeFactor.ForwardFactor * _length;

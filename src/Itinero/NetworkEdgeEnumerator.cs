@@ -114,5 +114,10 @@ namespace Itinero
         /// Gets the edge profile id.
         /// </summary>
         public uint? EdgeTypeId => this.Enumerator.EdgeTypeId;
+        
+        /// <summary>
+        /// Gets the length in centimeters, if any.
+        /// </summary>
+        public uint? Length => this.Enumerator.Length;
     }
 }
