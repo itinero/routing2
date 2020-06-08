@@ -1,3 +1,4 @@
+using System.IO;
 using Itinero.Data.Graphs;
 using System.Linq;
 using Itinero.Data.Graphs.EdgeTypes;
@@ -61,6 +62,55 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
             Assert.Equal(2, edgeTypeAttributes.Length);
             Assert.Equal(("highway", "residential"), edgeTypeAttributes[0]);
             Assert.Equal(("maxspeed", "50"), edgeTypeAttributes[1]);
+        }
+
+        [Fact]
+        public void GraphEdgeTypeCollection_Serialize_Empty_ShouldDeserializeEmpty()
+        {
+            var expected = new GraphEdgeTypeCollection();
+            
+            var stream = new MemoryStream();
+            expected.Serialize(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            var edgeTypes = GraphEdgeTypeCollection.Deserialize(stream);
+            Assert.Equal(0U, edgeTypes.Count);
+        }
+
+        [Fact]
+        public void GraphEdgeTypeCollection_Serialize_One_ShouldDeserializeOne()
+        {
+            var expected = new GraphEdgeTypeCollection();
+            var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
+            
+            var stream = new MemoryStream();
+            expected.Serialize(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            var edgeTypes = GraphEdgeTypeCollection.Deserialize(stream);
+            Assert.Equal(1U, edgeTypes.Count);
+            var edgeType1 = edgeTypes.GetById(type1).ToArray();
+            Assert.Equal(("highway", "residential"), edgeType1[0]);
+        }
+
+        [Fact]
+        public void GraphEdgeTypeCollection_Serialize_Two_ShouldDeserializeTwo()
+        {
+            var expected = new GraphEdgeTypeCollection();
+            var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
+            var type2 = expected.Get(new (string key, string value)[] {("highway", "primary"), ("maxspeed", "50")});
+            
+            var stream = new MemoryStream();
+            expected.Serialize(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            var edgeTypes = GraphEdgeTypeCollection.Deserialize(stream);
+            Assert.Equal(2U, edgeTypes.Count);
+            var edgeType1 = edgeTypes.GetById(type1).ToArray();
+            Assert.Equal(("highway", "residential"), edgeType1[0]);
+            var edgeType2 = edgeTypes.GetById(type2).ToArray();
+            Assert.Equal(("highway", "primary"), edgeType2[0]);
+            Assert.Equal(("maxspeed", "50"), edgeType2[1]);
         }
     }
 }

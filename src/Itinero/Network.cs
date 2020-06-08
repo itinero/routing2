@@ -9,17 +9,15 @@ namespace Itinero
     /// </summary>
     public sealed partial class Network : INetworkWritable
     {
-        private readonly RouterDb _routerDb;
-
         internal Network(RouterDb routerDb, int zoom = 14)
         {
-            _routerDb = routerDb;
+            RouterDb = routerDb;
             Graph = new Graph(zoom);
         }
 
         private Network(RouterDb routerDb, Graph graph)
         {
-            _routerDb = routerDb;
+            RouterDb = routerDb;
             Graph = graph;
         }
 
@@ -31,8 +29,8 @@ namespace Itinero
         /// <summary>
         /// Gets the router db.
         /// </summary>
-        public RouterDb RouterDb => _routerDb; 
-        
+        public RouterDb RouterDb { get; }
+
         /// <summary>
         /// Gets the edge enumerator for the graph in this network.
         /// </summary>

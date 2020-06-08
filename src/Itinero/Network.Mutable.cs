@@ -57,7 +57,7 @@ namespace Itinero
 
             public Network ToNetwork()
             {
-                return new Network(_network._routerDb, _graph.ToGraph());
+                return new Network(_network.RouterDb, _graph.ToGraph());
             }
 
             public void Dispose()

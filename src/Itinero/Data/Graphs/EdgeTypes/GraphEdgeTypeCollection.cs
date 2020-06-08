@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Itinero.IO;
 
 namespace Itinero.Data.Graphs.EdgeTypes
 {
@@ -21,6 +23,17 @@ namespace Itinero.Data.Graphs.EdgeTypes
         {
             _edgeProfilesIndex = new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default);
             _edgeProfiles = new List<IReadOnlyList<(string key, string value)>>();
+        }
+
+        private GraphEdgeTypeCollection(List<IReadOnlyList<(string key, string value)>> edgeProfiles)
+        {
+            _edgeProfiles = edgeProfiles;
+
+            _edgeProfilesIndex = new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default);
+            for (var p = 0; p < _edgeProfiles.Count; p++)
+            {
+                _edgeProfilesIndex[_edgeProfiles[p]] = (uint)p;
+            }
         }
 
         /// <summary>
@@ -96,6 +109,50 @@ namespace Itinero.Data.Graphs.EdgeTypes
 
                 return hash;
             }
+        }
+
+        internal void Serialize(Stream stream)
+        {
+            // write version #.
+            stream.WriteVarInt32(1);
+            
+            // write pairs.
+            stream.WriteVarInt32(_edgeProfiles.Count);
+            foreach (var attributes in _edgeProfiles)
+            {
+                stream.WriteVarInt32(attributes.Count);
+                foreach (var (key, value) in attributes)
+                {
+                    stream.WriteWithSize(key);
+                    stream.WriteWithSize(value);
+                }
+            }
+        }
+
+        internal static GraphEdgeTypeCollection Deserialize(Stream stream)
+        {
+            // get version #.
+            var version = stream.ReadVarInt32();
+            if (version != 1) throw new InvalidDataException("Unexpected version #.");
+            
+            // read pairs.
+            var count = stream.ReadVarInt32();
+            var edgeTypes = new List<IReadOnlyList<(string key, string value)>>(count);
+            for (var i = 0; i < count; i++)
+            {
+                var c = stream.ReadVarInt32();
+                var attribute = new (string key, string value)[c];
+                for (var a = 0; a < c; a++)
+                {
+                    var key = stream.ReadWithSizeString();
+                    var value = stream.ReadWithSizeString();
+                    attribute[a] = (key, value);
+                }
+                
+                edgeTypes.Add(attribute);
+            }
+            
+            return new GraphEdgeTypeCollection(edgeTypes);
         }
     }
 }

@@ -185,6 +185,8 @@ namespace Itinero.Data.Graphs
                 _graphEdgeTypeIndex = _graphEdgeTypeIndex.Next(graphEdgeTypeFunc);
             }
 
+            internal GraphEdgeTypeIndex EdgeTypeIndex => _graphEdgeTypeIndex;
+
             public Graph ToGraph()
             {
                 return new Graph(_tiles, _graph.Zoom, _graphEdgeTypeIndex);

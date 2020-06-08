@@ -1,4 +1,5 @@
 using System;
+using Itinero.IO;
 
 namespace Itinero.Data.Graphs.Serialization
 {
@@ -11,8 +12,12 @@ namespace Itinero.Data.Graphs.Serialization
             _mutableGraph = mutableGraph;
         }
 
-        public void Serialize(GraphSerializerSettings settings)
+        public void Serialize(GraphSerializerTarget target)
         {
+            // write version #.
+            target.GraphStream.WriteVarInt32(1);
+            
+            // write edge types.
             
         }
 
