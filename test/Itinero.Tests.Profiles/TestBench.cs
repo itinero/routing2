@@ -6,10 +6,10 @@ using Itinero.IO.Osm;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua;
 using Itinero.Routers;
-using Itinero.Tests.Profiles.TestBench.Domain;
+using Itinero.Tests.Profiles.TestCase;
 using NetTopologySuite.Operation.Buffer;
 
-namespace Itinero.Tests.Profiles.TestBench
+namespace Itinero.Tests.Profiles
 {
     internal static class TestBench
     {

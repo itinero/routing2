@@ -2,7 +2,7 @@ using System;
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 
-namespace Itinero.Tests.Profiles.TestBench.Domain.Json
+namespace Itinero.Tests.Profiles.Json
 {
     /// <summary>
     /// A custom geometry json converter to/from GeoJSON.

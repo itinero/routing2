@@ -1,7 +1,7 @@
 using NetTopologySuite.Geometries;
 using Newtonsoft.Json;
 
-namespace Itinero.Tests.Profiles.TestBench.Domain
+namespace Itinero.Tests.Profiles.TestCase
 {
     /// <summary>
     /// Describes meta-data about a test.

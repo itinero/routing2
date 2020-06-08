@@ -1,4 +1,4 @@
-namespace Itinero.Tests.Profiles.TestBench.Domain
+namespace Itinero.Tests.Profiles.TestCase
 {
     internal class ProfileConfig
     {
