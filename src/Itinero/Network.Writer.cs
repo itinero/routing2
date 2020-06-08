@@ -79,6 +79,8 @@ namespace Itinero
 
             public void Dispose()
             {
+                _graphWriter.Dispose();
+                
                 (_network as INetworkWritable).ClearWriter();
             }
         }
