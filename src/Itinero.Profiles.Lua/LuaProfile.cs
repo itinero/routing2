@@ -78,9 +78,9 @@ namespace Itinero.Profiles.Lua
                 {
                     backwardFactor = 0;
                 }
-                if (!_resultsTable.TryGetBool("canstop", out var canstop))
+                if (!_resultsTable.TryGetBool("canstop", out var canStop))
                 {
-                    canstop = backwardFactor != 0 || forwardFactor != 0;
+                    canStop = backwardFactor > 0 || forwardFactor > 0;
                 }
                 
                 // the speeds are supposed to be in m/s.
@@ -110,7 +110,7 @@ namespace Itinero.Profiles.Lua
                 }
 
                 return new EdgeFactor((uint)(forwardFactor * 100), (uint)(backwardFactor * 100), 
-                    (ushort)(speedForward * 100), (ushort)(speedBackward * 100), canstop);
+                    (ushort)(speedForward * 100), (ushort)(speedBackward * 100), canStop);
             }
         }
     }

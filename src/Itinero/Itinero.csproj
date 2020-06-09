@@ -19,10 +19,4 @@
     <PackageReference Include="Reminiscence" Version="1.4.0-pre001" />
     <PackageReference Include="System.Text.Json" Version="4.7.1" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Profiles\Lua\Osm\pedestrian.lua" />
-    <EmbeddedResource Include="Profiles\Lua\Osm\pedestrian.lua" />
-    <None Remove="Profiles\Lua\Osm\bicycle.lua" />
-    <EmbeddedResource Include="Profiles\Lua\Osm\bicycle.lua" />
-  </ItemGroup>
 </Project>
