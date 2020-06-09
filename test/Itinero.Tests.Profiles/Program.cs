@@ -19,7 +19,7 @@ namespace Itinero.Tests.Profiles
 
         private static List<string> argDefaults = new List<string>
         {
-            "/home/pietervdvn/werk/routing-profiles/",
+            "/home/pietervdvn/werk/AspectedRouting/output/itinero2/",
             "/home/pietervdvn/werk/routing-profiles/testbench/src/Profiles.Tests/data/",
             ""
         };
@@ -42,27 +42,52 @@ namespace Itinero.Tests.Profiles
 
             for (int i = 0; i < argNames.Count; i++)
             {
-                Console.WriteLine($"{argNames[i]}: {argValues[i]}");
+                var msg = argValues[i];
+                if (string.IsNullOrEmpty(msg))
+                {
+                    msg = "<empty string/no filter given>";
+                }
+
+                Console.WriteLine($"{argNames[i]}: {msg}");
             }
 
             var testcases = FindTestCasePaths(testLocationDir, mustContain);
 
 
+            var successCount = 0;
+            var total = 0;
             var testbench = new TestBench(routingProfilesDir, testLocationDir);
             foreach (var testcase in testcases)
             {
-                
-                if(testcase.test.OsmDataFile.StartsWith("data/"))
+                if (!testcase.test.Profile.Name.StartsWith("bicycle"))
+                {
+                    // TODO port the other profiles
+                    Console.WriteLine("WARNING: Omitting test with profile.behaviour == " + testcase.test.Profile.Name);
+                    continue;
+                }
+
+                total++;
+
+                if (testcase.test.OsmDataFile.StartsWith("data/"))
                 {
                     // Legacy workaround
                     testcase.test.OsmDataFile = testcase.test.OsmDataFile.Substring("data/".Length);
                 }
+
                 var (success, message) = await testbench.Run(testcase);
                 if (!success)
                 {
-                    Console.WriteLine("FAIL");
+                    Console.WriteLine("[FAIL] Behaviour: " + testcase.test.Profile.Name +
+                                      "\n       " + testcase.test.Description + " \n       " + message);
+                }
+                else
+                {
+                    successCount++;
+                    Console.WriteLine($"[OK] {successCount}/{total}");
                 }
             }
+
+            Console.WriteLine($"{successCount}/{total} tests successful");
         }
 
 

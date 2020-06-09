@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -22,23 +23,37 @@ namespace Itinero.Tests.Profiles
             _profilesDir = profilesDir;
             _dataDir = dataDir;
         }
-        private async Task<Profile> LoadVehicle(string vehicleFile)
+
+        private async Task<Profile> LoadVehicle(string behaviour)
         {
-            if (Profiles.TryGetValue(vehicleFile, out var vehicle))
+            if (Profiles.TryGetValue(behaviour, out var profile))
             {
-                return vehicle;
+                return profile;
             }
 
-            var profile = LuaProfile.Load(await File.ReadAllTextAsync(_profilesDir+vehicleFile));
-            Profiles[vehicleFile] = profile;
+            var contents = await File.ReadAllTextAsync(_profilesDir + behaviour + ".lua");
+            profile = LuaProfile.Load(contents);
+            Profiles[behaviour] = profile;
             return profile;
         }
-        
+
         public async Task<(bool success, string message)> Run((TestData test, string path) testdata)
+        {
+            try
+            {
+                return await RunUnsafe(testdata);
+            }
+            catch (Exception e)
+            {
+                return (false, "EXCEPTION: " + e.Message);
+            }
+        }
+
+        private async Task<(bool success, string message)> RunUnsafe((TestData test, string path) testdata)
         {
             var (test, path) = testdata;
             // load vehicle.
-            var vehicle = await LoadVehicle(test.Profile.File);
+            var vehicle = await LoadVehicle(test.Profile.Name);
 
             // load data using vehicle.
             var routerDb = new RouterDb();
@@ -72,9 +87,9 @@ namespace Itinero.Tests.Profiles
             var targetSnap = latest.Snap((target.X, target.Y), profile: vehicle);
 
             var route = latest.Route(new RoutingSettings() {Profile = vehicle})
-                    .From(sourceSnap)
-                    .To(targetSnap)
-                    .Calculate();
+                .From(sourceSnap)
+                .To(targetSnap)
+                .Calculate();
 
             if (route.IsError)
             {
@@ -92,12 +107,12 @@ namespace Itinero.Tests.Profiles
             var expectedBuffered = BufferOp.Buffer(test.Expected, 0.00005);
             if (!expectedBuffered.Covers(routeLineString))
             {
-                
-                File.WriteAllText(path + ".failed.geojson", 
+                File.WriteAllText(path + ".failed.geojson",
                     routeLineString.ToJson());
-                File.WriteAllText(path + ".expected.geojson", 
+                File.WriteAllText(path + ".expected.geojson",
                     test.Expected.ToJson());
-                return (false, "Route outside of expected buffer.");
+                
+                return (false, "Route outside of expected buffer. Written debug geojsons to "+path);
             }
 
             return (true, string.Empty);
