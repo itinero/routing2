@@ -22,7 +22,7 @@ namespace Itinero.Data.Graphs
             _graphEdgeTypeIndex = new GraphEdgeTypeIndex();
         }
 
-        private Graph(SparseArray<(GraphTile tile, int edgeTypesId)> tiles, int zoom,
+        internal Graph(SparseArray<(GraphTile tile, int edgeTypesId)> tiles, int zoom,
             GraphEdgeTypeIndex graphEdgeTypeIndex)
         {
             Zoom = zoom;
@@ -88,17 +88,17 @@ namespace Itinero.Data.Graphs
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns></returns>
-        internal Enumerator GetEnumerator()
+        internal GraphEdgeEnumerator GetEdgeEnumerator()
         {
-            return new Enumerator(this);
+            return new GraphEdgeEnumerator(this);
         }
 
-        internal class Enumerator
+        internal class GraphEdgeEnumerator
         {
             private readonly Graph _graph;
             private readonly GraphTileEnumerator _tileEnumerator;
 
-            internal Enumerator(Graph graph)
+            internal GraphEdgeEnumerator(Graph graph)
             {
                 _graph = graph;
 
@@ -204,6 +204,71 @@ namespace Itinero.Data.Graphs
             /// Gets the length in centimeters, if any.
             /// </summary>
             public uint? Length => _tileEnumerator.Length;
+        }
+        
+        /// <summary>
+        /// Gets a vertex enumerator.
+        /// </summary>
+        /// <returns></returns>
+        internal GraphVertexEnumerator GetVertexEnumerator()
+        {
+            return new GraphVertexEnumerator(this);
+        }
+
+        internal class GraphVertexEnumerator
+        {
+            private readonly IEnumerator<(long tileId, (GraphTile tile, int edgeTypesId) tilePair)> _tileEnumerator;
+
+            public GraphVertexEnumerator(Graph graph)
+            {
+                _tileEnumerator = graph._tiles.GetEnumerator();
+                
+                this.Current = VertexId.Empty;
+            }
+
+            private long _localId = -1;
+            private uint _tileId = uint.MaxValue;
+
+            private bool MoveNexTile()
+            {
+                while (true)
+                {
+                    if (!_tileEnumerator.MoveNext()) return false;
+
+                    if (_tileEnumerator.Current.tilePair.tile != null) return true;
+                }
+            }
+            
+            public bool MoveNext()
+            {
+                if (this.Current.IsEmpty())
+                {
+                    if (!this.MoveNexTile()) return false;
+                    _tileId = (uint)_tileEnumerator.Current.tileId;
+                }
+
+                var current = _tileEnumerator.Current;
+                _localId++;
+                this.Current = new VertexId(_tileId, (uint)_localId);
+                if (!current.tilePair.tile.TryGetVertex(this.Current, out _, out _))
+                {
+                    if (!this.MoveNexTile()) return false;
+                    _localId = -1;
+                    _tileId = (uint)_tileEnumerator.Current.tileId;
+                    return this.MoveNext();
+                }
+
+                return true;
+            }
+            
+            public VertexId Current { get; private set; }
+
+            public void Reset()
+            {
+                this.Current = VertexId.Empty;
+                
+                _tileEnumerator.Reset();
+            }
         }
     }
 }

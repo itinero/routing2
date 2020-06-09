@@ -137,7 +137,7 @@ namespace Itinero.Tests.Data.Graphs
             Assert.Equal(vertex1.TileId, edge.TileId);
             Assert.Equal((uint)0, edge.LocalId);
 
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             Assert.True(enumerator.MoveTo(vertex1));
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex1, enumerator.From);
@@ -171,7 +171,7 @@ namespace Itinero.Tests.Data.Graphs
                 });
             }
 
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             Assert.True(enumerator.MoveTo(vertex1));
             Assert.True(enumerator.MoveNext());
 
@@ -201,7 +201,7 @@ namespace Itinero.Tests.Data.Graphs
                 });
             }
 
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             Assert.True(enumerator.MoveTo(vertex2));
             Assert.True(enumerator.MoveNext());
 
@@ -233,7 +233,7 @@ namespace Itinero.Tests.Data.Graphs
                     attributes: new (string key, string value)[] {("highway", "residential")});
             }
             
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(0U, enumerator.EdgeTypeId);
@@ -261,7 +261,7 @@ namespace Itinero.Tests.Data.Graphs
                     attributes: new (string key, string value)[] {("highway", "residential")});
             }
             
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(0U, enumerator.EdgeTypeId);
@@ -290,7 +290,7 @@ namespace Itinero.Tests.Data.Graphs
                     attributes: new (string key, string value)[] {("highway", "primary")});
             }
             
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(1U, enumerator.EdgeTypeId);
@@ -327,10 +327,70 @@ namespace Itinero.Tests.Data.Graphs
                     attr => attr.Where(x => x.key == "highway" || x.key == "maxspeed")));
             });
             
-            var enumerator = graph.GetEnumerator();
+            var enumerator = graph.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(1U, enumerator.EdgeTypeId);
+        }
+
+        [Fact]
+        public void Graph_VertexEnumerator_Empty_ShouldNotReturnVertices()
+        {
+            var graph = new Graph();
+
+            var enumerator = graph.GetVertexEnumerator();
+            Assert.False(enumerator.MoveNext());
+        }
+
+        [Fact]
+        public void Graph_VertexEnumerator_OneVertex_ShouldReturnOneVertex()
+        {
+            var graph = new Graph();
+            VertexId vertex;
+            using (var writer = graph.GetWriter())
+            {
+                vertex = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
+            }
+
+            var enumerator = graph.GetVertexEnumerator();
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex, enumerator.Current);
+        }
+
+        [Fact]
+        public void Graph_VertexEnumerator_TwoVertices_ShouldReturnTwoVertices()
+        {
+            var graph = new Graph();
+            VertexId vertex1, vertex2;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(4.800467491149902,51.26896368721961);
+            }
+
+            var enumerator = graph.GetVertexEnumerator();
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.Current);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex2, enumerator.Current);
+        }
+
+        [Fact]
+        public void Graph_VertexEnumerator_TwoVertices_DifferentTiles_ShouldReturnTwoVertices()
+        {
+            var graph = new Graph();
+            VertexId vertex1, vertex2;
+            using (var writer = graph.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
+                vertex2 = writer.AddVertex(5.801111221313477,51.26676859478893);
+            }
+
+            var enumerator = graph.GetVertexEnumerator();
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.Current);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex2, enumerator.Current);
         }
     }
 }

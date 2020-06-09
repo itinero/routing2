@@ -11,14 +11,14 @@ namespace Itinero
     public class NetworkEdgeEnumerator
     {
         private readonly Network _routerDb;
-        private readonly Graph.Enumerator? _enumerator;
+        private readonly Graph.GraphEdgeEnumerator? _enumerator;
         private readonly EdgeEnumerator? _edgeEnumerator;
 
         internal NetworkEdgeEnumerator(Network routerDb)
         {
             _routerDb = routerDb ?? throw new ArgumentNullException(nameof(routerDb));
 
-            _enumerator = _routerDb.Graph.GetEnumerator();
+            _enumerator = _routerDb.Graph.GetEdgeEnumerator();
         }
 
         internal NetworkEdgeEnumerator(Network routerDb, EdgeEnumerator edgeEnumerator)
@@ -28,11 +28,11 @@ namespace Itinero
         }
 
         // TODO: do we create a readonly version of this, if a reader moves this enumerator things go crazy.
-        internal Graph.Enumerator Enumerator
+        internal Graph.GraphEdgeEnumerator GraphEdgeEnumerator
         {
             get
             {
-                if (_edgeEnumerator != null) return _edgeEnumerator.GraphEnumerator;
+                if (_edgeEnumerator != null) return _edgeEnumerator.GraphGraphEdgeEnumerator;
                 if (_enumerator == null) throw new InvalidOperationException("Enumerator in an impossible state!");
                 return _enumerator;
             }
@@ -81,43 +81,43 @@ namespace Itinero
         /// <summary>
         /// Returns true if the edge is from -> to, false otherwise.
         /// </summary>
-        public bool Forward => this.Enumerator.Forward;
+        public bool Forward => this.GraphEdgeEnumerator.Forward;
 
         /// <summary>
         /// Gets the source vertex.
         /// </summary>
-        public VertexId From => this.Enumerator.From;
+        public VertexId From => this.GraphEdgeEnumerator.From;
 
         /// <summary>
         /// Gets the target vertex.
         /// </summary>
-        public VertexId To => this.Enumerator.To;
+        public VertexId To => this.GraphEdgeEnumerator.To;
 
         /// <summary>
         /// Gets the edge id.
         /// </summary>
-        public EdgeId Id => this.Enumerator.Id;
+        public EdgeId Id => this.GraphEdgeEnumerator.Id;
             
         /// <summary>
         /// Gets the shape.
         /// </summary>
         /// <returns>The shape.</returns>
-        public IEnumerable<(double longitude, double latitude)> Shape => this.Enumerator.Shape; 
+        public IEnumerable<(double longitude, double latitude)> Shape => this.GraphEdgeEnumerator.Shape; 
             
         /// <summary>
         /// Gets the attributes.
         /// </summary>
         /// <returns>The attributes.</returns>
-        public IEnumerable<(string key, string value)> Attributes => this.Enumerator.Attributes; 
+        public IEnumerable<(string key, string value)> Attributes => this.GraphEdgeEnumerator.Attributes; 
 
         /// <summary>
         /// Gets the edge profile id.
         /// </summary>
-        public uint? EdgeTypeId => this.Enumerator.EdgeTypeId;
+        public uint? EdgeTypeId => this.GraphEdgeEnumerator.EdgeTypeId;
         
         /// <summary>
         /// Gets the length in centimeters, if any.
         /// </summary>
-        public uint? Length => this.Enumerator.Length;
+        public uint? Length => this.GraphEdgeEnumerator.Length;
     }
 }

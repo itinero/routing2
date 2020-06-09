@@ -19,7 +19,7 @@ namespace Itinero.Tests.Data
                 writer.AddEdge(vertex1, vertex2);
             }
 
-            var enumerator = network.GetEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex1, enumerator.From);

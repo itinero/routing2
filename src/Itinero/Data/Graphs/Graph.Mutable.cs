@@ -11,7 +11,7 @@ namespace Itinero.Data.Graphs
     {
         private MutableGraph? _mutableGraph = null;
 
-        internal IMutableGraph GetAsMutable()
+        internal MutableGraph GetAsMutable()
         {
             lock (_writeSync) // make sure no writer can be created while the mutable graph is being created.
             {
@@ -87,6 +87,8 @@ namespace Itinero.Data.Graphs
                 _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
                 return tile;
             }
+
+            internal int Zoom => _graph.Zoom;
 
             private GraphTile? GetTileForRead(uint localTileId)
             {

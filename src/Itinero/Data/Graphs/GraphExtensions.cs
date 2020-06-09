@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Itinero.Data.Graphs
 {
@@ -22,6 +24,31 @@ namespace Itinero.Data.Graphs
             if (!graph.TryGetVertex(vertexId, out var longitude, out var latitude)) throw new ArgumentOutOfRangeException(nameof(vertexId), "Vertex not found!");
 
             return (longitude, latitude);
+        }
+
+        public static IEnumerable<VertexId> GetVertices(this Graph graph)
+        {
+            var enumerator = graph.GetVertexEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
+        public static IEnumerable<EdgeId> GetEdges(this Graph graph)
+        {
+            var edgeEnumerator = graph.GetEdgeEnumerator();
+            foreach (var vertex in graph.GetVertices())
+            {
+                if (!edgeEnumerator.MoveTo(vertex)) continue;
+
+                while (edgeEnumerator.MoveNext())
+                {
+                    if (!edgeEnumerator.Forward) continue;
+
+                    yield return edgeEnumerator.Id;
+                }
+            }
         }
     }
 }

@@ -8,13 +8,13 @@ namespace Itinero.Algorithms.Search
     /// </summary>
     internal class EdgeEnumerator
     {
-        private readonly Graph.Enumerator _graphEnumerator;
+        private readonly Graph.GraphEdgeEnumerator _graphGraphEdgeEnumerator;
         private readonly IEnumerator<VertexId> _vertexEnumerator;
 
         public EdgeEnumerator(Graph graph, IEnumerable<VertexId> vertices)
         {
             _vertexEnumerator = vertices.GetEnumerator();
-            _graphEnumerator = graph.GetEnumerator();
+            _graphGraphEdgeEnumerator = graph.GetEdgeEnumerator();
         }
         
         private bool _firstEdge = false;
@@ -22,7 +22,7 @@ namespace Itinero.Algorithms.Search
         public void Reset()
         {
             _firstEdge = false;
-            _graphEnumerator.Reset();
+            _graphGraphEdgeEnumerator.Reset();
             _vertexEnumerator.Reset();
         }
 
@@ -32,9 +32,9 @@ namespace Itinero.Algorithms.Search
             {
                 while (_vertexEnumerator.MoveNext())
                 {
-                    while (_graphEnumerator.MoveTo(_vertexEnumerator.Current))
+                    while (_graphGraphEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
                     {
-                        if (!_graphEnumerator.MoveNext()) break;
+                        if (!_graphGraphEdgeEnumerator.MoveNext()) break;
 
                         _firstEdge = true;
                         return true;
@@ -46,21 +46,21 @@ namespace Itinero.Algorithms.Search
 
             while (true)
             {
-                if (_graphEnumerator.MoveNext())
+                if (_graphGraphEdgeEnumerator.MoveNext())
                 {
                     return true;
                 }
 
                 if (!_vertexEnumerator.MoveNext()) return false;
-                while (_graphEnumerator.MoveTo(_vertexEnumerator.Current))
+                while (_graphGraphEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
                 {
-                    if (_graphEnumerator.MoveNext()) return true;
+                    if (_graphGraphEdgeEnumerator.MoveNext()) return true;
                     if (!_vertexEnumerator.MoveNext()) return false;
                 }
             }
         }
 
-        internal Graph.Enumerator GraphEnumerator => _graphEnumerator;
+        internal Graph.GraphEdgeEnumerator GraphGraphEdgeEnumerator => _graphGraphEdgeEnumerator;
 
         public void Dispose()
         {
