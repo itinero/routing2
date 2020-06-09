@@ -5,6 +5,8 @@ using Itinero.Data;
 using Itinero.Data.Graphs.Serialization;
 using Itinero.IO;
 using Itinero.Logging;
+using Itinero.Profiles;
+using Itinero.Profiles.EdgeTypes;
 using Itinero.Serialization;
 
 namespace Itinero
@@ -24,6 +26,9 @@ namespace Itinero
             // open stream.
             using var stream = File.Open(settings.Path, FileMode.Create);
             
+            // write profile configuration.
+            this.ProfileConfiguration.WriteTo(stream, settings.ProfileSerializer);
+            
             // get mutable network and serialize.
             stream.WriteGraph(this.Network.GetAsMutable().Graph);
         }
@@ -42,10 +47,14 @@ namespace Itinero
             // open stream.
             using var stream = File.OpenRead(settings.Path);
             
-            // deserialize network.
-            var graph = stream.ReadGraph(null);
+            // read profile configuration.
+            var profileConfiguration = RouterDbProfileConfiguration.ReadFrom(stream, settings.ProfileSerializer);
             
-            return new RouterDb(graph);
+            // deserialize network.
+            var graph = stream.ReadGraph(attributes => 
+                profileConfiguration.Profiles.GetEdgeProfileFor(attributes));
+
+            return new RouterDb(graph) {ProfileConfiguration = profileConfiguration};
         }
     }
 }
