@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Profiles;
 using Itinero.Profiles.EdgeTypes;
 
@@ -11,7 +9,7 @@ namespace Itinero
     {
         private readonly RouterDb _routerDb;
         private readonly RouterDbProfileConfiguration _profileConfiguration;
-        private readonly IMutableNetwork _mutableNetwork;
+        private readonly Network.MutableNetwork _mutableNetwork;
 
         internal MutableRouterDb(RouterDb routerDb)
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Itinero.Data.Events;
+using Itinero.Data.Graphs;
 using Itinero.Profiles;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
@@ -22,6 +23,11 @@ namespace Itinero
             configuration ??= RouterDbConfiguration.Default;
             
             Network = new Network(this, configuration.Zoom);
+        }
+
+        private RouterDb(Graph graph)
+        {
+            this.Network = new Network(this, graph);
         }
 
         /// <summary>

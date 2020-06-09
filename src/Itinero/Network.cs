@@ -15,7 +15,7 @@ namespace Itinero
             Graph = new Graph(zoom);
         }
 
-        private Network(RouterDb routerDb, Graph graph)
+        internal Network(RouterDb routerDb, Graph graph)
         {
             RouterDb = routerDb;
             Graph = graph;

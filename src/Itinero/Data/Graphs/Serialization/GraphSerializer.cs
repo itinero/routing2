@@ -9,37 +9,30 @@ using Itinero.IO;
 
 namespace Itinero.Data.Graphs.Serialization
 {
-    internal class GraphSerializer : IDisposable
-    {
-        private readonly Graph.MutableGraph _mutableGraph;
-
-        public GraphSerializer(Graph.MutableGraph mutableGraph)
-        {
-            _mutableGraph = mutableGraph;
-        }
-
-        public void Serialize(Stream stream)
+    internal static class GraphSerializer
+    { 
+        public static void WriteGraph(this Stream stream, Graph.MutableGraph mutableGraph)
         {
             // write version #.
             stream.WriteVarInt32(1);
             
             // write zoom.
-            stream.WriteVarInt32(_mutableGraph.Zoom);
+            stream.WriteVarInt32(mutableGraph.Zoom);
             
             // write edge types.
-            _mutableGraph.EdgeTypeIndex.Serialize(stream);
+            mutableGraph.EdgeTypeIndex.Serialize(stream);
 
             // write tiles.
-            stream.WriteVarUInt32((uint)_mutableGraph.GetTiles().Count());
-            foreach (var tileId in _mutableGraph.GetTiles())
+            stream.WriteVarUInt32((uint)mutableGraph.GetTiles().Count());
+            foreach (var tileId in mutableGraph.GetTiles())
             {
-                var tile = _mutableGraph.GetTile(tileId);
+                var tile = mutableGraph.GetTile(tileId);
 
                 tile?.Serialize(stream);
             }
         }
 
-        public static Graph Deserialize(Stream stream, Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? edgeTypeFunc = null)
+        public static Graph ReadGraph(this Stream stream, Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? edgeTypeFunc = null)
         {
             // check version #.
             var version = stream.ReadVarInt32();
@@ -62,11 +55,6 @@ namespace Itinero.Data.Graphs.Serialization
             }
             
             return new Graph(tiles, zoom, edgeTypeIndex);
-        }
-
-        public void Dispose()
-        {
-            _mutableGraph.Dispose();
         }
     }
 }

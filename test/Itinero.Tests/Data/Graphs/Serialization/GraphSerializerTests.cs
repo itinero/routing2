@@ -12,13 +12,12 @@ namespace Itinero.Tests.Data.Graphs.Serialization
         public void GraphSerializer_Serialize_Empty_ShouldDeserialize_Empty()
         {
             var expected = new Graph();
-            var serializer = new GraphSerializer(expected.GetAsMutable());
             
             var stream = new MemoryStream();
-            serializer.Serialize(stream);
+            stream.WriteGraph(expected.GetAsMutable());
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = GraphSerializer.Deserialize(stream, null);
+            var graph = stream.ReadGraph();
             Assert.Empty(graph.GetVertices());
         }
         
@@ -31,13 +30,12 @@ namespace Itinero.Tests.Data.Graphs.Serialization
             {
                 vertex = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
-            var serializer = new GraphSerializer(expected.GetAsMutable());
             
             var stream = new MemoryStream();
-            serializer.Serialize(stream);
+            stream.WriteGraph(expected.GetAsMutable());
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = GraphSerializer.Deserialize(stream, null);
+            var graph = stream.ReadGraph();
             var vertices = graph.GetVertices().ToList();
             Assert.Single(vertices);
             Assert.Equal(vertex, vertices[0]);
@@ -60,13 +58,12 @@ namespace Itinero.Tests.Data.Graphs.Serialization
                     ("maxspeed", "50")
                 });
             }
-            var serializer = new GraphSerializer(expected.GetAsMutable());
             
             var stream = new MemoryStream();
-            serializer.Serialize(stream);
+            stream.WriteGraph(expected.GetAsMutable());
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = GraphSerializer.Deserialize(stream, null);
+            var graph = stream.ReadGraph();
             var vertices = graph.GetVertices().ToList();
             Assert.Equal(2, vertices.Count);
             Assert.Equal(vertex1, vertices[0]);

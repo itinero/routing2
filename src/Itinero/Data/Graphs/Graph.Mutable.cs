@@ -36,7 +36,7 @@ namespace Itinero.Data.Graphs
             _mutableGraph = null;
         }
         
-        internal class MutableGraph : IMutableGraph
+        internal class MutableGraph : IDisposable
         {
             private readonly SparseArray<bool> _modified;
             private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
