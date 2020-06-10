@@ -4,15 +4,21 @@ using System.IO;
 using Itinero.Data;
 using Itinero.Data.Graphs.Serialization;
 using Itinero.IO;
-using Itinero.Logging;
 using Itinero.Profiles;
 using Itinero.Profiles.EdgeTypes;
 using Itinero.Serialization;
 
 namespace Itinero
 {
-    public sealed partial class RouterDb
+    public sealed partial class RouterDb : ISerializableRouterDb
     {
+        private readonly Dictionary<string, Action<Stream>> _serializationHooks = new Dictionary<string, Action<Stream>>();
+
+        void ISerializableRouterDb.AddSerializationHook(string name, Action<Stream> stream)
+        {
+            _serializationHooks[name] = stream;
+        }
+        
         /// <summary>
         /// Serializes the router db using the given configuration.
         /// </summary>
@@ -30,7 +36,16 @@ namespace Itinero
             this.ProfileConfiguration.WriteTo(stream, settings.ProfileSerializer);
             
             // get mutable network and serialize.
-            stream.WriteGraph(this.Network.GetAsMutable().Graph);
+            using var mutableNetwork = this.Network.GetAsMutable();
+            stream.WriteGraph(mutableNetwork.Graph);
+            
+            // run all serialization hooks.
+            stream.WriteVarInt32(_serializationHooks.Count);
+            foreach (var hook in _serializationHooks)
+            {
+                stream.WriteWithSize(hook.Key);
+                hook.Value(new LimitedStream(stream));
+            }
         }
 
         /// <summary>
@@ -53,8 +68,33 @@ namespace Itinero
             // deserialize network.
             var graph = stream.ReadGraph(attributes => 
                 profileConfiguration.Profiles.GetEdgeProfileFor(attributes));
+            
+            var routerDb = new RouterDb(graph) {ProfileConfiguration = profileConfiguration};
+            
+            // run all deserialization hooks.
+            var hookCount = stream.ReadVarInt32();
+            for (var h = 0; h < hookCount; h++)
+            {
+                var key = stream.ReadWithSizeString();
+                if (!settings.TryGetHook(key, out var hook)) continue;
 
-            return new RouterDb(graph) {ProfileConfiguration = profileConfiguration};
+                hook(routerDb, new LimitedStream(stream));
+            }
+
+            return routerDb;
         }
+    }
+
+    /// <summary>
+    /// Abstract representation of a serializable router db.
+    /// </summary>
+    public interface ISerializableRouterDb
+    {
+        /// <summary>
+        /// Adds a serialization hook.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="stream">The stream.</param>
+        public void AddSerializationHook(string name, Action<Stream> stream);
     }
 }

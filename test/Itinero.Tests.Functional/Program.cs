@@ -8,6 +8,9 @@ using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
+using Itinero.Profiles;
+using Itinero.Serialization;
+using Itinero.Tests.Functional.Tests;
 using Serilog;
 using Serilog.Events;
 
@@ -67,13 +70,6 @@ namespace Itinero.Tests.Functional
                 s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
             });
             var latest = routerDb.Network;
-
-            var factor = bicycle.Factor(new [] {
-                ("highway", "pedestrian") });
-
-            factor = bicycle.Factor(new [] {
-                ("highway", "pedestrian"),
-                ("surface", "cobblestone") });
 
             var heldergem = SnappingTest.Default.Run((latest, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");
@@ -149,6 +145,17 @@ namespace Itinero.Tests.Functional
             File.WriteAllText(Path.Combine("results", $"{nameof(lesotho1)}-{nameof(lesotho2)}.geojson"), 
                 route.ToGeoJson());
             
+            routerDb = RouterDbSerializeDeserializeTest.Default.Run(routerDb,
+                "Serializing/deserializing current routerdb.");
+            latest = routerDb.Network;
+            
+            route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
+                $"Route cold (after deserialization): {nameof(lesotho1)} -> {nameof(lesotho2)}");
+            route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
+                $"Route hot (after deserialization): {nameof(lesotho1)} -> {nameof(lesotho2)}", 100);
+            File.WriteAllText(Path.Combine("results", $"{nameof(lesotho1)}-{nameof(lesotho2)}-after.geojson"), 
+                route.ToGeoJson());
+            
             route = RouterOneToOneTest.Default.Run((latest, zellik1, zellik2, bicycle),
                 $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
             route = RouterOneToOneTest.Default.Run((latest, zellik1, zellik2, bicycle),
@@ -160,6 +167,17 @@ namespace Itinero.Tests.Functional
                 $"Route cold: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}");
             route = RouterOneToOneTest.Default.Run((latest, wechelderzande1, vorselaar1, bicycle),
                 $"Route hot: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 100);
+            File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
+                route.ToGeoJson());
+            
+            routerDb = RouterDbSerializeDeserializeTest.Default.Run(routerDb,
+                "Serializing/deserializing current routerdb.");
+            latest = routerDb.Network;
+            
+            route = RouterOneToOneTest.Default.Run((latest, wechelderzande1, vorselaar1, bicycle),
+                $"Route cold (after deserialization): {nameof(wechelderzande1)} -> {nameof(vorselaar1)}");
+            route = RouterOneToOneTest.Default.Run((latest, wechelderzande1, vorselaar1, bicycle),
+                $"Route hot (after deserialization): {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 100);
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
                 route.ToGeoJson());
             
@@ -258,7 +276,7 @@ namespace Itinero.Tests.Functional
                 $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
                 route.ToGeoJson());
-
+            
             route = RouterOneToOneDirectedTest.Default.Run((latest, (wechelderzande5, DirectionEnum.East),
                 (wechelderzande2, DirectionEnum.West), bicycle));
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.East)}-" +
@@ -271,7 +289,7 @@ namespace Itinero.Tests.Functional
                 (wechelderzande2, null), bicycle));
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.West)}-" +
                                                       $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
-
+            
             route = RouterOneToOneDirectedTest.Default.Run((latest, (wechelderzande4, DirectionEnum.South),
                 (wechelderzande2, null), bicycle));
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande4)}_{nameof(DirectionEnum.South)}-" +
@@ -280,7 +298,7 @@ namespace Itinero.Tests.Functional
                 (wechelderzande2, null), bicycle));
             File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande4)}_{nameof(DirectionEnum.North)}-" +
                                                       $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
-
+            
             var oneToManyRoutes = RouterOneToManyTest.Default.Run(
                 (latest, heldergem, new[] {ninove, pepingen, lebbeke}, bicycle),
                 $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
@@ -316,7 +334,7 @@ namespace Itinero.Tests.Functional
                 manyToOneRoutes[1].ToGeoJson());
             File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
                 manyToOneRoutes[2].ToGeoJson());
-
+            
             for (var j = 0; j < 5; j++)
             {
                 // setup a router db with a routable tiles data provider.
@@ -333,10 +351,10 @@ namespace Itinero.Tests.Functional
                     s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
                 });
                 latest = routerDb.Network;
-
+            
                 var deSterre = SnappingTest.Default.Run((latest, 3.715675, 51.026164, profile: bicycle),
                     $"Snapping cold: deSterre");
-
+            
                 var targets = new[]
                 {
                     SnappingTest.Default.Run((latest, 3.70137870311737, 51.1075870861261, profile: bicycle),

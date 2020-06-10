@@ -1,7 +1,7 @@
 using Itinero.Profiles;
 using Itinero.Routers;
 
-namespace Itinero.Tests.Functional
+namespace Itinero.Tests.Functional.Tests
 {
     /// <summary>
     /// A one-to-many routing test.

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Profiles;
 
@@ -42,6 +44,16 @@ namespace Itinero
         public static void PrepareFor(this IMutableRouterDb mutableRouterDb, Profile profile)
         {
             mutableRouterDb.ProfileConfiguration.AddProfile(profile);
+        }
+
+        /// <summary>
+        /// Gets the profiles this router db is prepared for.
+        /// </summary>
+        /// <param name="routerDb">The router db.</param>
+        /// <returns>The profiles this router db is prepared for.</returns>
+        public static IEnumerable<Profile> PreparedProfiles(this RouterDb routerDb)
+        {
+            return routerDb.ProfileConfiguration.Profiles.ToList();
         }
     }
 }

@@ -11,7 +11,6 @@ namespace Itinero.IO.Osm.Tiles
     /// </summary>
     internal class DataProvider
     {
-        private readonly RouterDb _routerDb;
         private readonly GlobalIdMap _idMap;
         private readonly string _baseUrl;
         private readonly HashSet<uint> _loadedTiles;
@@ -25,24 +24,41 @@ namespace Itinero.IO.Osm.Tiles
         /// <param name="zoom">The zoom level.</param>
         internal DataProvider(RouterDb routerDb, string baseUrl = TileParser.BaseUrl, uint zoom = 14)
         {
-            _routerDb = routerDb;
             _baseUrl = baseUrl;
             _zoom = 14;
             
             _loadedTiles = new HashSet<uint>();
             _idMap = new GlobalIdMap();
 
-            _routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
-            _routerDb.UsageNotifier.OnBoxTouched += TouchBox;
+            // get notified when a location/area is used.
+            routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
+            routerDb.UsageNotifier.OnBoxTouched += TouchBox;
+            
+            // hook up deserialization.
+            (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
+                this.WriteTo);
         }
 
+        private DataProvider(RouterDb routerDb, string baseUrl, uint zoom,
+            HashSet<uint> loadedTiles, GlobalIdMap idMap)
+        {
+            _baseUrl = baseUrl;
+            _zoom = zoom;
+            _idMap = idMap;
+            _loadedTiles = loadedTiles;
+
+            // get notified when a location/area is used.
+            routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
+            routerDb.UsageNotifier.OnBoxTouched += TouchBox;
+            
+            // hook up deserialization.
+            (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
+                this.WriteTo);
+        }
+        
         internal void VertexTouched(Network network, VertexId vertexId)
         {
-            if (_loadedTiles.Contains(vertexId.TileId))
-            {
-                // tile was already loaded.
-                return;
-            }
+            if (_loadedTiles.Contains(vertexId.TileId)) return;
 
             lock (_loadedTiles)
             {
@@ -104,6 +120,56 @@ namespace Itinero.IO.Osm.Tiles
                     _loadedTiles.Add(tile.LocalId);
                 }
             });
+        }
+
+        internal void WriteTo(Stream stream)
+        {
+            // write version #.
+            stream.WriteWithSize($"{nameof(DataProvider)}");
+            stream.WriteVarInt32(1);
+            
+            // write details.
+            stream.WriteWithSize(_baseUrl);
+            stream.WriteVarUInt32(_zoom);
+            
+            // write global id map.
+            lock (_loadedTiles)
+            {
+                _idMap.WriteTo(stream);
+                
+                // write loaded tiles.
+                stream.WriteVarInt64(_loadedTiles.Count);
+                foreach (var tileId in _loadedTiles)
+                {
+                    stream.WriteVarUInt32(tileId);
+                }
+            }
+        }
+
+        internal static DataProvider ReadFrom(Stream stream, RouterDb routerDb)
+        {
+            // read & verify header.
+            var header = stream.ReadWithSizeString();
+            var version = stream.ReadVarInt32();
+            if (header != nameof(DataProvider)) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Header invalid.");
+            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Version # invalid.");
+
+            // read details.
+            var baseUrl = stream.ReadWithSizeString();
+            var zoom = stream.ReadVarUInt32();
+            
+            // write global id map.
+            var idMap = GlobalIdMap.ReadFrom(stream);
+            
+            // read loaded tiles.
+            var loadedTileCount = stream.ReadVarInt64();
+            var loadedTiles = new HashSet<uint>();
+            for (var t = 0; t < loadedTileCount; t++)
+            {
+                loadedTiles.Add(stream.ReadVarUInt32());
+            }
+
+            return new DataProvider(routerDb, baseUrl, zoom, loadedTiles, idMap);
         }
     }
 }

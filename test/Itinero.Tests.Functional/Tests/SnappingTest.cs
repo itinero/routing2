@@ -1,7 +1,7 @@
 using Itinero.Algorithms;
 using Itinero.Profiles;
 
-namespace Itinero.Tests.Functional
+namespace Itinero.Tests.Functional.Tests
 {
     internal class SnappingTest : FunctionalTest<SnapPoint, (Network routerDb, double longitude, double latitude, Profile profile)>
     {

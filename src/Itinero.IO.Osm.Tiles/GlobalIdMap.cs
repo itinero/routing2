@@ -61,11 +61,12 @@ namespace Itinero.IO.Osm.Tiles
             stream.WriteByte(1);
             
             // write data.
-            stream.WriteInt64(_vertexPerId.Count);
+            stream.WriteVarInt64(_vertexPerId.Count);
             foreach (var pair in _vertexPerId)
             {
-                stream.WriteInt64(pair.Key);
-                stream.WriteVertexId(pair.Value);
+                stream.WriteVarInt64(pair.Key);
+                stream.WriteVarUInt32(pair.Value.TileId);
+                stream.WriteVarUInt32(pair.Value.LocalId);
             }
 
             return stream.Position - p;
@@ -81,13 +82,14 @@ namespace Itinero.IO.Osm.Tiles
             
             // read size first
             var globalIdMap = new GlobalIdMap();
-            var size = stream.ReadInt64();
+            var size = stream.ReadVarInt64();
             for (var p = 0; p < size; p++)
             {
-                var nodeId = stream.ReadInt64();
-                var vertexId = stream.ReadVertexId();
+                var nodeId = stream.ReadVarInt64();
+                var tileId = stream.ReadVarUInt32();
+                var localId = stream.ReadVarUInt32();
                 
-                globalIdMap.Set(nodeId, vertexId);
+                globalIdMap.Set(nodeId, new VertexId(tileId, localId));
             }
 
             return globalIdMap;

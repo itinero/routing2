@@ -1,15 +1,17 @@
 using Itinero.Algorithms;
+using Itinero.Geo.Directions;
 using Itinero.Profiles;
 using Itinero.Routers;
 
-namespace Itinero.Tests.Functional
+namespace Itinero.Tests.Functional.Tests
 {
     /// <summary>
     /// A simple point-to-point routing test.
     /// </summary>
-    public class RouterOneToOneTest : FunctionalTest<Route, (Network routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile)>
+    public class RouterOneToOneDirectedTest : FunctionalTest<Route, (Network routerDb, (SnapPoint sp, DirectionEnum? direction) sp1, (SnapPoint sp, DirectionEnum? direction) sp2, 
+        Profile profile)>
     {
-        protected override Route Execute((Network routerDb, SnapPoint sp1, SnapPoint sp2, Profile profile) input)
+        protected override Route Execute((Network routerDb, (SnapPoint sp, DirectionEnum? direction) sp1, (SnapPoint sp, DirectionEnum? direction) sp2, Profile profile) input)
         {
             var (routerDb, sp1, sp2, profile) = input;
 
@@ -26,6 +28,6 @@ namespace Itinero.Tests.Functional
         /// <summary>
         /// The default point-to-point routing test.
         /// </summary>
-        public static readonly RouterOneToOneTest Default = new RouterOneToOneTest();
+        public static readonly RouterOneToOneDirectedTest Default = new RouterOneToOneDirectedTest();
     }
 }

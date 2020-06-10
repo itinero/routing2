@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Itinero.IO
 {
-    internal static class BitCoder
+    internal static class BitCoderStream
     {
         private const byte Mask = 128 - 1;
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Itinero.Tests.Functional.Performance;
 
-namespace Itinero.Tests.Functional
+namespace Itinero.Tests.Functional.Tests
 {
     /// <summary>
     /// Abstract definition of a functional test.
