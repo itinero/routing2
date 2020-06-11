@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/itinero/routing2/</RepositoryUrl>
     <RepositoryType>osm, openstreetmap, routing, mapping</RepositoryType>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="OsmSharp" Version="6.1.0" />
