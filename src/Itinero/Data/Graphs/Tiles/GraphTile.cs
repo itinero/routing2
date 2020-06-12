@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Data.Graphs.EdgeTypes;
+using Itinero.Data.Graphs.TurnCosts;
 using Itinero.Data.Tiles;
 using Itinero.IO;
 using Reminiscence.Arrays;
+using System.Linq;
 
 namespace Itinero.Data.Graphs.Tiles
 {
@@ -167,12 +169,8 @@ namespace Itinero.Data.Graphs.Tiles
             size = EncodeVertex(_edges, _tileId,_nextEdgeId, vertex2);
             _nextEdgeId += size;
             
-            // get previous pointers if vertices already has edges
+            // get previous pointers if vertex already has edges
             // set the new pointers.
-            // TODO: save the offset pointers, this prevents the need to decode two vertices for every edge.
-            // we also need to decode just one next pointer for each edge.
-            // we do need to save the first pointer in the global pointers list.
-            // we can check if it's the first while adding it again.
             uint? v1p = null;
             if (vertex1.TileId == _tileId)
             {
@@ -223,8 +221,92 @@ namespace Itinero.Data.Graphs.Tiles
             }
             size = EncodePointer(_edges, _nextEdgeId, attributesPointer);
             _nextEdgeId += size;
+            
+            // set tail and head order.
+            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
+            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
 
             return edgeId.Value;
+        }
+        
+        internal GraphTile SetTurnCosts(VertexId vertexId, EdgeId[] edgeOrder, TurnCostId turnCostId)
+        {        
+            var edges = new MemoryArray<byte>(_edges.Length);
+            var pointers = new MemoryArray<uint>(_pointers.Length);
+            var nextEdgeId = _nextEdgeId;
+            var p = 0U;
+            var newP = 0U;
+            while (p < nextEdgeId)
+            {
+                
+                // read edge data.
+                p += DecodeVertex(p, out var local1Id, out var tile1Id);
+                var vertex1 = new VertexId(tile1Id, local1Id);
+                p += DecodeVertex(p, out var local2Id, out var tile2Id);
+                var vertex2 = new VertexId(tile2Id, local2Id);
+                p += DecodePointer(p, out _);
+                p += DecodePointer(p, out _);
+                EdgeId? edgeId = null;
+                if (tile1Id != tile2Id)
+                {
+                    p += DecodeEdgeId(p, out edgeId);
+                }
+                p += (uint)_edges.GetDynamicInt32Nullable(p, out var edgeTypeId);
+                p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
+                p += DecodePointer(p, out var shapePointer);
+                p += DecodePointer(p, out var attributePointer);
+                p += (uint) _edges.GetDynamicInt32Nullable(p, out var tailOrder);
+                p += (uint) _edges.GetDynamicInt32Nullable(p, out var headOrder);
+                
+                // update head or tail order if needed.
+                if (vertex1 == vertexId)
+                {
+                    tailOrder = null;
+                    var oldEdgeId = edgeId ?? new EdgeId(_tileId, _nextEdgeId);
+                    var index = Array.FindIndex(edgeOrder, e => oldEdgeId == e);
+                    if (index >= 0) tailOrder = (uint) index;
+                }
+                else if (vertex2 == vertexId)
+                {
+                    headOrder = null;
+                    var oldEdgeId = edgeId ?? new EdgeId(_tileId, _nextEdgeId);
+                    var index = Array.FindIndex(edgeOrder, e => oldEdgeId == e);
+                    if (index >= 0) headOrder = (uint) index;
+                }
+                
+                // write edge data again.
+                var newEdgePointer = newP;
+                newP += EncodeVertex(edges, _tileId, newP, vertex1);
+                newP += EncodeVertex(edges, _tileId, newP, vertex2);
+                uint? v1p = null;
+                if (vertex1.TileId == _tileId)
+                {
+                    v1p = pointers[vertex1.LocalId].DecodeNullableData();
+                    pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
+                }
+                uint? v2p = null;
+                if (vertex2.TileId == _tileId)
+                {
+                    v2p = pointers[vertex2.LocalId].DecodeNullableData();
+                    pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
+                }
+
+                newP += EncodePointer(edges, newP, v1p);
+                newP += EncodePointer(edges, newP, v2p);
+                if (edgeId != null)
+                {
+                    newP += EncodeEdgeId(edges, _tileId, newP, edgeId.Value);
+                }
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, edgeTypeId);
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
+                newP += EncodePointer(edges, newP, shapePointer);
+                newP += EncodePointer(edges, newP, attributePointer);
+                newP += (uint) edges.SetDynamicUInt32Nullable(newP, tailOrder);
+                newP += (uint) edges.SetDynamicUInt32Nullable(newP, headOrder);
+            }
+            
+            return new GraphTile(_zoom, _tileId, pointers, edges, _coordinates,
+                _shapes, _attributes, _strings, _nextVertexId, _nextEdgeId, _nextAttributePointer, _nextShapePointer, _nextStringId);
         }
         
         internal GraphTile ApplyNewEdgeTypeFunc(GraphEdgeTypeIndex edgeTypeIndex)
@@ -252,6 +334,8 @@ namespace Itinero.Data.Graphs.Tiles
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
                 p += DecodePointer(p, out var shapePointer);
                 p += DecodePointer(p, out var attributePointer);
+                p += (uint) _edges.GetDynamicInt32Nullable(p, out var tailOrder);
+                p += (uint) _edges.GetDynamicInt32Nullable(p, out var headOrder);
                 
                 // generate new edge type id.
                 var newEdgeTypeId = edgeTypeIndex.Get(this.GetAttributes(attributePointer));
@@ -283,6 +367,8 @@ namespace Itinero.Data.Graphs.Tiles
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
                 newP += EncodePointer(edges, newP, shapePointer);
                 newP += EncodePointer(edges, newP, attributePointer);
+                newP += (uint) edges.SetDynamicUInt32Nullable(newP, tailOrder);
+                newP += (uint) edges.SetDynamicUInt32Nullable(newP, headOrder);
             }
             
             return new GraphTile(_zoom, _tileId, pointers, edges, _coordinates,
@@ -357,6 +443,7 @@ namespace Itinero.Data.Graphs.Tiles
 
         internal static uint EncodePointer(ArrayBase<byte> edges, uint location, uint? pointer)
         {
+            // TODO: save the diff instead of the full pointer.
             if (edges.Length <= location + 5)
             {
                 edges.Resize(edges.Length + 1024);
