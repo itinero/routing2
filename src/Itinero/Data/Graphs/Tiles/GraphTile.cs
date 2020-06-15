@@ -207,6 +207,10 @@ namespace Itinero.Data.Graphs.Tiles
             // write length.
             _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, length);
             
+            // set tail and head order.
+            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
+            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
+            
             // take care of shape if any.
             uint? shapePointer = null;
             if (shape != null)
@@ -224,10 +228,6 @@ namespace Itinero.Data.Graphs.Tiles
             }
             size = EncodePointer(_edges, _nextEdgeId, attributesPointer);
             _nextEdgeId += size;
-            
-            // set tail and head order.
-            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
-            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
 
             return edgeId.Value;
         }
@@ -255,10 +255,10 @@ namespace Itinero.Data.Graphs.Tiles
                 }
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var _);
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
-                p += DecodePointer(p, out var shapePointer);
-                p += DecodePointer(p, out var attributePointer);
                 p += (uint) _edges.GetDynamicInt32Nullable(p, out var tailOrder);
                 p += (uint) _edges.GetDynamicInt32Nullable(p, out var headOrder);
+                p += DecodePointer(p, out var shapePointer);
+                p += DecodePointer(p, out var attributePointer);
                 
                 // generate new edge type id.
                 var newEdgeTypeId = edgeTypeIndex.Get(this.GetAttributes(attributePointer));
@@ -288,10 +288,10 @@ namespace Itinero.Data.Graphs.Tiles
                 }
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, newEdgeTypeId);
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, tailOrder);
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, headOrder);
                 newP += EncodePointer(edges, newP, shapePointer);
                 newP += EncodePointer(edges, newP, attributePointer);
-                newP += (uint) edges.SetDynamicUInt32Nullable(newP, tailOrder);
-                newP += (uint) edges.SetDynamicUInt32Nullable(newP, headOrder);
             }
             
             return new GraphTile(_zoom, _tileId, pointers, edges, _coordinates,

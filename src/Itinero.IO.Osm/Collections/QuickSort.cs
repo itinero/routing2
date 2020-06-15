@@ -1,38 +1,15 @@
-/*
- *  Licensed to SharpSoftware under one or more contributor
- *  license agreements. See the NOTICE file distributed with this work for 
- *  additional information regarding copyright ownership.
- * 
- *  SharpSoftware licenses this file to you under the Apache License, 
- *  Version 2.0 (the "License"); you may not use this file except in 
- *  compliance with the License. You may obtain a copy of the License at
- * 
- *       http://www.apache.org/licenses/LICENSE-2.0
- * 
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
 using System;
 
-namespace Itinero.Algorithms.Sorting
+namespace Itinero.IO.Osm.Collections
 {
     internal static class QuickSort
     {
-        /// <summary>
-        /// Executes a quicksort algorithm given the value and swap methods.
-        /// </summary>
+        
         public static void Sort(Func<long, long> value, Action<long, long> swap, long left, long right)
         {
             Sort((i1, i2) => value(i1).CompareTo(value(i2)), swap, left, right);   
         }
-
-        /// <summary>
-        /// Executes a quicksort algorithm given the value and swap methods.
-        /// </summary>
+        
         public static void Sort(Func<long, long, int> compare, Action<long, long> swap, long left, long right)
         {
             if (left >= right) return;
@@ -53,10 +30,7 @@ namespace Itinero.Algorithms.Sorting
                 }
             }
         }
-
-        /// <summary>
-        /// Returns true if the given range is sorted.
-        /// </summary>
+        
         public static bool IsSorted(Func<long, long> value, long left, long right)
         {
             var previous = value(left);
@@ -84,11 +58,7 @@ namespace Itinero.Algorithms.Sorting
             public long Left { get; set; }
             public long Right { get; set; }
         }
-
-        /// <summary>
-        /// Partition the based on the pivot value.
-        /// </summary>
-        /// <return>The new left.</return>
+        
         private static long Partition(Func<long, long, int> compare, Action<long, long> swap, long left, long right)
         { // get the pivot value.
             if (left > right) { throw new ArgumentException("left should be smaller than or equal to right."); }
@@ -152,21 +122,13 @@ namespace Itinero.Algorithms.Sorting
                 swap(left + 1, right);
             }
         }
-
-        /// <summary>
-        /// Partitions everything between left and right in three partitions, smaller than, equal to and larger than pivot.
-        /// </summary>
-        /// <remarks>Reference : https://en.wikipedia.org/wiki/Dutch_national_flag_problem </remarks>
+        
         public static void ThreewayPartition(Func<long, long> value, Action<long, long> swap, long left, long right,
             out long highestLowest, out long lowestHighest)
         {
             QuickSort.ThreewayPartition(value, swap, left, right, left, out highestLowest, out lowestHighest); // default, the left a pivot.
         }
 
-        /// <summary>
-        /// Partitions everything between left and right in three partitions, smaller than, equal to and larger than pivot.
-        /// </summary>
-        /// <remarks>Reference : https://en.wikipedia.org/wiki/Dutch_national_flag_problem </remarks>
         public static void ThreewayPartition(Func<long, long> value, Action<long, long> swap, long left, long right, long pivot,
             out long highestLowest, out long lowestHighest)
         {

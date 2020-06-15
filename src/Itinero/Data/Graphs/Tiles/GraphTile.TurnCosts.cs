@@ -39,7 +39,6 @@ namespace Itinero.Data.Graphs.Tiles
             var newP = 0U;
             while (p < nextEdgeId)
             {
-                
                 // read edge data.
                 p += DecodeVertex(p, out var local1Id, out var tile1Id);
                 var vertex1 = new VertexId(tile1Id, local1Id);
@@ -54,10 +53,10 @@ namespace Itinero.Data.Graphs.Tiles
                 }
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var edgeTypeId);
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
+                p += (uint)_edges.GetDynamicInt32Nullable(p, out var tailOrder);
+                p += (uint)_edges.GetDynamicInt32Nullable(p, out var headOrder);
                 p += DecodePointer(p, out var shapePointer);
                 p += DecodePointer(p, out var attributePointer);
-                p += (uint) _edges.GetDynamicInt32Nullable(p, out var tailOrder);
-                p += (uint) _edges.GetDynamicInt32Nullable(p, out var headOrder);
                 
                 // update head or tail order if needed.
                 if (vertex1 == vertexId)
@@ -100,10 +99,10 @@ namespace Itinero.Data.Graphs.Tiles
                 }
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, edgeTypeId);
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, tailOrder);
+                newP += (uint)edges.SetDynamicUInt32Nullable(newP, headOrder);
                 newP += EncodePointer(edges, newP, shapePointer);
                 newP += EncodePointer(edges, newP, attributePointer);
-                newP += (uint) edges.SetDynamicUInt32Nullable(newP, tailOrder);
-                newP += (uint) edges.SetDynamicUInt32Nullable(newP, headOrder);
             }
             
             return new GraphTile(_zoom, _tileId, pointers, edges, _coordinates,
