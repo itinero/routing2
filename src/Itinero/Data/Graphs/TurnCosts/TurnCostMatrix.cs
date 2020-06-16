@@ -1,10 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Itinero.Data.Graphs.TurnCosts
 {
-    internal class TurnCostMatrix
+    internal class TurnCostMatrix : IEquatable<TurnCostMatrix>
     {
         private readonly uint[] _costs;
         private readonly int[] _rows;
@@ -171,6 +172,51 @@ namespace Itinero.Data.Graphs.TurnCosts
             public int Count { get; }
 
             public uint this[int index] => _costs[(this.Count * index) + _c - _offset];
+        }
+
+        public bool Equals(TurnCostMatrix? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (_n != other._n) return false;
+            
+            for (var i = 0; i < _n; i++)
+            {
+                if (this._columns[i] != other._columns[i]) return false;
+            }
+            for (var i = 0; i < _n; i++)
+            {
+                if (this._rows[i] != other._rows[i]) return false;
+            }
+            for (var i = 0; i < this._costs.Length; i++)
+            {
+                if (this._costs[i] != other._costs[i]) return false;
+            }
+
+            return true;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((TurnCostMatrix) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = _n.GetHashCode();
+                hashCode = (hashCode * 397) ^ _rows.Length;
+                hashCode = _rows.Aggregate(hashCode, (current, t) => (current * 397) ^ t);
+                hashCode = (hashCode * 397) ^ _columns.Length;
+                hashCode = _columns.Aggregate(hashCode, (current, t) => (current * 397) ^ t);
+                hashCode = (hashCode * 397) ^ _costs.Length;
+                hashCode = _costs.Aggregate(hashCode, (current, t) => (current * 397) ^ t.GetHashCode());
+                return hashCode;
+            }
         }
     }
 }
