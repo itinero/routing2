@@ -12,6 +12,7 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Itinero.Instructions\Itinero.Instructions.csproj" />
     <ProjectReference Include="..\..\src\Itinero.IO.Osm.Tiles\Itinero.IO.Osm.Tiles.csproj" />
     <ProjectReference Include="..\..\src\Itinero.Profiles.Lua\Itinero.Profiles.Lua.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
