@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Itinero.Instructions.Instructions;
 
 namespace Itinero.Instructions
 {
     public interface IInstructionGenerator
     {
-        IEnumerable<Instruction> GenerateInstructions(Route route);
+        IEnumerable<BaseInstruction> GenerateInstructions(Route route);
 
     }
 }

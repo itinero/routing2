@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 
 namespace Itinero.Instructions
 {
     public static class Utils
     {
-        private const double RadiusOfEarth = 6371000;
+        private const double RADIUS_OF_EARTH = 6371000;
 
         /// <summary>
         /// Returns an estimate of the distance between the two given coordinates.
@@ -23,7 +22,7 @@ namespace Itinero.Instructions
             var x = (lon2Rad - lon1Rad) * Math.Cos((lat1Rad + lat2Rad) / 2.0);
             var y = lat2Rad - lat1Rad;
 
-            var m = Math.Sqrt(x * x + y * y) * RadiusOfEarth;
+            var m = Math.Sqrt(x * x + y * y) * RADIUS_OF_EARTH;
 
             return m;
         }
@@ -59,50 +58,32 @@ namespace Itinero.Instructions
             return angle;
         }
 
-        public static List<List<Route.Branch>> GetBranchesList(this Route route)
-        {
-            var branches = new List<List<Route.Branch>>();
-
-            foreach (var _ in route.Shape)
-            {
-                branches.Add(new List<Route.Branch>());
-            }
-            
-            foreach(var branch in route.Branches)
-            {
-                branches[branch.Shape].Add(branch);
-            }
-            
-            return branches;
-        }
-        
-        public static List<Route.Meta> MetaList(this Route route)
-        {
-            var metas = new List<Route.Meta>();
-
-            var currentMeta = route.ShapeMeta[0];
-            var currentMetaIndex = 0;
-            for (var i = 0; i < route.Shape.Count; i++)
-            {
-                if (route.ShapeMeta.Count > (currentMetaIndex + 1)
-                    && route.ShapeMeta[currentMetaIndex + 1].Shape == i)
-                {
-                    currentMetaIndex++;
-                    currentMeta = route.ShapeMeta[currentMetaIndex];
-                }
-
-                metas.Add(currentMeta);
-            }
-
-
-            return metas;
-        }
 
         public static string GetAttributeOrNull(this Route.Meta meta, string key)
         {
+            return meta.GetAttributeOrDefault(key, null);
+        }
+
+        public static int NormalizeDegrees(this double degrees)
+        {
+            if (degrees <= -180)
+            {
+                degrees += 360;
+            }
+
+            if (degrees > 180)
+            {
+                degrees -= 360;
+            }
+
+            return (int) degrees;
+        }
+
+        public static string GetAttributeOrDefault(this Route.Meta meta, string key, string deflt)
+        {
             if (meta == null)
             {
-                return null;
+                return deflt;
             }
 
             foreach (var (k, value) in meta.Attributes)
@@ -113,7 +94,7 @@ namespace Itinero.Instructions
                 }
             }
 
-            return null;
+            return deflt;
         }
     }
 }

@@ -1,108 +1,64 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Instructions.Instructions;
 
 namespace Itinero.Instructions
 {
     public class SimpleInstructionGenerator : IInstructionGenerator
     {
-        public static Func<Route.Meta, IEnumerable<string>> DefaultAmendments = meta =>
-        {
-            var amendments = new List<string>();
-
-            amendments.Add(meta.GetAttributeOrNull("highway"));
-            if ("yes".Equals(meta.GetAttributeOrNull("cyclestreet")))
-            {
-                amendments.Add("cyclestreet");
-            }
-
-
-            return amendments;
-        };
-
-        private readonly Func<Route.Meta, IEnumerable<string>> _amendmentsCreator;
+        private readonly IEnumerable<IInstructionConstructor> _constructors;
 
         public SimpleInstructionGenerator(
-            Func<Route.Meta, IEnumerable<string>> amendmentsCreator)
+            IEnumerable<IInstructionConstructor> constructors)
         {
-            _amendmentsCreator = amendmentsCreator;
+            _constructors = constructors;
         }
 
-        public Instruction GenerateStartInstruction(Route route)
+        public SimpleInstructionGenerator(
+            params IInstructionConstructor[] constructors) :
+            this(constructors.ToList())
         {
-            var startPoint = route.Stops[0];
-            var snappedPoint = route.Shape[0];
-            var nextPoint = route.Shape[1];
-            var meta = route.ShapeMeta[0];
-            
-            /*var projectionDistance = Utils.DistanceEstimateInMeter
-                (startPoint.Coordinate, snappedPoint);*/
-
-            var snappingDirection = Utils.AngleBetween(startPoint.Coordinate, snappedPoint);
-            var newDirection = Utils.AngleBetween(snappedPoint, nextPoint);
-
-            return new AmendedInstruction(
-                new Turn(0, newDirection - snappingDirection, meta.GetAttributeOrNull("name")),
-                "start");
         }
 
-        public Instruction GenerateStopInstruction(Route route)
-        { var l = route.Shape.Count;
-
-            var endPoint = route.Stops.Last();
-            var snappedPoint = route.Shape[l - 1];
-            var previousPoint = route.Shape[l - 2];
-
-            var snappingDirection = Utils.AngleBetween(endPoint.Coordinate, snappedPoint);
-            var prevDirection = Utils.AngleBetween(snappedPoint, previousPoint);
-
-            return new AmendedInstruction(
-                new Turn((uint) (l - 1), snappingDirection - prevDirection),
-                "end");
-        }
-
-
-        public IEnumerable<Instruction> GenerateInstructions(Route route)
+        private BaseInstruction ConstructNext(IndexedRoute r, int currentOffset, out int used)
         {
-            var instructions = new List<Instruction>();
-
-            var start = GenerateStartInstruction(route);
-            instructions.Add(start);
-
-
-            var metas = route.MetaList();
-            var allBranches = route.GetBranchesList();
-            for (var i = 1; i < route.Shape.Count - 1; i++)
+            foreach (var constructor in _constructors)
             {
-                var meta = metas[i];
-                var branches = allBranches[i];
-
-                var directionBefore = Utils.AngleBetween(route.Shape[i - 1], route.Shape[i]);
-                var directionAfter = Utils.AngleBetween(route.Shape[i], route.Shape[i + 1]);
-                var turn = new Turn((uint) i, directionAfter - directionBefore, meta.GetAttributeOrNull("name"));
-
-                var amendments = _amendmentsCreator(meta);
-
-                var streetName = meta.GetAttributeOrNull("name");
-
-                if (branches.Count == 0)
+                var instruction = constructor.Construct(r, currentOffset, out used);
+                if (instruction != null && used > 0)
                 {
-                    // Follow-along
-                    instructions.Add(
-                        new AmendedInstruction(
-                            new FollowAlong(turn,
-                                meta.GetAttributeOrNull("name")),
-                            amendments
-                        ));
+                    return instruction;
                 }
-                else
+
+                if (instruction != null && used == 0)
                 {
-                    instructions.Add(new AmendedInstruction(turn, amendments));
+                    throw new Exception(
+                        "Hanging instruction generation: an instruction was emitted but the offset was zero. This is a bug in " +
+                        constructor.Name);
                 }
             }
 
-            instructions.Add(GenerateStopInstruction(route));
+            throw new Exception("Could not generate instruction");
+        }
 
+        public IEnumerable<BaseInstruction> GenerateInstructions(Route route)
+        {
+            var indexedRoute = new IndexedRoute(route);
+            var instructions = new List<BaseInstruction>();
+
+            instructions.Add(new StartInstruction(indexedRoute));
+
+
+            var currentIndex = 0;
+            while (currentIndex < route.Shape.Count - 1)
+            {
+                var instruction = ConstructNext(indexedRoute, currentIndex, out var used);
+                instructions.Add(instruction);
+                currentIndex += used;
+            }
+
+            instructions.Add(new EndInstruction(indexedRoute));
             return instructions;
         }
     }
