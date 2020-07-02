@@ -31,10 +31,99 @@ namespace Itinero.Instructions.Instructions
             ActualIndex = actualIndex;
         }
 
+        public string Mode()
+        {
+            var turnCutoff = 30;
+
+            if (ActualIndex == 1 && AllRoads.Count == 3
+            )
+            {
+                if (TurnDegrees > turnCutoff
+                )
+                {
+                    if (TurnDegrees < 60)
+                    {
+                        // We are going left, but this is not the leftmost street
+                        return "slightly left";
+                    }
+                    else
+                    {
+                        return "left, but not leftmost";
+                    }
+                }
+
+                if (TurnDegrees < -turnCutoff)
+                {
+                    if (TurnDegrees < -60)
+                    {
+                        // We are going left, but this is not the leftmost street
+                        return "slightly right";
+                    }
+                    else
+                    {
+                        return "right, but not rightmost";
+                    }
+                }
+
+                if (TurnDegrees < turnCutoff && TurnDegrees > -turnCutoff)
+                {
+                    // The most boring crossroads in existence
+                    return "cross the road";
+                }
+            }
+
+            if (ActualIndex == 0)
+            {
+                // We take the leftmost road
+                if (180 - TurnDegrees < turnCutoff)
+                {
+                    return "sharp left";
+                }
+
+                if (TurnDegrees > turnCutoff)
+                {
+                    if (AllRoads[1].relativeDegrees > turnCutoff)
+                    {
+                        // The 'next' street is quite 'left' as well, we should not confuse our users
+                        return "leftmost";
+                    }
+
+                    return "left";
+                }
+
+                return "keep left";
+            }
+
+            if (ActualIndex == this.AllRoads.Count - 1)
+            {
+                // We take the rightmost road
+                if (180 + TurnDegrees < turnCutoff)
+                {
+                    return "sharp right";
+                }
+
+                if (TurnDegrees < turnCutoff)
+                {
+                    if (-AllRoads[AllRoads.Count - 2].relativeDegrees < turnCutoff)
+                    {
+                        // The 'next' street is quite 'right' as well, we should not confuse our users
+                        return "rightmost";
+                    }
+
+                    return "left";
+                }
+
+                return "keep left";
+            }
+
+            return "??";
+        }
+
 
         public override string ToString()
         {
-            return "On the crossing, take road " + ActualIndex + ", " + base.ToString();
+            return
+                $"On the crossing: {Mode()} (road {ActualIndex + 1}/{AllRoads.Count} if left to right indexed) ({base.ToString()})";
         }
 
         internal class IntersectionInstructionGenerator : IInstructionConstructor
@@ -69,17 +158,14 @@ namespace Itinero.Instructions.Instructions
                     incomingStreets.Add((branchRelDirection.NormalizeDegrees(), branch.Attributes));
                 }
 
-                incomingStreets = incomingStreets.OrderBy(br => br.relativeDegrees).ToList();
-
-
                 var directionChange = route.DirectionChangeAt(offset);
-                var actualIndex = 0;
-                while (incomingStreets[actualIndex].relativeDegrees < directionChange)
-                {
-                    actualIndex++;
-                }
+                var nextStep = (directionChange, route.Meta[offset].Attributes);
+                incomingStreets.Add(nextStep);
 
-                incomingStreets.Insert(actualIndex, (directionChange, route.Meta[offset].Attributes));
+                incomingStreets = incomingStreets.OrderByDescending(br => br.relativeDegrees).ToList();
+
+                var actualIndex = incomingStreets.IndexOf(nextStep);
+
 
 
                 usedInstructions = 1;

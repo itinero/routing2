@@ -96,5 +96,33 @@ namespace Itinero.Instructions
 
             return deflt;
         }
+        
+        public static string DegreesToText(this int degrees)
+        {
+            var cutoff = 30;
+            if (-cutoff < degrees && degrees < cutoff)
+            {
+                return "straight on";
+            }
+
+            var direction = "left";
+            if (degrees < 0)
+            {
+                direction = "right";
+            }
+
+            degrees = Math.Abs(degrees);
+            if (degrees > 180 - cutoff)
+            {
+                return "sharp " + direction;
+            }
+
+            if (degrees < 2 * cutoff)
+            {
+                return "slightly " + direction;
+            }
+
+            return direction;
+        }
     }
 }

@@ -45,7 +45,8 @@ namespace Itinero.Instructions.Instructions
         public readonly int ShapeIndexEnd;
 
         /// <summary>
-        /// The amount of degrees to turn at the end of the road
+        /// The amount of degrees to turn at the end of the road.
+        /// 0° is straight on, positive is turning left and negative is turning right
         /// </summary>
         public readonly int TurnDegrees;
 
@@ -99,10 +100,9 @@ namespace Itinero.Instructions.Instructions
 
             return instruction;
         }
-        
-      
     }
 
+    
 
     /*
      * Ideas for 'low hanging fruit':

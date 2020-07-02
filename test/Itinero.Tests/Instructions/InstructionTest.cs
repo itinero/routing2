@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Algorithms.Routes;
 using Itinero.Instructions;
 using Itinero.Instructions.Instructions;
 using Xunit;
@@ -10,7 +9,7 @@ namespace Itinero.Tests.Instructions
     public class InstructionTest
     {
         [Fact]
-        public void Test1()
+        public void GenerateInstructions_AdvancedRoute_EmitsInstructions()
         {
             var route = new Route();
 
@@ -211,53 +210,6 @@ namespace Itinero.Tests.Instructions
             var instructionsStr = string.Join("\n", instructions.Select((instr, i) => (i + ". " + instr.ToString())));
 
             Assert.NotEmpty(instructions);
-        }
-
-        [Fact]
-        public void GenerateCrossroad_SimpleCrossroad_GetCrossroadInstruction()
-        {
-            var route = new Route();
-            route.Profile = "bicycle.something";
-            route.Shape = new List<(double longitude, double latitude)>
-            {
-                (3.2175779342651363, 51.21153207328682),
-                (3.2173392176628113, 51.211704299781594),
-                (3.217163532972336, 51.21187904600573),
-                (3.217163532972336, 51.21187904600573),
-                ( 3.216855078935623, 51.212181489826555)
-            };
-
-            route.ShapeMeta = new List<Route.Meta>
-            {
-                new Route.Meta
-                {
-                    Shape = 0,
-                    Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
-                }
-            };
-
-            route.Branches = new[]
-            {
-                new Route.Branch()
-                {
-                    Shape = 1,
-                    Coordinate = (3.2176074385643, 51.21182023725436),
-                    Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
-                },
-
-                new Route.Branch()
-                {
-                    Shape = 1,
-                    Coordinate = (3.217085748910904, 51.21161524616228),
-                    Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
-                }
-            };
-
-            var ir = new IndexedRoute(route);
-
-            var gen = IntersectionInstruction.Constructor;
-            var instr = gen.Construct(ir, 1, out var used);
-            Assert.NotNull(instr);
         }
 
 

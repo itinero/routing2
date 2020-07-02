@@ -3,7 +3,7 @@ namespace Itinero.Instructions.Instructions
     public interface IInstructionConstructor
     {
         string Name { get; }
-        
+
         /// <summary>
         /// Generates an instruction for the route at the given offset.
         /// Returns the instruction and how much shape-points have been used

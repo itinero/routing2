@@ -106,6 +106,11 @@ namespace Itinero.Instructions
             return Utils.AngleBetween(Shape[offset], nextPoint);
         }
 
+        /// <summary>
+        /// The absolute angle when arriving
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public double ArrivingDirectionAt(int offset)
         {
             (double longitude, double latitude) prevPoint;
