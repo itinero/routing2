@@ -26,7 +26,7 @@ namespace Itinero.Profiles
         /// Returns true if the restriction with the given attributes applies.
         /// </summary>
         /// <param name="attributes">The attributes.</param>
-        /// <returns>True if the restriction applies for this profile.</returns>
+        /// <returns>True if the restriction applies.</returns>
         public virtual bool IsRestricted(IEnumerable<(string key, string value)> attributes)
         {
             return false;

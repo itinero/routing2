@@ -5,6 +5,7 @@ using System.Linq;
 using Itinero.Collections;
 using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Graphs.Tiles;
+using Itinero.Data.Graphs.TurnCosts;
 using Itinero.IO;
 
 namespace Itinero.Data.Graphs.Serialization
@@ -21,6 +22,9 @@ namespace Itinero.Data.Graphs.Serialization
             
             // write edge types.
             mutableGraph.EdgeTypeIndex.Serialize(stream);
+            
+            // write turn costs.
+            mutableGraph.TurnCostIndex.Serialize(stream);
 
             // write tiles.
             stream.WriteVarUInt32((uint)mutableGraph.GetTiles().Count());
@@ -32,7 +36,9 @@ namespace Itinero.Data.Graphs.Serialization
             }
         }
 
-        public static Graph ReadGraph(this Stream stream, Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? edgeTypeFunc = null)
+        public static Graph ReadGraph(this Stream stream, 
+            Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? edgeTypeFunc = null,
+            IEnumerable<(string name, Func<Network, VertexId, uint[]?> turnCostFunc)>? turnCostFunctions = null)
         {
             // check version #.
             var version = stream.ReadVarInt32();
@@ -43,6 +49,9 @@ namespace Itinero.Data.Graphs.Serialization
             
             // read edge type index.
             var edgeTypeIndex = GraphEdgeTypeIndex.Deserialize(stream, edgeTypeFunc);
+            
+            // read turn cost index.
+            var turnCostIndex = GraphTurnCostIndex.Deserialize(stream, turnCostFunctions);
 
             var tileCount = stream.ReadVarUInt32();
             var tiles = new SparseArray<(GraphTile tile, int edgeTypesId)>(0);
@@ -54,7 +63,7 @@ namespace Itinero.Data.Graphs.Serialization
                 tiles[tile.TileId] = (tile, edgeTypeIndex.Id);
             }
             
-            return new Graph(tiles, zoom, edgeTypeIndex);
+            return new Graph(tiles, zoom, edgeTypeIndex, turnCostIndex);
         }
     }
 }

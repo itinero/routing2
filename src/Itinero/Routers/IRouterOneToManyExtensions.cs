@@ -61,9 +61,11 @@ namespace Itinero.Routers
         /// <returns>The weights.</returns>
         public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany)
         {
-            var profileHandler = routerOneToMany.Router.Network.GetProfileHandler(
-                routerOneToMany.Router.Settings.Profile);
-            return routerOneToMany.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();
+            return null;
+            
+            // var profileHandler = routerOneToMany.Router.Network.GetCostFunctionFor(
+            //     routerOneToMany.Router.Settings.Profile);
+            // return routerOneToMany.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();
         }
     }
 }

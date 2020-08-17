@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Costs;
 using Itinero.Data.Graphs;
 using Itinero.Profiles;
-using Itinero.Profiles.Handlers;
-using Itinero.Profiles.Handlers.EdgeTypes;
 using Itinero.Routers;
 
 namespace Itinero
@@ -38,16 +37,15 @@ namespace Itinero
             });
         }
 
-        internal static ProfileHandler GetProfileHandler(this Network network, Profile profile)
+        internal static ICostFunction GetCostFunctionFor(this Network network, Profile profile)
         {
-            var profileHandler = new ProfileHandlerDefault(profile);
             if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
                 cache == null)
             {
-                return profileHandler;
+                return new ProfileCostFunction(profile);
             }
             
-            return new ProfileHandlerEdgeTypes(profileHandler, cache);
+            return new ProfileCostFunctionCached(profile, cache);
         }
         
         internal static IEnumerable<(string key, string value)> GetAttributes(this Network routerDb, EdgeId edge)

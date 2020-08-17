@@ -1,112 +1,63 @@
 using System;
 using System.Collections.Generic;
-using Itinero.Data.Graphs.TurnCosts;
 using Reminiscence.Arrays;
 
 namespace Itinero.Data.Graphs.Tiles
 {
     internal partial class GraphTile
     {
-        private uint _nextTurnCostPointer = 0;
-        private readonly ArrayBase<byte> _turnCosts;
+        private readonly ArrayBase<byte> _turnCostPointers = new MemoryArray<byte>(0);
+        private readonly ArrayBase<byte> _turnCosts = new MemoryArray<byte>(0);
         
         /// <summary>
-        /// Adds a new turn cost table.
+        /// Sets a turn cost type on a given vertex.
         /// </summary>
-        /// <param name="turnCostTable">The turn cost table.</param>
-        /// <returns>The new local turn cost id.</returns>
-        public TurnCostId AddTurnCosts(IReadOnlyList<uint> turnCostTable)
+        /// <param name="vertexId">The vertex id.</param>
+        /// <param name="turnCostTypeId">The turn cost type id.</param>
+        /// <param name="turnCostTableId">The turn cost table id.</param>
+        internal void SetTurnCost(VertexId vertexId, uint turnCostTypeId, uint turnCostTableId)
         {
-            var newId = _nextTurnCostPointer;
+            if (vertexId.TileId != _tileId) throw new ArgumentException(
+                $"Vertex is not part of this tile.", nameof(vertexId));
             
-            _nextAttributePointer += (uint) 
-                _turnCosts.SetDynamicUInt32(_nextAttributePointer, (uint)turnCostTable.Count);
-            foreach (var t1 in turnCostTable)
-            {
-                _nextAttributePointer += (uint) 
-                    _turnCosts.SetDynamicUInt32Nullable(_nextAttributePointer, t1);
-            }
-
-            return new TurnCostId(_tileId, newId);
+            // // check if the index is there.
+            // _turnCosts ??= new List<TurnCostIndex>(1);
+            //
+            // // find or build index.
+            // var i = _turnCosts.FindIndex(x => x.Id == turnCostTypeId);
+            // if (i < 0)
+            // {
+            //     _turnCosts.Add(new TurnCostIndex(turnCostTypeId));
+            //     i = 0;
+            // }
+            // var index = _turnCosts[i];
+            //
+            // // set turn cost table id.
+            // index[vertexId.LocalId] = turnCostTableId;
         }
-        
-        internal GraphTile SetTurnCosts(VertexId vertexId, EdgeId[] edgeOrder, TurnCostId turnCostId)
-        {        
-            var edges = new MemoryArray<byte>(_edges.Length);
-            var pointers = new MemoryArray<uint>(_pointers.Length);
-            var nextEdgeId = _nextEdgeId;
-            var p = 0U;
-            var newP = 0U;
-            while (p < nextEdgeId)
-            {
-                // read edge data.
-                p += DecodeVertex(p, out var local1Id, out var tile1Id);
-                var vertex1 = new VertexId(tile1Id, local1Id);
-                p += DecodeVertex(p, out var local2Id, out var tile2Id);
-                var vertex2 = new VertexId(tile2Id, local2Id);
-                p += DecodePointer(p, out _);
-                p += DecodePointer(p, out _);
-                EdgeId? edgeId = null;
-                if (tile1Id != tile2Id)
-                {
-                    p += DecodeEdgeId(p, out edgeId);
-                }
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var edgeTypeId);
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var tailOrder);
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var headOrder);
-                p += DecodePointer(p, out var shapePointer);
-                p += DecodePointer(p, out var attributePointer);
-                
-                // update head or tail order if needed.
-                if (vertex1 == vertexId)
-                {
-                    tailOrder = null;
-                    var oldEdgeId = edgeId ?? new EdgeId(_tileId, _nextEdgeId);
-                    var index = Array.FindIndex(edgeOrder, e => oldEdgeId == e);
-                    if (index >= 0) tailOrder = (uint) index;
-                }
-                else if (vertex2 == vertexId)
-                {
-                    headOrder = null;
-                    var oldEdgeId = edgeId ?? new EdgeId(_tileId, _nextEdgeId);
-                    var index = Array.FindIndex(edgeOrder, e => oldEdgeId == e);
-                    if (index >= 0) headOrder = (uint) index;
-                }
-                
-                // write edge data again.
-                var newEdgePointer = newP;
-                newP += EncodeVertex(edges, _tileId, newP, vertex1);
-                newP += EncodeVertex(edges, _tileId, newP, vertex2);
-                uint? v1p = null;
-                if (vertex1.TileId == _tileId)
-                {
-                    v1p = pointers[vertex1.LocalId].DecodeNullableData();
-                    pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
-                }
-                uint? v2p = null;
-                if (vertex2.TileId == _tileId)
-                {
-                    v2p = pointers[vertex2.LocalId].DecodeNullableData();
-                    pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
-                }
 
-                newP += EncodePointer(edges, newP, v1p);
-                newP += EncodePointer(edges, newP, v2p);
-                if (edgeId != null)
-                {
-                    newP += EncodeEdgeId(edges, _tileId, newP, edgeId.Value);
-                }
-                newP += (uint)edges.SetDynamicUInt32Nullable(newP, edgeTypeId);
-                newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
-                newP += (uint)edges.SetDynamicUInt32Nullable(newP, tailOrder);
-                newP += (uint)edges.SetDynamicUInt32Nullable(newP, headOrder);
-                newP += EncodePointer(edges, newP, shapePointer);
-                newP += EncodePointer(edges, newP, attributePointer);
-            }
+        /// <summary>
+        /// Gets turn costs for the given vertex.
+        /// </summary>
+        /// <param name="vertexId">The vertex id.</param>
+        /// <returns>All turn costs associated with the given vertex.</returns>
+        internal IEnumerable<(uint type, uint table)> GetTurnCosts(VertexId vertexId)
+        {
+            if (vertexId.TileId != _tileId) throw new ArgumentException(
+                $"Vertex is not part of this tile.", nameof(vertexId));
             
-            return new GraphTile(_zoom, _tileId, pointers, edges, _coordinates,
-                _shapes, _attributes, _strings, _turnCosts, _nextVertexId, _nextEdgeId, _nextAttributePointer, _nextShapePointer, _nextStringId);
+            yield break;
+            // // check if there are turn costs.
+            // if (_turnCosts == null || _turnCosts.Count == 0) yield break;
+            //
+            // // return the turning costs.
+            // foreach (var turnCostIndex in _turnCosts)
+            // {
+            //     var turnCostTableId = turnCostIndex[vertexId.LocalId];
+            //     if (turnCostTableId == uint.MaxValue) continue;
+            //
+            //     yield return (turnCostIndex.Id, turnCostTableId);
+            // }
         }
     }
 }

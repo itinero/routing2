@@ -40,11 +40,12 @@ namespace Itinero.Data.Graphs.EdgeTypes
             var edgeType = _func.ToEdgeType(attributes);
             return _edgeTypes.Get(edgeType);
         }
-
-        public IEnumerable<(string key, string value)> GetById(uint edgeTypeId)
-        {
-            return _edgeTypes.GetById(edgeTypeId);
-        }
+        
+        //
+        // public IEnumerable<(string key, string value)> GetById(uint edgeTypeId)
+        // {
+        //     return _edgeTypes.GetById(edgeTypeId);
+        // }
 
         public GraphEdgeTypeIndex Next(GraphEdgeTypeFunc func)
         {

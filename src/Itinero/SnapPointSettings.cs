@@ -29,22 +29,22 @@ namespace Itinero
         /// </summary>
         public double MaxOffsetInMeter { get; set; } = 1000;
 
-        internal Func<NetworkEdgeEnumerator, bool> AcceptableFunc(Network routerDb)
+        internal Func<NetworkEdgeEnumerator, bool> AcceptableFunc(Network network)
         {
             var hasProfiles = this.Profiles != null && this.Profiles.Length > 0;
-
             if (!hasProfiles) return (_) => true;
             
-            var profileHandlers = this.Profiles.Select(routerDb.GetProfileHandler).ToArray();
+            var profileHandlers = this.Profiles.Select(network.GetCostFunctionFor).ToArray();
             return (eEnum) =>
             {
                 var allOk = true;
+                
                 foreach (var profileHandler in profileHandlers)
                 {
                     profileHandler.MoveTo(eEnum);
 
-                    var profileIsOk = profileHandler.CanAccess &&
-                                      (!this.CheckCanStopOn || profileHandler.CanStop);
+                    var profileIsOk = profileHandler.CanAccess() &&
+                                      (!this.CheckCanStopOn || profileHandler.CanStop());
 
                     if (this.AnyProfile && profileIsOk) return true;
 

@@ -57,6 +57,13 @@ namespace Itinero
                 _graph.SetEdgeTypeFunc(_graph.EdgeTypeFunc.NextVersion(func));
             }
 
+            public uint SetTurnCostFunc(string name, Func<Network, VertexId, uint[]?> turnCostFunc)
+            {
+                throw new NotImplementedException();
+                
+                // return _graph.SetTurnCostFunc(name, turnCostFunc);
+            }
+
             public Network ToNetwork()
             {
                 return new Network(_network.RouterDb, _graph.ToGraph());

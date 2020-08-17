@@ -6,7 +6,6 @@ using Itinero.Data.Graphs.TurnCosts;
 using Itinero.Data.Tiles;
 using Itinero.IO;
 using Reminiscence.Arrays;
-using System.Linq;
 
 namespace Itinero.Data.Graphs.Tiles
 {
@@ -50,7 +49,6 @@ namespace Itinero.Data.Graphs.Tiles
             _shapes = new MemoryArray<byte>(0);
             _attributes = new MemoryArray<byte>(0);
             _strings = new MemoryArray<string>(0);
-            _turnCosts = new MemoryArray<byte>(0);
         }
         
         private GraphTile(int zoom, uint tileId, ArrayBase<uint> pointers, ArrayBase<byte> edges,
@@ -150,9 +148,9 @@ namespace Itinero.Data.Graphs.Tiles
         {
             if (vertex1.TileId != _tileId)
             { // this is a special case, an edge is added that is not part of this tile.
-                // but it needs to be added because need to able to jump to neighbouring tiles.
+                // but it needs to be added because of the need to be able to jump to neighbouring tiles.
                 // the edge is added in this tile **and** in the other tile.
-                if (edgeId == null) throw new ArgumentException("Cannot add an edge that doesn't start in this tile without a proper tile id.",
+                if (edgeId == null) throw new ArgumentException("Cannot add an edge that doesn't start in this tile without a proper edge id.",
                     nameof(edgeId));
                 
                 // reverse the edge.
@@ -208,8 +206,8 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, length);
             
             // set tail and head order.
-            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
-            _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, null);
+            _edges.SetTailHeadOrder(_nextEdgeId, null, null);
+            _nextEdgeId++;
             
             // take care of shape if any.
             uint? shapePointer = null;
@@ -255,8 +253,8 @@ namespace Itinero.Data.Graphs.Tiles
                 }
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var _);
                 p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
-                p += (uint) _edges.GetDynamicInt32Nullable(p, out var tailOrder);
-                p += (uint) _edges.GetDynamicInt32Nullable(p, out var headOrder);
+                var tailHeadOrder = _edges[p];
+                p++;
                 p += DecodePointer(p, out var shapePointer);
                 p += DecodePointer(p, out var attributePointer);
                 
@@ -288,8 +286,8 @@ namespace Itinero.Data.Graphs.Tiles
                 }
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, newEdgeTypeId);
                 newP += (uint)edges.SetDynamicUInt32Nullable(newP, length);
-                newP += (uint)edges.SetDynamicUInt32Nullable(newP, tailOrder);
-                newP += (uint)edges.SetDynamicUInt32Nullable(newP, headOrder);
+                edges[newP] = tailHeadOrder;
+                newP++;
                 newP += EncodePointer(edges, newP, shapePointer);
                 newP += EncodePointer(edges, newP, attributePointer);
             }
@@ -420,6 +418,11 @@ namespace Itinero.Data.Graphs.Tiles
             }
             
             return size;
+        }
+
+        internal void GetTailHeadOrder(uint location, ref byte? tail, ref byte? head)
+        {
+            _edges.GetTailHeadOrder(location, ref tail, ref head);
         }
 
         internal uint DecodeEdgePointerId(uint location, out uint? edgeProfileId)

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Itinero.Collections;
 using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Graphs.Tiles;
+using Itinero.Data.Graphs.TurnCosts;
 using Itinero.Data.Tiles;
 
 namespace Itinero.Data.Graphs
 {
     internal sealed partial class Graph
     {
-        private MutableGraph? _mutableGraph = null;
+        private MutableGraph? _mutableGraph;
 
         internal MutableGraph GetAsMutable()
         {
@@ -42,12 +43,14 @@ namespace Itinero.Data.Graphs
             private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
             private readonly Graph _graph;
             private GraphEdgeTypeIndex _graphEdgeTypeIndex;
+            private GraphTurnCostIndex _graphTurnCostIndex;
 
             public MutableGraph(Graph graph)
             {
                 _graph = graph;
                 _tiles = graph._tiles.Clone();
                 _graphEdgeTypeIndex = graph._graphEdgeTypeIndex;
+                _graphTurnCostIndex = graph._graphTurnCostIndex;
                 
                 _modified = new SparseArray<bool>(_tiles.Length);
             }
@@ -189,9 +192,16 @@ namespace Itinero.Data.Graphs
 
             internal GraphEdgeTypeIndex EdgeTypeIndex => _graphEdgeTypeIndex;
 
+            public void SetTurnCostFunc(string name, Func<Network, VertexId, uint[]?> turnCostFunc)
+            {
+                _graphTurnCostIndex = _graphTurnCostIndex.Next(name, turnCostFunc);
+            }
+
+            internal GraphTurnCostIndex TurnCostIndex => _graphTurnCostIndex;
+
             public Graph ToGraph()
             {
-                return new Graph(_tiles, _graph.Zoom, _graphEdgeTypeIndex);
+                return new Graph(_tiles, _graph.Zoom, _graphEdgeTypeIndex, _graphTurnCostIndex);
             }
 
             public void Dispose()

@@ -1,11 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Itinero.Data.Graphs;
-using Itinero.Geo;
-using Itinero.Profiles;
-using Itinero.Profiles.Handlers;
-using Itinero.Routers;
 using Itinero.Serialization;
 
 namespace Itinero

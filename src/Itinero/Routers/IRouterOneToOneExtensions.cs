@@ -47,9 +47,11 @@ namespace Itinero.Routers
         /// <returns>The weight</returns>
         public static Result<double?> Calculate(this IRouterWeights<IRouterOneToOne> oneToOneWeightRouter)
         {
-            var profileHandler = oneToOneWeightRouter.Router.Network.GetProfileHandler(
-                oneToOneWeightRouter.Router.Settings.Profile);
-            return oneToOneWeightRouter.Router.Path().Weight(profileHandler.GetForwardWeight);
+            return null;
+            
+            // var profileHandler = oneToOneWeightRouter.Router.Network.GetCostFunctionFor(
+            //     oneToOneWeightRouter.Router.Settings.Profile);
+            // return oneToOneWeightRouter.Router.Path().Weight(profileHandler.GetForwardWeight);
         }
     }
 }

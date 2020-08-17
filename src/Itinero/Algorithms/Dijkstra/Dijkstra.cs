@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Itinero.Algorithms.DataStructures;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.TurnCosts;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -20,10 +23,10 @@ namespace Itinero.Algorithms.Dijkstra
         private readonly BinaryHeap<uint> _heap = new BinaryHeap<uint>();
         
         public Path? Run(Network network, SnapPoint source, SnapPoint target,
-            Func<NetworkEdgeEnumerator, double> getWeight, Func<VertexId, bool>? settled = null,
+            DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
-            var paths = Run(network, source, new[] {target}, getWeight, settled, queued);
+            var paths = Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
             if (paths == null) return null;
             if (paths.Length < 1) return null;
 
@@ -31,7 +34,7 @@ namespace Itinero.Algorithms.Dijkstra
         }
 
         public Path[] Run(Network network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
-            Func<NetworkEdgeEnumerator, double> getWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
+            DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             double GetWorst((uint pointer, double cost)[] targets)
             {
@@ -57,26 +60,26 @@ namespace Itinero.Algorithms.Dijkstra
             // add sources.
             // add forward.
             if (!enumerator.MoveToEdge(source.EdgeId, true)) throw new Exception($"Edge in source {source} not found!");
-            var sourceCostForward = getWeight(enumerator);
+            var sourceCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
             var sourceForwardVisit = uint.MaxValue;
             if (sourceCostForward > 0)
             {
                 // can traverse edge in the forward direction.
                 var sourceOffsetCostForward = sourceCostForward * (1 - source.OffsetFactor());
-                sourceForwardVisit = _tree.AddVisit(enumerator.To, source.EdgeId, uint.MaxValue);
+                sourceForwardVisit = _tree.AddVisit(enumerator.To, source.EdgeId, enumerator.Head, uint.MaxValue);
                 _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
             }
 
             // add backward.
             if (!enumerator.MoveToEdge(source.EdgeId, false))
                 throw new Exception($"Edge in source {source} not found!");
-            var sourceCostBackward = getWeight(enumerator);
+            var sourceCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
             var sourceBackwardVisit = uint.MaxValue;
             if (sourceCostBackward > 0)
             {
                 // can traverse edge in the backward direction.
                 var sourceOffsetCostBackward = sourceCostBackward * source.OffsetFactor();
-                sourceBackwardVisit = _tree.AddVisit(enumerator.To, source.EdgeId, uint.MaxValue);
+                sourceBackwardVisit = _tree.AddVisit(enumerator.To, source.EdgeId, enumerator.Head, uint.MaxValue);
                 _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
             }
 
@@ -119,7 +122,8 @@ namespace Itinero.Algorithms.Dijkstra
                         // and the edge can be traversed in this direction.
                         if (!enumerator.MoveToEdge(source.EdgeId, true))
                             throw new Exception($"Edge in source {source} not found!");
-                        var weight = getWeight(enumerator) * (target.OffsetFactor() - source.OffsetFactor());
+                        var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost * 
+                                     (target.OffsetFactor() - source.OffsetFactor());
                         bestTargets[t] = (sourceForwardVisit, weight);
                     }
                     else if (sourceBackwardVisit != uint.MaxValue)
@@ -128,7 +132,8 @@ namespace Itinero.Algorithms.Dijkstra
                         // and the edge can be traversed in this direction.
                         if (!enumerator.MoveToEdge(source.EdgeId, false))
                             throw new Exception($"Edge in source {source} not found!");
-                        var weight = getWeight(enumerator) * (source.OffsetFactor() - target.OffsetFactor());
+                        var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost * 
+                                     (source.OffsetFactor() - target.OffsetFactor());
                         bestTargets[t] = (sourceBackwardVisit, weight);
                     }
                 }
@@ -204,10 +209,10 @@ namespace Itinero.Algorithms.Dijkstra
                     if (neighbourEdge == currentVisit.edge) continue;
                     
                     // gets the cost of the current edge.
-                    var neighbourCost = getWeight(enumerator);
+                    var (neighbourCost, turnCost) = getDijkstraWeight(enumerator, _tree.GetPreviousEdges(currentPointer));
                     if (neighbourCost >= double.MaxValue ||
                         neighbourCost <= 0) continue;
-                    
+
                     // if the vertex has targets, check if this edge is a match.
                     var neighbourPointer = uint.MaxValue;
                     if (targetsAtVertex != null)
@@ -227,6 +232,9 @@ namespace Itinero.Algorithms.Dijkstra
                             // this is the case where the target is on this edge 
                             // and there is a path to 'from' before.
                             targetCost += currentCost;
+                            
+                            // add turn cost.
+                            targetCost += turnCost;
 
                             // if this is an improvement, use it!
                             var targetBestCost = bestTargets[t].cost;
@@ -234,7 +242,7 @@ namespace Itinero.Algorithms.Dijkstra
 
                             // this is an improvement.
                             neighbourPointer = _tree.AddVisit(enumerator.To,
-                                enumerator.Id, currentPointer);
+                                enumerator.Id, enumerator.Head, currentPointer);
                             bestTargets[t] = (neighbourPointer, targetCost);
                             
                             // update worst.
@@ -249,10 +257,11 @@ namespace Itinero.Algorithms.Dijkstra
                     }
 
                     // add visit if not added yet.
-                    if (neighbourPointer == uint.MaxValue) neighbourPointer = _tree.AddVisit(enumerator.To, enumerator.Id, currentPointer);
+                    if (neighbourPointer == uint.MaxValue) neighbourPointer = _tree.AddVisit(enumerator.To, 
+                        enumerator.Id, enumerator.Head, currentPointer);
                     
                     // add visit to heap.
-                    _heap.Push(neighbourPointer, neighbourCost + currentCost);
+                    _heap.Push(neighbourPointer, neighbourCost + currentCost + turnCost);
                 }
             }
 

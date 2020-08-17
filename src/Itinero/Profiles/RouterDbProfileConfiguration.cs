@@ -1,25 +1,25 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Itinero.Costs.EdgeTypes;
 using Itinero.IO;
-using Itinero.Profiles.Handlers.EdgeTypes;
 using Itinero.Profiles.Serialization;
 
 namespace Itinero.Profiles
 {
     internal class RouterDbProfileConfiguration
     {
-        private readonly Dictionary<string, (Profile profile, ProfileHandlerEdgeTypesCache cache)> _profiles;
+        private readonly Dictionary<string, (Profile profile, EdgeFactorCache cache)> _profiles;
 
         public RouterDbProfileConfiguration()
         {
-            _profiles = new Dictionary<string, (Profile profile, ProfileHandlerEdgeTypesCache cache)>();
+            _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>();
         }
 
         private RouterDbProfileConfiguration(
-            Dictionary<string, (Profile profile, ProfileHandlerEdgeTypesCache cache)> profiles)
+            Dictionary<string, (Profile profile, EdgeFactorCache cache)> profiles)
         {
-            _profiles = new Dictionary<string, (Profile profile, ProfileHandlerEdgeTypesCache cache)>(profiles);
+            _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>(profiles);
         }
 
         public RouterDbProfileConfiguration Clone()
@@ -35,11 +35,11 @@ namespace Itinero.Profiles
         public bool AddProfile(Profile profile)
         {
             if (_profiles.ContainsKey(profile.Name)) return false;
-            _profiles[profile.Name] = (profile, new ProfileHandlerEdgeTypesCache());
+            _profiles[profile.Name] = (profile, new EdgeFactorCache());
             return true;
         }
 
-        internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out ProfileHandlerEdgeTypesCache? cache)
+        internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache)
         {
             cache = null;
             if (!_profiles.TryGetValue(profile.Name, out var profileValue)) return false;
@@ -75,11 +75,11 @@ namespace Itinero.Profiles
             var profileCount = stream.ReadVarInt32();
             
             // write profiles.
-            var profiles = new Dictionary<string, (Profile profile, ProfileHandlerEdgeTypesCache cache)>(profileCount);
+            var profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>(profileCount);
             for (var p = 0; p < profileCount; p++)
             {
                 var profile = profileSerializer.ReadFrom(stream);
-                profiles[profile.Name] = (profile, new ProfileHandlerEdgeTypesCache());
+                profiles[profile.Name] = (profile, new EdgeFactorCache());
             }
             
             return new RouterDbProfileConfiguration(profiles);

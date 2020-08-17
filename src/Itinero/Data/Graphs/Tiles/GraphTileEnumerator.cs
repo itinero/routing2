@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +12,8 @@ namespace Itinero.Data.Graphs.Tiles
         private uint? _nextEdgePointer;
         private uint? _shapePointer;
         private uint? _attributesPointer;
+        private byte? _tail;
+        private byte? _head;
 
         /// <summary>
         /// Creates a new graph tile enumerator.
@@ -118,6 +121,10 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer += size;
             this.Length = length;
             
+            // get tail and head order.
+            _graphTile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
+            _nextEdgePointer++;
+            
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -216,6 +223,11 @@ namespace Itinero.Data.Graphs.Tiles
             _nextEdgePointer += size;
             this.Length = length;
             
+            // get tail and head order.
+            _graphTile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
+            _nextEdgePointer++;
+            
+            // 
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
@@ -298,7 +310,27 @@ namespace Itinero.Data.Graphs.Tiles
         /// Gets the length in centimeters, if any.
         /// </summary>
         public uint? Length { get; private set; }
-        
-        
+
+        /// <summary>
+        /// Gets the head index of this edge.
+        /// </summary>
+        public byte? Head => _tail;
+
+        /// <summary>
+        /// Gets the tail index of this edge.
+        /// </summary>
+        public byte? Tail => _tail;
+
+        /// <summary>
+        /// Gets the turn costs.
+        /// </summary>
+        public IEnumerable<(uint type, uint table)> TurnCosts
+        {
+            get
+            {
+                if (_graphTile == null) return Enumerable.Empty<(uint type, uint table)>();
+                return _graphTile.GetTurnCosts(new VertexId(_graphTile.TileId, _localId));
+            }
+        }
     }
 }

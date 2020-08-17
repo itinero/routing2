@@ -2,6 +2,7 @@
 using Itinero.Collections;
 using Itinero.Data.Graphs.EdgeTypes;
 using Itinero.Data.Graphs.Tiles;
+using Itinero.Data.Graphs.TurnCosts;
 
 namespace Itinero.Data.Graphs
 {
@@ -9,6 +10,7 @@ namespace Itinero.Data.Graphs
     {
         private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
         private readonly GraphEdgeTypeIndex _graphEdgeTypeIndex;
+        private readonly GraphTurnCostIndex _graphTurnCostIndex;
 
         /// <summary>
         /// Creates a new graph.
@@ -20,14 +22,16 @@ namespace Itinero.Data.Graphs
 
             _tiles = new SparseArray<(GraphTile tile, int edgeTypesId)>(0);
             _graphEdgeTypeIndex = new GraphEdgeTypeIndex();
+            _graphTurnCostIndex = new GraphTurnCostIndex();
         }
 
         internal Graph(SparseArray<(GraphTile tile, int edgeTypesId)> tiles, int zoom,
-            GraphEdgeTypeIndex graphEdgeTypeIndex)
+            GraphEdgeTypeIndex graphEdgeTypeIndex, GraphTurnCostIndex graphTurnCostIndex)
         {
             Zoom = zoom;
             _tiles = tiles;
             _graphEdgeTypeIndex = graphEdgeTypeIndex;
+            _graphTurnCostIndex = graphTurnCostIndex;
         }
 
         private GraphTile? GetTileForRead(uint localTileId)
@@ -74,15 +78,15 @@ namespace Itinero.Data.Graphs
             return tile.TryGetVertex(vertex, out longitude, out latitude);
         }
 
-        /// <summary>
-        /// Gets the attributes for the given edge type.
-        /// </summary>
-        /// <param name="edgeTypeId">The edge type id.</param>
-        /// <returns>The attributes for the given edge type.</returns>
-        public IEnumerable<(string key, string value)> GetEdgeType(uint edgeTypeId)
-        {
-            return _graphEdgeTypeIndex.GetById(edgeTypeId);
-        }
+        // /// <summary>
+        // /// Gets the attributes for the given edge type.
+        // /// </summary>
+        // /// <param name="edgeTypeId">The edge type id.</param>
+        // /// <returns>The attributes for the given edge type.</returns>
+        // public IEnumerable<(string key, string value)> GetEdgeType(uint edgeTypeId)
+        // {
+        //     return _graphEdgeTypeIndex.GetById(edgeTypeId);
+        // }
 
         /// <summary>
         /// Gets an edge enumerator.
@@ -204,6 +208,21 @@ namespace Itinero.Data.Graphs
             /// Gets the length in centimeters, if any.
             /// </summary>
             public uint? Length => _tileEnumerator.Length;
+
+            /// <summary>
+            /// Gets the head index.
+            /// </summary>
+            public ushort? Head => _tileEnumerator.Head;
+
+            /// <summary>
+            /// Gets the tail index.
+            /// </summary>
+            public ushort? Tail => _tileEnumerator.Tail;
+
+            /// <summary>
+            /// Gets the turn costs.
+            /// </summary>
+            public IEnumerable<(uint type, uint table)> TurnCosts => _tileEnumerator.TurnCosts;
         }
         
         /// <summary>

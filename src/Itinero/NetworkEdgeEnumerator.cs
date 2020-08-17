@@ -119,5 +119,20 @@ namespace Itinero
         /// Gets the length in centimeters, if any.
         /// </summary>
         public uint? Length => this.GraphEdgeEnumerator.Length;
+
+        /// <summary>
+        /// Gets the head index.
+        /// </summary>
+        public ushort? Head => this.GraphEdgeEnumerator.Head;
+
+        /// <summary>
+        /// Gets the tail index.
+        /// </summary>
+        public ushort? Tail => this.GraphEdgeEnumerator.Tail;
+
+        /// <summary>
+        /// Gets the turn costs.
+        /// </summary>
+        public IEnumerable<(uint type, uint table)> TurnCosts => this.GraphEdgeEnumerator.TurnCosts;
     }
 }
