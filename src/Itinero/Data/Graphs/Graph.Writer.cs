@@ -79,6 +79,20 @@ namespace Itinero.Data.Graphs
             return edge1;
         }
 
+        private void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+            EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+        {
+            // get the tile (or create it).
+            var tile = this.GetTileForWrite(vertex.TileId);
+            if (tile == null) throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
+            
+            // get the turn cost type id.
+            var turnCostTypeId = _graphTurnCostTypeIndex.Get(attributes);
+                
+            // add the turn cost table using the type id.
+            // tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, prefix);
+        }
+
         private GraphWriter? _writer;
         
         /// <summary>
@@ -134,6 +148,12 @@ namespace Itinero.Data.Graphs
                 IEnumerable<(string key, string value)>? attributes = null)
             {
                 return _graph.AddEdge(vertex1, vertex2, shape, attributes);
+            }
+
+            internal void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+                EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+            {
+                _graph.AddTurnCosts(vertex, attributes, edges, costs, prefix);
             }
 
             public void Dispose()

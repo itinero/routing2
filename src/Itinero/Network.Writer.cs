@@ -77,6 +77,20 @@ namespace Itinero
                 return _graphWriter.AddEdge(vertex1, vertex2, shape, attributes);
             }
 
+            /// <summary>
+            /// Adds a new turn cost table.
+            /// </summary>
+            /// <param name="vertex">The vertex the table is for.</param>
+            /// <param name="attributes">The attributes.</param>
+            /// <param name="edges">The edges array in the order matching the costs.</param>
+            /// <param name="costs">The cost matrix, dimensions matching the edges array.</param>
+            /// <param name="prefix">A prefix path if any. The turn cost table will only apply to a path if the prefix is part of the path.</param>
+            public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes, 
+                EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Dispose()
             {
                 _graphWriter.Dispose();

@@ -22,10 +22,10 @@ namespace Itinero.Data.Graphs.Serialization
             
             // write edge types.
             mutableGraph.EdgeTypeIndex.Serialize(stream);
-            
-            // write turn costs.
-            mutableGraph.TurnCostIndex.Serialize(stream);
 
+            // write turn cost types.
+            mutableGraph.TurnCostTypeIndex.Serialize(stream);
+            
             // write tiles.
             stream.WriteVarUInt32((uint)mutableGraph.GetTiles().Count());
             foreach (var tileId in mutableGraph.GetTiles())
@@ -38,7 +38,7 @@ namespace Itinero.Data.Graphs.Serialization
 
         public static Graph ReadGraph(this Stream stream, 
             Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? edgeTypeFunc = null,
-            IEnumerable<(string name, Func<Network, VertexId, uint[]?> turnCostFunc)>? turnCostFunctions = null)
+            Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>>? turnCostTypeFunc = null)
         {
             // check version #.
             var version = stream.ReadVarInt32();
@@ -50,8 +50,8 @@ namespace Itinero.Data.Graphs.Serialization
             // read edge type index.
             var edgeTypeIndex = GraphEdgeTypeIndex.Deserialize(stream, edgeTypeFunc);
             
-            // read turn cost index.
-            var turnCostIndex = GraphTurnCostIndex.Deserialize(stream, turnCostFunctions);
+            // read turn cost type index.
+            var turnCostTypeIndex = GraphTurnCostTypeIndex.Deserialize(stream, turnCostTypeFunc);
 
             var tileCount = stream.ReadVarUInt32();
             var tiles = new SparseArray<(GraphTile tile, int edgeTypesId)>(0);
@@ -63,7 +63,7 @@ namespace Itinero.Data.Graphs.Serialization
                 tiles[tile.TileId] = (tile, edgeTypeIndex.Id);
             }
             
-            return new Graph(tiles, zoom, edgeTypeIndex, turnCostIndex);
+            return new Graph(tiles, zoom, edgeTypeIndex, turnCostTypeIndex);
         }
     }
 }

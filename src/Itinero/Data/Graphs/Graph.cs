@@ -10,7 +10,7 @@ namespace Itinero.Data.Graphs
     {
         private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
         private readonly GraphEdgeTypeIndex _graphEdgeTypeIndex;
-        private readonly GraphTurnCostIndex _graphTurnCostIndex;
+        private readonly GraphTurnCostTypeIndex _graphTurnCostTypeIndex;
 
         /// <summary>
         /// Creates a new graph.
@@ -22,16 +22,16 @@ namespace Itinero.Data.Graphs
 
             _tiles = new SparseArray<(GraphTile tile, int edgeTypesId)>(0);
             _graphEdgeTypeIndex = new GraphEdgeTypeIndex();
-            _graphTurnCostIndex = new GraphTurnCostIndex();
+            _graphTurnCostTypeIndex = new GraphTurnCostTypeIndex();
         }
 
         internal Graph(SparseArray<(GraphTile tile, int edgeTypesId)> tiles, int zoom,
-            GraphEdgeTypeIndex graphEdgeTypeIndex, GraphTurnCostIndex graphTurnCostIndex)
+            GraphEdgeTypeIndex graphEdgeTypeIndex, GraphTurnCostTypeIndex graphTurnCostTypeIndex)
         {
             Zoom = zoom;
             _tiles = tiles;
             _graphEdgeTypeIndex = graphEdgeTypeIndex;
-            _graphTurnCostIndex = graphTurnCostIndex;
+            _graphTurnCostTypeIndex = graphTurnCostTypeIndex;
         }
 
         private GraphTile? GetTileForRead(uint localTileId)
@@ -39,8 +39,7 @@ namespace Itinero.Data.Graphs
             if (_tiles.Length <= localTileId) return null;
             
             var (tile, edgeTypesId) = _tiles[localTileId];
-            if (tile != null &&
-                edgeTypesId != _graphEdgeTypeIndex.Id)
+            if (edgeTypesId != _graphEdgeTypeIndex.Id)
             {
                 tile = _graphEdgeTypeIndex.Update(tile);
                 _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);

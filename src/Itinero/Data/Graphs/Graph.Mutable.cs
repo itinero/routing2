@@ -42,15 +42,13 @@ namespace Itinero.Data.Graphs
             private readonly SparseArray<bool> _modified;
             private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
             private readonly Graph _graph;
-            private GraphEdgeTypeIndex _graphEdgeTypeIndex;
-            private GraphTurnCostIndex _graphTurnCostIndex;
 
             public MutableGraph(Graph graph)
             {
                 _graph = graph;
                 _tiles = graph._tiles.Clone();
-                _graphEdgeTypeIndex = graph._graphEdgeTypeIndex;
-                _graphTurnCostIndex = graph._graphTurnCostIndex;
+                EdgeTypeIndex = graph._graphEdgeTypeIndex;
+                TurnCostTypeIndex = graph._graphTurnCostTypeIndex;
                 
                 _modified = new SparseArray<bool>(_tiles.Length);
             }
@@ -76,10 +74,10 @@ namespace Itinero.Data.Graphs
                 var (tile, edgeTypesId) = _tiles[localTileId];
                 if (tile != null)
                 {
-                    if (edgeTypesId == _graphEdgeTypeIndex.Id) return tile;
+                    if (edgeTypesId == EdgeTypeIndex.Id) return tile;
                     
-                    tile = _graphEdgeTypeIndex.Update(tile);
-                    _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
+                    tile = EdgeTypeIndex.Update(tile);
+                    _tiles[localTileId] = (tile, EdgeTypeIndex.Id);
                     return tile;
                 }
                 
@@ -87,7 +85,7 @@ namespace Itinero.Data.Graphs
                 tile = new GraphTile(_graph.Zoom, localTileId);
                 
                 // store in the local tiles.
-                _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
+                _tiles[localTileId] = (tile, EdgeTypeIndex.Id);
                 return tile;
             }
 
@@ -103,9 +101,9 @@ namespace Itinero.Data.Graphs
                 if (tile == null) return null;
                 
                 // update the tile if needed.
-                if (edgeTypesId == _graphEdgeTypeIndex.Id) return tile;
-                tile = _graphEdgeTypeIndex.Update(tile);
-                _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
+                if (edgeTypesId == EdgeTypeIndex.Id) return tile;
+                tile = EdgeTypeIndex.Update(tile);
+                _tiles[localTileId] = (tile, EdgeTypeIndex.Id);
                 return tile;
             }
 
@@ -171,7 +169,7 @@ namespace Itinero.Data.Graphs
                 var tile = this.GetTileForWrite(vertex1.TileId);
                 if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
-                var edgeTypeId = attributes != null ? (uint?)_graphEdgeTypeIndex.Get(attributes) : null;
+                var edgeTypeId = attributes != null ? (uint?)EdgeTypeIndex.Get(attributes) : null;
                 var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
                 if (vertex1.TileId != vertex2.TileId)
                 {
@@ -183,25 +181,27 @@ namespace Itinero.Data.Graphs
                 return edge1;
             }
 
-            public GraphEdgeTypeFunc EdgeTypeFunc => _graphEdgeTypeIndex.Func;
+            public GraphEdgeTypeFunc EdgeTypeFunc => EdgeTypeIndex.Func;
 
             public void SetEdgeTypeFunc(GraphEdgeTypeFunc graphEdgeTypeFunc)
             {
-                _graphEdgeTypeIndex = _graphEdgeTypeIndex.Next(graphEdgeTypeFunc);
+                EdgeTypeIndex = EdgeTypeIndex.Next(graphEdgeTypeFunc);
             }
 
-            internal GraphEdgeTypeIndex EdgeTypeIndex => _graphEdgeTypeIndex;
+            internal GraphEdgeTypeIndex EdgeTypeIndex { get; private set; }
 
-            public void SetTurnCostFunc(string name, Func<Network, VertexId, uint[]?> turnCostFunc)
+            public GraphTurnCostTypeFunc TurnCostTypeFunc => TurnCostTypeIndex.Func;
+
+            public void SetTurnCostTypeFunc(GraphTurnCostTypeFunc graphTurnCostTypeFunc)
             {
-                _graphTurnCostIndex = _graphTurnCostIndex.Next(name, turnCostFunc);
+                TurnCostTypeIndex = TurnCostTypeIndex.Next(graphTurnCostTypeFunc);
             }
 
-            internal GraphTurnCostIndex TurnCostIndex => _graphTurnCostIndex;
+            internal GraphTurnCostTypeIndex TurnCostTypeIndex { get; private set; }
 
             public Graph ToGraph()
             {
-                return new Graph(_tiles, _graph.Zoom, _graphEdgeTypeIndex, _graphTurnCostIndex);
+                return new Graph(_tiles, _graph.Zoom, EdgeTypeIndex, TurnCostTypeIndex);
             }
 
             public void Dispose()
