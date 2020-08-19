@@ -80,7 +80,7 @@ namespace Itinero.Data.Graphs
         }
 
         private void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
-            EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+            EdgeId[] edges, uint[,] costs)
         {
             // get the tile (or create it).
             var tile = this.GetTileForWrite(vertex.TileId);
@@ -90,7 +90,7 @@ namespace Itinero.Data.Graphs
             var turnCostTypeId = _graphTurnCostTypeIndex.Get(attributes);
                 
             // add the turn cost table using the type id.
-            // tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, prefix);
+            tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
         }
 
         private GraphWriter? _writer;
@@ -153,7 +153,7 @@ namespace Itinero.Data.Graphs
             internal void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
                 EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
             {
-                _graph.AddTurnCosts(vertex, attributes, edges, costs, prefix);
+                _graph.AddTurnCosts(vertex, attributes, edges, costs);
             }
 
             public void Dispose()

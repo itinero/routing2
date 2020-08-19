@@ -314,7 +314,7 @@ namespace Itinero.Data.Graphs.Tiles
         /// <summary>
         /// Gets the head index of this edge.
         /// </summary>
-        public byte? Head => _tail;
+        public byte? Head => _head;
 
         /// <summary>
         /// Gets the tail index of this edge.
@@ -322,15 +322,18 @@ namespace Itinero.Data.Graphs.Tiles
         public byte? Tail => _tail;
 
         /// <summary>
-        /// Gets the turn costs.
+        /// Gets the turn cost for the given turn.
         /// </summary>
-        public IEnumerable<(uint type, uint table)> TurnCosts
+        /// <param name="fromOrder">The order of the source edge.</param>
+        /// <param name="toOrder">The order of the target edge.</param>
+        /// <returns>The turn cost if any.</returns>
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCosts(byte fromOrder, byte toOrder)
         {
-            get
-            {
-                if (_graphTile == null) return Enumerable.Empty<(uint type, uint table)>();
-                return _graphTile.GetTurnCosts(new VertexId(_graphTile.TileId, _localId));
-            }
+            if (_graphTile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+            if (this.Forward && this.Tail == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();;
+            if (!this.Forward && this.Head == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();;
+
+            return _graphTile.GetTurnCosts(this.Vertex1, fromOrder, toOrder);
         }
     }
 }

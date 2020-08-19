@@ -3,6 +3,7 @@
 namespace Itinero.Data.Tiles
 {
     // TODO: do we get rid of this or internalize it.
+    // TODO: convert fully to TileStatic.
     internal class Tile
     {
         public Tile(uint x, uint y, int zoom)

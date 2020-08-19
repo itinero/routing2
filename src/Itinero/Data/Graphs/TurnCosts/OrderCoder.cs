@@ -5,7 +5,7 @@ namespace Itinero.Data.Graphs.TurnCosts
 {
     internal static class OrderCoder
     {
-        private const int MAX_ORDER_HEAD_TAIL = 14;
+        internal const int MAX_ORDER_HEAD_TAIL = 14;
 
         public static void SetTailHeadOrder(this ArrayBase<byte> data, long i, byte? tail, byte? head)
         {
