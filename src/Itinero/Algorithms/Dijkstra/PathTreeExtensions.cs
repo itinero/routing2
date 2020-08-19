@@ -15,7 +15,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// <param name="head">The head index.</param>
         /// <param name="previousPointer">The pointer to the previous entry.</param>
         /// <returns>A pointer to the visit.</returns>
-        public static uint AddVisit(this PathTree tree, VertexId vertex, EdgeId edge, ushort? head, uint previousPointer)
+        public static uint AddVisit(this PathTree tree, VertexId vertex, EdgeId edge, byte? head, uint previousPointer)
         {
             var data0 = vertex.TileId;
             var data1 = vertex.LocalId;
@@ -33,11 +33,11 @@ namespace Itinero.Algorithms.Dijkstra
         /// <param name="tree">The tree.</param>
         /// <param name="pointer">The pointer.</param>
         /// <returns>The visit.</returns>
-        public static (VertexId vertex, EdgeId edge, ushort? head, uint previousPointer) GetVisit(this PathTree tree, uint pointer)
+        public static (VertexId vertex, EdgeId edge, byte? head, uint previousPointer) GetVisit(this PathTree tree, uint pointer)
         {
             tree.Get(pointer, out var data0, out var data1, out var data2, out var data3, out var data4, out var data5);
 
-            var head = data4 == uint.MaxValue ? null : (ushort?) data4;
+            var head = data4 == uint.MaxValue ? null : (byte?) data4;
             
             return (new VertexId(data0, data1), new EdgeId(data2, data3), head, data5);
         }

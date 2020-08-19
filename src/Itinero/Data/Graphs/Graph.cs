@@ -211,12 +211,12 @@ namespace Itinero.Data.Graphs
             /// <summary>
             /// Gets the head index.
             /// </summary>
-            public ushort? Head => _tileEnumerator.Head;
+            public byte? Head => _tileEnumerator.Head;
 
             /// <summary>
             /// Gets the tail index.
             /// </summary>
-            public ushort? Tail => _tileEnumerator.Tail;
+            public byte? Tail => _tileEnumerator.Tail;
 
             /// <summary>
             /// Gets the turn cost to the current edge given the from order.

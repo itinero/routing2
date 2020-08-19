@@ -123,12 +123,12 @@ namespace Itinero
         /// <summary>
         /// Gets the head index.
         /// </summary>
-        public ushort? Head => this.GraphEdgeEnumerator.Head;
+        public byte? Head => this.GraphEdgeEnumerator.Head;
 
         /// <summary>
         /// Gets the tail index.
         /// </summary>
-        public ushort? Tail => this.GraphEdgeEnumerator.Tail;
+        public byte? Tail => this.GraphEdgeEnumerator.Tail;
 
         /// <summary>
         /// Gets the turn cost to the current edge given the from order.
