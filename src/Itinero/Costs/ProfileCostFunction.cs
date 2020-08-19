@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Data.Graphs;
 using Itinero.Profiles;
 
@@ -13,50 +14,31 @@ namespace Itinero.Costs
             _profile = profile;
         }
 
-        private EdgeFactor _factor;
-        private uint _length;
-
-        public void MoveTo(NetworkEdgeEnumerator edgeEnumerator)
+        public (bool canAccess, bool canStop, double cost, double turnCost) Get(NetworkEdgeEnumerator edgeEnumerator, bool forward,
+            IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
         {
-            _factor = edgeEnumerator.FactorInEdgeDirection(_profile);
+            var factor = edgeEnumerator.FactorInEdgeDirection(_profile);
+            var length =  edgeEnumerator.Length ?? (uint) (edgeEnumerator.EdgeLength() * 100);
+            var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
+            var canAccess = cost > 0;
 
-            var length = edgeEnumerator.Length;
-            if (length.HasValue)
+            var totalTurnCost = 0.0;
+            var (_, turn) = previousEdges.FirstOrDefault();
+            if (turn != null)
             {
-                _length = length.Value;
+                var turnCosts = forward ? edgeEnumerator.GetTurnCostTo(turn.Value) : 
+                    edgeEnumerator.GetTurnCostFrom(turn.Value);
+
+                foreach (var (turnCostType, turnCost) in turnCosts)
+                {
+                    var turnCostAttributes =
+                        edgeEnumerator.RouterDb.Graph.GetTurnCostTypeAttributes(turnCostType);
+                    var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
+                    totalTurnCost += turnCostFactor * turnCost;
+                }
             }
-            else
-            {
-                _length = (uint)(edgeEnumerator.EdgeLength() * 100);
-            }
-        }
-
-        public bool CanAccess(bool? forward = null)
-        {
-            var cost = forward == null || forward.Value ? _factor.ForwardFactor : 0;
-            if (cost > 0) return true;
-            cost = forward == null || !forward.Value ? _factor.BackwardFactor : 0;
-            return cost > 0;
-        }
-
-        public bool CanStop(bool? forward = null)
-        {
-            return _factor.CanStop;
-        }
-
-        public double GetCosts(bool forward)
-        {
-            if (forward)
-            {
-                return _factor.ForwardFactor * _length;
-            }
-
-            return _factor.BackwardFactor * _length;
-        }
-
-        public double GetTurnCost(bool forward, IEnumerable<(EdgeId edgeId, ushort? turn)> previousEdges)
-        {
-            throw new System.NotImplementedException();
+            
+            return (canAccess, factor.CanStop, cost, totalTurnCost);
         }
     }
 }

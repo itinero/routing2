@@ -41,11 +41,10 @@ namespace Itinero.Data.Graphs.TurnCosts
             return _turnCostTypes.Get(edgeType);
         }
         
-        //
-        // public IEnumerable<(string key, string value)> GetById(uint edgeTypeId)
-        // {
-        //     return _edgeTypes.GetById(edgeTypeId);
-        // }
+        public IEnumerable<(string key, string value)> GetById(uint edgeTypeId)
+        {
+            return _turnCostTypes.GetById(edgeTypeId);
+        }
 
         public GraphTurnCostTypeIndex Next(GraphTurnCostTypeFunc func)
         {

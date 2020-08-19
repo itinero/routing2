@@ -67,7 +67,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 // add forward.
                 if (!enumerator.MoveToEdge(source.sp.EdgeId, true))
                     throw new Exception($"Edge in source {source} not found!");
-                var sourceCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
+                var sourceCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
                 if (sourceCostForward > 0)
                 {
                     // can traverse edge in the forward direction.
@@ -83,7 +83,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                 // add backward.
                 if (!enumerator.MoveToEdge(source.sp.EdgeId, false))
                     throw new Exception($"Edge in source {source} not found!");
-                var sourceCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
+                var sourceCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
                 if (sourceCostBackward > 0)
                 {
                     // can traverse edge in the backward direction.
@@ -106,7 +106,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     // add forward.
                     if (!enumerator.MoveToEdge(target.sp.EdgeId, true))
                         throw new Exception($"Edge in target {target} not found!");
-                    var targetCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
+                    var targetCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
                     if (targetCostForward > 0)
                     {
                         if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
@@ -123,7 +123,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     // add backward.
                     if (!enumerator.MoveToEdge(target.sp.EdgeId, false))
                         throw new Exception($"Edge in source {source} not found!");
-                    var targetCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
+                    var targetCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
                     if (targetCostBackward > 0)
                     {
                         if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
@@ -159,7 +159,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     // and the edge can be traversed in this direction.
                     if (!enumerator.MoveToEdge(source.sp.EdgeId, true))
                         throw new Exception($"Edge in source {source} not found!");
-                    var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost * 
+                    var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost * 
                                  (target.sp.OffsetFactor() - source.sp.OffsetFactor());
                     bestTargets[t] = (sourceForwardVisit, weight);
                 }
@@ -170,7 +170,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
                     // and the edge can be traversed in this direction.
                     if (!enumerator.MoveToEdge(source.sp.EdgeId, false))
                         throw new Exception($"Edge in source {source} not found!");
-                    var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost * 
+                    var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost * 
                                  (source.sp.OffsetFactor() - target.sp.OffsetFactor());
                     bestTargets[t] = (sourceBackwardVisit, weight);
                 }

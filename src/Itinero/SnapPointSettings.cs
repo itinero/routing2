@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Itinero.Data.Graphs;
 using Itinero.Profiles;
 
 namespace Itinero
@@ -31,20 +32,21 @@ namespace Itinero
 
         internal Func<NetworkEdgeEnumerator, bool> AcceptableFunc(Network network)
         {
-            var hasProfiles = this.Profiles != null && this.Profiles.Length > 0;
+            var hasProfiles = this.Profiles.Length > 0;
             if (!hasProfiles) return (_) => true;
             
-            var profileHandlers = this.Profiles.Select(network.GetCostFunctionFor).ToArray();
+            var costFunctions = this.Profiles.Select(network.GetCostFunctionFor).ToArray();
             return (eEnum) =>
             {
                 var allOk = true;
                 
-                foreach (var profileHandler in profileHandlers)
+                foreach (var costFunction in costFunctions)
                 {
-                    profileHandler.MoveTo(eEnum);
+                    var costs = costFunction.Get(eEnum, true, 
+                        Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
 
-                    var profileIsOk = profileHandler.CanAccess() &&
-                                      (!this.CheckCanStopOn || profileHandler.CanStop());
+                    var profileIsOk = costs.canAccess &&
+                                      (!this.CheckCanStopOn || costs.canStop);
 
                     if (this.AnyProfile && profileIsOk) return true;
 

@@ -60,7 +60,7 @@ namespace Itinero.Algorithms.Dijkstra
             // add sources.
             // add forward.
             if (!enumerator.MoveToEdge(source.EdgeId, true)) throw new Exception($"Edge in source {source} not found!");
-            var sourceCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
+            var sourceCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
             var sourceForwardVisit = uint.MaxValue;
             if (sourceCostForward > 0)
             {
@@ -73,7 +73,7 @@ namespace Itinero.Algorithms.Dijkstra
             // add backward.
             if (!enumerator.MoveToEdge(source.EdgeId, false))
                 throw new Exception($"Edge in source {source} not found!");
-            var sourceCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost;
+            var sourceCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
             var sourceBackwardVisit = uint.MaxValue;
             if (sourceCostBackward > 0)
             {
@@ -122,7 +122,7 @@ namespace Itinero.Algorithms.Dijkstra
                         // and the edge can be traversed in this direction.
                         if (!enumerator.MoveToEdge(source.EdgeId, true))
                             throw new Exception($"Edge in source {source} not found!");
-                        var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost * 
+                        var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost * 
                                      (target.OffsetFactor() - source.OffsetFactor());
                         bestTargets[t] = (sourceForwardVisit, weight);
                     }
@@ -132,7 +132,7 @@ namespace Itinero.Algorithms.Dijkstra
                         // and the edge can be traversed in this direction.
                         if (!enumerator.MoveToEdge(source.EdgeId, false))
                             throw new Exception($"Edge in source {source} not found!");
-                        var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, ushort? turn)>()).cost * 
+                        var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost * 
                                      (source.OffsetFactor() - target.OffsetFactor());
                         bestTargets[t] = (sourceBackwardVisit, weight);
                     }

@@ -77,15 +77,15 @@ namespace Itinero.Data.Graphs
             return tile.TryGetVertex(vertex, out longitude, out latitude);
         }
 
-        // /// <summary>
-        // /// Gets the attributes for the given edge type.
-        // /// </summary>
-        // /// <param name="edgeTypeId">The edge type id.</param>
-        // /// <returns>The attributes for the given edge type.</returns>
-        // public IEnumerable<(string key, string value)> GetEdgeType(uint edgeTypeId)
-        // {
-        //     return _graphEdgeTypeIndex.GetById(edgeTypeId);
-        // }
+        /// <summary>
+        /// Gets the attributes for the given turn cost type.
+        /// </summary>
+        /// <param name="turnCostType">The turn cost type.</param>
+        /// <returns>The attributes for the given edge type.</returns>
+        public IEnumerable<(string key, string value)> GetTurnCostTypeAttributes(uint turnCostType)
+        {
+            return _graphTurnCostTypeIndex.GetById(turnCostType);
+        }
 
         /// <summary>
         /// Gets an edge enumerator.

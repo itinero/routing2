@@ -23,13 +23,10 @@ namespace Itinero.Profiles
         public abstract EdgeFactor Factor(IEnumerable<(string key, string value)> attributes);
 
         /// <summary>
-        /// Returns true if the restriction with the given attributes applies.
+        /// Gets a factor for the turn costs for the given attributes.
         /// </summary>
         /// <param name="attributes">The attributes.</param>
-        /// <returns>True if the restriction applies.</returns>
-        public virtual bool IsRestricted(IEnumerable<(string key, string value)> attributes)
-        {
-            return false;
-        }
+        /// <returns>A turn cost factor.</returns>
+        public abstract double TurnCostFactor(IEnumerable<(string key, string value)> attributes);
     }
 }

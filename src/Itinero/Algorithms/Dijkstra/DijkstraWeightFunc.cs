@@ -14,5 +14,5 @@ namespace Itinero.Algorithms.Dijkstra
     /// - turnCost: the cost of turning onto the edge from the previous edges.
     /// </remarks>
     internal delegate (double cost, double turnCost) DijkstraWeightFunc(NetworkEdgeEnumerator edgeEnumerator, 
-        IEnumerable<(EdgeId edge, ushort? turn)> previousEdges);
+        IEnumerable<(EdgeId edge, byte? turn)> previousEdges);
 }

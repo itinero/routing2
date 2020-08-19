@@ -48,7 +48,7 @@ namespace Itinero.Algorithms.Dijkstra
         /// <param name="tree">The tree.</param>
         /// <param name="pointer">The pointer.</param>
         /// <returns>The edges and their turn.</returns>
-        public static IEnumerable<(EdgeId edge, ushort? turn)> GetPreviousEdges(this PathTree tree, uint pointer)
+        public static IEnumerable<(EdgeId edge, byte? turn)> GetPreviousEdges(this PathTree tree, uint pointer)
         {
             while (pointer != uint.MaxValue)
             {

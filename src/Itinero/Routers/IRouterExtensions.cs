@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Itinero.Algorithms;
 using Itinero.Algorithms.DataStructures;
 using Itinero.Algorithms.Dijkstra;
+using Itinero.Costs;
 using Itinero.Data.Graphs;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
@@ -93,7 +94,7 @@ namespace Itinero.Routers
             var routerDb = manyToManyRouter.Network;
             
             var profile = settings.Profile;
-            var profileHandler = routerDb.GetCostFunctionFor(profile);
+            var costFunction = routerDb.GetCostFunctionFor(profile);
 
             var maxBox = settings.MaxBoxFor(routerDb, sources);
 
@@ -110,36 +111,35 @@ namespace Itinero.Routers
 
                 return false;
             }
-
+            
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
-            // var edgeEnumerator = routerDb.GetEdgeEnumerator();
-            // for (var s = 0; s < sources.Count; s++)
-            // {
-            //     var source = sources[s];
-            //     var paths = Dijkstra.Default.Run(routerDb, source, targets,
-            //         profileHandler.GetForwardWeight,
-            //         settled: (v) =>
-            //         {
-            //             routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, v);
-            //             return checkMaxDistance(v);
-            //         });
-            //
-            //     var sourceResults = new Result<Path>[paths.Length];
-            //     for (var r = 0; r < sourceResults.Length; r++)
-            //     {
-            //         var path = paths[r];
-            //         if (path == null)
-            //         {
-            //             sourceResults[r] = new Result<Path>($"Path not found!");
-            //         }
-            //         else
-            //         {
-            //             sourceResults[r] = path;
-            //         }
-            //     }
-            //
-            //     results[s] = sourceResults;
-            // }
+            for (var s = 0; s < sources.Count; s++)
+            {
+                var source = sources[s];
+                var paths = Dijkstra.Default.Run(routerDb, source, targets,
+                    costFunction.GetDijkstraWeightFunc(),
+                    settled: (v) =>
+                    {
+                        routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, v);
+                        return checkMaxDistance(v);
+                    });
+            
+                var sourceResults = new Result<Path>[paths.Length];
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
+                    var path = paths[r];
+                    if (path == null)
+                    {
+                        sourceResults[r] = new Result<Path>($"Path not found!");
+                    }
+                    else
+                    {
+                        sourceResults[r] = path;
+                    }
+                }
+            
+                results[s] = sourceResults;
+            }
 
             return results;
         }
@@ -170,34 +170,33 @@ namespace Itinero.Routers
             }
 
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
-            // var edgeEnumerator = routerDb.GetEdgeEnumerator();
-            // for (var s = 0; s < sources.Count; s++)
-            // {
-            //     var source = sources[s];
-            //     var paths = Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb, source, targets,
-            //         e => costFunction.GetForwardWeight(e),
-            //         settled: e =>
-            //         {
-            //             routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
-            //             return checkMaxDistance(e.vertexId);
-            //         });
-            //
-            //     var sourceResults = new Result<Path>[paths.Length];
-            //     for (var r = 0; r < sourceResults.Length; r++)
-            //     {
-            //         var path = paths[r];
-            //         if (path == null)
-            //         {
-            //             sourceResults[r] = new Result<Path>($"Routes not found!");
-            //         }
-            //         else
-            //         {
-            //             sourceResults[r] = path;
-            //         }
-            //     }
-            //
-            //     results[s] = sourceResults;
-            // }
+            for (var s = 0; s < sources.Count; s++)
+            {
+                var source = sources[s];
+                var paths = Algorithms.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb, source, targets,
+                    costFunction.GetDijkstraWeightFunc(),
+                    settled: e =>
+                    {
+                        routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
+                        return checkMaxDistance(e.vertexId);
+                    });
+            
+                var sourceResults = new Result<Path>[paths.Length];
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
+                    var path = paths[r];
+                    if (path == null)
+                    {
+                        sourceResults[r] = new Result<Path>($"Routes not found!");
+                    }
+                    else
+                    {
+                        sourceResults[r] = path;
+                    }
+                }
+            
+                results[s] = sourceResults;
+            }
 
             return results;
         }
