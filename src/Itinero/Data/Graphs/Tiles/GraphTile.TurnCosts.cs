@@ -156,6 +156,7 @@ namespace Itinero.Data.Graphs.Tiles
             var pointer = pointerNullable.Value;
             while (true)
             {
+                // read turn cost table.
                 pointer += (uint)_turnCosts.GetDynamicUInt32(pointer, out var turnCostType);
                 var max = _turnCosts[pointer];
                 pointer++;
@@ -170,6 +171,12 @@ namespace Itinero.Data.Graphs.Tiles
                         if (cost != 0) yield return (turnCostType, cost);
                     }
                 }
+                
+                // get pointer to next turn cost table.
+                _turnCosts.GetDynamicUInt32(pointer, out var p);
+                pointerNullable = p.DecodeNullableData();
+                if (pointerNullable == null) break;
+                pointer = pointerNullable.Value;
             }
         }
 

@@ -322,18 +322,33 @@ namespace Itinero.Data.Graphs.Tiles
         public byte? Tail => _tail;
 
         /// <summary>
-        /// Gets the turn cost for the given turn.
+        /// Gets the turn cost to the current edge given the from order.
         /// </summary>
         /// <param name="fromOrder">The order of the source edge.</param>
-        /// <param name="toOrder">The order of the target edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCosts(byte fromOrder, byte toOrder)
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
         {
             if (_graphTile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
-            if (this.Forward && this.Tail == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();;
-            if (!this.Forward && this.Head == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();;
 
-            return _graphTile.GetTurnCosts(this.Vertex1, fromOrder, toOrder);
+            var order = this.Forward ? _tail : _head;
+            if (order == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+
+            return _graphTile.GetTurnCosts(this.Vertex1, fromOrder, order.Value);
+        }
+
+        /// <summary>
+        /// Gets the turn cost from the current edge given the to order.
+        /// </summary>
+        /// <param name="toOrder">The order of the target edge.</param>
+        /// <returns>The turn cost if any.</returns>
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        {
+            if (_graphTile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+
+            var order = this.Forward ? _head : _tail;
+            if (order == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+
+            return _graphTile.GetTurnCosts(this.Vertex1, order.Value, toOrder);
         }
     }
 }

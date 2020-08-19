@@ -131,12 +131,19 @@ namespace Itinero
         public ushort? Tail => this.GraphEdgeEnumerator.Tail;
 
         /// <summary>
-        /// Gets the turn cost for the given turn.
+        /// Gets the turn cost to the current edge given the from order.
         /// </summary>
         /// <param name="fromOrder">The order of the source edge.</param>
+        /// <returns>The turn cost if any.</returns>
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder) =>
+            this.GraphEdgeEnumerator.GetTurnCostTo(fromOrder);
+
+        /// <summary>
+        /// Gets the turn cost from the current edge given the to order.
+        /// </summary>
         /// <param name="toOrder">The order of the target edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCosts(byte fromOrder, byte toOrder) =>
-            this.GraphEdgeEnumerator.GetTurnCosts(fromOrder, toOrder);
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder) =>
+            this.GraphEdgeEnumerator.GetTurnCostFrom(toOrder);
     }
 }
