@@ -17,9 +17,9 @@ namespace Itinero.Profiles
         }
 
         /// <inheritdoc/>
-        public override double TurnCostFactor(IEnumerable<(string key, string value)> attributes)
+        public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
         {
-            return 0;
+            return Profiles.TurnCostFactor.Empty;
         }
     }
 }

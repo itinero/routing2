@@ -131,3 +131,17 @@ function factor(attributes, result)
         result.forward = 0
     end    
 end
+
+function turn_cost_factor(attributes, result)
+    result.factor = 0;
+
+    -- get factors for turn restrictions.
+    local restriction = attributes.restriction
+    if restriction != "yes" then
+        return
+    end
+    local bicycle = attributes.bicycle
+    if bicycle == "yes" then
+        result.factor = -1
+    end
+end

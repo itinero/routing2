@@ -27,6 +27,6 @@ namespace Itinero.Profiles
         /// </summary>
         /// <param name="attributes">The attributes.</param>
         /// <returns>A turn cost factor.</returns>
-        public abstract double TurnCostFactor(IEnumerable<(string key, string value)> attributes);
+        public abstract TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes);
     }
 }

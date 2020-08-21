@@ -113,7 +113,7 @@ namespace Itinero.Tests.Data.Graphs
                 edge = writer.AddEdge(vertex1, vertex3);
             }
             
-            Assert.Equal((uint)10, edge.LocalId);
+            Assert.Equal((uint)11, edge.LocalId);
         }
 
         [Fact]

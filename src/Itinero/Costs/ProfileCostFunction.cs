@@ -34,7 +34,12 @@ namespace Itinero.Costs
                     var turnCostAttributes =
                         edgeEnumerator.RouterDb.Graph.GetTurnCostTypeAttributes(turnCostType);
                     var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
-                    totalTurnCost += turnCostFactor * turnCost;
+                    if (turnCostFactor.IsBinary && turnCost > 0)
+                    {
+                        totalTurnCost = double.MaxValue;
+                        break;
+                    }
+                    totalTurnCost += turnCostFactor.CostFactor * turnCost;
                 }
             }
             

@@ -70,7 +70,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
 
         [Fact]
-        public void GraphTile_AddEdge1_VerticesExist_ShouldReturn6()
+        public void GraphTile_AddEdge1_VerticesExist_ShouldReturn9()
         {
             var graphTile = new GraphTile(14, 
                 Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
@@ -81,7 +81,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             graphTile.AddEdge(vertex1, vertex2);
             // the second edge get the pointer as id.
             var edge = graphTile.AddEdge(vertex2, vertex1);
-            Assert.Equal((uint)8, edge.LocalId);
+            Assert.Equal((uint)9, edge.LocalId);
         }
 
         [Fact]
