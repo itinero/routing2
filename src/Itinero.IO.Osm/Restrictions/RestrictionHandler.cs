@@ -65,7 +65,7 @@ namespace Itinero.IO.Osm.Restrictions
             try
             {
                 if (relation?.Tags == null) 
-                    return new Result<bool>("Relation has not tags.");
+                    return new Result<bool>("Relation has no tags.");
                 if (!relation.Tags.Contains("type", "restriction")) 
                     return new Result<bool>("Relation is not a restriction.");
                 if (!relation.Tags.TryGetValue("restriction", out var restriction)) 

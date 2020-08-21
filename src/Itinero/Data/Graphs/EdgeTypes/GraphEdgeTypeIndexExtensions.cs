@@ -7,6 +7,8 @@ namespace Itinero.Data.Graphs.EdgeTypes
     {
         public static GraphTile Update(this GraphEdgeTypeIndex graphEdgeTypeIndex, GraphTile tile)
         {
+            if (tile == null) throw new ArgumentNullException(nameof(tile));
+            
             return tile.ApplyNewEdgeTypeFunc(graphEdgeTypeIndex);
         }
     }

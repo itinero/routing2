@@ -62,10 +62,7 @@ namespace Itinero.Tests.Functional
             {
                 mutable.PrepareFor(bicycle);
             });
-            routerDb.UseRouteableTiles(s =>
-            {
-                s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
-            });
+            routerDb.UseRouteableTiles();
             var latest = routerDb.Network;
 
             var heldergem = SnappingTest.Default.Run((latest, 3.95454, 50.88142, profile: bicycle),

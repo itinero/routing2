@@ -8,7 +8,7 @@ namespace Itinero.Data.Graphs
 {
     internal sealed partial class Graph
     {
-        private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
+        private readonly SparseArray<(GraphTile? tile, int edgeTypesId)> _tiles;
         private readonly GraphEdgeTypeIndex _graphEdgeTypeIndex;
         private readonly GraphTurnCostTypeIndex _graphTurnCostTypeIndex;
 
@@ -20,12 +20,12 @@ namespace Itinero.Data.Graphs
         {
             Zoom = zoom;
 
-            _tiles = new SparseArray<(GraphTile tile, int edgeTypesId)>(0);
+            _tiles = new SparseArray<(GraphTile? tile, int edgeTypesId)>(0);
             _graphEdgeTypeIndex = new GraphEdgeTypeIndex();
             _graphTurnCostTypeIndex = new GraphTurnCostTypeIndex();
         }
 
-        internal Graph(SparseArray<(GraphTile tile, int edgeTypesId)> tiles, int zoom,
+        internal Graph(SparseArray<(GraphTile? tile, int edgeTypesId)> tiles, int zoom,
             GraphEdgeTypeIndex graphEdgeTypeIndex, GraphTurnCostTypeIndex graphTurnCostTypeIndex)
         {
             Zoom = zoom;
@@ -39,6 +39,7 @@ namespace Itinero.Data.Graphs
             if (_tiles.Length <= localTileId) return null;
             
             var (tile, edgeTypesId) = _tiles[localTileId];
+            if (tile == null) return null;
             if (edgeTypesId != _graphEdgeTypeIndex.Id)
             {
                 tile = _graphEdgeTypeIndex.Update(tile);
