@@ -423,5 +423,6 @@ namespace Itinero.Tests.Algorithms.Dijkstra.EdgeBased
             Assert.False(enumerator.Current.forward);
             Assert.False(enumerator.MoveNext());
         }
+        
     }
 }
