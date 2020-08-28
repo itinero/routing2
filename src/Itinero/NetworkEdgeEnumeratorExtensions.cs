@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Data.Graphs;
 using Itinero.Geo;
 
 namespace Itinero
@@ -178,6 +179,17 @@ namespace Itinero
                 currentLength += segmentLength;
             }
             return shape[shape.Count - 1];
+        }
+
+        internal static IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(this NetworkEdgeEnumerator enumerator, 
+            IEnumerable<(EdgeId edge, byte? turn)> previousEdges)
+        {
+            using var previousEdgesEnumerator = previousEdges.GetEnumerator();
+            if (!previousEdgesEnumerator.MoveNext()) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+            var fromOrder = previousEdgesEnumerator.Current.turn;
+            if (fromOrder == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+
+            return enumerator.GetTurnCostTo(fromOrder.Value);
         }
     }
 }

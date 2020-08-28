@@ -1,4 +1,5 @@
 using System.Linq;
+using Itinero.Algorithms.DataStructures;
 using Itinero.Data.Graphs;
 using Xunit;
 
@@ -305,7 +306,51 @@ namespace Itinero.Tests.Algorithms.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_OneHopsShortestWithTurnCost_ShouldFindTwoHopPath()
+        public void Dijkstra_OneToOne_TwoHopsShortest_WithoutTurnCost_ShouldFindTwoHopPath()
+        {
+            var routerDb = new RouterDb();
+            EdgeId edge1, edge2, edge3;
+            VertexId vertex1, vertex2, vertex3;
+            using (var mutable = routerDb.GetAsMutable())
+            {
+                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+
+                edge1 = mutable.AddEdge(vertex1, vertex2);
+                edge2 = mutable.AddEdge(vertex2, vertex3);
+                edge3 = mutable.AddEdge(vertex1, vertex3);
+            }
+
+            var latest = routerDb.Network;
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap(vertex1),
+                latest.Snap(vertex3),
+                (e, ep) =>
+                {
+                    var w = 1;
+                    if (e.Id == edge3) w = 3;
+
+                    var tcs = e.GetTurnCostTo(ep)
+                        .Select(x => (double)x.cost).Sum();
+                    return (w, tcs);
+                });
+            Assert.NotNull(path);
+            path.Trim();
+            Assert.Equal(0, path.Offset1);
+            Assert.Equal(ushort.MaxValue, path.Offset2);
+            using var enumerator = path.GetEnumerator();
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge1, enumerator.Current.edge);
+            Assert.True(enumerator.Current.forward);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(edge2, enumerator.Current.edge);
+            Assert.True(enumerator.Current.forward);
+            Assert.False(enumerator.MoveNext());
+        }
+
+        [Fact]
+        public void Dijkstra_OneToOne_OneHopsShortest_OnlyWithTurnCost_ShouldFindTwoHopPath()
         {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
@@ -328,18 +373,23 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap(vertex1),
                 latest.Snap(vertex3),
-                (e, ep) => (1, 0));
+                (e, ep) =>
+                {
+                    var w = 1;
+                    if (e.Id == edge3) w = 3;
+
+                    var tcs = e.GetTurnCostTo(ep)
+                        .Select(x => (double)x.cost).Sum();
+                    return (w, tcs);
+                });
             Assert.NotNull(path);
+            path.Trim();
             Assert.Equal(0, path.Offset1);
             Assert.Equal(ushort.MaxValue, path.Offset2);
             using var enumerator = path.GetEnumerator();
             Assert.True(enumerator.MoveNext());
-            Assert.Equal(edge1, enumerator.Current.edge);
+            Assert.Equal(edge3, enumerator.Current.edge);
             Assert.True(enumerator.Current.forward);
-            Assert.True(enumerator.MoveNext());
-            Assert.Equal(edge2, enumerator.Current.edge);
-            Assert.True(enumerator.Current.forward);
-            Assert.False(enumerator.MoveNext());
         }
     }
 }

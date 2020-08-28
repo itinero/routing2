@@ -124,7 +124,7 @@ namespace Itinero.Algorithms.DataStructures
         /// Removes the first and/or last edge if they are not part of the path via the offset properties.
         /// </summary>
         /// <param name="path">The path.</param>
-        internal static void Trim(this Path path)
+        public static void Trim(this Path path)
         {
             if (path.Count <= 1) return;
             
