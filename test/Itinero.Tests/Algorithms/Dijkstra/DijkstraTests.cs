@@ -391,5 +391,38 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             Assert.Equal(edge3, enumerator.Current.edge);
             Assert.True(enumerator.Current.forward);
         }
+        
+        [Fact]
+        public void Dijkstra_OneToOne_TwoHopsShortest_InfiniteTurnCost_ShouldFindNoPath()
+        {
+            var routerDb = new RouterDb();
+            EdgeId edge1, edge2;
+            VertexId vertex1, vertex2, vertex3;
+            using (var mutable = routerDb.GetAsMutable())
+            {
+                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+
+                edge1 = mutable.AddEdge(vertex1, vertex2);
+                edge2 = mutable.AddEdge(vertex2, vertex3);
+                
+                mutable.AddTurnCosts(vertex2, Enumerable.Empty<(string key, string value)>(), 
+                    new [] { edge1, edge2 }, new uint[,] {{0,1},{0,0}});
+            }
+
+            var latest = routerDb.Network;
+            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap(vertex1),
+                latest.Snap(vertex3),
+                (e, ep) =>
+                {
+                    var tcs = e.GetTurnCostTo(ep)
+                        .Select(x => (double)x.cost).Sum();
+                    if (tcs > 0) tcs = -1;
+                    return (1, tcs);
+                });
+            Assert.Null(path);
+        }
     }
 }

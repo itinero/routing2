@@ -212,6 +212,8 @@ namespace Itinero.Algorithms.Dijkstra
                     var (neighbourCost, turnCost) = getDijkstraWeight(enumerator, _tree.GetPreviousEdges(currentPointer));
                     if (neighbourCost >= double.MaxValue ||
                         neighbourCost <= 0) continue;
+                    if (turnCost >= double.MaxValue ||
+                        turnCost <= 0) continue;
 
                     // if the vertex has targets, check if this edge is a match.
                     var neighbourPointer = uint.MaxValue;
