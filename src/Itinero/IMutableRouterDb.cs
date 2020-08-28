@@ -44,6 +44,17 @@ namespace Itinero
         EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
             IEnumerable<(double longitude, double latitude)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null);
+        
+        /// <summary>
+        /// Adds a new turn cost table.
+        /// </summary>
+        /// <param name="vertex">The vertex the table is for.</param>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="edges">The edges array in the order matching the costs.</param>
+        /// <param name="costs">The cost matrix, dimensions matching the edges array.</param>
+        /// <param name="prefix">A prefix path if any. The turn cost table will only apply to a path if the prefix is part of the path.</param>
+        void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes, 
+            EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null);
 
         /// <summary>
         /// Gets the profile configuration.

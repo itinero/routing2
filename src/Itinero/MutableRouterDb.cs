@@ -21,41 +21,30 @@ namespace Itinero
             _profileConfiguration = _routerDb.ProfileConfiguration.Clone();
         }
 
-        /// <summary>
-        /// Gets the vertex with the given id.
-        /// </summary>
-        /// <param name="vertex">The vertex.</param>
-        /// <param name="longitude">The longitude.</param>
-        /// <param name="latitude">The latitude.</param>
-        /// <returns>True if the vertex exists.</returns>
+        /// <inheritdoc/>
         public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
         {
             return _mutableNetwork.TryGetVertex(vertex, out longitude, out latitude);
         }
 
-        /// <summary>
-        /// Adds a new vertex and returns its id.
-        /// </summary>
-        /// <param name="longitude">The longitude.</param>
-        /// <param name="latitude">The latitude.</param>
-        /// <returns>The ID of the new vertex.</returns>
+        /// <inheritdoc/>
         public VertexId AddVertex(double longitude, double latitude)
         {
             return _mutableNetwork.AddVertex(longitude, latitude);
         }
         
-        /// <summary>
-        /// Adds a new edge and returns its id.
-        /// </summary>
-        /// <param name="vertex1">The first vertex.</param>
-        /// <param name="vertex2">The second vertex.</param>
-        /// <param name="attributes">The attributes.</param>
-        /// <param name="shape">The shape points.</param>
-        /// <returns>The edge id.</returns>
+        /// <inheritdoc/>
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null, 
             IEnumerable<(string key, string value)>? attributes = null)
         {
             return _mutableNetwork.AddEdge(vertex1, vertex2, shape, attributes);
+        }
+
+        /// <inheritdoc/>
+        public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes, 
+            EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+        {
+            _mutableNetwork.AddTurnCosts(vertex, attributes, edges, costs, prefix);
         }
 
         RouterDbProfileConfiguration IMutableRouterDb.ProfileConfiguration => _profileConfiguration;

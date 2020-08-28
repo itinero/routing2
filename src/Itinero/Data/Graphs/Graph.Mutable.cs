@@ -43,7 +43,7 @@ namespace Itinero.Data.Graphs
             private readonly SparseArray<(GraphTile tile, int edgeTypesId)> _tiles;
             private readonly Graph _graph;
 
-            public MutableGraph(Graph graph)
+            internal MutableGraph(Graph graph)
             {
                 _graph = graph;
                 _tiles = graph._tiles.Clone();
@@ -122,7 +122,7 @@ namespace Itinero.Data.Graphs
                 return GetTileForRead(localTileId);
             }
 
-            public VertexId AddVertex(double longitude, double latitude)
+            internal VertexId AddVertex(double longitude, double latitude)
             {
                 // get the local tile id.
                 var (x, y) = TileStatic.WorldToTile(longitude, latitude, _graph.Zoom);
@@ -138,7 +138,7 @@ namespace Itinero.Data.Graphs
                 return tile.AddVertex(longitude, latitude);
             }
 
-            public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
+            internal bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
             {
                 var localTileId = vertex.TileId;
 
@@ -162,7 +162,7 @@ namespace Itinero.Data.Graphs
                 return tile.TryGetVertex(vertex, out longitude, out latitude);
             }
 
-            public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
+            internal EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
                 IEnumerable<(double longitude, double latitude)>? shape = null,
                 IEnumerable<(string key, string value)>? attributes = null)
             {
@@ -181,25 +181,41 @@ namespace Itinero.Data.Graphs
                 return edge1;
             }
 
-            public GraphEdgeTypeFunc EdgeTypeFunc => EdgeTypeIndex.Func;
+            internal void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+                EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+            {
+                if (prefix != null) throw new NotSupportedException($"Turn costs with {nameof(prefix)} not supported.");
+                
+                // get the tile (or create it).
+                var tile = this.GetTileForWrite(vertex.TileId);
+                if (tile == null) throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
+            
+                // get the turn cost type id.
+                var turnCostTypeId = TurnCostTypeIndex.Get(attributes);
+                
+                // add the turn cost table using the type id.
+                tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
+            }
 
-            public void SetEdgeTypeFunc(GraphEdgeTypeFunc graphEdgeTypeFunc)
+            internal GraphEdgeTypeFunc EdgeTypeFunc => EdgeTypeIndex.Func;
+
+            internal void SetEdgeTypeFunc(GraphEdgeTypeFunc graphEdgeTypeFunc)
             {
                 EdgeTypeIndex = EdgeTypeIndex.Next(graphEdgeTypeFunc);
             }
 
             internal GraphEdgeTypeIndex EdgeTypeIndex { get; private set; }
 
-            public GraphTurnCostTypeFunc TurnCostTypeFunc => TurnCostTypeIndex.Func;
+            internal GraphTurnCostTypeFunc TurnCostTypeFunc => TurnCostTypeIndex.Func;
 
-            public void SetTurnCostTypeFunc(GraphTurnCostTypeFunc graphTurnCostTypeFunc)
+            internal void SetTurnCostTypeFunc(GraphTurnCostTypeFunc graphTurnCostTypeFunc)
             {
                 TurnCostTypeIndex = TurnCostTypeIndex.Next(graphTurnCostTypeFunc);
             }
 
             internal GraphTurnCostTypeIndex TurnCostTypeIndex { get; private set; }
 
-            public Graph ToGraph()
+            internal Graph ToGraph()
             {
                 return new Graph(_tiles, _graph.Zoom, EdgeTypeIndex, TurnCostTypeIndex);
             }

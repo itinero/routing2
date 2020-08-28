@@ -153,6 +153,8 @@ namespace Itinero.Data.Graphs
             internal void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
                 EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
             {
+                if (prefix != null) throw new NotSupportedException($"Turn costs with {nameof(prefix)} not supported.");
+                
                 _graph.AddTurnCosts(vertex, attributes, edges, costs);
             }
 

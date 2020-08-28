@@ -52,6 +52,12 @@ namespace Itinero
                 return _graph.AddEdge(vertex1, vertex2, shape, attributes);
             }
 
+            public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes, 
+                EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+            {
+                _graph.AddTurnCosts(vertex, attributes, edges, costs, prefix);
+            }
+
             public void SetEdgeTypeFunc(Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> func)
             {
                 _graph.SetEdgeTypeFunc(_graph.EdgeTypeFunc.NextVersion(func));

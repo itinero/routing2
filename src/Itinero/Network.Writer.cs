@@ -88,7 +88,7 @@ namespace Itinero
             public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes, 
                 EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
             {
-                throw new NotImplementedException();
+                _graphWriter.AddTurnCosts(vertex, attributes, edges, costs, prefix);
             }
 
             public void Dispose()
