@@ -91,6 +91,11 @@ namespace Itinero.Data.Graphs
 
             internal int Zoom => _graph.Zoom;
 
+            public GraphEdgeEnumerator GetEdgeEnumerator()
+            {
+                return new GraphEdgeEnumerator(this.GetTileForRead);
+            }
+
             private GraphTile? GetTileForRead(uint localTileId)
             {
                 // ensure minimum size.

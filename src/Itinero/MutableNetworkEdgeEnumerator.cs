@@ -1,44 +1,16 @@
-using System;
 using System.Collections.Generic;
-using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
 
 namespace Itinero
 {
-    /// <summary>
-    /// An edge enumerator for the router db.
-    /// </summary>
-    public class NetworkEdgeEnumerator
+    internal class MutableNetworkEdgeEnumerator : IMutableNetworkEdgeEnumerator
     {
-        private readonly Network _network;
-        private readonly GraphEdgeEnumerator? _enumerator;
-        private readonly EdgeEnumerator? _edgeEnumerator;
-
-        internal NetworkEdgeEnumerator(Network network)
+        internal MutableNetworkEdgeEnumerator(MutableNetwork network)
         {
-            _network = network ?? throw new ArgumentNullException(nameof(network));
-
-            _enumerator = _network.Graph.GetEdgeEnumerator();
+            GraphEdgeEnumerator = network.Graph.GetEdgeEnumerator();
         }
 
-        internal NetworkEdgeEnumerator(Network network, EdgeEnumerator edgeEnumerator)
-        {
-            _network = network ?? throw new ArgumentNullException(nameof(network));
-            _edgeEnumerator = edgeEnumerator ?? throw new ArgumentNullException(nameof(edgeEnumerator));;
-        }
-
-        // TODO: do we create a readonly version of this, if a reader moves this enumerator things go crazy.
-        internal GraphEdgeEnumerator GraphEdgeEnumerator
-        {
-            get
-            {
-                if (_edgeEnumerator != null) return _edgeEnumerator.GraphGraphEdgeEnumerator;
-                if (_enumerator == null) throw new InvalidOperationException("Enumerator in an impossible state!");
-                return _enumerator;
-            }
-        }
-
-        internal Network Network => _network;
+        internal GraphEdgeEnumerator GraphEdgeEnumerator { get; }
         
         /// <summary>
         /// Moves the enumerator to the first edge of the given vertex.
@@ -47,9 +19,7 @@ namespace Itinero
         /// <returns>True if the vertex exists.</returns>
         public bool MoveTo(VertexId vertex)
         {
-            if (_enumerator == null) throw new InvalidOperationException(
-                $"Cannot reset an enumerator created from an {nameof(EdgeEnumerator)}.");
-            return _enumerator.MoveTo(vertex);
+            return GraphEdgeEnumerator.MoveTo(vertex);
         }
         
         /// <summary>
@@ -59,9 +29,7 @@ namespace Itinero
         /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
         public bool MoveToEdge(EdgeId edgeId, bool forward = true)
         {
-            if (_enumerator == null) throw new InvalidOperationException(
-                $"Cannot reset an enumerator created from an {nameof(EdgeEnumerator)}.");
-            return _enumerator.MoveToEdge(edgeId, forward);
+            return GraphEdgeEnumerator.MoveToEdge(edgeId, forward);
         }
 
         /// <summary>
@@ -70,12 +38,7 @@ namespace Itinero
         /// <returns>True if there is data available.</returns>
         public bool MoveNext()
         {
-            if (_edgeEnumerator != null)
-            {
-                return _edgeEnumerator.MoveNext();
-            }
-            if (_enumerator == null) throw new InvalidOperationException("Enumerator in an impossible state!");
-            return _enumerator.MoveNext();
+            return GraphEdgeEnumerator.MoveNext();
         }
 
         /// <summary>

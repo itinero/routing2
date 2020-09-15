@@ -18,10 +18,10 @@ namespace Itinero.Algorithms.DataStructures
         /// <summary>
         /// Creates a new empty path.
         /// </summary>
-        /// <param name="routerDb">The routerDb.</param>
-        public Path(Network routerDb)
+        /// <param name="network">The network.</param>
+        public Path(Network network)
         {
-            _edgeEnumerator = routerDb.GetEdgeEnumerator();
+            _edgeEnumerator = network.GetEdgeEnumerator();
             
             _edges = new List<(EdgeId edge, bool forward)>();
         }
@@ -29,7 +29,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <summary>
         /// Gets the router db.
         /// </summary>
-        public Network RouterDb => _edgeEnumerator.RouterDb;
+        public Network RouterDb => _edgeEnumerator.Network;
 
         /// <summary>
         /// Gets the offset at the start of the path.

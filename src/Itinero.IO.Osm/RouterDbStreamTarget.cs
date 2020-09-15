@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Restrictions;
 using Itinero.IO.Osm.Collections;
 using Itinero.IO.Osm.Restrictions;
 using Itinero.Logging;
 using OsmSharp;
 using OsmSharp.Db;
 using OsmSharp.Streams;
+using OsmSharp.Tags;
 
 namespace Itinero.IO.Osm
 {
@@ -16,10 +18,13 @@ namespace Itinero.IO.Osm
         private readonly Dictionary<long, VertexId> _vertexPerNode;
         private readonly NodeIndex _nodeIndex;
         private readonly IMutableRouterDb _mutableRouterDb;
+        private readonly IMutableNetworkEdgeEnumerator _mutableRouterDbEdgeEnumerator;
 
         public RouterDbStreamTarget(IMutableRouterDb mutableRouterDb)
         {
             _mutableRouterDb = mutableRouterDb;
+
+            _mutableRouterDbEdgeEnumerator = _mutableRouterDb.GetEdgeEnumerator();
             
             _vertexPerNode = new Dictionary<long, VertexId>();
             _nodeIndex = new NodeIndex();
@@ -52,11 +57,6 @@ namespace Itinero.IO.Osm
             
             if (!node.Id.HasValue) return;
             if (!node.Longitude.HasValue || !node.Latitude.HasValue) return;
-
-            // check if the node is part of a restriction.
-            // if yes, keep it.
-            var osmGeoKey = new OsmGeoKey(node);
-            if (_relationMembers.TryGetValue(osmGeoKey, out _)) _relationMembers[osmGeoKey] = node;
             
             // check if the node is a routing node and if yes, store it's coordinate.
             var index = _nodeIndex.TryGetIndex(node.Id.Value);
@@ -84,7 +84,8 @@ namespace Itinero.IO.Osm
                 // check if the way is part of a restriction.
                 // if yes, keep it.
                 var osmGeoKey = new OsmGeoKey(way);
-                if (_relationMembers.TryGetValue(osmGeoKey, out _)) _relationMembers[osmGeoKey] = way;
+                List<EdgeId>? edgesList = null;
+                if (_restrictionWayMembers.ContainsKey(osmGeoKey)) edgesList = new List<EdgeId>(1);
                 
                 var vertex1 = VertexId.Empty;
                 var shape = new List<(double longitude, double latitude)>();
@@ -117,22 +118,26 @@ namespace Itinero.IO.Osm
                         continue;
                     }
 
-                    _mutableRouterDb.AddEdge(vertex1, vertex2,
+                    var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
                         shape: shape,
                         attributes: way.Tags.Select(x => (x.Key, x.Value)));
                     vertex1 = vertex2;
                     shape.Clear();
+
+                    edgesList?.Add(edgeId);
                 }
+
+                if (edgesList != null) _restrictionWayMembers[osmGeoKey] = edgesList;
             }
         }
         
-        private Dictionary<OsmGeoKey, OsmGeo?> _relationMembers = 
-            new Dictionary<OsmGeoKey, OsmGeo?>();
+        private readonly Dictionary<OsmGeoKey, IEnumerable<EdgeId>?> _restrictionWayMembers = new Dictionary<OsmGeoKey, IEnumerable<EdgeId>?>();
 
         public override void AddRelation(Relation relation)
         {
             var negativeResult = relation.IsNegative();
             if (negativeResult.IsError) return; // not a valid restriction.
+            var negative = negativeResult.Value;
             
             // this is a restriction.
             if (_firstPass)
@@ -142,10 +147,10 @@ namespace Itinero.IO.Osm
                 {
                     if (member.Type == OsmGeoType.Relation) continue;
                     
-                    // index all members.
-                    var osmGeoKey = new OsmGeoKey(member.Type, member.Id);
-                    _relationMembers[osmGeoKey] = null;
-                    
+                    // index all way members.
+                    if (member.Type == OsmGeoType.Way)
+                        _restrictionWayMembers[new OsmGeoKey(member.Type, member.Id)] = null;
+
                     // make nodes as core.
                     if (member.Type != OsmGeoType.Node) continue;
                     if (member.Role != "via") continue;
@@ -154,18 +159,28 @@ namespace Itinero.IO.Osm
             }
             else
             {
+                IEnumerable<(VertexId from, VertexId to, EdgeId id)> EdgesForWay(long wayId)
+                {
+                    if (_restrictionWayMembers.TryGetValue((new OsmGeoKey(OsmGeoType.Way, wayId)), 
+                            out var edges) &&
+                        edges != null)
+                    {
+                        foreach (var edge in edges)
+                        {
+                            _mutableRouterDbEdgeEnumerator.MoveToEdge(edge);
+                            yield return (_mutableRouterDbEdgeEnumerator.From, _mutableRouterDbEdgeEnumerator.To,
+                                _mutableRouterDbEdgeEnumerator.Id);
+                        }
+                    }
+                }
+                
                 // get the restricted sequence.
-                var sequenceResult = relation.GetVertexSequence(n =>
+                var sequenceResult = relation.GetEdgeSequence(n =>
                 {
                     if (!_vertexPerNode.TryGetValue(n, out var v)) return null;
 
                     return v;
-                }, key =>
-                {
-                    if (!_relationMembers.TryGetValue(key, out var osmGeo)) return null;
-
-                    return osmGeo;
-                });
+                }, EdgesForWay);
                 
                 // check if the sequence was found.
                 if (sequenceResult.IsError)
@@ -174,23 +189,42 @@ namespace Itinero.IO.Osm
                         TraceEventType.Information, $"Relation {relation} could not be parsed as a restriction: {sequenceResult.ErrorMessage}");
                     return;
                 }
-
+                
                 // invert negative sequences.
-                IEnumerable<VertexId> sequence;
-                if (negativeResult.Value)
+                if (negative)
                 {
-                    // sequence is negative.
-                    throw new NotImplementedException();
+                    foreach (var inverted in sequenceResult.Value.Invert(_mutableRouterDbEdgeEnumerator))
+                    {
+                        this.AddRestrictedSequence(inverted, relation.Tags);
+                    }
                 }
                 else
                 {
-                    // sequence is positive, no work needed.
-                    sequence = sequenceResult.Value;
+                    this.AddRestrictedSequence(sequenceResult.Value, relation.Tags);
                 }
-                
-                // convert to turn cost table.
-                throw new NotImplementedException();
             }
+        }
+
+        private void AddRestrictedSequence(IEnumerable<(EdgeId edgeId, bool forward)> sequence, TagsCollectionBase tags)
+        {
+            using var e = sequence.GetEnumerator();
+            if (!e.MoveNext()) return;
+            var first = e.Current;
+            if (!e.MoveNext()) return;
+            var second = e.Current;
+            if (e.MoveNext()) return;
+            
+            // convert to a turn cost table.
+            var costs = new uint[,] {{0, 1,}, {0, 0}};
+            var edges = new [] { first.edgeId, second.edgeId };
+            
+            // get the vertex to add the turn cost to.
+            _mutableRouterDbEdgeEnumerator.MoveToEdge(first.edgeId, first.forward);
+            var vertexId = _mutableRouterDbEdgeEnumerator.To;
+            
+            // add the turn cost.
+            _mutableRouterDb.AddTurnCosts(vertexId, tags.Select(x => (x.Key, x.Value)), edges,
+                costs);
         }
     }
 }

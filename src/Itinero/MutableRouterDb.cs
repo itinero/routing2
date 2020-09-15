@@ -9,7 +9,7 @@ namespace Itinero
     {
         private readonly RouterDb _routerDb;
         private readonly RouterDbProfileConfiguration _profileConfiguration;
-        private readonly Network.MutableNetwork _mutableNetwork;
+        private readonly MutableNetwork _mutableNetwork;
 
         internal MutableRouterDb(RouterDb routerDb)
         {
@@ -48,6 +48,12 @@ namespace Itinero
         }
 
         RouterDbProfileConfiguration IMutableRouterDb.ProfileConfiguration => _profileConfiguration;
+
+        /// <inheritdoc/>
+        public IMutableNetworkEdgeEnumerator GetEdgeEnumerator()
+        {
+            return new MutableNetworkEdgeEnumerator(this._mutableNetwork);
+        }
 
         public void Dispose()
         {

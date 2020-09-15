@@ -60,5 +60,11 @@ namespace Itinero
         /// Gets the profile configuration.
         /// </summary>
         internal RouterDbProfileConfiguration ProfileConfiguration { get; }
+
+        /// <summary>
+        /// Gets an edge enumerator.
+        /// </summary>
+        /// <returns></returns>
+        IMutableNetworkEdgeEnumerator GetEdgeEnumerator();
     }
 }

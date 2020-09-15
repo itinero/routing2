@@ -8,7 +8,7 @@ namespace Itinero.Algorithms.Search
     /// </summary>
     internal class EdgeEnumerator
     {
-        private readonly Graph.GraphEdgeEnumerator _graphGraphEdgeEnumerator;
+        private readonly GraphEdgeEnumerator _graphGraphEdgeEnumerator;
         private readonly IEnumerator<VertexId> _vertexEnumerator;
 
         public EdgeEnumerator(Graph graph, IEnumerable<VertexId> vertices)
@@ -60,7 +60,7 @@ namespace Itinero.Algorithms.Search
             }
         }
 
-        internal Graph.GraphEdgeEnumerator GraphGraphEdgeEnumerator => _graphGraphEdgeEnumerator;
+        internal GraphEdgeEnumerator GraphGraphEdgeEnumerator => _graphGraphEdgeEnumerator;
 
         public void Dispose()
         {

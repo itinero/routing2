@@ -32,15 +32,6 @@ namespace Itinero
         public RouterDb RouterDb { get; }
 
         /// <summary>
-        /// Gets the edge enumerator for the graph in this network.
-        /// </summary>
-        /// <returns>The edge enumerator.</returns>
-        public NetworkEdgeEnumerator GetEdgeEnumerator()
-        {
-            return new NetworkEdgeEnumerator(this);
-        }
-
-        /// <summary>
         /// Gets the given vertex.
         /// </summary>
         /// <param name="vertex">The vertex.</param>
@@ -50,6 +41,15 @@ namespace Itinero
             if (!Graph.TryGetVertex(vertex, out var longitude, out var latitude)) throw new ArgumentException($"{nameof(vertex)} does not exist.");
             
             return (longitude, latitude);
+        }
+
+        /// <summary>
+        /// Gets the edge enumerator.
+        /// </summary>
+        /// <returns></returns>
+        public NetworkEdgeEnumerator GetEdgeEnumerator()
+        {
+            return new NetworkEdgeEnumerator(this);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Itinero
         /// <returns>The location.</returns>
         public static (double longitude, double latitude) ToLocation(this NetworkEdgeEnumerator enumerator)
         {
-            return enumerator.RouterDb.GetVertex(enumerator.To);
+            return enumerator.Network.GetVertex(enumerator.To);
         }
         
         /// <summary>
@@ -28,7 +28,7 @@ namespace Itinero
         /// <returns>The location.</returns>
         public static (double longitude, double latitude) FromLocation(this NetworkEdgeEnumerator enumerator)
         {
-            return enumerator.RouterDb.GetVertex(enumerator.From);
+            return enumerator.Network.GetVertex(enumerator.From);
         }
         
         /// <summary>
