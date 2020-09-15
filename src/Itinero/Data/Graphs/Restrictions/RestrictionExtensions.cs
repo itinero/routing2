@@ -21,12 +21,13 @@ namespace Itinero.Data.Graphs.Restrictions
             var firstPart = new List<(EdgeId edge, bool forward)>(restrictedSequence);
             if (firstPart.Count < 2) yield break; // no inverse possible.
 
-            // get last and remove it.
+            // get last.
             var last = firstPart[firstPart.Count - 1];
             
             // enumerate all edges except the u-turn and the original sequence.
             var secondToLast = firstPart[firstPart.Count - 2];
             mutableNetworkEdgeEnumerator.MoveToEdge(secondToLast.edge, secondToLast.forward);
+            mutableNetworkEdgeEnumerator.MoveTo(mutableNetworkEdgeEnumerator.To);
             while (mutableNetworkEdgeEnumerator.MoveNext())
             {
                 var id = mutableNetworkEdgeEnumerator.Id;
