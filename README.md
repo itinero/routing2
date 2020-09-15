@@ -1,8 +1,6 @@
 # routing2
 
-**this is ongoing work on the next version of Itinero, if you want routing right now, please go [here](https://github.com/itinero/routing)**
-
-[![Build status](https://build.anyways.eu/app/rest/builds/buildType:(id:Itinero_Routing2)/statusIcon)](https://build.anyways.eu/viewType.html?buildTypeId=Itinero_Routing2)  
+[![.NET Core](https://github.com/itinero/routing2/workflows/.NET%20Core/badge.svg)](https://github.com/itinero/routing2/actions?query=workflow%3A%22.NET+Core%22)
 
 The new for the v2 routing core. This is part of the work done by the awesome [open planner team](https://openplanner.team/).
 
