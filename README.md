@@ -10,29 +10,12 @@ To consume routable tiles and make Itinero more flexible. Itinero should be able
 
 ![Image of tiles for ghent](./docs/routable-tiles-ghent.png)
 
-## Requirements on top of what Itinero is now:
-
-The main thing is to build a tile-based datastructure that replaces (or expands) the current routerdb concept. This should also enable distributed preprocessing of the data. It would be awesome to:
-
-- [x] Have the route planner load data automatically from [Routeable Tiles](https://github.com/openplannerteam/routable-tiles).
-- [ ] Live load updates, meaning we can have immediate updates to the routing graph.
-  - [ ] Keep multiple version in memory at the same time.
-- [ ] We can precompute edge data:
-  - [ ] Update this on-the-fly when not there.
-  - [ ] Experiment with:
-    - [ ] Dynamic travel times.
-- [ ] We can precompute vertex data:
-  - [ ] Update this on-the-fly when not there.
-  - [ ] Experiment with:
-    - [ ] Turn costs.
-    - [ ] Intersection costs.
-
 ## Status
 
 - [x] Build a basic data structures in tiled form.
   - [x] Get this done for vertices.
   - [x] Get this done for edges.
-  - [ ] Add support for turn-restrictions.
+  - [x] Add support for turn-restrictions.
   - [x] Load tiles on demand.
 - [x] Experiment with routing algorithms on top of this.
 - [x] Build a proper resolving algorithm and verify performance.
