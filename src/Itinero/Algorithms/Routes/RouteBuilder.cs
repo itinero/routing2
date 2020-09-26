@@ -1,5 +1,7 @@
 using System.Threading;
 using Itinero.Algorithms.DataStructures;
+using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Reading;
 using Itinero.Profiles;
 
 namespace Itinero.Algorithms.Routes
@@ -17,7 +19,7 @@ namespace Itinero.Algorithms.Routes
         /// <param name="path">The path.</param>
         /// <param name="forward">The forward flag.</param>
         /// <returns>The route.</returns>
-        public Result<Route> Build(Network db, Profile profile, Path path, bool forward = true)
+        public Result<Route> Build(Graph db, Profile profile, Path path, bool forward = true)
         {
             var edgeEnumerator = db.GetEdgeEnumerator();
             var route = new Route {Profile = profile.Name};
@@ -34,7 +36,7 @@ namespace Itinero.Algorithms.Routes
                 }
                 var attributes = edgeEnumerator.Attributes;
                 var factor = profile.Factor(attributes);
-                var distance = edgeEnumerator.EdgeLength() / 100.0;
+                var distance = edgeEnumerator.EdgeLength<GraphEdgeEnumerator<Graph>, Graph>() / 100.0;
                 distance = ((offset2 - offset1) / (double)ushort.MaxValue) * distance;
                 route.TotalDistance += distance;
                 if (direction)
@@ -52,7 +54,7 @@ namespace Itinero.Algorithms.Routes
                     }
                 }
 
-                route.Shape.AddRange(edgeEnumerator.GetShapeBetween(offset1, offset2));
+                route.Shape.AddRange(edgeEnumerator.GetShapeBetween<GraphEdgeEnumerator<Graph>, Graph>(offset1, offset2));
             }
             
             return route;

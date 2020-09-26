@@ -30,7 +30,7 @@ namespace Itinero
         /// </summary>
         public double MaxOffsetInMeter { get; set; } = 1000;
 
-        internal Func<NetworkEdgeEnumerator, bool> AcceptableFunc(Network network)
+        internal Func<NetworkEdgeEnumerator, bool> AcceptableFunc(Graph network)
         {
             var hasProfiles = this.Profiles.Length > 0;
             if (!hasProfiles) return (_) => true;

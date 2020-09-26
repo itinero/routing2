@@ -7,7 +7,6 @@ namespace Itinero.Data.Graphs.Tiles
 {
     internal class GraphTileEnumerator
     {
-        private GraphTile? _graphTile;
         private uint _localId;
         private uint? _nextEdgePointer;
         private uint? _shapePointer;
@@ -22,6 +21,8 @@ namespace Itinero.Data.Graphs.Tiles
         {
             
         }
+        
+        internal GraphTile? Tile { get; private set; }
 
         /// <summary>
         /// Gets the tile id.
@@ -30,9 +31,9 @@ namespace Itinero.Data.Graphs.Tiles
         {
             get
             {
-                if (_graphTile == null) return uint.MaxValue;
+                if (Tile == null) return uint.MaxValue;
                 
-                return _graphTile.TileId;
+                return Tile.TileId;
             }
         }
 
@@ -43,7 +44,7 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>True if the move succeeds.</returns>
         public void MoveTo(GraphTile graphTile)
         {
-            _graphTile = graphTile;
+            Tile = graphTile;
 
             this.Reset();
         }
@@ -55,10 +56,10 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>True if the move succeeds and the vertex exists.</returns>
         public bool MoveTo(VertexId vertex)
         {
-            if (_graphTile == null)
+            if (Tile == null)
                 throw new InvalidOperationException("Move to graph tile first.");
             
-            if (vertex.LocalId >= _graphTile.VertexCount)
+            if (vertex.LocalId >= Tile.VertexCount)
             {
                 return false;
             }
@@ -78,7 +79,7 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>True if the move succeeds and the edge exists.</returns>
         public bool MoveTo(EdgeId edge, bool forward)
         {
-            if (_graphTile == null)
+            if (Tile == null)
                 throw new InvalidOperationException("Move to graph tile first.");
             if (this.TileId != edge.TileId) throw new ArgumentOutOfRangeException(nameof(edge), 
                 "Cannot move to edge not in current tile, move to the tile first.");
@@ -87,21 +88,21 @@ namespace Itinero.Data.Graphs.Tiles
             
             // decode edge data.
             this.EdgeId = edge;
-            var size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
+            var size = Tile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
             var vertex1 = new VertexId(tileId, localId);
             _nextEdgePointer += size;
-            size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
+            size = Tile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
             var vertex2 = new VertexId(tileId, localId);
             _nextEdgePointer += size;
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp1);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp1);
             _nextEdgePointer += size;
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
 
             var flipEdge = false;
             if (vertex1.TileId != vertex2.TileId)
             {
-                size = _graphTile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
+                size = Tile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
                 _nextEdgePointer += size;
 
                 if (edgeId != null)
@@ -112,22 +113,22 @@ namespace Itinero.Data.Graphs.Tiles
             }
             
             // get edge profile id.
-            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            size = Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
             _nextEdgePointer += size;
             this.EdgeTypeId = edgeProfileId;
             
             // get length.
-            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
+            size = Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
             _nextEdgePointer += size;
             this.Length = length;
             
             // get tail and head order.
-            _graphTile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
+            Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
             _nextEdgePointer++;
             
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
 
             if (forward)
             {
@@ -158,14 +159,14 @@ namespace Itinero.Data.Graphs.Tiles
         /// - the first vertex for the graph tile if there is no selected edge.
         /// - returns false if there is no data in the current tile or if there is no tile selected.
         /// </remarks>
-        public bool Reset()
+        public void Reset()
         {
-            if (_graphTile == null) return false;
+            if (Tile == null) throw new InvalidOperationException("Cannot reset an empty enumerator.");
             
             _nextEdgePointer = uint.MaxValue;
-
-            return true;
         }
+
+        public bool IsEmpty => Tile == null;
 
         /// <summary>
         /// Moves to the next edge for the current vertex.
@@ -173,12 +174,12 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>True when there is a new edge.</returns>
         public bool MoveNext()
         {
-            if (_graphTile == null)
+            if (Tile == null)
                 throw new InvalidOperationException("Move to graph tile first.");
             if (_nextEdgePointer == uint.MaxValue)
             {
                 // move to the first edge.
-                _nextEdgePointer = _graphTile.VertexEdgePointer(_localId).DecodeNullableData();
+                _nextEdgePointer = Tile.VertexEdgePointer(_localId).DecodeNullableData();
             }
 
             if (_nextEdgePointer == null)
@@ -188,22 +189,22 @@ namespace Itinero.Data.Graphs.Tiles
             }
 
             // decode edge data.
-            this.EdgeId = new EdgeId(_graphTile.TileId, _nextEdgePointer.Value);
-            var size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
+            this.EdgeId = new EdgeId(Tile.TileId, _nextEdgePointer.Value);
+            var size = Tile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
             var vertex1 = new VertexId(tileId, localId);
             _nextEdgePointer += size;
-            size = _graphTile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
+            size = Tile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
             var vertex2 = new VertexId(tileId, localId);
             _nextEdgePointer += size;
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp1);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp1);
             _nextEdgePointer += size;
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out var vp2);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
 
             var flipEdge = false;
             if (vertex1.TileId != vertex2.TileId)
             {
-                size = _graphTile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
+                size = Tile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
                 _nextEdgePointer += size;
 
                 if (edgeId != null)
@@ -214,25 +215,25 @@ namespace Itinero.Data.Graphs.Tiles
             }
             
             // get edge profile id.
-            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            size = Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
             _nextEdgePointer += size;
             this.EdgeTypeId = edgeProfileId;
             
             // get length.
-            size = _graphTile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
+            size = Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
             _nextEdgePointer += size;
             this.Length = length;
             
             // get tail and head order.
-            _graphTile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
+            Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
             _nextEdgePointer++;
             
             // 
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
-            size = _graphTile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
+            size = Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
 
-            if (vertex1.TileId == _graphTile.TileId &&
+            if (vertex1.TileId == Tile.TileId &&
                 vertex1.LocalId == _localId)
             {
                 _nextEdgePointer = vp1;
@@ -258,13 +259,13 @@ namespace Itinero.Data.Graphs.Tiles
         {
             get
             {
-                if (_graphTile == null)
+                if (Tile == null)
                     throw new InvalidOperationException("Move to graph tile first.");
                 if (!this.Forward)
                 {
-                    return _graphTile.GetShape(_shapePointer).Reverse();
+                    return Tile.GetShape(_shapePointer).Reverse();
                 }
-                return _graphTile.GetShape(_shapePointer);
+                return Tile.GetShape(_shapePointer);
             }
         }
 
@@ -275,9 +276,9 @@ namespace Itinero.Data.Graphs.Tiles
         {
             get
             {
-                if (_graphTile == null)
+                if (Tile == null)
                     throw new InvalidOperationException("Move to graph tile first.");
-                return _graphTile.GetAttributes(_attributesPointer);
+                return Tile.GetAttributes(_attributesPointer);
             }
         }
 
@@ -328,12 +329,12 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>The turn cost if any.</returns>
         public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
         {
-            if (_graphTile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+            if (Tile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
 
             var order = this.Forward ? _tail : _head;
             if (order == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
 
-            return _graphTile.GetTurnCosts(this.Vertex1, fromOrder, order.Value);
+            return Tile.GetTurnCosts(this.Vertex1, fromOrder, order.Value);
         }
 
         /// <summary>
@@ -343,12 +344,12 @@ namespace Itinero.Data.Graphs.Tiles
         /// <returns>The turn cost if any.</returns>
         public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
         {
-            if (_graphTile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
+            if (Tile == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
 
             var order = this.Forward ? _head : _tail;
             if (order == null) return Enumerable.Empty<(uint turnCostType, uint cost)>();
 
-            return _graphTile.GetTurnCosts(this.Vertex1, order.Value, toOrder);
+            return Tile.GetTurnCosts(this.Vertex1, order.Value, toOrder);
         }
     }
 }

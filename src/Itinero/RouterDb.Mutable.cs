@@ -1,4 +1,5 @@
 using System;
+using Itinero.Data.Graphs;
 using Itinero.Profiles;
 
 namespace Itinero
@@ -24,9 +25,9 @@ namespace Itinero
             return _mutable;
         }
         
-        void IRouterDbMutations.Finish(Network newNetwork, RouterDbProfileConfiguration profileConfiguration)
+        void IRouterDbMutations.Finish(Graph newNetwork, RouterDbProfileConfiguration profileConfiguration)
         {
-            this.Network = newNetwork;
+            this.Graph = newNetwork;
             this.ProfileConfiguration = profileConfiguration;
         }
     }

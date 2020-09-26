@@ -1,4 +1,5 @@
 using Itinero.Algorithms.DataStructures;
+using Itinero.Data.Graphs;
 using Itinero.Profiles;
 
 namespace Itinero.Algorithms.Routes
@@ -16,6 +17,6 @@ namespace Itinero.Algorithms.Routes
         /// <param name="path">The path.</param>
         /// <param name="forward">Forward flag.</param>
         /// <returns>The route.</returns>
-        Result<Route> Build(Network db, Profile profile, Path path, bool forward = true);
+        Result<Route> Build(Graph db, Profile profile, Path path, bool forward = true);
     }
 }

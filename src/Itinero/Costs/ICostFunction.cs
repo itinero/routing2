@@ -15,7 +15,7 @@ namespace Itinero.Costs
         /// <param name="forward">The forward flag, when true the cost in the direction of the current edge enumerator, otherwise against. When null returns true if can stop is true in at least one direction.</param>
         /// <param name="previousEdges">The previous edges. Should correspond with what the forward flag indicates.</param>
         /// <returns>The access flags, stop flags, cost and turn cost.</returns>
-        public abstract (bool canAccess, bool canStop, double cost, double turnCost) Get(NetworkEdgeEnumerator edgeEnumerator, 
+        public abstract (bool canAccess, bool canStop, double cost, double turnCost) Get(IGraphEdge<Graph> edgeEnumerator, 
             bool forward, IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges);
     }
 }

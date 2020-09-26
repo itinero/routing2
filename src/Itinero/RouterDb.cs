@@ -22,18 +22,18 @@ namespace Itinero
         {
             configuration ??= RouterDbConfiguration.Default;
             
-            Network = new Network(this, configuration.Zoom);
+            Graph = new Graph(this, configuration.Zoom);
         }
 
         private RouterDb(Graph graph)
         {
-            this.Network = new Network(this, graph);
+            this.Graph = graph;
         }
 
         /// <summary>
         /// Gets the latest.
         /// </summary>
-        public Network Network { get; private set; }
+        public Graph Graph { get; private set; }
 
         /// <summary>
         /// Gets the usage notifier.

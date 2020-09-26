@@ -20,7 +20,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
         private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new HashSet<(EdgeId edgeId, VertexId vertexId)>();
         private readonly BinaryHeap<uint> _heap = new BinaryHeap<uint>();
 
-        public Path? Run(Network network, (SnapPoint sp, bool? direction) source,
+        public Path? Run(Graph network, (SnapPoint sp, bool? direction) source,
             (SnapPoint sp, bool? direction) target,
             DijkstraWeightFunc getDijkstraWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
@@ -33,7 +33,7 @@ namespace Itinero.Algorithms.Dijkstra.EdgeBased
             return paths[0];
         }
 
-        public Path[] Run(Network network, (SnapPoint sp, bool? direction) source,
+        public Path[] Run(Graph network, (SnapPoint sp, bool? direction) source,
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
             DijkstraWeightFunc getDijkstraWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,

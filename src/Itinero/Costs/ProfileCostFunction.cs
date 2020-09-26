@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Reading;
 using Itinero.Profiles;
 
 namespace Itinero.Costs
@@ -14,11 +15,11 @@ namespace Itinero.Costs
             _profile = profile;
         }
 
-        public (bool canAccess, bool canStop, double cost, double turnCost) Get(NetworkEdgeEnumerator edgeEnumerator, bool forward,
+        public (bool canAccess, bool canStop, double cost, double turnCost) Get(IGraphEdge<Graph> edgeEnumerator, bool forward,
             IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
         {
-            var factor = edgeEnumerator.FactorInEdgeDirection(_profile);
-            var length =  edgeEnumerator.Length ?? (uint) (edgeEnumerator.EdgeLength() * 100);
+            var factor = edgeEnumerator.FactorInEdgeDirection<Graph>(_profile);
+            var length =  edgeEnumerator.Length ?? (uint) (edgeEnumerator.EdgeLength<IGraphEdge<Graph>, Graph>() * 100);
             var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
             var canAccess = cost > 0;
 
@@ -32,7 +33,7 @@ namespace Itinero.Costs
                 foreach (var (turnCostType, turnCost) in turnCosts)
                 {
                     var turnCostAttributes =
-                        edgeEnumerator.Network.Graph.GetTurnCostTypeAttributes(turnCostType);
+                        edgeEnumerator.Graph.GetTurnCostTypeAttributes(turnCostType);
                     var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
                     if (turnCostFactor.IsBinary && turnCost > 0)
                     {

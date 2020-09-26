@@ -17,7 +17,7 @@ namespace Itinero.Costs
             _edgeFactorCache = edgeFactorCache;
         }
         
-        public (bool canAccess, bool canStop, double cost, double turnCost) Get(NetworkEdgeEnumerator edgeEnumerator, bool forward,
+        public (bool canAccess, bool canStop, double cost, double turnCost) Get(IGraphEdge<Graph> edgeEnumerator, bool forward,
             IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
         {
             // get edge factor and length.
@@ -25,14 +25,14 @@ namespace Itinero.Costs
             var edgeTypeId = edgeEnumerator.EdgeTypeId;
             if (edgeTypeId == null)
             {
-                factor = edgeEnumerator.FactorInEdgeDirection(_profile);
+                factor = edgeEnumerator.FactorInEdgeDirection<IGraphEdge<Graph>>(_profile);
             }
             else
             {
                 var edgeFactor = _edgeFactorCache.Get(edgeTypeId.Value);
                 if (edgeFactor == null)
                 {
-                    factor = edgeEnumerator.FactorInEdgeDirection(_profile);
+                    factor = edgeEnumerator.FactorInEdgeDirection<IGraphEdge<Graph>>(_profile);
                     _edgeFactorCache.Set(edgeTypeId.Value, factor);
                 }
                 else
@@ -42,7 +42,7 @@ namespace Itinero.Costs
             }
             
             var lengthNullable = edgeEnumerator.Length;
-            var length = lengthNullable ?? (uint) (edgeEnumerator.EdgeLength() * 100);
+            var length = lengthNullable ?? (uint) (edgeEnumerator.EdgeLength<IGraphEdge<Graph>, Graph>() * 100);
             var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
             var canAccess = cost > 0;
             
@@ -56,7 +56,7 @@ namespace Itinero.Costs
                 foreach (var (turnCostType, turnCost) in turnCosts)
                 {
                     var turnCostAttributes =
-                        edgeEnumerator.Network.Graph.GetTurnCostTypeAttributes(turnCostType);
+                        edgeEnumerator.Graph.GetTurnCostTypeAttributes(turnCostType);
                     var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
                     if (turnCostFactor.IsBinary && turnCost > 0)
                     {

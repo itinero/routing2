@@ -1,20 +1,21 @@
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Reading;
 
 namespace Itinero.Algorithms.Search
 {
     /// <summary>
     /// An enumerator that enumerates all edges that have at least one vertex in a tile range.
     /// </summary>
-    internal class EdgeEnumerator
+    internal class EdgeEnumerator : IGraphEdgeEnumerator<Graph>
     {
-        private readonly GraphEdgeEnumerator _graphGraphEdgeEnumerator;
         private readonly IEnumerator<VertexId> _vertexEnumerator;
 
         public EdgeEnumerator(Graph graph, IEnumerable<VertexId> vertices)
         {
+            Graph = graph;
             _vertexEnumerator = vertices.GetEnumerator();
-            _graphGraphEdgeEnumerator = graph.GetEdgeEnumerator();
+            GraphGraphEdgeEnumerator = graph.GetEdgeEnumerator();
         }
         
         private bool _firstEdge = false;
@@ -22,7 +23,7 @@ namespace Itinero.Algorithms.Search
         public void Reset()
         {
             _firstEdge = false;
-            _graphGraphEdgeEnumerator.Reset();
+            GraphGraphEdgeEnumerator.Reset();
             _vertexEnumerator.Reset();
         }
 
@@ -32,9 +33,9 @@ namespace Itinero.Algorithms.Search
             {
                 while (_vertexEnumerator.MoveNext())
                 {
-                    while (_graphGraphEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
+                    while (GraphGraphEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
                     {
-                        if (!_graphGraphEdgeEnumerator.MoveNext()) break;
+                        if (!GraphGraphEdgeEnumerator.MoveNext()) break;
 
                         _firstEdge = true;
                         return true;
@@ -46,25 +47,49 @@ namespace Itinero.Algorithms.Search
 
             while (true)
             {
-                if (_graphGraphEdgeEnumerator.MoveNext())
+                if (GraphGraphEdgeEnumerator.MoveNext())
                 {
                     return true;
                 }
 
                 if (!_vertexEnumerator.MoveNext()) return false;
-                while (_graphGraphEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
+                while (GraphGraphEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
                 {
-                    if (_graphGraphEdgeEnumerator.MoveNext()) return true;
+                    if (GraphGraphEdgeEnumerator.MoveNext()) return true;
                     if (!_vertexEnumerator.MoveNext()) return false;
                 }
             }
         }
 
-        internal GraphEdgeEnumerator GraphGraphEdgeEnumerator => _graphGraphEdgeEnumerator;
+        internal GraphEdgeEnumerator<Graph> GraphGraphEdgeEnumerator { get; }
 
         public void Dispose()
         {
             
+        }
+
+        public Graph Graph { get; }
+
+        public bool Forward => GraphGraphEdgeEnumerator.Forward;
+        public VertexId From => GraphGraphEdgeEnumerator.From;
+        public (double longitude, double latitude) FromLocation => GraphGraphEdgeEnumerator.FromLocation;
+        public VertexId To => GraphGraphEdgeEnumerator.To;
+        public (double longitude, double latitude) ToLocation => GraphGraphEdgeEnumerator.ToLocation;
+        public EdgeId Id => GraphGraphEdgeEnumerator.Id;
+        public IEnumerable<(double longitude, double latitude)> Shape => GraphGraphEdgeEnumerator.Shape;
+        public IEnumerable<(string key, string value)> Attributes => GraphGraphEdgeEnumerator.Attributes;
+        public uint? EdgeTypeId => GraphGraphEdgeEnumerator.EdgeTypeId;
+        public uint? Length => GraphGraphEdgeEnumerator.Length;
+        public byte? Head => GraphGraphEdgeEnumerator.Head;
+        public byte? Tail => GraphGraphEdgeEnumerator.Tail;
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        {
+            return GraphGraphEdgeEnumerator.GetTurnCostTo(fromOrder);
+        }
+
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        {
+            return GraphGraphEdgeEnumerator.GetTurnCostFrom(toOrder);
         }
     }
 }

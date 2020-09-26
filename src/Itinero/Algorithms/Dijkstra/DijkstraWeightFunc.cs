@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Reading;
 
 namespace Itinero.Algorithms.Dijkstra
 {
@@ -13,6 +14,6 @@ namespace Itinero.Algorithms.Dijkstra
     /// - cost: the cost of traversing the edge.
     /// - turnCost: the cost of turning onto the edge from the previous edges.
     /// </remarks>
-    internal delegate (double cost, double turnCost) DijkstraWeightFunc(NetworkEdgeEnumerator edgeEnumerator, 
+    internal delegate (double cost, double turnCost) DijkstraWeightFunc(GraphEdgeEnumerator<Graph> edgeEnumerator, 
         IEnumerable<(EdgeId edge, byte? turn)> previousEdges);
 }

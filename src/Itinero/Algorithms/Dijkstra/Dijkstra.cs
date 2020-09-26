@@ -22,7 +22,7 @@ namespace Itinero.Algorithms.Dijkstra
         private readonly HashSet<VertexId> _visits = new HashSet<VertexId>();
         private readonly BinaryHeap<uint> _heap = new BinaryHeap<uint>();
         
-        public Path? Run(Network network, SnapPoint source, SnapPoint target,
+        public Path? Run(Graph network, SnapPoint source, SnapPoint target,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
@@ -33,7 +33,7 @@ namespace Itinero.Algorithms.Dijkstra
             return paths[0];
         }
 
-        public Path[] Run(Network network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
+        public Path[] Run(Graph network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null, Func<VertexId, bool>? queued = null)
         {
             double GetWorst((uint pointer, double cost)[] targets)

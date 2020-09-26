@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
 using System.Linq;
+using Itinero.Data.Graphs.Reading;
 using Itinero.Geo;
 
 namespace Itinero.Algorithms.Search
@@ -14,11 +15,11 @@ namespace Itinero.Algorithms.Search
         /// <param name="network">The network.</param>
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
-        public static NetworkEdgeEnumerator SearchEdgesInBox(this Network network, 
+        public static IGraphEdgeEnumerator<Graph> SearchEdgesInBox(this Graph network, 
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
-            var vertices = network.Graph.SearchVerticesInBox(box);
-            return new NetworkEdgeEnumerator(network, new EdgeEnumerator(network.Graph, vertices.Select((i) => i.vertex)));
+            var vertices = network.SearchVerticesInBox(box);
+            return new EdgeEnumerator(network, vertices.Select((i) => i.vertex));
         }
 
         /// <summary>
@@ -28,11 +29,11 @@ namespace Itinero.Algorithms.Search
         /// <param name="box">The box.</param>
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
-        public static SnapPoint SnapInBox(this Network network,
+        public static SnapPoint SnapInBox(this Graph network,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
-            Func<NetworkEdgeEnumerator, bool>? acceptableFunc = null)
+            Func<IGraphEdge<Graph>, bool>? acceptableFunc = null)
         {
-            bool CheckAcceptable(bool? isAcceptable, NetworkEdgeEnumerator eEnum)
+            bool CheckAcceptable(bool? isAcceptable, IGraphEdge<Graph> eEnum)
             {
                 if (isAcceptable.HasValue) return isAcceptable.Value;
                 
@@ -58,7 +59,7 @@ namespace Itinero.Algorithms.Search
                 // search for the local snap point that improves the current best snap point.
                 (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);
                 var isAcceptable = (bool?) null;
-                var completeShape = edgeEnumerator.GetCompleteShape();
+                var completeShape = edgeEnumerator.GetCompleteShape<IGraphEdgeEnumerator<Graph>, Graph>();
                 var length = 0.0;
                 using (var completeShapeEnumerator = completeShape.GetEnumerator())
                 {
@@ -167,12 +168,12 @@ namespace Itinero.Algorithms.Search
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <param name="nonOrthogonalEdges">When true the best potential location on each edge is returned, when false only orthogonal projected points.</param>
         /// <returns>All edges that could potentially be relevant snapping points, not only the closest.</returns>
-        public static IEnumerable<SnapPoint> SnapAllInBox(this Network routerDb,
+        public static IEnumerable<SnapPoint> SnapAllInBox(this Graph routerDb,
             ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
-            Func<NetworkEdgeEnumerator, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
+            Func<IGraphEdge<Graph>, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
         {
             var edges = new HashSet<EdgeId>();
-            bool CheckAcceptable(bool? isAcceptable, NetworkEdgeEnumerator eEnum)
+            bool CheckAcceptable(bool? isAcceptable, IGraphEdge<Graph> eEnum)
             {
                 if (isAcceptable.HasValue) return isAcceptable.Value;
                 
@@ -197,7 +198,7 @@ namespace Itinero.Algorithms.Search
                 (EdgeId edgeId, double offset, bool isOrthoganal, double distance) bestEdgeSnapPoint = 
                     (EdgeId.Empty, 0, false, double.MaxValue);
                 var isAcceptable = (bool?) null;
-                var completeShape = edgeEnumerator.GetCompleteShape();
+                var completeShape = edgeEnumerator.GetCompleteShape<IGraphEdgeEnumerator<Graph>, Graph>();
                 var length = 0.0;
                 using (var completeShapeEnumerator = completeShape.GetEnumerator())
                 {

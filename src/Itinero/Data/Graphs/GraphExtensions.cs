@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using Itinero.Data.Graphs.Mutation;
+using Itinero.Data.Graphs.Writing;
 
 namespace Itinero.Data.Graphs
 {
     internal static class GraphExtensions
     {
-        public static Graph Mutate(this Graph graph, Action<Graph.MutableGraph> mutate)
+        internal static Graph Mutate(this Graph graph, Action<GraphMutator> mutate)
         {
             using var mutable = graph.GetAsMutable();
             mutate(mutable);
             return mutable.ToGraph();
         }
 
-        public static void Write(this Graph graph, Action<Graph.GraphWriter> write)
+        internal static void Write(this Graph graph, Action<GraphWriter> write)
         {
             using var writer = graph.GetWriter();
             write(writer);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Mutation;
 using Itinero.Profiles;
 using Itinero.Profiles.EdgeTypes;
 
@@ -9,14 +10,14 @@ namespace Itinero
     {
         private readonly RouterDb _routerDb;
         private readonly RouterDbProfileConfiguration _profileConfiguration;
-        private readonly MutableNetwork _mutableNetwork;
+        private readonly Graph.MutableGraph _mutableNetwork;
 
         internal MutableRouterDb(RouterDb routerDb)
         {
             _routerDb = routerDb;
 
             // make a copy of the latest network to write to.
-            var latest = _routerDb.Network;
+            var latest = _routerDb.Graph;
             _mutableNetwork = latest.GetAsMutable();
             _profileConfiguration = _routerDb.ProfileConfiguration.Clone();
         }
@@ -50,9 +51,10 @@ namespace Itinero
         RouterDbProfileConfiguration IMutableRouterDb.ProfileConfiguration => _profileConfiguration;
 
         /// <inheritdoc/>
-        public IMutableNetworkEdgeEnumerator GetEdgeEnumerator()
+        public GraphEdgeEnumerator<GraphMutator> GetEdgeEnumerator()
         {
-            return new MutableNetworkEdgeEnumerator(this._mutableNetwork);
+            //return new MutableNetworkEdgeEnumerator(this._mutableNetwork);
+            return this._mutableNetwork.GetEdgeEnumerator();
         }
 
         public void Dispose()
@@ -60,12 +62,13 @@ namespace Itinero
             // update edge type function if needed.
             if (!_routerDb.ProfileConfiguration.HasAll(_profileConfiguration.Profiles))
             {
-                _mutableNetwork.SetEdgeTypeFunc(attributes => 
+                var nextVersion = _mutableNetwork.EdgeTypeFunc.NextVersion(attributes =>
                     _profileConfiguration.Profiles.GetEdgeProfileFor(attributes));
+                _mutableNetwork.SetEdgeTypeFunc(nextVersion);
             }
             
             // get network
-            var network = _mutableNetwork.ToNetwork();
+            var network = _mutableNetwork.ToGraph();
             _mutableNetwork.Dispose();
             
             // finish router db mutations.
@@ -76,6 +79,6 @@ namespace Itinero
 
     internal interface IRouterDbMutations
     {
-        void Finish(Network latest, RouterDbProfileConfiguration profileConfiguration);
+        void Finish(Graph latest, RouterDbProfileConfiguration profileConfiguration);
     }
 }

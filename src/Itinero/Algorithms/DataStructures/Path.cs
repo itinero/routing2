@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Reading;
 
 namespace Itinero.Algorithms.DataStructures
 {
@@ -13,23 +14,18 @@ namespace Itinero.Algorithms.DataStructures
     public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
     {
         private readonly List<(EdgeId edge, bool forward)> _edges;
-        private readonly NetworkEdgeEnumerator _edgeEnumerator;
+        private readonly GraphEdgeEnumerator<Graph> _edgeEnumerator;
+        private readonly Graph _graph;
 
-        /// <summary>
-        /// Creates a new empty path.
-        /// </summary>
-        /// <param name="network">The network.</param>
-        public Path(Network network)
+        public Path(Graph network)
         {
+            _graph = network;
             _edgeEnumerator = network.GetEdgeEnumerator();
             
             _edges = new List<(EdgeId edge, bool forward)>();
         }
 
-        /// <summary>
-        /// Gets the router db.
-        /// </summary>
-        public Network RouterDb => _edgeEnumerator.Network;
+        public Graph RouterDb => _graph;
 
         /// <summary>
         /// Gets the offset at the start of the path.

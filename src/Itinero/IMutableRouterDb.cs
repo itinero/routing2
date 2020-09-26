@@ -65,6 +65,6 @@ namespace Itinero
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns></returns>
-        IMutableNetworkEdgeEnumerator GetEdgeEnumerator();
+        GraphEdgeEnumerator GetEdgeEnumerator();
     }
 }

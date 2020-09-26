@@ -36,8 +36,8 @@ namespace Itinero
             this.ProfileConfiguration.WriteTo(stream, settings.ProfileSerializer);
             
             // get mutable network and serialize.
-            using var mutableNetwork = this.Network.GetAsMutable();
-            stream.WriteGraph(mutableNetwork.Graph);
+            using var mutableNetwork = this.Graph.GetAsMutable();
+            stream.WriteGraph(mutableNetwork);
             
             // run all serialization hooks.
             stream.WriteVarInt32(_serializationHooks.Count);

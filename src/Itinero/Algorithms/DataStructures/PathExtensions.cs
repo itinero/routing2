@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Algorithms.Search;
 using Itinero.Data.Graphs;
+using Itinero.Data.Graphs.Reading;
 
 namespace Itinero.Algorithms.DataStructures
 {
@@ -17,7 +17,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <param name="path">The path.</param>
         /// <param name="getWeight">The weight function.</param>
         /// <returns>The total weight.</returns>
-        public static double? Weight(this Result<Path> path, Func<NetworkEdgeEnumerator, double> getWeight)
+        public static double? Weight(this Result<Path> path, Func<IGraphEdge<Graph>, double> getWeight)
         {
             if (path.IsError) return null;
 
@@ -30,7 +30,7 @@ namespace Itinero.Algorithms.DataStructures
         /// <param name="path">The path.</param>
         /// <param name="getWeight">The weight function.</param>
         /// <returns>The total weight.</returns>
-        public static double Weight(this Path path, Func<NetworkEdgeEnumerator, double> getWeight)
+        public static double Weight(this Path path, Func<IGraphEdge<Graph>, double> getWeight)
         {
             var weight = 0.0;
 
@@ -90,7 +90,7 @@ namespace Itinero.Algorithms.DataStructures
         public static Path? Merge(this IEnumerable<Path> paths)
         {
             Path? merged = null;
-            NetworkEdgeEnumerator? enumerator = null;
+            GraphEdgeEnumerator<Graph>? enumerator = null;
             foreach (var path in paths)
             {
                 merged ??= new Path(path.RouterDb);

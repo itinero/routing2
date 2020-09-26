@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using Itinero.Collections;
 using Itinero.Data.Graphs.EdgeTypes;
+using Itinero.Data.Graphs.Reading;
 using Itinero.Data.Graphs.Tiles;
 using Itinero.Data.Graphs.TurnCosts;
 
 namespace Itinero.Data.Graphs
 {
-    internal sealed partial class Graph
+    public sealed partial class Graph : IGraphEdgeEnumerable
     {
         private readonly SparseArray<(GraphTile? tile, int edgeTypesId)> _tiles;
         private readonly GraphEdgeTypeIndex _graphEdgeTypeIndex;
@@ -16,25 +17,27 @@ namespace Itinero.Data.Graphs
         /// Creates a new graph.
         /// </summary>
         /// <param name="zoom">The zoom level.</param>
-        public Graph(int zoom = 14)
+        public Graph(RouterDb routerDb, int zoom = 14)
         {
             Zoom = zoom;
+            RouterDb = routerDb;
 
             _tiles = new SparseArray<(GraphTile? tile, int edgeTypesId)>(0);
             _graphEdgeTypeIndex = new GraphEdgeTypeIndex();
             _graphTurnCostTypeIndex = new GraphTurnCostTypeIndex();
         }
 
-        internal Graph(SparseArray<(GraphTile? tile, int edgeTypesId)> tiles, int zoom,
+        internal Graph(RouterDb routerDb, SparseArray<(GraphTile? tile, int edgeTypesId)> tiles, int zoom,
             GraphEdgeTypeIndex graphEdgeTypeIndex, GraphTurnCostTypeIndex graphTurnCostTypeIndex)
         {
             Zoom = zoom;
+            RouterDb = routerDb;
             _tiles = tiles;
             _graphEdgeTypeIndex = graphEdgeTypeIndex;
             _graphTurnCostTypeIndex = graphTurnCostTypeIndex;
         }
 
-        private GraphTile? GetTileForRead(uint localTileId)
+        internal GraphTile? GetTileForRead(uint localTileId)
         {
             if (_tiles.Length <= localTileId) return null;
             
@@ -49,10 +52,20 @@ namespace Itinero.Data.Graphs
             return tile;
         }
 
+        GraphTile? IGraphEdgeEnumerable.GetTileForRead(uint localTileId)
+        {
+            return this.GetTileForRead(localTileId);
+        }
+
         /// <summary>
         /// Gets the zoom.
         /// </summary>
         public int Zoom { get; }
+
+        /// <summary>
+        /// Gets the router db.
+        /// </summary>
+        public RouterDb RouterDb { get; }
 
         /// <summary>
         /// Tries to get the given vertex.
@@ -92,9 +105,9 @@ namespace Itinero.Data.Graphs
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns></returns>
-        internal GraphEdgeEnumerator GetEdgeEnumerator()
+        internal GraphEdgeEnumerator<Graph> GetEdgeEnumerator()
         {
-            return new GraphEdgeEnumerator(this.GetTileForRead);
+            return new GraphEdgeEnumerator<Graph>(this);
         }
         
         /// <summary>
