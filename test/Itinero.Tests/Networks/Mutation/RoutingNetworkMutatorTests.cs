@@ -1,26 +1,26 @@
-using Itinero.Data.Graphs;
 using Xunit;
 using System.Linq;
+using Itinero.Network;
 
-namespace Itinero.Tests
+namespace Itinero.Tests.Networks.Mutation
 {
-    public class RouterDbMutableTests
+    public class RoutingNetworkMutatorTests
     {
         [Fact]
-        public void RouterDb_GetAsMutable_AddEdge_ShouldAddEdge()
+        public void RouterNetwork_GetAsMutable_AddEdge_ShouldAddEdge()
         {
             var routerDb = new RouterDb();
             VertexId vertex1;
             VertexId vertex2;
-            using (var routerDbWriter = routerDb.GetAsMutable())
+            using (var mutable = routerDb.GetMutableNetwork())
             {
-                vertex1 = routerDbWriter.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = routerDbWriter.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
 
-                routerDbWriter.AddEdge(vertex1, vertex2);
+                mutable.AddEdge(vertex1, vertex2);
             }
 
-            var routerDbLatest = routerDb.Network;
+            var routerDbLatest = routerDb.Latest;
             var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
@@ -34,23 +34,23 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetAsMutable())
+            using (var mutable = routerDb.GetMutableNetwork())
             {
-                var vertex1 = routerDbWriter.AddVertex(
+                var vertex1 = mutable.AddVertex(
                     4.792613983154297,
                     51.26535213392538);
-                var vertex2 = routerDbWriter.AddVertex(
+                var vertex2 = mutable.AddVertex(
                     4.797506332397461,
                     51.26674845584085);
 
-                edge = routerDbWriter.AddEdge(vertex1, vertex2, shape: new[]
+                edge = mutable.AddEdge(vertex1, vertex2, shape: new[]
                 {
                     (4.795167446136475,
                         51.26580191532799)
                 });
             }
 
-            var routerDbLatest = routerDb.Network;
+            var routerDbLatest = routerDb.Latest;
             var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             var shape = enumerator.Shape;
@@ -66,19 +66,19 @@ namespace Itinero.Tests
         {
             var routerDb = new RouterDb();
             EdgeId edge;
-            using (var routerDbWriter = routerDb.GetAsMutable())
+            using (var mutable = routerDb.GetMutableNetwork())
             {
-                var vertex1 = routerDbWriter.AddVertex(
+                var vertex1 = mutable.AddVertex(
                     4.792613983154297,
                     51.26535213392538);
-                var vertex2 = routerDbWriter.AddVertex(
+                var vertex2 = mutable.AddVertex(
                     4.797506332397461,
                     51.26674845584085);
 
-                edge = routerDbWriter.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
+                edge = mutable.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
             }
 
-            var attributes = routerDb.Network.GetAttributes(edge);
+            var attributes = routerDb.Latest.GetAttributes(edge);
             Assert.NotNull(attributes);
             Assert.Single(attributes);
             Assert.Equal("highway", attributes.First().key);
@@ -91,7 +91,7 @@ namespace Itinero.Tests
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var mutable = routerDb.GetAsMutable())
+            using (var mutable = routerDb.GetMutableNetwork())
             {
                 vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -104,7 +104,7 @@ namespace Itinero.Tests
                     new [] { edge1, edge2 }, new uint[,] {{1,2},{3,4}});
             }
               
-            var routerDbLatest = routerDb.Network;
+            var routerDbLatest = routerDb.Latest;
             var enumerator = routerDbLatest.GetEdgeEnumerator();
             
             // verify turn cost edge1 -> edge1.

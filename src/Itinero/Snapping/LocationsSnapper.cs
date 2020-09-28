@@ -9,12 +9,12 @@ using Itinero.Profiles;
 
 namespace Itinero.Snapping
 {
-    internal class Snappable : ISnappable
+    internal class LocationsSnapper : ILocationsSnapper
     {
         private readonly Snapper _snapper;
         private readonly IEnumerable<Profile> _profiles;
 
-        public Snappable(Snapper snapper, IEnumerable<Profile> profiles)
+        public LocationsSnapper(Snapper snapper, IEnumerable<Profile> profiles)
         {
             _snapper = snapper;
             _profiles = profiles;
@@ -86,50 +86,6 @@ namespace Itinero.Snapping
                 else
                 {
                     yield return new Result<SnapPoint>($"Could not snap to location: {location.longitude},{location.latitude}");
-                }
-            }
-        }
-        
-        /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
-        {
-            var enumerator = _snapper.RoutingNetwork.GetEdgeEnumerator();
-
-            foreach (var (vertexId, edgeId) in vertices)
-            {
-                if (!enumerator.MoveTo(vertexId))
-                {
-                    yield return new Result<SnapPoint>($"Vertex {vertexId} not found.");
-                    continue;
-                }
-
-                var found = false;
-                while (enumerator.MoveNext())
-                {
-                    if (edgeId != null &&
-                        enumerator.Id != edgeId.Value) continue;
-
-                    if (enumerator.Forward)
-                    {
-                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.Id, 0));
-                    }
-                    else
-                    {
-                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.Id, ushort.MaxValue));
-                    }
-                    found = true;
-                    break;
-                }
-
-                if (found) continue;
-                
-                if (edgeId.HasValue)
-                {
-                    yield return new Result<SnapPoint>($"Edge {edgeId.Value} not found for vertex {vertexId}");
-                }
-                else
-                {
-                    yield return new Result<SnapPoint>("Cannot snap to a vertex that has no edges.");
                 }
             }
         }
