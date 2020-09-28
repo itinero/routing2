@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
-using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Tiles.Parsers;
 
 namespace Itinero.IO.Osm.Tiles

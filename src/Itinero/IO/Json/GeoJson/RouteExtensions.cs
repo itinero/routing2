@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Itinero.Routes;
 
 namespace Itinero.IO.Json.GeoJson
 {

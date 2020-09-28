@@ -1,11 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.Restrictions;
 using Itinero.IO.Osm.Collections;
 using Itinero.IO.Osm.Restrictions;
 using Itinero.Logging;
+using Itinero.Network;
+using Itinero.Network.Enumerators.Edges;
+using Itinero.Network.Mutation;
+using Itinero.Network.Restrictions;
 using OsmSharp;
 using OsmSharp.Db;
 using OsmSharp.Streams;
@@ -17,10 +18,10 @@ namespace Itinero.IO.Osm
     {
         private readonly Dictionary<long, VertexId> _vertexPerNode;
         private readonly NodeIndex _nodeIndex;
-        private readonly IMutableRouterDb _mutableRouterDb;
-        private readonly IMutableNetworkEdgeEnumerator _mutableRouterDbEdgeEnumerator;
+        private readonly RoutingNetworkMutator _mutableRouterDb;
+        private readonly RoutingNetworkMutatorEdgeEnumerator _mutableRouterDbEdgeEnumerator;
 
-        public RouterDbStreamTarget(IMutableRouterDb mutableRouterDb)
+        public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb)
         {
             _mutableRouterDb = mutableRouterDb;
 

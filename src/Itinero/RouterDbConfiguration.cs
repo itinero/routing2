@@ -1,6 +1,3 @@
-using System.IO;
-using Itinero.Data;
-
 namespace Itinero
 {
     /// <summary>

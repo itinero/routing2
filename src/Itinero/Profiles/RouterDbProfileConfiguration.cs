@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Itinero.Costs.EdgeTypes;
 using Itinero.IO;
 using Itinero.Profiles.Serialization;
+using Itinero.Routing.Costs.EdgeTypes;
 
 namespace Itinero.Profiles
 {

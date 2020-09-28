@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Itinero.Algorithms;
-using Itinero.Data.Graphs;
+using Itinero.Network;
 using OsmSharp;
 using OsmSharp.Db;
 

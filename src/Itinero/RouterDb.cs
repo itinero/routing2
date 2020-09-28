@@ -1,7 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
-using Itinero.Data.Events;
-using Itinero.Data.Graphs;
+using Itinero.Data;
+using Itinero.Network;
+using Itinero.Network.Mutation;
 using Itinero.Profiles;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
@@ -12,7 +13,7 @@ namespace Itinero
     /// <summary>
     /// Represents a router db.
     /// </summary>
-    public sealed partial class RouterDb : IRouterDbMutations
+    public sealed partial class RouterDb : IRouterDbMutable
     {
         /// <summary>
         /// Creates a new router db.
@@ -22,18 +23,18 @@ namespace Itinero
         {
             configuration ??= RouterDbConfiguration.Default;
             
-            Graph = new Graph(this, configuration.Zoom);
+            Latest = new RoutingNetwork(this, configuration.Zoom);
         }
 
-        private RouterDb(Graph graph)
+        private RouterDb(RoutingNetwork routingNetwork)
         {
-            this.Graph = graph;
+            this.Latest = routingNetwork;
         }
 
         /// <summary>
         /// Gets the latest.
         /// </summary>
-        public Graph Graph { get; private set; }
+        public RoutingNetwork Latest { get; private set; }
 
         /// <summary>
         /// Gets the usage notifier.
@@ -41,5 +42,30 @@ namespace Itinero
         public DataUseNotifier UsageNotifier { get; } = new DataUseNotifier();
         
         internal RouterDbProfileConfiguration ProfileConfiguration { get; private set; } = new RouterDbProfileConfiguration();
+        
+        private RoutingNetworkMutator? _mutable;
+        
+        /// <summary>
+        /// Returns true if there is already a writer.
+        /// </summary>
+        public bool HasMutableNetwork => _mutable != null;
+        
+        /// <summary>
+        /// Gets a mutable version of the latest network.
+        /// </summary>
+        /// <returns>The mutable version.</returns>
+        public RoutingNetworkMutator GetMutableNetwork()
+        {
+            if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
+                                                                      $"Check {nameof(HasMutableNetwork)} to check for a current mutable.");
+            _mutable = this.Latest.GetAsMutable();
+            return _mutable;
+        }
+        
+        void IRouterDbMutable.Finish(RoutingNetwork newNetwork, RouterDbProfileConfiguration profileConfiguration)
+        {
+            this.Latest = newNetwork;
+            this.ProfileConfiguration = profileConfiguration;
+        }
     }
 }
