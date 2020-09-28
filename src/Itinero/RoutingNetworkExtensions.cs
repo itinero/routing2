@@ -6,9 +6,9 @@ namespace Itinero
 {
     public static class RoutingNetworkExtensions
     {
-        public static ISnapper Snap(this RoutingNetwork routingNetwork, SnapPointSettings? settings = null)
+        public static ISnapper Snap(this RoutingNetwork routingNetwork)
         {
-            return null;
+            return new Snapper(routingNetwork);
         }
 
         public static IRouter Route(this RoutingNetwork routingNetwork, RoutingSettings? settings = null)

@@ -1,17 +1,10 @@
-using Itinero.Profiles;
-
 namespace Itinero.Snapping
 {
     /// <summary>
     /// A settings objects for snapping options.
     /// </summary>
-    public class SnapPointSettings
+    public class SnapperSettings
     {
-        /// <summary>
-        /// The profiles the snapped edge has to be accessible to.
-        /// </summary>
-        public Profile[] Profiles { get; set; } = new Profile[0];
-
         /// <summary>
         /// A flag to enable the option of using any profile as valid instead of all.
         /// </summary>
