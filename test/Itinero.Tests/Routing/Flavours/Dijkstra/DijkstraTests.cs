@@ -1,9 +1,8 @@
-using System.Linq;
-using Itinero.Algorithms.DataStructures;
-using Itinero.Data.Graphs;
+using Itinero.Network;
+using Itinero.Snapping;
 using Xunit;
 
-namespace Itinero.Tests.Algorithms.Dijkstra
+namespace Itinero.Tests.Routing.Flavours.Dijkstra
 {
     public class DijkstraTests
     {
@@ -13,19 +12,18 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
-            using (var writer = routerDb.GetAsMutable())
+            using (var writer = routerDb.GetMutableNetwork())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
-
             
-            var latest = routerDb.Network;
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap(vertex1),
-                latest.Snap(vertex2),
+            var latest = routerDb.Latest;
+            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap().To(vertex1),
+                latest.Snap().To(vertex2),
                 (e,pe) => (1, 0));
             Assert.NotNull(path);
             Assert.Equal(0,path.Offset1);
@@ -43,7 +41,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetAsMutable())
+            using (var writer = routerDb.GetMutableNetwork())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -53,10 +51,10 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
 
-            var latest = routerDb.Network;
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap(vertex1),
-                latest.Snap(vertex3),
+            var latest = routerDb.Latest;
+            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap().To(vertex1),
+                latest.Snap().To(vertex3),
                 (e, ep) => (1, 0));
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -77,7 +75,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3, vertex4;
-            using (var writer = routerDb.GetAsMutable())
+            using (var writer = routerDb.GetMutableNetwork())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -89,10 +87,10 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge3 = writer.AddEdge(vertex3, vertex4);
             }
 
-            var latest = routerDb.Network;
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap(vertex1),
-                latest.Snap(vertex4),
+            var latest = routerDb.Latest;
+            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap().To(vertex1),
+                latest.Snap().To(vertex4),
                 (e, ep) => (1, 0));
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -116,7 +114,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetAsMutable())
+            using (var writer = routerDb.GetMutableNetwork())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -127,10 +125,10 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge3 = writer.AddEdge(vertex1, vertex3); // this edge has a weight of 10.
             }
 
-            var latest = routerDb.Network;
-            var path = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap(vertex1, edge3),
-                latest.Snap(vertex3, edge3),
+            var latest = routerDb.Latest;
+            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+                latest.Snap().To(vertex1, edge3),
+                latest.Snap().To(vertex3, edge3),
                 (e, ep) =>
                 {
                     if (e.Id == edge3) return (10, 0);
@@ -169,7 +167,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
-            using (var writer = routerDb.GetAsMutable())
+            using (var writer = routerDb.GetMutableNetwork())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -177,14 +175,14 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge = writer.AddEdge(vertex1, vertex2);
             }
 
-            var latest = routerDb.Network;
-            var snap1 = latest.Snap(vertex1).Value;
-            var snap2 = latest.Snap(vertex2).Value;
+            var latest = routerDb.Latest;
+            var snap1 = latest.Snap().To(vertex1).Value;
+            var snap2 = latest.Snap().To(vertex2).Value;
             var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
             var snap4 = new SnapPoint(edge, ushort.MaxValue / 2);
             var snap5 = new SnapPoint(edge, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
-            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+            var paths = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
                 snap1, new[] {snap2, snap3, snap4, snap5},
                 (e, ep) => (1, 0));
             Assert.NotNull(paths);
@@ -233,7 +231,7 @@ namespace Itinero.Tests.Algorithms.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetAsMutable())
+            using (var writer = routerDb.GetMutableNetwork())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -243,14 +241,14 @@ namespace Itinero.Tests.Algorithms.Dijkstra
                 edge2 = writer.AddEdge(vertex2, vertex3);
             }
             
-            var latest = routerDb.Network;
-            var snap1 = latest.Snap(vertex1).Value;
-            var snap2 = latest.Snap(vertex3).Value;
+            var latest = routerDb.Latest;
+            var snap1 = latest.Snap().To(vertex1).Value;
+            var snap2 = latest.Snap().To(vertex3).Value;
             var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);
             var snap4 = new SnapPoint(edge2, ushort.MaxValue / 2);
             var snap5 = new SnapPoint(edge2, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
-            var paths = Itinero.Algorithms.Dijkstra.Dijkstra.Default.Run(latest,
+            var paths = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
                 snap1, new[] {snap2, snap3, snap4, snap5},
                 (e, ep) => (1, 0));
             Assert.NotNull(paths);

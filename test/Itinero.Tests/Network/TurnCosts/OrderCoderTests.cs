@@ -1,8 +1,8 @@
-using Itinero.Data.Graphs.TurnCosts;
+using Itinero.Network.TurnCosts;
 using Reminiscence.Arrays;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.TurnCosts
+namespace Itinero.Tests.Network.TurnCosts
 {
     public class OrderCoderTests
     {

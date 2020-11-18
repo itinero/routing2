@@ -1,8 +1,8 @@
-using Itinero.Data;
+using Itinero.Network.Storage;
 using Reminiscence.Arrays;
 using Xunit;
 
-namespace Itinero.Tests.Data
+namespace Itinero.Tests.Network.Storage
 {
     public class BitCoderTests
     {

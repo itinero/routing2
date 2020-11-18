@@ -1,35 +1,34 @@
 using System.Linq;
-using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.EdgeTypes;
-using Itinero.Data.Tiles;
+using Itinero.IO.Osm.Tiles;
+using Itinero.Network;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs
+namespace Itinero.Tests.Network
 {
-    public class GraphTests
+    public class NetworkTests
     {
         [Fact]
-        public void Graph_Empty_AddVertex_ShouldReturnTileIdAnd0()
+        public void RoutingNetwork_Empty_AddVertex_ShouldReturnTileIdAnd0()
         {
-            // when adding a vertex to a tile the graph should always generate an id in the same tile.
+            // when adding a vertex to a tile the network should always generate an id in the same tile.
             
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
-            Assert.Equal(Tile.WorldToTile(4.7868, 51.2643, graph.Zoom).LocalId, vertex1.TileId);
+            Assert.Equal(Tile.WorldToTile(4.7868, 51.2643, network.Zoom).LocalId, vertex1.TileId);
             Assert.Equal((uint)0, vertex1.LocalId);
         }
         
         [Fact]
-        public void Graph_OneVertex_AddSecondVertexInTile_ShouldReturnTileIdAnd1()
+        public void RoutingNetwork_OneVertex_AddSecondVertexInTile_ShouldReturnTileIdAnd1()
         {
-            // when adding a vertex to a tile the graph should always generate an id in the same tile.
+            // when adding a vertex to a tile the network should always generate an id in the same tile.
             
-            var graph = new Graph();
-            using (var writer = graph.GetWriter())
+            var network = new RoutingNetwork(new RouterDb());
+            using (var writer = network.GetWriter())
             {
                 writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
@@ -37,7 +36,7 @@ namespace Itinero.Tests.Data.Graphs
             // when adding the vertex a second time it should generate the same tile but a new local id.
             
             VertexId vertex1;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
@@ -46,48 +45,48 @@ namespace Itinero.Tests.Data.Graphs
         }
         
         [Fact]
-        public void Graph_OneVertex_TryGetVertex_ShouldReturnVertexLocation()
+        public void RoutingNetwork_OneVertex_TryGetVertex_ShouldReturnVertexLocation()
         {
-            // when adding a vertex to a tile the graph should store the location accurately.
+            // when adding a vertex to a tile the network should store the location accurately.
             
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
             
-            Assert.True(graph.TryGetVertex(vertex1, out var longitude, out var latitude));
+            Assert.True(network.TryGetVertex(vertex1, out var longitude, out var latitude));
             Assert.Equal(4.7868, longitude, 4);
             Assert.Equal(51.2643, latitude,4);
         }
         
         [Fact]
-        public void Graph_Empty_AddVertex_ShouldReturnProperTileId()
+        public void RoutingNetwork_Empty_AddVertex_ShouldReturnProperTileId()
         {
-            // when adding a vertex to a tile the graph should always generate an id in the same tile with a proper
+            // when adding a vertex to a tile the network should always generate an id in the same tile with a proper
             // local id.
             
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
 
-            var tile = Tile.FromLocalId(vertex1.TileId, graph.Zoom);
+            var tile = Tile.FromLocalId(vertex1.TileId, network.Zoom);
             Assert.Equal((uint)8409, tile.X);
             Assert.Equal((uint)5465, tile.Y);
             Assert.Equal(14, tile.Zoom);
         }
 
         [Fact]
-        public void Graph_TwoVertices_AddEdge_ShouldReturn0()
+        public void RoutingNetwork_TwoVertices_AddEdge_ShouldReturn0()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -98,12 +97,12 @@ namespace Itinero.Tests.Data.Graphs
         }
 
         [Fact]
-        public void Graph_ThreeVertices_AddSecondEdge_ShouldReturnPointerAsId()
+        public void RoutingNetwork_ThreeVertices_AddSecondEdge_ShouldReturnPointerAsId()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2, vertex3;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -117,17 +116,17 @@ namespace Itinero.Tests.Data.Graphs
         }
 
         [Fact]
-        public void Graph_AddEdge_OverTileBoundary_ShouldEdgeTwice_WithOneId()
+        public void RoutingNetwork_AddEdge_OverTileBoundary_ShouldEdgeTwice_WithOneId()
         {
             // store an edge across tile boundaries should store the edge twice.
             // once in the tile of vertex1, in forward direction.
             // once in the tile of vertex2, in backward direction.
             // we test this by enumeration edges for both vertices.
             
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(3.1074142456054688,51.31012070202407);
                 vertex2 = writer.AddVertex(3.146638870239258,51.31060357805506);
@@ -137,7 +136,7 @@ namespace Itinero.Tests.Data.Graphs
             Assert.Equal(vertex1.TileId, edge.TileId);
             Assert.Equal((uint)0, edge.LocalId);
 
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             Assert.True(enumerator.MoveTo(vertex1));
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex1, enumerator.From);
@@ -154,12 +153,12 @@ namespace Itinero.Tests.Data.Graphs
         }
 
         [Fact]
-        public void GraphEnumerator_EdgeWithShape_ShouldEnumerateShapeForward()
+        public void RoutingNetworkEnumerator_EdgeWithShape_ShouldEnumerateShapeForward()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
@@ -171,7 +170,7 @@ namespace Itinero.Tests.Data.Graphs
                 });
             }
 
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             Assert.True(enumerator.MoveTo(vertex1));
             Assert.True(enumerator.MoveNext());
 
@@ -182,14 +181,36 @@ namespace Itinero.Tests.Data.Graphs
             Assert.Equal(4.801368713378906, shape[1].longitude, 4);
             Assert.Equal(51.26782252075405, shape[1].latitude, 4);
         }
-
+        
         [Fact]
-        public void GraphEnumerator_EdgeWithShape_ShouldEnumerateShapeBackward()
+        public void RoutingNetwork_RoutingNetworkEdgeEnumerator_ShouldEnumerateEdgesInRoutingNetwork()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
+            
+            VertexId vertex1, vertex2;
+            using (var writer = network.GetWriter())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+                writer.AddEdge(vertex1, vertex2);
+            }
+
+            var enumerator = network.GetEdgeEnumerator();
+            enumerator.MoveTo(vertex1);
+            Assert.True(enumerator.MoveNext());
+            Assert.Equal(vertex1, enumerator.From);
+            Assert.Equal(vertex2, enumerator.To);
+            Assert.True(enumerator.Forward);
+        }
+        
+        [Fact]
+        public void RoutingNetworkEnumerator_EdgeWithShape_ShouldEnumerateShapeBackward()
+        {
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
@@ -201,7 +222,7 @@ namespace Itinero.Tests.Data.Graphs
                 });
             }
 
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             Assert.True(enumerator.MoveTo(vertex2));
             Assert.True(enumerator.MoveNext());
 
@@ -214,18 +235,18 @@ namespace Itinero.Tests.Data.Graphs
         }
 
         [Fact]
-        public void Graph_EdgeType_AddEdge_NewType_ShouldAdd()
+        public void RoutingNetwork_EdgeType_AddEdge_NewType_ShouldAdd()
         {
-            var graph = new Graph();
-            graph = graph.Mutate(mutable =>
+            var network = new RoutingNetwork(new RouterDb());
+            using (var mutable = network.GetAsMutable())
             {
                 mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
                     attr => attr.Where(x => x.key == "highway")));
-            });
+            }
             
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
@@ -233,25 +254,25 @@ namespace Itinero.Tests.Data.Graphs
                     attributes: new (string key, string value)[] {("highway", "residential")});
             }
             
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(0U, enumerator.EdgeTypeId);
         }
 
         [Fact]
-        public void Graph_EdgeType_AddEdge_ExistingType_ShouldGet()
+        public void RoutingNetwork_EdgeType_AddEdge_ExistingType_ShouldGet()
         {
-            var graph = new Graph();
-            graph = graph.Mutate(mutable =>
+            var network = new RoutingNetwork(new RouterDb());
+            using (var mutable = network.GetAsMutable())
             {
                 mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
                     attr => attr.Where(x => x.key == "highway")));
-            });
+            }
             
             VertexId vertex1, vertex2, vertex3;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
@@ -261,25 +282,25 @@ namespace Itinero.Tests.Data.Graphs
                     attributes: new (string key, string value)[] {("highway", "residential")});
             }
             
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(0U, enumerator.EdgeTypeId);
         }
 
         [Fact]
-        public void Graph_EdgeType_AddEdge_SecondType_ShouldAdd()
+        public void RoutingNetwork_EdgeType_AddEdge_SecondType_ShouldAdd()
         {
-            var graph = new Graph();
-            graph = graph.Mutate(mutable =>
+            var network = new RoutingNetwork(new RouterDb());
+            using (var mutable = network.GetAsMutable())
             {
                 mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
                     attr => attr.Where(x => x.key == "highway")));
-            });
+            }
             
             VertexId vertex1, vertex2, vertex3;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
@@ -290,25 +311,25 @@ namespace Itinero.Tests.Data.Graphs
                     attributes: new (string key, string value)[] {("highway", "primary")});
             }
             
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(1U, enumerator.EdgeTypeId);
         }
 
         [Fact]
-        public void Graph_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId()
+        public void RoutingNetwork_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId()
         {
-            var graph = new Graph();
-            graph = graph.Mutate(mutable =>
+            var network = new RoutingNetwork(new RouterDb());
+            using (var mutable = network.GetAsMutable())
             {
                 mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
                     attr => attr.Where(x => x.key == "highway")));
-            });
+            }
             
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.801111221313477,51.26676859478893);
@@ -321,54 +342,54 @@ namespace Itinero.Tests.Data.Graphs
             }
 
             // update edge type func.
-            graph = graph.Mutate(mutable =>
+            using (var mutable = network.GetAsMutable())
             {
                 mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
                     attr => attr.Where(x => x.key == "highway" || x.key == "maxspeed")));
             });
             
-            var enumerator = graph.GetEdgeEnumerator();
+            var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);
             
             Assert.Equal(1U, enumerator.EdgeTypeId);
         }
 
         [Fact]
-        public void Graph_VertexEnumerator_Empty_ShouldNotReturnVertices()
+        public void RoutingNetwork_VertexEnumerator_Empty_ShouldNotReturnVertices()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
 
-            var enumerator = graph.GetVertexEnumerator();
+            var enumerator = network.GetVertexEnumerator();
             Assert.False(enumerator.MoveNext());
         }
 
         [Fact]
-        public void Graph_VertexEnumerator_OneVertex_ShouldReturnOneVertex()
+        public void RoutingNetwork_VertexEnumerator_OneVertex_ShouldReturnOneVertex()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
 
-            var enumerator = graph.GetVertexEnumerator();
+            var enumerator = network.GetVertexEnumerator();
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex, enumerator.Current);
         }
 
         [Fact]
-        public void Graph_VertexEnumerator_TwoVertices_ShouldReturnTwoVertices()
+        public void RoutingNetwork_VertexEnumerator_TwoVertices_ShouldReturnTwoVertices()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(4.800467491149902,51.26896368721961);
             }
 
-            var enumerator = graph.GetVertexEnumerator();
+            var enumerator = network.GetVertexEnumerator();
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex1, enumerator.Current);
             Assert.True(enumerator.MoveNext());
@@ -376,17 +397,17 @@ namespace Itinero.Tests.Data.Graphs
         }
 
         [Fact]
-        public void Graph_VertexEnumerator_TwoVertices_DifferentTiles_ShouldReturnTwoVertices()
+        public void RoutingNetwork_VertexEnumerator_TwoVertices_DifferentTiles_ShouldReturnTwoVertices()
         {
-            var graph = new Graph();
+            var network = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
-            using (var writer = graph.GetWriter())
+            using (var writer = network.GetWriter())
             {
                 vertex1 = writer.AddVertex(4.800467491149902,51.26896368721961);
                 vertex2 = writer.AddVertex(5.801111221313477,51.26676859478893);
             }
 
-            var enumerator = graph.GetVertexEnumerator();
+            var enumerator = network.GetVertexEnumerator();
             Assert.True(enumerator.MoveNext());
             Assert.Equal(vertex1, enumerator.Current);
             Assert.True(enumerator.MoveNext());

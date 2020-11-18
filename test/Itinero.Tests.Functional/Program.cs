@@ -63,7 +63,7 @@ namespace Itinero.Tests.Functional
                 mutable.PrepareFor(bicycle);
             });
             routerDb.UseRouteableTiles();
-            var latest = routerDb.Network;
+            var latest = routerDb.Latest;
 
             var heldergem = SnappingTest.Default.Run((latest, 3.95454, 50.88142, profile: bicycle),
                 $"Snapping cold: heldergem");

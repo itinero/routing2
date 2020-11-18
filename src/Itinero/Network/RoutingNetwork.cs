@@ -103,10 +103,19 @@ namespace Itinero.Network
         /// <summary>
         /// Gets an edge enumerator.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The enumerator.</returns>
         internal RoutingNetworkEdgeEnumerator GetEdgeEnumerator()
         {
             return new RoutingNetworkEdgeEnumerator(this);
+        }
+
+        /// <summary>
+        /// Gets a vertex enumerator.
+        /// </summary>
+        /// <returns>The enumerator.</returns>
+        internal RoutingNetworkVertexEnumerator GetVertexEnumerator()
+        {
+            
         }
         
         private readonly object _mutatorSync = new object();
