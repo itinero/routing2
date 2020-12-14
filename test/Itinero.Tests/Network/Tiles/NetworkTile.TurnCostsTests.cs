@@ -1,18 +1,16 @@
 using System.Linq;
-using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.Tiles;
-using Itinero.Data.Tiles;
+using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.Tiles
+namespace Itinero.Tests.Network.Tiles
 {
-    public partial class GraphTileTests
+    public partial class NetworkTileTests
     {
         [Fact]
-        public void GraphTile_AddTurnCosts_2_Edges_1Turn_ShouldAddTailAndHead()
+        public void NetworkTile_AddTurnCosts_2_Edges_1Turn_ShouldAddTailAndHead()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
             var vertex3 = graphTile.AddVertex(4.865891933441162,51.267741966756304);
@@ -23,7 +21,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             graphTile.AddTurnCosts(vertex2, 145, new [] { edge1, edge2 }, 
                 new uint [,] { { 0, 100 }, { 100, 0 }} );
             
-            var enumerator = new GraphTileEnumerator();
+            var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
 
@@ -43,10 +41,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
 
         [Fact]
-        public void GraphTile_AddTurnCosts_2_Edges_1Turn_ShouldSetTurnCosts()
+        public void NetworkTile_AddTurnCosts_2_Edges_1Turn_ShouldSetTurnCosts()
         {            
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
             var vertex3 = graphTile.AddVertex(4.865891933441162,51.267741966756304);
@@ -57,7 +55,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             graphTile.AddTurnCosts(vertex2, 145, new [] { edge1, edge2 }, 
                 new uint [,] { { 0, 145454 }, { 79878, 0 }} );
             
-            var enumerator = new GraphTileEnumerator();
+            var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
 
@@ -85,10 +83,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
 
         [Fact]
-        public void GraphTile_AddTurnCosts_2_Edges_1Turn_2Tables_ShouldSetTurnCosts()
+        public void NetworkTile_AddTurnCosts_2_Edges_1Turn_2Tables_ShouldSetTurnCosts()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
             var vertex3 = graphTile.AddVertex(4.865891933441162,51.267741966756304);
@@ -101,7 +99,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             graphTile.AddTurnCosts(vertex2, 456, new [] { edge1, edge2 }, 
                 new uint [,] { { 0, 13144 }, { 46823, 0 }} );
             
-            var enumerator = new GraphTileEnumerator();
+            var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
 

@@ -1,17 +1,16 @@
 using System.Linq;
-using Itinero.Data.Graphs.Tiles;
-using Itinero.Data.Tiles;
+using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.Tiles
+namespace Itinero.Tests.Network.Tiles
 {
-    public partial class GraphTileTests
+    public partial class NetworkTileTests
     {
         [Fact]
-        public void GraphTile_AddEdge0_OneAttribute_ShouldStoreAttribute()
+        public void NetworkTile_AddEdge0_OneAttribute_ShouldStoreAttribute()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
@@ -21,7 +20,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
                 }
             );
 
-            var enumerator = new GraphTileEnumerator();
+            var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             Assert.True(enumerator.MoveTo(edge, true));
             var attributes = enumerator.Attributes;
@@ -33,10 +32,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
         
         [Fact]
-        public void GraphTile_AddEdge0_ThreeAttributes_ShouldStoreAttributes()
+        public void NetworkTile_AddEdge0_ThreeAttributes_ShouldStoreAttributes()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
@@ -48,7 +47,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
                 }
             );
 
-            var enumerator = new GraphTileEnumerator();
+            var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             Assert.True(enumerator.MoveTo(edge, true));
             var attributes = enumerator.Attributes.ToList();

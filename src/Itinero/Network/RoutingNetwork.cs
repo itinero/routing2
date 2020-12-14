@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
-using Itinero.Network.Indexes.EdgeTypes;
-using Itinero.Network.Indexes.TurnCosts;
+using Itinero.Network.Enumerators.Vertices;
 using Itinero.Network.Mutation;
 using Itinero.Network.Tiles;
 using Itinero.Network.Writer;
@@ -12,43 +11,47 @@ namespace Itinero.Network
 {
     public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingNetworkWritable
     {
-        private readonly SparseArray<(NetworkTile? tile, int edgeTypesId)> _tiles;
-        private readonly EdgeTypeIndex _graphEdgeTypeIndex;
-        private readonly TurnCostTypeIndex _graphTurnCostTypeIndex;
+        private readonly SparseArray<NetworkTile?> _tiles;
         
         public RoutingNetwork(RouterDb routerDb, int zoom = 14)
         {
             Zoom = zoom;
             RouterDb = routerDb;
 
-            _tiles = new SparseArray<(NetworkTile? tile, int edgeTypesId)>(0);
-            _graphEdgeTypeIndex = new EdgeTypeIndex();
-            _graphTurnCostTypeIndex = new TurnCostTypeIndex();
+            _tiles = new SparseArray<NetworkTile?>(0);
         }
 
-        internal RoutingNetwork(RouterDb routerDb, SparseArray<(NetworkTile? tile, int edgeTypesId)> tiles, int zoom,
-            EdgeTypeIndex graphEdgeTypeIndex, TurnCostTypeIndex graphTurnCostTypeIndex)
+        internal RoutingNetwork(RouterDb routerDb, SparseArray<NetworkTile?> tiles, int zoom)
         {
             Zoom = zoom;
             RouterDb = routerDb;
             _tiles = tiles;
-            _graphEdgeTypeIndex = graphEdgeTypeIndex;
-            _graphTurnCostTypeIndex = graphTurnCostTypeIndex;
         }
 
         internal NetworkTile? GetTileForRead(uint localTileId)
         {
             if (_tiles.Length <= localTileId) return null;
             
-            var (tile, edgeTypesId) = _tiles[localTileId];
+            var tile = _tiles[localTileId];
             if (tile == null) return null;
-            if (edgeTypesId != _graphEdgeTypeIndex.Id)
+
+            var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
+            if (tile.EdgeTypeMapId != edgeTypeMap.id)
             {
-                tile = _graphEdgeTypeIndex.Update(tile);
-                _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
+                tile = tile.ApplyEdgeTypeMap(edgeTypeMap);
+                _tiles[localTileId] = tile;
             }
         
             return tile;
+        }
+
+        internal IEnumerator<uint> GetTileEnumerator()
+        {
+            using var enumerator = _tiles.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return (uint)enumerator.Current.i;
+            }
         }
 
         NetworkTile? IEdgeEnumerable.GetTileForRead(uint localTileId)
@@ -91,16 +94,6 @@ namespace Itinero.Network
         }
 
         /// <summary>
-        /// Gets the attributes for the given turn cost type.
-        /// </summary>
-        /// <param name="turnCostType">The turn cost type.</param>
-        /// <returns>The attributes for the given edge type.</returns>
-        public IEnumerable<(string key, string value)> GetTurnCostTypeAttributes(uint turnCostType)
-        {
-            return _graphTurnCostTypeIndex.GetById(turnCostType);
-        }
-
-        /// <summary>
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns>The enumerator.</returns>
@@ -115,7 +108,7 @@ namespace Itinero.Network
         /// <returns>The enumerator.</returns>
         internal RoutingNetworkVertexEnumerator GetVertexEnumerator()
         {
-            
+            return new RoutingNetworkVertexEnumerator(this);
         }
         
         private readonly object _mutatorSync = new object();
@@ -133,11 +126,7 @@ namespace Itinero.Network
             }
         }
 
-        SparseArray<(NetworkTile? tile, int edgeTypesId)> IRoutingNetworkMutable.Tiles => _tiles;
-
-        TurnCostTypeIndex IRoutingNetworkMutable.GraphTurnCostTypeIndex => _graphTurnCostTypeIndex;
-
-        EdgeTypeIndex IRoutingNetworkMutable.GraphEdgeTypeIndex => _graphEdgeTypeIndex;
+        SparseArray<NetworkTile?> IRoutingNetworkMutable.Tiles => _tiles;
 
         void IRoutingNetworkMutable.ClearMutator()
         {
@@ -173,39 +162,38 @@ namespace Itinero.Network
             _writer = null;
         }
 
-        TurnCostTypeIndex IRoutingNetworkWritable.GraphTurnCostTypeIndex => _graphTurnCostTypeIndex;
-        
-        NetworkTile IRoutingNetworkWritable.GetTileForWrite(uint localTileId)
+        (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) IRoutingNetworkWritable.
+            GetTileForWrite(uint localTileId)
         {
             // ensure minimum size.
             _tiles.EnsureMinimumSize(localTileId);
-            
-            var (tile, edgeTypesId) = _tiles[localTileId];
+
+            var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
+            var tile = _tiles[localTileId];
             if (tile != null)
             {
-                if (edgeTypesId != _graphEdgeTypeIndex.Id)
+                if (tile.EdgeTypeMapId != edgeTypeMap.id)
                 {
-                    tile = _graphEdgeTypeIndex.Update(tile);
-                    _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
+                    tile = tile.ApplyEdgeTypeMap(edgeTypeMap);
+                    _tiles[localTileId] = tile;
                 }
                 else
                 {
                     // check if there is a mutable graph.
-                    this.CloneTileIfNeededForMutator(tile, edgeTypesId);
+                    this.CloneTileIfNeededForMutator(tile);
                 }
-            }
-            
-            if (tile == null)
-            {
-                // create a new tile.
-                tile = new NetworkTile(this.Zoom, localTileId);
-                _tiles[localTileId] = (tile, _graphEdgeTypeIndex.Id);
+
+                return (tile, edgeTypeMap.func);
             }
 
-            return tile;
+            // create a new tile.
+            tile = new NetworkTile(this.Zoom, localTileId, edgeTypeMap.id);
+            _tiles[localTileId] = tile;
+
+            return (tile, edgeTypeMap.func);
         }
 
-        private void CloneTileIfNeededForMutator(NetworkTile tile, int edgeTypesId)
+        private void CloneTileIfNeededForMutator(NetworkTile tile)
         {
             // this is weird right?
             //
@@ -215,10 +203,10 @@ namespace Itinero.Network
             // 
             // this makes it possible the graph is being written to and mutated at the same time.
             // we need to check, when writing to a graph, a mutator doesn't have the tile in use or
-            // date from the write could bleed into the mutator creating an invalid state.
+            // data from the write could bleed into the mutator creating an invalid state.
             // so **we have to clone tiles before writing to them and give them to the mutator**
             var mutableGraph = _graphMutator;
-            if (mutableGraph != null && !mutableGraph.HasTile(tile.TileId)) mutableGraph.SetTile(tile.Clone(), edgeTypesId);
+            if (mutableGraph != null && !mutableGraph.HasTile(tile.TileId)) mutableGraph.SetTile(tile.Clone());
         }
     }
 }

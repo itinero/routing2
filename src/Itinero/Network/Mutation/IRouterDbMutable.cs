@@ -4,6 +4,6 @@ namespace Itinero.Network.Mutation
 {
     internal interface IRouterDbMutable
     {
-        internal void Finish(RoutingNetwork network, RouterDbProfileConfiguration profileConfiguration);
+        internal void Finish(RoutingNetwork network);
     }
 }

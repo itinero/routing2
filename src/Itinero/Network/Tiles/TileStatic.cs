@@ -23,6 +23,12 @@ namespace Itinero.Network.Tiles
             var xMax = (1 << (int) zoom);
             return (uint)(y * xMax + x);
         }
+
+        public static uint ToLocalId(double longitude, double latitude, int zoom)
+        {
+            var (x, y) = WorldToTile(longitude, latitude, zoom);
+            return ToLocalId(x, y, zoom);
+        }
         
         public static (int x, int y) ToLocalTileCoordinates(int zoom, uint tileId, double longitude, double latitude, int resolution)
         {

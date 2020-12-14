@@ -1,17 +1,16 @@
 using System.IO;
-using Itinero.Data.Graphs;
 using System.Linq;
-using Itinero.Data.Graphs.EdgeTypes;
+using Itinero.Network.Indexes.EdgeTypes;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.EdgeTypes
+namespace Itinero.Tests.Network.Indexes.EdgeTypes
 {
-    public class GraphEdgeTypeCollectionTests
+    public class EdgeTypeCollectionTests
     {
         [Fact]
         public void GraphEdgeTypeCollection_Get_First_ShouldAdd()
         {
-            var edgeTypes = new GraphEdgeTypeCollection();
+            var edgeTypes = new EdgeTypeCollection();
 
             var edgeTypeId = edgeTypes.Get(new (string key, string value)[] {("highway", "residential")});
             Assert.Equal(0U, edgeTypeId);
@@ -24,7 +23,7 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
         [Fact]
         public void GraphEdgeTypeCollection_Get_Second_ShouldAdd()
         {
-            var edgeTypes = new GraphEdgeTypeCollection();
+            var edgeTypes = new EdgeTypeCollection();
 
             edgeTypes.Get(new (string key, string value)[] {("highway", "residential")});
             var edgeTypeId = edgeTypes.Get(new (string key, string value)[] {("highway", "primary")});
@@ -38,7 +37,7 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
         [Fact]
         public void GraphEdgeTypeCollection_Get_SecondIdentical_ShouldGet()
         {
-            var edgeTypes = new GraphEdgeTypeCollection();
+            var edgeTypes = new EdgeTypeCollection();
 
             edgeTypes.Get(new (string key, string value)[] {("highway", "residential")});
             var edgeTypeId = edgeTypes.Get(new (string key, string value)[] {("highway", "residential")});
@@ -52,7 +51,7 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
         [Fact]
         public void GraphEdgeTypeCollection_Get_SecondIdentical_OrderShouldNotMatter_ShouldGet()
         {
-            var edgeTypes = new GraphEdgeTypeCollection();
+            var edgeTypes = new EdgeTypeCollection();
 
             edgeTypes.Get(new (string key, string value)[] {("highway", "residential"), ("maxspeed", "50")});
             var edgeTypeId = edgeTypes.Get(new (string key, string value)[] {("maxspeed", "50"), ("highway", "residential")});
@@ -67,27 +66,27 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
         [Fact]
         public void GraphEdgeTypeCollection_Serialize_Empty_ShouldDeserializeEmpty()
         {
-            var expected = new GraphEdgeTypeCollection();
+            var expected = new EdgeTypeCollection();
             
             var stream = new MemoryStream();
             expected.Serialize(stream);
             stream.Seek(0, SeekOrigin.Begin);
 
-            var edgeTypes = GraphEdgeTypeCollection.Deserialize(stream);
+            var edgeTypes = EdgeTypeCollection.Deserialize(stream);
             Assert.Equal(0U, edgeTypes.Count);
         }
 
         [Fact]
         public void GraphEdgeTypeCollection_Serialize_One_ShouldDeserializeOne()
         {
-            var expected = new GraphEdgeTypeCollection();
+            var expected = new EdgeTypeCollection();
             var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
             
             var stream = new MemoryStream();
             expected.Serialize(stream);
             stream.Seek(0, SeekOrigin.Begin);
 
-            var edgeTypes = GraphEdgeTypeCollection.Deserialize(stream);
+            var edgeTypes = EdgeTypeCollection.Deserialize(stream);
             Assert.Equal(1U, edgeTypes.Count);
             var edgeType1 = edgeTypes.GetById(type1).ToArray();
             Assert.Equal(("highway", "residential"), edgeType1[0]);
@@ -96,7 +95,7 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
         [Fact]
         public void GraphEdgeTypeCollection_Serialize_Two_ShouldDeserializeTwo()
         {
-            var expected = new GraphEdgeTypeCollection();
+            var expected = new EdgeTypeCollection();
             var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
             var type2 = expected.Get(new (string key, string value)[] {("highway", "primary"), ("maxspeed", "50")});
             
@@ -104,7 +103,7 @@ namespace Itinero.Tests.Data.Graphs.EdgeTypes
             expected.Serialize(stream);
             stream.Seek(0, SeekOrigin.Begin);
 
-            var edgeTypes = GraphEdgeTypeCollection.Deserialize(stream);
+            var edgeTypes = EdgeTypeCollection.Deserialize(stream);
             Assert.Equal(2U, edgeTypes.Count);
             var edgeType1 = edgeTypes.GetById(type1).ToArray();
             Assert.Equal(("highway", "residential"), edgeType1[0]);

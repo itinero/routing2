@@ -21,16 +21,52 @@ namespace Itinero.Network
 
             return (longitude, latitude);
         }
+        
+        /// <summary>
+        /// Gets an enumerable with all vertices.
+        /// </summary>
+        /// <param name="routingNetwork">The routing network.</param>
+        /// <returns>An enumerable with all vertices.</returns>
+        public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork)
+        {
+            var enumerator = routingNetwork.GetVertexEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
+        /// <summary>
+        /// Gets an enumerable with all edges.
+        /// </summary>
+        /// <param name="routingNetwork">The routing network.</param>
+        /// <returns>An enumerable with all edges.</returns>
+        public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork)
+        {
+            var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
+            foreach (var vertex in routingNetwork.GetVertices())
+            {
+                if (!edgeEnumerator.MoveTo(vertex)) continue;
+
+                while (edgeEnumerator.MoveNext())
+                {
+                    if (!edgeEnumerator.Forward) continue;
+
+                    yield return edgeEnumerator.Id;
+                }
+            }
+        }
 
         internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
         {
-            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
-                cache == null)
-            {
-                return new ProfileCostFunction(profile);
-            }
-
-            return new ProfileCostFunctionCached(profile, cache);
+            throw new NotImplementedException();
+            // if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
+            //     cache == null)
+            // {
+            //     return new ProfileCostFunction(profile);
+            // }
+            //
+            // return new ProfileCostFunctionCached(profile, cache);
         }
 
         internal static IEnumerable<(string key, string value)> GetAttributes(this RoutingNetwork routerDb, EdgeId edge)

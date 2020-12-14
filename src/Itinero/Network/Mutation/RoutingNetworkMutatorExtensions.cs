@@ -1,4 +1,5 @@
 using System;
+using Itinero.Profiles;
 
 namespace Itinero.Network.Mutation
 {
@@ -21,6 +22,11 @@ namespace Itinero.Network.Mutation
         public static VertexId AddVertex(this RoutingNetworkMutator routingNetwork, (double longitude, double latitude) location)
         {
             return routingNetwork.AddVertex(location.longitude, location.latitude);
+        }
+
+        public static void PrepareFor(this RoutingNetworkMutator routingNetworkMutator, Profile profile)
+        {
+            
         }
     }
 }

@@ -1,71 +1,70 @@
 using System.Linq;
-using Itinero.Data.Graphs.Tiles;
-using Itinero.Data.Tiles;
+using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.Tiles
+namespace Itinero.Tests.Network.Tiles
 {
-    public class GraphTileEnumeratorTests
+    public class NetworkTileEnumeratorTests
     {
         [Fact]
-        public void GraphTileEnumerator_OneVertex_MoveToVertex_ShouldReturnTrue()
+        public void NetworkTileEnumerator_OneVertex_MoveToVertex_ShouldReturnTrue()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex = graphTile.AddVertex(4.86638, 51.269728);
 
-            var enumerator =  new GraphTileEnumerator();
+            var enumerator =  new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             Assert.True(enumerator.MoveTo(vertex));
         }
 
         [Fact]
-        public void GraphTileEnumerator_OneEdge_MoveToVertex1_ShouldReturnOneEdgeForward()
+        public void NetworkTileEnumerator_OneEdge_MoveToVertex1_ShouldReturnOneEdgeForward()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
             var edge = graphTile.AddEdge(vertex1, vertex2);
 
-            var enumerator =  new GraphTileEnumerator();
+            var enumerator =  new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
             Assert.True(enumerator.Forward);
             Assert.Equal(vertex1, enumerator.Vertex1);
             Assert.Equal(vertex2, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
+            Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
 
         [Fact]
-        public void GraphTileEnumerator_OneEdge_MoveToVertex2_ShouldReturnOneEdgeBackward()
+        public void NetworkTileEnumerator_OneEdge_MoveToVertex2_ShouldReturnOneEdgeBackward()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
             var edge = graphTile.AddEdge(vertex1, vertex2);
 
-            var enumerator =  new GraphTileEnumerator();
+            var enumerator =  new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
             Assert.True(enumerator.MoveNext());
             Assert.False(enumerator.Forward);
             Assert.Equal(vertex2, enumerator.Vertex1);
             Assert.Equal(vertex1, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
+            Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
 
         [Fact]
-        public void GraphTileEnumerator_OneEdge_ThreeShapePoint_ShouldReturnThreeShapePoints()
+        public void NetworkTileEnumerator_OneEdge_ThreeShapePoint_ShouldReturnThreeShapePoints()
         {
-            var graphTile = new GraphTile(14,
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14,
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
@@ -85,7 +84,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
                 )
             });
 
-            var enumerator =  new GraphTileEnumerator();
+            var enumerator =  new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
@@ -105,42 +104,42 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
 
         [Fact]
-        public void GraphTileEnumerator_OneEdge_MoveToEdgeForward_ShouldMoveTo_EdgeForward()
+        public void NetworkTileEnumerator_OneEdge_MoveToEdgeForward_ShouldMoveTo_EdgeForward()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
             var edge = graphTile.AddEdge(vertex1, vertex2);
 
-            var enumerator =  new GraphTileEnumerator();
+            var enumerator =  new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             Assert.True(enumerator.MoveTo(edge, true));
             Assert.True(enumerator.Forward);
             Assert.Equal(vertex1, enumerator.Vertex1);
             Assert.Equal(vertex2, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
+            Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
         
         [Fact]
-        public void GraphTileEnumerator_OneEdge_MoveToEdgeBackward_ShouldMoveTo_EdgeBackward()
+        public void NetworkTileEnumerator_OneEdge_MoveToEdgeBackward_ShouldMoveTo_EdgeBackward()
         {
-            var graphTile = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var graphTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
             var edge = graphTile.AddEdge(vertex1, vertex2);
 
-            var enumerator =  new GraphTileEnumerator();
+            var enumerator =  new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             Assert.True(enumerator.MoveTo(edge, false));
             Assert.False(enumerator.Forward);
             Assert.Equal(vertex2, enumerator.Vertex1);
             Assert.Equal(vertex1, enumerator.Vertex2);
-            Assert.Equal(edge.LocalId, enumerator.EdgeId.LocalId);
+            Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
     }

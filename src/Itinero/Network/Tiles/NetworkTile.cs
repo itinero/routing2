@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Itinero.IO;
-using Itinero.Network.Indexes.EdgeTypes;
 using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
 using Reminiscence.Arrays;
@@ -17,6 +16,7 @@ namespace Itinero.Network.Tiles
         
         private readonly uint _tileId;
         private readonly int _zoom; // the zoom level.
+        private readonly int _edgeTypeMapId; // the edge type index id.
 
         // the next vertex id.
         private uint _nextVertexId = 0;
@@ -37,10 +37,12 @@ namespace Itinero.Network.Tiles
         /// </summary>
         /// <param name="zoom">The zoom level.</param>
         /// <param name="tileId">The tile id.</param>
-        public NetworkTile(int zoom, uint tileId)
+        /// <param name="edgeTypeMapId">The edge type index id.</param>
+        public NetworkTile(int zoom, uint tileId, int edgeTypeMapId = 0)
         {
             _zoom = zoom;
             _tileId = tileId;
+            _edgeTypeMapId = 0;
             
             _pointers = new MemoryArray<uint>(0);
             _edges = new MemoryArray<byte>(0);
@@ -51,13 +53,14 @@ namespace Itinero.Network.Tiles
             _strings = new MemoryArray<string>(0);
         }
         
-        private NetworkTile(int zoom, uint tileId, ArrayBase<uint> pointers, ArrayBase<byte> edges,
+        private NetworkTile(int zoom, uint tileId, int edgeTypeMapId, ArrayBase<uint> pointers, ArrayBase<byte> edges,
             ArrayBase<byte> coordinates, ArrayBase<byte> shapes, ArrayBase<byte> attributes,
             ArrayBase<string> strings, ArrayBase<byte> turnCosts, uint nextVertexId, uint nextEdgeId, uint nextAttributePointer,
             uint nextShapePointer, uint nextStringId)
         {
             _zoom = zoom;
             _tileId = tileId;
+            _edgeTypeMapId = edgeTypeMapId;
             _pointers = pointers;
             _edges = edges;
             _coordinates = coordinates;
@@ -79,7 +82,7 @@ namespace Itinero.Network.Tiles
         /// <returns>The copy of this tile.</returns>
         public NetworkTile Clone()
         {
-            return new NetworkTile(_zoom, _tileId, _pointers.Clone(), _edges.Clone(), _coordinates.Clone(),
+            return new NetworkTile(_zoom, _tileId, _edgeTypeMapId, _pointers.Clone(), _edges.Clone(), _coordinates.Clone(),
                 _shapes.Clone(), _attributes.Clone(), _strings.Clone(), _turnCosts.Clone(), _nextVertexId, 
                 _nextEdgeId, _nextAttributePointer, _nextShapePointer, _nextStringId);
         }
@@ -93,6 +96,11 @@ namespace Itinero.Network.Tiles
         /// Gets the number of vertices.
         /// </summary>
         public uint VertexCount => _nextVertexId;
+
+        /// <summary>
+        /// Gets the edge type map id.
+        /// </summary>
+        public int EdgeTypeMapId => _edgeTypeMapId;
 
         /// <summary>
         /// Adds a new vertex and returns its id.
@@ -230,7 +238,7 @@ namespace Itinero.Network.Tiles
             return edgeId.Value;
         }
         
-        internal NetworkTile ApplyNewEdgeTypeFunc(EdgeTypeIndex edgeTypeIndex)
+        internal NetworkTile ApplyEdgeTypeMap((int id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
         {
             var edges = new MemoryArray<byte>(_edges.Length);
             var pointers = new MemoryArray<uint>(_pointers.Length);
@@ -259,7 +267,7 @@ namespace Itinero.Network.Tiles
                 p += DecodePointer(p, out var attributePointer);
                 
                 // generate new edge type id.
-                var newEdgeTypeId = edgeTypeIndex.Get(this.GetAttributes(attributePointer));
+                var newEdgeTypeId = edgeTypeMap.func(this.GetAttributes(attributePointer));
                 
                 // write edge data again.
                 var newEdgePointer = newP;
@@ -292,7 +300,7 @@ namespace Itinero.Network.Tiles
                 newP += EncodePointer(edges, newP, attributePointer);
             }
             
-            return new NetworkTile(_zoom, _tileId, pointers, edges, _coordinates,
+            return new NetworkTile(_zoom, _tileId, edgeTypeMap.id, pointers, edges, _coordinates,
                 _shapes, _attributes, _strings, _turnCosts, _nextVertexId, _nextEdgeId, 
                 _nextAttributePointer, _nextShapePointer, _nextStringId);
         }

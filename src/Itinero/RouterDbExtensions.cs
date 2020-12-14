@@ -1,6 +1,7 @@
 using System;
+using System.IO;
 using Itinero.Network.Mutation;
-using Itinero.Serialization;
+using Itinero.Network.Serialization;
 
 namespace Itinero
 {

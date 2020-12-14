@@ -15,21 +15,21 @@ namespace Itinero.Network.Writer
     /// </summary>
     public class RoutingNetworkWriter : IDisposable
     {
-        private readonly IRoutingNetworkWritable _graph;
+        private readonly IRoutingNetworkWritable _network;
 
-        internal RoutingNetworkWriter(IRoutingNetworkWritable graph)
+        internal RoutingNetworkWriter(IRoutingNetworkWritable network)
         {
-            _graph = graph;
+            _network = network;
         }
         
         public VertexId AddVertex(double longitude, double latitude)
         {
             // get the local tile id.
-            var (x, y) = TileStatic.WorldToTile(longitude, latitude, _graph.Zoom);
-            var localTileId = TileStatic.ToLocalId(x, y, _graph.Zoom);
+            var (x, y) = TileStatic.WorldToTile(longitude, latitude, _network.Zoom);
+            var localTileId = TileStatic.ToLocalId(x, y, _network.Zoom);
 
             // get the tile (or create it).
-            var tile = _graph.GetTileForWrite(localTileId);
+            var (tile, _) = _network.GetTileForWrite(localTileId);
 
             return tile.AddVertex(longitude, latitude);
         }
@@ -39,19 +39,19 @@ namespace Itinero.Network.Writer
             IEnumerable<(string key, string value)>? attributes = null)
         {
             // get the tile (or create it).
-            var tile = _graph.GetTileForWrite(vertex1.TileId);
+            var (tile, edgeTypeMap) = _network.GetTileForWrite(vertex1.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
             
             // get the edge type id.
-            var edgeTypeId = attributes != null ? (uint?)_graph.GraphTurnCostTypeIndex.Get(attributes) : null;
+            var edgeTypeId = attributes != null ? (uint?)edgeTypeMap(attributes) : null;
             
             // get the edge length in centimeters.
-            if (!_graph.TryGetVertex(vertex1, out var longitude, out var latitude))
+            if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude))
             {
                 throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex1} not found.");
             }
             var vertex1Location = (longitude, latitude);
-            if (!_graph.TryGetVertex(vertex2, out longitude, out latitude))
+            if (!_network.TryGetVertex(vertex2, out longitude, out latitude))
             {
                 throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex2} not found.");
             }
@@ -64,7 +64,8 @@ namespace Itinero.Network.Writer
             if (vertex1.TileId == vertex2.TileId) return edge1;
             
             // this edge crosses tiles, also add an extra edge to the other tile.
-            tile = _graph.GetTileForWrite(vertex2.TileId);
+            (tile, edgeTypeMap) = _network.GetTileForWrite(vertex2.TileId);
+            edgeTypeId = attributes != null ? (uint?)edgeTypeMap(attributes) : null;
             tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId, length);
 
             return edge1;
@@ -76,11 +77,12 @@ namespace Itinero.Network.Writer
             if (prefix != null) throw new NotSupportedException($"Turn costs with {nameof(prefix)} not supported.");
             
             // get the tile (or create it).
-            var tile = _graph.GetTileForWrite(vertex.TileId);
+            var (tile, _) = _network.GetTileForWrite(vertex.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
             
             // get the turn cost type id.
-            var turnCostTypeId = _graph.GraphTurnCostTypeIndex.Get(attributes);
+            var turnCostMap = _network.RouterDb.GetTurnCostTypeMap();
+            var turnCostTypeId = turnCostMap.func(attributes);
                 
             // add the turn cost table using the type id.
             tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
@@ -88,7 +90,7 @@ namespace Itinero.Network.Writer
 
         public void Dispose()
         {
-            _graph.ClearWriter();
+            _network.ClearWriter();
         }
     }
 }

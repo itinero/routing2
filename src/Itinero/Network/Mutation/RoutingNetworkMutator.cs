@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
-using Itinero.Network.Indexes.EdgeTypes;
-using Itinero.Network.Indexes.TurnCosts;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Mutation
@@ -11,7 +9,7 @@ namespace Itinero.Network.Mutation
     public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     {
         private readonly SparseArray<bool> _modified;
-        private readonly SparseArray<(NetworkTile? tile, int edgeTypesId)> _tiles;
+        private readonly SparseArray<NetworkTile?> _tiles;
         private readonly IRoutingNetworkMutable _network;
 
         internal RoutingNetworkMutator(IRoutingNetworkMutable network)
@@ -19,9 +17,6 @@ namespace Itinero.Network.Mutation
             _network = network;
             
             _tiles = _network.Tiles.Clone();
-            EdgeTypeIndex = _network.GraphEdgeTypeIndex;
-            TurnCostTypeIndex = _network.GraphTurnCostTypeIndex;
-
             _modified = new SparseArray<bool>(_tiles.Length);
         }
 
@@ -31,25 +26,26 @@ namespace Itinero.Network.Mutation
                    _modified[localTileId] == true;
         }
 
-        internal void SetTile(NetworkTile tile, int edgeTypesId)
+        internal void SetTile(NetworkTile tile)
         {
-            _tiles[tile.TileId] = (tile, edgeTypesId);
+            _tiles[tile.TileId] = tile;
             _modified[tile.TileId] = true;
         }
 
         private NetworkTile? GetTileForRead(uint localTileId)
         {
+            var edgeTypeMap = this._network.RouterDb.GetEdgeTypeMap();
+            
             // ensure minimum size.
             _tiles.EnsureMinimumSize(localTileId);
 
             // check if there is already a modified version.
-            var (tile, edgeTypesId) = _tiles[localTileId];
+            var tile = _tiles[localTileId];
             if (tile == null) return null;
 
             // update the tile if needed.
-            if (edgeTypesId == EdgeTypeIndex.Id) return tile;
-            tile = EdgeTypeIndex.Update(tile);
-            _tiles[localTileId] = (tile, EdgeTypeIndex.Id);
+            if (tile.EdgeTypeMapId == edgeTypeMap.id) return tile;
+            _tiles[localTileId] = tile.ApplyEdgeTypeMap(edgeTypeMap);
             return tile;
         }
 
@@ -58,28 +54,30 @@ namespace Itinero.Network.Mutation
             return this.GetTileForRead(localTileId);
         }
 
-        private NetworkTile GetTileForWrite(uint localTileId)
+        private (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) GetTileForWrite(uint localTileId)
         {
+            var edgeTypeMap = this._network.RouterDb.GetEdgeTypeMap();
+            
             // ensure minimum size.
             _tiles.EnsureMinimumSize(localTileId);
 
             // check if there is already a modified version.
-            var (tile, edgeTypesId) = _tiles[localTileId];
+            var tile = _tiles[localTileId];
             if (tile != null)
             {
-                if (edgeTypesId == EdgeTypeIndex.Id) return tile;
+                if (tile.EdgeTypeMapId == edgeTypeMap.id) return (tile, edgeTypeMap.func);
 
-                tile = EdgeTypeIndex.Update(tile);
-                _tiles[localTileId] = (tile, EdgeTypeIndex.Id);
-                return tile;
+                tile = tile.ApplyEdgeTypeMap(edgeTypeMap);
+                _tiles[localTileId] = tile;
+                return (tile, edgeTypeMap.func);
             }
 
             // there is no tile, create a new one.
             tile = new NetworkTile(_network.Zoom, localTileId);
 
             // store in the local tiles.
-            _tiles[localTileId] = (tile, EdgeTypeIndex.Id);
-            return tile;
+            _tiles[localTileId] = tile;
+            return (tile, edgeTypeMap.func);
         }
 
         public RoutingNetworkMutatorEdgeEnumerator GetEdgeEnumerator()
@@ -91,7 +89,7 @@ namespace Itinero.Network.Mutation
         {
             foreach (var (i, value) in _tiles)
             {
-                if (value.tile == null) continue;
+                if (value == null) continue;
 
                 yield return (uint) i;
             }
@@ -101,6 +99,8 @@ namespace Itinero.Network.Mutation
         {
             return GetTileForRead(localTileId);
         }
+
+        public int Zoom => _network.Zoom;
 
         public VertexId AddVertex(double longitude, double latitude)
         {
@@ -112,7 +112,7 @@ namespace Itinero.Network.Mutation
             _tiles.EnsureMinimumSize(localTileId);
 
             // get the tile (or create it).
-            var tile = this.GetTileForWrite(localTileId);
+            var (tile, _) = this.GetTileForWrite(localTileId);
 
             // add the vertex.
             return tile.AddVertex(longitude, latitude);
@@ -146,15 +146,16 @@ namespace Itinero.Network.Mutation
             IEnumerable<(double longitude, double latitude)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null)
         {
-            var tile = this.GetTileForWrite(vertex1.TileId);
+            var (tile, edgeTypeFunc) = this.GetTileForWrite(vertex1.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
-            var edgeTypeId = attributes != null ? (uint?) EdgeTypeIndex.Get(attributes) : null;
+            var edgeTypeId = attributes != null ? (uint?) edgeTypeFunc(attributes) : null;
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
             if (vertex1.TileId != vertex2.TileId)
             {
                 // this edge crosses tiles, also add an extra edge to the other tile.
-                tile = this.GetTileForWrite(vertex2.TileId);
+                (tile, edgeTypeFunc) = this.GetTileForWrite(vertex2.TileId);
+                edgeTypeId = attributes != null ? (uint?) edgeTypeFunc(attributes) : null;
                 tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId);
             }
 
@@ -167,44 +168,27 @@ namespace Itinero.Network.Mutation
             if (prefix != null) throw new NotSupportedException($"Turn costs with {nameof(prefix)} not supported.");
 
             // get the tile (or create it).
-            var tile = this.GetTileForWrite(vertex.TileId);
+            var (tile, _) = this.GetTileForWrite(vertex.TileId);
             if (tile == null) throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
 
             // get the turn cost type id.
-            var turnCostTypeId = TurnCostTypeIndex.Get(attributes);
+            var turnCostFunc = _network.RouterDb.GetTurnCostTypeMap();
+            var turnCostTypeId = turnCostFunc.func(attributes);
 
             // add the turn cost table using the type id.
             tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
         }
 
-        internal EdgeTypeFunc EdgeTypeFunc => EdgeTypeIndex.Func;
-
-        internal void SetEdgeTypeFunc(EdgeTypeFunc graphEdgeTypeFunc)
-        {
-            EdgeTypeIndex = EdgeTypeIndex.Next(graphEdgeTypeFunc);
-        }
-
-        internal EdgeTypeIndex EdgeTypeIndex { get; private set; }
-
-        internal TurnCostTypeFunc TurnCostTypeFunc => TurnCostTypeIndex.Func;
-
-        internal void SetTurnCostTypeFunc(TurnCostTypeFunc graphTurnCostTypeFunc)
-        {
-            TurnCostTypeIndex = TurnCostTypeIndex.Next(graphTurnCostTypeFunc);
-        }
-
-        internal TurnCostTypeIndex TurnCostTypeIndex { get; private set; }
-
         internal RoutingNetwork ToRoutingNetwork()
         {
-            return new RoutingNetwork(_network.RouterDb, _tiles, _network.Zoom, EdgeTypeIndex, TurnCostTypeIndex);
+            return new RoutingNetwork(_network.RouterDb, _tiles, _network.Zoom);
         }
 
         public void Dispose()
         {
             _network.ClearMutator();
             
-            (_network.RouterDb as IRouterDbMutable).Finish(this.ToRoutingNetwork(), _network.RouterDb.ProfileConfiguration);
+            (_network.RouterDb as IRouterDbMutable).Finish(this.ToRoutingNetwork());
         }
     }
 }

@@ -1,25 +1,24 @@
 using System.IO;
 using System.Linq;
-using Itinero.Data.Graphs.Tiles;
-using Itinero.IO.Osm.Tiles;
+using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.Tiles
+namespace Itinero.Tests.Network.Tiles
 {
-    public partial class GraphTileTests
+    public partial class NetworkTileTests
     {
         [Fact]
-        public void GraphTile_Serialize_Deserialize_OneVertex()
+        public void NetworkTile_Serialize_Deserialize_OneVertex()
         {
-            var expectedTile = new GraphTile(14, 
-                Tile.WorldToTile(4.7868, 51.2643, 14).LocalId);
+            var expectedTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 = expectedTile.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             
             var memoryStream = new MemoryStream();
-            expectedTile.Serialize(memoryStream);
+            expectedTile.WriteTo(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             
-            var graphTile = GraphTile.Deserialize(memoryStream);
+            var graphTile = NetworkTile.ReadFrom(memoryStream);
             Assert.Equal((uint)89546969, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude));
             Assert.Equal(4.7868, longitude, 4);
@@ -27,19 +26,19 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
         
         [Fact]
-        public void GraphTile_Serialize_Deserialize_OneEdge()
+        public void NetworkTile_Serialize_Deserialize_OneEdge()
         {
-            var expected = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var expected = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728);
             var vertex2 = expected.AddVertex(4.86737, 51.267849);
             var edge = expected.AddEdge(vertex1, vertex2);
             
             var memoryStream = new MemoryStream();
-            expected.Serialize(memoryStream);
+            expected.WriteTo(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             
-            var graphTile = GraphTile.Deserialize(memoryStream);
+            var graphTile = NetworkTile.ReadFrom(memoryStream);
             Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude));
             Assert.Equal(4.86638, longitude, 4);
@@ -48,7 +47,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.Equal(4.86737, longitude, 4);
             Assert.Equal(51.267849, latitude, 3);
             
-            var edgeEnumerator = new GraphTileEnumerator();
+            var edgeEnumerator = new NetworkTileEnumerator();
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
@@ -57,10 +56,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
         
         [Fact]
-        public void GraphTile_Serialize_Deserialize_OneEdge_Shape()
+        public void NetworkTile_Serialize_Deserialize_OneEdge_Shape()
         {
-            var expected = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var expected = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728);
             var vertex2 = expected.AddVertex(4.86737, 51.267849);
             var edge = expected.AddEdge(vertex1, vertex2, new[]
@@ -80,10 +79,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             });
             
             var memoryStream = new MemoryStream();
-            expected.Serialize(memoryStream);
+            expected.WriteTo(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             
-            var graphTile = GraphTile.Deserialize(memoryStream);
+            var graphTile = NetworkTile.ReadFrom(memoryStream);
             Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude));
             Assert.Equal(4.86638, longitude, 4);
@@ -92,7 +91,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.Equal(4.86737, longitude, 4);
             Assert.Equal(51.267849, latitude, 3);
             
-            var edgeEnumerator = new GraphTileEnumerator();
+            var edgeEnumerator = new NetworkTileEnumerator();
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
@@ -113,10 +112,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
         }
         
         [Fact]
-        public void GraphTile_Serialize_Deserialize_OneEdge_Attributes()
+        public void NetworkTile_Serialize_Deserialize_OneEdge_Attributes()
         {
-            var expected = new GraphTile(14, 
-                Tile.WorldToTile(4.86638, 51.269728, 14).LocalId);
+            var expected = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728);
             var vertex2 = expected.AddVertex(4.86737, 51.267849);
             var edge = expected.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[]
@@ -128,10 +127,10 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             );
             
             var memoryStream = new MemoryStream();
-            expected.Serialize(memoryStream);
+            expected.WriteTo(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
             
-            var graphTile = GraphTile.Deserialize(memoryStream);
+            var graphTile = NetworkTile.ReadFrom(memoryStream);
             Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude));
             Assert.Equal(4.86638, longitude, 4);
@@ -140,7 +139,7 @@ namespace Itinero.Tests.Data.Graphs.Tiles
             Assert.Equal(4.86737, longitude, 4);
             Assert.Equal(51.267849, latitude, 3);
             
-            var edgeEnumerator = new GraphTileEnumerator();
+            var edgeEnumerator = new NetworkTileEnumerator();
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());

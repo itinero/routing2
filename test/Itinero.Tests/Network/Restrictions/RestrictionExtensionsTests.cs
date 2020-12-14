@@ -1,9 +1,9 @@
-using System.Linq;
-using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.Restrictions;
+using Itinero.Network;
+using Itinero.Network.Restrictions;
 using Xunit;
+using System.Linq;
 
-namespace Itinero.Tests.Data.Graphs.Restrictions
+namespace Itinero.Tests.Network.Restrictions
 {
     public class RestrictionExtensionsTests
     {
@@ -12,7 +12,7 @@ namespace Itinero.Tests.Data.Graphs.Restrictions
         {
             var routerDb = new RouterDb();
             
-            using var mutable = routerDb.GetAsMutable();
+            using var mutable = routerDb.GetMutableNetwork();
             var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
             var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -31,7 +31,7 @@ namespace Itinero.Tests.Data.Graphs.Restrictions
         {
             var routerDb = new RouterDb();
             
-            using var mutable = routerDb.GetAsMutable();
+            using var mutable = routerDb.GetMutableNetwork();
             var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
             var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -57,7 +57,7 @@ namespace Itinero.Tests.Data.Graphs.Restrictions
         {
             var routerDb = new RouterDb();
             
-            using var mutable = routerDb.GetAsMutable();
+            using var mutable = routerDb.GetMutableNetwork();
             var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
             var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -83,7 +83,7 @@ namespace Itinero.Tests.Data.Graphs.Restrictions
         {
             var routerDb = new RouterDb();
             
-            using var mutable = routerDb.GetAsMutable();
+            using var mutable = routerDb.GetMutableNetwork();
             var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
             var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -109,7 +109,7 @@ namespace Itinero.Tests.Data.Graphs.Restrictions
         {
             var routerDb = new RouterDb();
             
-            using var mutable = routerDb.GetAsMutable();
+            using var mutable = routerDb.GetMutableNetwork();
             var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
             var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);

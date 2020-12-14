@@ -37,7 +37,7 @@ namespace Itinero.Tests.Functional.IO.Osm
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             progress.RegisterSource(source);
 
-            var target = new RouterDbStreamTarget(routerDb.GetAsMutable());
+            var target = new RouterDbStreamTarget(routerDb.GetMutableNetwork());
             target.RegisterSource(progress);
             target.Initialize();
 

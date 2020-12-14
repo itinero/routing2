@@ -1,30 +1,30 @@
 using System.IO;
 using System.Linq;
-using Itinero.Data.Graphs;
-using Itinero.Data.Graphs.Serialization;
+using Itinero.Network;
+using Itinero.Network.Serialization;
 using Xunit;
 
-namespace Itinero.Tests.Data.Graphs.Serialization
+namespace Itinero.Tests.Network.Serialization
 {
-    public class GraphSerializerTests
+    public class RoutingNetworkSerializerTests
     {
         [Fact]
-        public void GraphSerializer_Serialize_Empty_ShouldDeserialize_Empty()
+        public void RoutingNetworkSerializer_Serialize_Empty_ShouldDeserialize_Empty()
         {
-            var expected = new Graph();
+            var expected = new RoutingNetwork(new RouterDb());
             
             var stream = new MemoryStream();
-            stream.WriteGraph(expected.GetAsMutable());
+            stream.WriteRoutingNetwork(expected.GetAsMutable());
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = stream.ReadGraph();
-            Assert.Empty(graph.GetVertices());
+            var routingNetwork = stream.ReadRoutingNetwork(new RouterDb());
+            Assert.Empty(routingNetwork.GetVertices());
         }
         
         [Fact]
-        public void GraphSerializer_Serialize_OneVertex_ShouldDeserialize_OneVertex()
+        public void RoutingNetworkSerializer_Serialize_OneVertex_ShouldDeserialize_OneVertex()
         {
-            var expected = new Graph();
+            var expected = new RoutingNetwork(new RouterDb());
             VertexId vertex;
             using (var writer = expected.GetWriter())
             {
@@ -32,19 +32,19 @@ namespace Itinero.Tests.Data.Graphs.Serialization
             }
             
             var stream = new MemoryStream();
-            stream.WriteGraph(expected.GetAsMutable());
+            stream.WriteRoutingNetwork(expected.GetAsMutable());
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = stream.ReadGraph();
+            var graph = stream.ReadRoutingNetwork(new RouterDb());
             var vertices = graph.GetVertices().ToList();
             Assert.Single(vertices);
             Assert.Equal(vertex, vertices[0]);
         }
         
         [Fact]
-        public void GraphSerializer_Serialize_OneEdge_ShouldDeserialize_OneEdge()
+        public void RoutingNetworkSerializer_Serialize_OneEdge_ShouldDeserialize_OneEdge()
         {
-            var expected = new Graph();
+            var expected = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;
             using (var writer = expected.GetWriter())
@@ -60,10 +60,10 @@ namespace Itinero.Tests.Data.Graphs.Serialization
             }
             
             var stream = new MemoryStream();
-            stream.WriteGraph(expected.GetAsMutable());
+            stream.WriteRoutingNetwork(expected.GetAsMutable());
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = stream.ReadGraph();
+            var graph = stream.ReadRoutingNetwork(new RouterDb());
             var vertices = graph.GetVertices().ToList();
             Assert.Equal(2, vertices.Count);
             Assert.Equal(vertex1, vertices[0]);

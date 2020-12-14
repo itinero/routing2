@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Restrictions;
+using Itinero.Network;
 using OsmSharp;
 using OsmSharp.Db;
 using OsmSharp.Tags;

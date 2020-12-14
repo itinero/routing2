@@ -346,7 +346,7 @@ namespace Itinero.Tests.Network
             {
                 mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
                     attr => attr.Where(x => x.key == "highway" || x.key == "maxspeed")));
-            });
+            }
             
             var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);

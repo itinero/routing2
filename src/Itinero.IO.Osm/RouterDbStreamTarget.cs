@@ -191,18 +191,18 @@ namespace Itinero.IO.Osm
                     return;
                 }
                 
-                // invert negative sequences.
-                if (negative)
-                {
-                    foreach (var inverted in sequenceResult.Value.Invert(_mutableRouterDbEdgeEnumerator))
-                    {
-                        this.AddRestrictedSequence(inverted, relation.Tags);
-                    }
-                }
-                else
-                {
-                    this.AddRestrictedSequence(sequenceResult.Value, relation.Tags);
-                }
+                // // invert negative sequences.
+                // if (negative)
+                // {
+                //     foreach (var inverted in sequenceResult.Value.Invert(_mutableRouterDbEdgeEnumerator))
+                //     {
+                //         this.AddRestrictedSequence(inverted, relation.Tags);
+                //     }
+                // }
+                // else
+                // {
+                //     this.AddRestrictedSequence(sequenceResult.Value, relation.Tags);
+                // }
             }
         }
 

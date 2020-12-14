@@ -5,7 +5,7 @@ namespace Itinero.Network.Tiles
 {
     internal partial class NetworkTile
     {
-        public void Serialize(Stream stream)
+        public void WriteTo(Stream stream)
         {
             var version = 1;
             stream.WriteVarInt32(version);
@@ -24,7 +24,7 @@ namespace Itinero.Network.Tiles
             this.SerializeShapes(stream);
         }
 
-        public static NetworkTile Deserialize(Stream stream)
+        public static NetworkTile ReadFrom(Stream stream)
         {
             var version = stream.ReadVarInt32();
             if (version != 1) throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");

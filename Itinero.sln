@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{06B47317-F
 	ProjectSection(SolutionItems) = preProject
 		docs\routable-tiles-ghent.png = docs\routable-tiles-ghent.png
 		docs\ROADMAP.md = docs\ROADMAP.md
+		docs\NOTES.md = docs\NOTES.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Tests.Profiles", "test\Itinero.Tests.Profiles\Itinero.Tests.Profiles.csproj", "{B0AD7C9A-247D-409D-B7F2-54B2A4ED924C}"
