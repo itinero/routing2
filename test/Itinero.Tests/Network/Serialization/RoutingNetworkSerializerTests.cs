@@ -14,10 +14,10 @@ namespace Itinero.Tests.Network.Serialization
             var expected = new RoutingNetwork(new RouterDb());
             
             var stream = new MemoryStream();
-            stream.WriteRoutingNetwork(expected.GetAsMutable());
+            expected.GetAsMutable().WriteTo(stream);
             stream.Seek(0, SeekOrigin.Begin);
 
-            var routingNetwork = stream.ReadRoutingNetwork(new RouterDb());
+            var routingNetwork = stream.ReadFrom(new RouterDb());
             Assert.Empty(routingNetwork.GetVertices());
         }
         
@@ -32,10 +32,10 @@ namespace Itinero.Tests.Network.Serialization
             }
             
             var stream = new MemoryStream();
-            stream.WriteRoutingNetwork(expected.GetAsMutable());
+            expected.GetAsMutable().WriteTo(stream);
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = stream.ReadRoutingNetwork(new RouterDb());
+            var graph = stream.ReadFrom(new RouterDb());
             var vertices = graph.GetVertices().ToList();
             Assert.Single(vertices);
             Assert.Equal(vertex, vertices[0]);
@@ -60,10 +60,10 @@ namespace Itinero.Tests.Network.Serialization
             }
             
             var stream = new MemoryStream();
-            stream.WriteRoutingNetwork(expected.GetAsMutable());
+            expected.GetAsMutable().WriteTo(stream);
             stream.Seek(0, SeekOrigin.Begin);
 
-            var graph = stream.ReadRoutingNetwork(new RouterDb());
+            var graph = stream.ReadFrom(new RouterDb());
             var vertices = graph.GetVertices().ToList();
             Assert.Equal(2, vertices.Count);
             Assert.Equal(vertex1, vertices[0]);

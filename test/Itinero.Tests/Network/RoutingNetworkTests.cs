@@ -1,6 +1,8 @@
 using System.Linq;
+using Itinero.Indexes;
 using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
+using Itinero.Tests.Indexes;
 using Xunit;
 
 namespace Itinero.Tests.Network
@@ -237,12 +239,14 @@ namespace Itinero.Tests.Network
         [Fact]
         public void RoutingNetwork_EdgeType_AddEdge_NewType_ShouldAdd()
         {
-            var network = new RoutingNetwork(new RouterDb());
-            using (var mutable = network.GetAsMutable())
+            var routerDb = new RouterDb();
+            var network = new RoutingNetwork(routerDb);
+
+            var attributeSetMap = new AttributeSetMap(102948, a =>
             {
-                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
-                    attr => attr.Where(x => x.key == "highway")));
-            }
+                return a.Where(x => x.key == "highway");
+            });
+            routerDb.SetEdgeTypeMap(attributeSetMap);
             
             VertexId vertex1, vertex2;
             EdgeId edge;
@@ -263,12 +267,14 @@ namespace Itinero.Tests.Network
         [Fact]
         public void RoutingNetwork_EdgeType_AddEdge_ExistingType_ShouldGet()
         {
-            var network = new RoutingNetwork(new RouterDb());
-            using (var mutable = network.GetAsMutable())
+            var routerDb = new RouterDb();
+            var network = new RoutingNetwork(routerDb);
+
+            var attributeSetMap = new AttributeSetMap(102948, a =>
             {
-                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
-                    attr => attr.Where(x => x.key == "highway")));
-            }
+                return a.Where(x => x.key == "highway");
+            });
+            routerDb.SetEdgeTypeMap(attributeSetMap);
             
             VertexId vertex1, vertex2, vertex3;
             EdgeId edge;
@@ -291,12 +297,14 @@ namespace Itinero.Tests.Network
         [Fact]
         public void RoutingNetwork_EdgeType_AddEdge_SecondType_ShouldAdd()
         {
-            var network = new RoutingNetwork(new RouterDb());
-            using (var mutable = network.GetAsMutable())
+            var routerDb = new RouterDb();
+            var network = new RoutingNetwork(routerDb);
+
+            var attributeSetMap = new AttributeSetMap(102948, a =>
             {
-                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
-                    attr => attr.Where(x => x.key == "highway")));
-            }
+                return a.Where(x => x.key == "highway");
+            });
+            routerDb.SetEdgeTypeMap(attributeSetMap);
             
             VertexId vertex1, vertex2, vertex3;
             EdgeId edge;
@@ -320,12 +328,14 @@ namespace Itinero.Tests.Network
         [Fact]
         public void RoutingNetwork_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId()
         {
-            var network = new RoutingNetwork(new RouterDb());
-            using (var mutable = network.GetAsMutable())
+            var routerDb = new RouterDb();
+            var network = new RoutingNetwork(routerDb);
+
+            var attributeSetMap = new AttributeSetMap(102948, a =>
             {
-                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
-                    attr => attr.Where(x => x.key == "highway")));
-            }
+                return a.Where(x => x.key == "highway");
+            });
+            routerDb.SetEdgeTypeMap(attributeSetMap);
             
             VertexId vertex1, vertex2;
             EdgeId edge;
@@ -342,11 +352,11 @@ namespace Itinero.Tests.Network
             }
 
             // update edge type func.
-            using (var mutable = network.GetAsMutable())
+            attributeSetMap = new AttributeSetMap(102948, a =>
             {
-                mutable.SetEdgeTypeFunc(mutable.EdgeTypeFunc.NextVersion(
-                    attr => attr.Where(x => x.key == "highway" || x.key == "maxspeed")));
-            }
+                return a.Where(x => x.key == "highway" || x.key == "maxspeed");
+            });
+            routerDb.SetEdgeTypeMap(attributeSetMap);
             
             var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveToEdge(edge);

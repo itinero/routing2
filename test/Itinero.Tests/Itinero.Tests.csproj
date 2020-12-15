@@ -24,7 +24,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Network\Indexes" />
     <Folder Include="Routing\Flavours" />
   </ItemGroup>
 </Project>
