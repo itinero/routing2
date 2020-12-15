@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Itinero.Geo.Directions;
-using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
-using Itinero.IO.Osm.Tiles;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
+using Itinero.Profiles;
 using Itinero.Routing;
-using Itinero.Serialization;
 using Itinero.Snapping;
-using Itinero.Tests.Functional.Tests;
 using Serilog;
 using Serilog.Events;
 
@@ -59,11 +53,14 @@ namespace Itinero.Tests.Functional
             var snap2 = latest.Snap().To(5.972356796264648,
                 49.93735597155516).Value;
             var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            //
-            // routerDb.Mutate(m =>
-            // {
-            //     m.PrepareFor(bicycle);
-            // });
+            
+            //routerDb.PrepareFor(bicycle);
+
+            snap1 = latest.Snap().To(5.9732794761657715,
+                49.93364075288293).Value;
+            snap2 = latest.Snap().To(5.972356796264648,
+                49.93735597155516).Value;
+            route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
             
             using (var outputStream = File.Open("luxembourg.routerdb", FileMode.Create))
             {

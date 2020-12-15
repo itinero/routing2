@@ -33,7 +33,7 @@ namespace Itinero.Routing.Costs
                 foreach (var (turnCostType, turnCost) in turnCosts)
                 {
                     var turnCostAttributes =
-                        edgeEnumerator.Graph.GetTurnCostTypeAttributes(turnCostType);
+                        edgeEnumerator.Network.RouterDb.GetTurnCostType(turnCostType);
                     var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
                     if (turnCostFactor.IsBinary && turnCost > 0)
                     {

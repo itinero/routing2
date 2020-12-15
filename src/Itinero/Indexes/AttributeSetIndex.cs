@@ -14,7 +14,7 @@ namespace Itinero.Indexes
     /// A collection of distinct sets of attributes that:.
     /// - Cannot mutate data in existing ids.
     /// - Can only grow
-    /// - 0 represents an empty set.
+    /// - 0 represents an empty non-null set.
     /// </remarks>
     internal class AttributeSetIndex
     {

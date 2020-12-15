@@ -11,7 +11,7 @@ namespace Itinero.Network.Enumerators.Edges
 
         internal EdgeEnumerator(T graph)
         {
-            Graph = graph;
+            Network = graph;
 
             _tileEnumerator = new NetworkTileEnumerator();
         }
@@ -21,7 +21,7 @@ namespace Itinero.Network.Enumerators.Edges
             var tile = _tileEnumerator.Tile;
             if (tile == null || tile.TileId != vertex.TileId)
             {
-                tile = Graph.GetTileForRead(vertex.TileId);
+                tile = Network.GetTileForRead(vertex.TileId);
             }
 
             if (tile == null)
@@ -47,7 +47,7 @@ namespace Itinero.Network.Enumerators.Edges
             if (_tileEnumerator.TileId == vertex.TileId) return _tileEnumerator.MoveTo(vertex);
 
             // move to the tile.
-            var tile = Graph.GetTileForRead(vertex.TileId);
+            var tile = Network.GetTileForRead(vertex.TileId);
             if (tile == null) return false;
             _tileEnumerator.MoveTo(tile);
 
@@ -64,7 +64,7 @@ namespace Itinero.Network.Enumerators.Edges
             if (_tileEnumerator.TileId == edgeId.TileId) return _tileEnumerator.MoveTo(edgeId, forward);
 
             // move to the tile.
-            var tile = Graph.GetTileForRead(edgeId.TileId);
+            var tile = Network.GetTileForRead(edgeId.TileId);
             if (tile == null) return false;
             _tileEnumerator.MoveTo(tile);
 
@@ -88,7 +88,7 @@ namespace Itinero.Network.Enumerators.Edges
             return _tileEnumerator.MoveNext();
         }
 
-        public T Graph { get; }
+        public T Network { get; }
 
         /// <summary>
         /// Returns true if the edge is from -> to, false otherwise.

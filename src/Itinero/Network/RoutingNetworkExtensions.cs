@@ -59,14 +59,13 @@ namespace Itinero.Network
 
         internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
         {
-            throw new NotImplementedException();
-            // if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
-            //     cache == null)
-            // {
-            //     return new ProfileCostFunction(profile);
-            // }
-            //
-            // return new ProfileCostFunctionCached(profile, cache);
+            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
+                cache == null)
+            {
+                return new ProfileCostFunction(profile);
+            }
+            
+            return new ProfileCostFunctionCached(profile, cache);
         }
 
         internal static IEnumerable<(string key, string value)> GetAttributes(this RoutingNetwork routerDb, EdgeId edge)

@@ -15,7 +15,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <returns>True if there is data available.</returns>
         bool MoveNext();
 
-        T Graph { get; }
+        T Network { get; }
 
         /// <summary>
         /// Returns true if the edge is from -> to, false otherwise.

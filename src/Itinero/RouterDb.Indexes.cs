@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Itinero.Indexes;
+using Itinero.Profiles;
 
 namespace Itinero
 {
@@ -11,15 +12,26 @@ namespace Itinero
         private readonly AttributeSetIndex _turnCostTypeIndex;
         private AttributeSetMap _turnCostTypeMap;
 
+        internal RouterDbProfileConfiguration ProfileConfiguration { get; }
+        
         public IEnumerable<(string key, string value)> GetEdgeType(uint id)
         {
             return _edgeTypeIndex.GetById(id);
         }
 
+        internal void SetEdgeTypeMap(AttributeSetMap edgeTypeMap)
+        {
+            _edgeTypeMap = edgeTypeMap;
+        }
+        
         internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
         {
-            return (_edgeTypeMap.Id, 
-                (e) => _edgeTypeIndex.Get(e));
+            return (_edgeTypeMap.Id,
+                a =>
+                {
+                    var m = _edgeTypeMap.Mapping(a);
+                    return _edgeTypeIndex.Get(m);
+                });
         }
 
         public IEnumerable<(string key, string value)> GetTurnCostType(uint id)
@@ -29,8 +41,11 @@ namespace Itinero
 
         internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetTurnCostTypeMap()
         {
-            return (_turnCostTypeMap.Id, 
-                (e) => _turnCostTypeIndex.Get(e));
+            return (_turnCostTypeMap.Id, a =>
+                {
+                    var m = _turnCostTypeMap.Mapping(a);
+                    return _turnCostTypeIndex.Get(m);
+                });
         }
     }
 }

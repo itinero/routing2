@@ -10,7 +10,7 @@ namespace Itinero.Network.Search
 
         public VertexEdgeEnumerator(RoutingNetwork graph, IEnumerable<VertexId> vertices)
         {
-            Graph = graph;
+            Network = graph;
             _vertexEnumerator = vertices.GetEnumerator();
             RoutingNetworkEdgeEnumerator = graph.GetEdgeEnumerator();
         }
@@ -65,7 +65,7 @@ namespace Itinero.Network.Search
             
         }
 
-        public RoutingNetwork Graph { get; }
+        public RoutingNetwork Network { get; }
 
         public bool Forward => RoutingNetworkEdgeEnumerator.Forward;
         public VertexId From => RoutingNetworkEdgeEnumerator.From;

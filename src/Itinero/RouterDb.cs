@@ -6,6 +6,7 @@ using Itinero.IO;
 using Itinero.Network;
 using Itinero.Network.Mutation;
 using Itinero.Network.Serialization;
+using Itinero.Profiles;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -30,6 +31,8 @@ namespace Itinero
             _edgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeIndex = new AttributeSetIndex();
             _turnCostTypeMap = AttributeSetMap.Default;
+                
+            this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
         private RouterDb(Stream stream)
@@ -46,6 +49,8 @@ namespace Itinero
             _edgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeIndex = AttributeSetIndex.ReadFrom(stream);
             _turnCostTypeMap = AttributeSetMap.Default;
+                
+            this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
         /// <summary>
