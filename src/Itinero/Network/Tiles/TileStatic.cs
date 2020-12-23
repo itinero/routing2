@@ -94,15 +94,32 @@ namespace Itinero.Network.Tiles
             var topLeft = TileStatic.WorldToTile(box.topLeft.longitude, box.topLeft.latitude, zoom);
             var bottomRight = TileStatic.WorldToTile(box.bottomRight.longitude, box.bottomRight.latitude, zoom);
 
-            for (var x = topLeft.x; x != bottomRight.x;)
+            var x = topLeft.x;
+            var y = topLeft.y;
+            while (true)
             {
-                for (var y = topLeft.y; y <= bottomRight.y; y--)
+                yield return (x, y);
+
+                if (y == bottomRight.y)
                 {
-                    yield return (x, y);
+                    // move on with x.
+                    if (x == bottomRight.x)
+                    {
+                        // both x and y have reached the end.
+                        break;
+                    }
+                    
+                    // reset y.
+                    y = topLeft.y;
+                    
+                    // move on with x.
+                    x++;
+                    if (x == n) x = 0;
+                    continue;
                 }
 
-                x++;
-                if (x == n) n = 0;
+                // move on with y.
+                y--;
             }
         }
     }
