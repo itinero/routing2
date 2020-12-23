@@ -26,8 +26,13 @@ jobs:
     - name: Test
       run: dotnet test --no-restore --verbosity normal --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       working-directory: ./test/Itinero.Tests/
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
     - uses: actions/checkout@v2
       with:
         ref: 'docs/coverage'
         path: 'coverages'
-    
+    - run: mkdir ./coverages/${{ steps.extract_branch.outputs.branch }}/
+    - run: rsync -avm --include='*.xml' -f 'hide,! */' ./test/Itinero.Tests/TestResults ./coverages/${{ steps.extract_branch.outputs.branch }}/
