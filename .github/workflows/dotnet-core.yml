@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-restore --verbosity normal --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      run: dotnet test --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       working-directory: ./test/Itinero.Tests/
     - name: Extract branch name
       shell: bash
@@ -33,6 +33,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: 'docs/coverage'
+        clean: 'false'
     - run: mkdir ./${{ steps.extract_branch.outputs.branch }}/
     - run: rsync -avm --include='*.xml' -f 'hide,! */' ./test/Itinero.Tests/TestResults ./${{ steps.extract_branch.outputs.branch }}/
     - name: Commit badge
