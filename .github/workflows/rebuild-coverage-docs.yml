@@ -25,4 +25,13 @@ jobs:
         verbosity: 'Info' 
         title: '' 
         tag: '${{ github.run_number }}_${{ github.run_id }}' 
-        
+    - name: Commit badge
+      run: git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" 
+    - name: Commit badge
+      run: git stage -A && git commit -m "Added new coverage report."
+    - name: Push badge commit
+      uses: ad-m/github-push-action@master
+      if: ${{ success() }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: 'docs/coverage'        
