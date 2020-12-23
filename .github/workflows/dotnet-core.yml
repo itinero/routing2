@@ -2,7 +2,7 @@ name: .NET Core
 
 on:
   push:
-    branches: [ refactoring/api ]
+    branches: [ develop ]
 
 jobs:
   build:
