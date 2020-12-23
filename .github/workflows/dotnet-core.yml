@@ -35,6 +35,7 @@ jobs:
         ref: 'docs/coverage'
         clean: 'false'
     - run: rm -r src/Itinero.IO.Osm.Tiles/ontology
+    - run: rm -r test/Itinero.Tests/TestResults/
     - name: Commit badge
       run: git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" 
     - name: Commit badge
