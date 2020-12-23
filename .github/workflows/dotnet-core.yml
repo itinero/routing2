@@ -40,3 +40,9 @@ jobs:
       run: git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" 
     - name: Commit badge
       run: git stage -A && git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
+    - name: Push badge commit
+      uses: ad-m/github-push-action@master
+      if: ${{ success() }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: 'docs/coverage'
