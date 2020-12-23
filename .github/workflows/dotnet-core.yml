@@ -25,6 +25,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      working-directory: ./test/Itinero.Tests/
     - uses: actions/checkout@v2
       with:
         ref: 'docs/coverage'
