@@ -41,9 +41,5 @@ jobs:
       env:
         BADGE: ${{ steps.coverage.outputs.path }}
       run: |
-        cd coverages
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git stage -A
-        git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
+        cd coverages && git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" && git stage -A && git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
     
