@@ -1,0 +1,217 @@
+{
+  "version": 3,
+  "targets": {
+    "net5.0": {
+      "dotnet-reportgenerator-globaltool/4.8.2": {
+        "type": "package"
+      }
+    },
+    "net5.0/any": {
+      "dotnet-reportgenerator-globaltool/4.8.2": {
+        "type": "package",
+        "tools": {
+          "tools/net5.0/any/DotNetConfig.dll": {},
+          "tools/net5.0/any/DotnetToolSettings.xml": {},
+          "tools/net5.0/any/McMaster.NETCore.Plugins.dll": {},
+          "tools/net5.0/any/Microsoft.DotNet.PlatformAbstractions.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Configuration.Abstractions.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Configuration.Binder.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Configuration.CommandLine.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Configuration.FileExtensions.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Configuration.Json.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Configuration.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.DependencyModel.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.FileProviders.Abstractions.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.FileProviders.Physical.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.FileSystemGlobbing.dll": {},
+          "tools/net5.0/any/Microsoft.Extensions.Primitives.dll": {},
+          "tools/net5.0/any/ReportGenerator.Core.dll": {},
+          "tools/net5.0/any/ReportGenerator.Core.pdb": {},
+          "tools/net5.0/any/ReportGenerator.DotnetCorePluginLoader.dll": {},
+          "tools/net5.0/any/ReportGenerator.DotnetCorePluginLoader.pdb": {},
+          "tools/net5.0/any/ReportGenerator.deps.json": {},
+          "tools/net5.0/any/ReportGenerator.dll": {},
+          "tools/net5.0/any/ReportGenerator.exe": {},
+          "tools/net5.0/any/ReportGenerator.pdb": {},
+          "tools/net5.0/any/ReportGenerator.runtimeconfig.json": {},
+          "tools/net5.0/any/SixLabors.Fonts.dll": {},
+          "tools/net5.0/any/SixLabors.ImageSharp.Drawing.dll": {},
+          "tools/net5.0/any/SixLabors.ImageSharp.dll": {},
+          "tools/net5.0/any/appsettings.json": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "dotnet-reportgenerator-globaltool/4.8.2": {
+      "sha512": "zgh19kQ4kRMnGcDuzPJJZmeuWEIY3AKt048KE0Om3y6VEmOXPb2I+zHf1hT/0U5acdCAqgT7zhU9GZLRXJpZqQ==",
+      "type": "package",
+      "path": "dotnet-reportgenerator-globaltool/4.8.2",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.txt",
+        "Readme.txt",
+        "dotnet-reportgenerator-globaltool.4.8.2.nupkg.sha512",
+        "dotnet-reportgenerator-globaltool.nuspec",
+        "icon.png",
+        "tools/net5.0/any/DotNetConfig.dll",
+        "tools/net5.0/any/DotnetToolSettings.xml",
+        "tools/net5.0/any/McMaster.NETCore.Plugins.dll",
+        "tools/net5.0/any/Microsoft.DotNet.PlatformAbstractions.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Configuration.Abstractions.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Configuration.Binder.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Configuration.CommandLine.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Configuration.FileExtensions.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Configuration.Json.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Configuration.dll",
+        "tools/net5.0/any/Microsoft.Extensions.DependencyModel.dll",
+        "tools/net5.0/any/Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "tools/net5.0/any/Microsoft.Extensions.FileProviders.Physical.dll",
+        "tools/net5.0/any/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "tools/net5.0/any/Microsoft.Extensions.Primitives.dll",
+        "tools/net5.0/any/ReportGenerator.Core.dll",
+        "tools/net5.0/any/ReportGenerator.Core.pdb",
+        "tools/net5.0/any/ReportGenerator.DotnetCorePluginLoader.dll",
+        "tools/net5.0/any/ReportGenerator.DotnetCorePluginLoader.pdb",
+        "tools/net5.0/any/ReportGenerator.deps.json",
+        "tools/net5.0/any/ReportGenerator.dll",
+        "tools/net5.0/any/ReportGenerator.exe",
+        "tools/net5.0/any/ReportGenerator.pdb",
+        "tools/net5.0/any/ReportGenerator.runtimeconfig.json",
+        "tools/net5.0/any/SixLabors.Fonts.dll",
+        "tools/net5.0/any/SixLabors.ImageSharp.Drawing.dll",
+        "tools/net5.0/any/SixLabors.ImageSharp.dll",
+        "tools/net5.0/any/appsettings.json",
+        "tools/netcoreapp2.1/any/DotNetConfig.dll",
+        "tools/netcoreapp2.1/any/DotnetToolSettings.xml",
+        "tools/netcoreapp2.1/any/McMaster.NETCore.Plugins.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Bcl.AsyncInterfaces.dll",
+        "tools/netcoreapp2.1/any/Microsoft.DotNet.PlatformAbstractions.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Configuration.Abstractions.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Configuration.Binder.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Configuration.CommandLine.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Configuration.FileExtensions.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Configuration.Json.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Configuration.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.DependencyModel.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.FileProviders.Physical.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "tools/netcoreapp2.1/any/Microsoft.Extensions.Primitives.dll",
+        "tools/netcoreapp2.1/any/ReportGenerator.Core.dll",
+        "tools/netcoreapp2.1/any/ReportGenerator.Core.pdb",
+        "tools/netcoreapp2.1/any/ReportGenerator.DotnetCorePluginLoader.dll",
+        "tools/netcoreapp2.1/any/ReportGenerator.DotnetCorePluginLoader.pdb",
+        "tools/netcoreapp2.1/any/ReportGenerator.deps.json",
+        "tools/netcoreapp2.1/any/ReportGenerator.dll",
+        "tools/netcoreapp2.1/any/ReportGenerator.pdb",
+        "tools/netcoreapp2.1/any/ReportGenerator.runtimeconfig.json",
+        "tools/netcoreapp2.1/any/SixLabors.Fonts.dll",
+        "tools/netcoreapp2.1/any/SixLabors.ImageSharp.Drawing.dll",
+        "tools/netcoreapp2.1/any/SixLabors.ImageSharp.dll",
+        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/netcoreapp2.1/any/System.Text.Encodings.Web.dll",
+        "tools/netcoreapp2.1/any/System.Text.Json.dll",
+        "tools/netcoreapp2.1/any/appsettings.json",
+        "tools/netcoreapp3.0/any/DotNetConfig.dll",
+        "tools/netcoreapp3.0/any/DotnetToolSettings.xml",
+        "tools/netcoreapp3.0/any/McMaster.NETCore.Plugins.dll",
+        "tools/netcoreapp3.0/any/Microsoft.DotNet.PlatformAbstractions.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Configuration.Abstractions.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Configuration.Binder.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Configuration.CommandLine.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Configuration.FileExtensions.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Configuration.Json.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Configuration.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.DependencyModel.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.FileProviders.Physical.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "tools/netcoreapp3.0/any/Microsoft.Extensions.Primitives.dll",
+        "tools/netcoreapp3.0/any/ReportGenerator.Core.dll",
+        "tools/netcoreapp3.0/any/ReportGenerator.Core.pdb",
+        "tools/netcoreapp3.0/any/ReportGenerator.DotnetCorePluginLoader.dll",
+        "tools/netcoreapp3.0/any/ReportGenerator.DotnetCorePluginLoader.pdb",
+        "tools/netcoreapp3.0/any/ReportGenerator.deps.json",
+        "tools/netcoreapp3.0/any/ReportGenerator.dll",
+        "tools/netcoreapp3.0/any/ReportGenerator.exe",
+        "tools/netcoreapp3.0/any/ReportGenerator.pdb",
+        "tools/netcoreapp3.0/any/ReportGenerator.runtimeconfig.json",
+        "tools/netcoreapp3.0/any/SixLabors.Fonts.dll",
+        "tools/netcoreapp3.0/any/SixLabors.ImageSharp.Drawing.dll",
+        "tools/netcoreapp3.0/any/SixLabors.ImageSharp.dll",
+        "tools/netcoreapp3.0/any/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/netcoreapp3.0/any/System.Text.Json.dll",
+        "tools/netcoreapp3.0/any/appsettings.json"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net5.0": [
+      "dotnet-reportgenerator-globaltool >= 4.8.2"
+    ]
+  },
+  "packageFolders": {
+    "/home/runner/work/routing2/routing2/reportgeneratortool/.store/.stage/tao0nsat.2ik": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/tmp/wn2jdter.ydg/restore.csproj",
+      "projectName": "restore",
+      "projectPath": "/tmp/wn2jdter.ydg/restore.csproj",
+      "packagesPath": "/home/runner/work/routing2/routing2/reportgeneratortool/.store/.stage/tao0nsat.2ik",
+      "outputPath": "/home/runner/work/routing2/routing2/reportgeneratortool/.store/.stage/tao0nsat.2ik/",
+      "projectStyle": "DotnetToolReference",
+      "configFilePaths": [
+        "/home/runner/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net5.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net5.0": {
+        "targetAlias": "net5.0",
+        "dependencies": {
+          "dotnet-reportgenerator-globaltool": {
+            "target": "Package",
+            "version": "[4.8.2, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "runtimeIdentifierGraphPath": "/home/runner/.dotnet/sdk/5.0.101/RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "any": {
+        "#import": []
+      }
+    }
+  }
+}
