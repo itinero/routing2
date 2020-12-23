@@ -1,0 +1,30 @@
+name: Rebuild Coverage Docs
+
+on:
+  push:
+    branches: [ 'docs/coverage' ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+    - name: Setup .NET Core # Required to execute ReportGenerator
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.101
+    - name: ReportGenerator
+      uses: danielpalme/ReportGenerator-GitHub-Action@4.8.2
+      with:
+        reports: 'develop/**/*.xml' 
+        targetdir: 'develop' 
+        reporttypes: 'Html;' 
+        assemblyfilters: '-protobuf-net' 
+        verbosity: 'Info' 
+        title: '' 
+        tag: '${{ github.run_number }}_${{ github.run_id }}' 
+        
