@@ -37,6 +37,6 @@ jobs:
     - run: mkdir ./${{ steps.extract_branch.outputs.branch }}/
     - run: rsync -avm --include='*.xml' -f 'hide,! */' ./test/Itinero.Tests/TestResults ./${{ steps.extract_branch.outputs.branch }}/
     - name: Commit badge
-      run: cd coverages && git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" 
+      run: git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" 
     - name: Commit badge
-      run: cd coverages && git stage -A && git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
+      run: git stage -A && git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
