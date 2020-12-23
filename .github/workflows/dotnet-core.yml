@@ -34,6 +34,18 @@ jobs:
       with:
         ref: 'docs/coverage'
         clean: 'false'
+    - name: ReportGenerator
+      uses: danielpalme/ReportGenerator-GitHub-Action@4.8.2
+      with:
+        reports: '${{ steps.extract_branch.outputs.branch }}/**/*.xml' 
+        targetdir: '${{ steps.extract_branch.outputs.branch }}-new' 
+        reporttypes: 'Html;' 
+        assemblyfilters: '-protobuf-net' 
+        verbosity: 'Info' 
+        title: '' 
+        tag: '${{ github.run_number }}_${{ github.run_id }}' 
+    - run: rsync -avm ./${{ steps.extract_branch.outputs.branch }}-new/ ./${{ steps.extract_branch.outputs.branch }}/
+    - run: rm -r ${{ steps.extract_branch.outputs.branch }}-new/
     - run: rm -r src/Itinero.IO.Osm.Tiles/ontology
     - run: rm -r test/Itinero.Tests/TestResults/
     - name: Commit badge
