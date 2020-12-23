@@ -1,0 +1,12 @@
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/bin/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.deps.json
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/bin/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.dll
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/bin/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.pdb
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/bin/Debug/netstandard2.0/Itinero.dll
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/bin/Debug/netstandard2.0/Itinero.pdb
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.csprojAssemblyReference.cache
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.AssemblyInfoInputs.cache
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.AssemblyInfo.cs
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.csproj.CoreCompileInputs.cache
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.csproj.CopyComplete
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.dll
+/home/runner/work/routing2/routing2/src/Itinero.IO.Osm.Tiles/obj/Debug/netstandard2.0/Itinero.IO.Osm.Tiles.pdb
