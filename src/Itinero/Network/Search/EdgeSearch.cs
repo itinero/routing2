@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
+using Itinero.Snapping;
 
 namespace Itinero.Network.Search
 {

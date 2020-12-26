@@ -1,6 +1,6 @@
 using Itinero.Network;
 
-namespace Itinero
+namespace Itinero.Snapping
 {
     /// <summary>
     /// Represents a unique location on an edge in the routing network.

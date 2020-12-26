@@ -4,6 +4,7 @@ using System.Linq;
 using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
+using Itinero.Snapping;
 
 namespace Itinero.Routing
 {

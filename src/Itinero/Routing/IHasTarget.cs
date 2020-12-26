@@ -1,3 +1,5 @@
+using Itinero.Snapping;
+
 namespace Itinero.Routing
 {
     /// <summary>

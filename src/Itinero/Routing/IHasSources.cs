@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Itinero.Snapping;
 
 namespace Itinero.Routing
 {

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Itinero.Indexes;
@@ -7,6 +8,14 @@ namespace Itinero.Tests.Indexes
 {
     public class AttributeSetIndexTests
     {
+        [Fact]
+        public void AttributeSetIndex_Get_OutOfRange_ShouldThrow()
+        {
+            var attributeSetIndex = new AttributeSetIndex();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => attributeSetIndex.GetById(100));
+        }
+        
         [Fact]
         public void AttributeSetIndex_Get_Empty_ShouldReturn0()
         {

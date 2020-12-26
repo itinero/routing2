@@ -6,6 +6,7 @@ using System.Threading;
 using Itinero.Network;
 using Itinero.Routes.Paths;
 using Itinero.Routing.DataStructures;
+using Itinero.Snapping;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]

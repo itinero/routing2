@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Itinero.Geo.Directions;
+using Itinero.Snapping;
 
 namespace Itinero.Routing
 {
