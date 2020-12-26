@@ -38,7 +38,7 @@ namespace Itinero.Network
             var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
             if (tile.EdgeTypeMapId != edgeTypeMap.id)
             {
-                tile = tile.ApplyEdgeTypeMap(edgeTypeMap);
+                tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
                 _tiles[localTileId] = tile;
             }
         
@@ -174,7 +174,7 @@ namespace Itinero.Network
             {
                 if (tile.EdgeTypeMapId != edgeTypeMap.id)
                 {
-                    tile = tile.ApplyEdgeTypeMap(edgeTypeMap);
+                    tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
                     _tiles[localTileId] = tile;
                 }
                 else

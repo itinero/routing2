@@ -54,7 +54,7 @@ namespace Itinero.Tests.Functional
                 49.93735597155516).Value;
             var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
             
-            //routerDb.PrepareFor(bicycle);
+            routerDb.PrepareFor(bicycle);
 
             snap1 = latest.Snap().To(5.9732794761657715,
                 49.93364075288293).Value;
@@ -459,7 +459,36 @@ namespace Itinero.Tests.Functional
                 {
                     return;
                 }
-                Console.WriteLine($"[{o}] {level} - {message}");
+
+                if (!string.IsNullOrEmpty(o))
+                {
+                    message = $"[{o}] {message}";
+                }
+
+                if (level == TraceEventType.Verbose.ToString().ToLower())
+                {
+                    Log.Debug(message);
+                }
+                else if (level == TraceEventType.Information.ToString().ToLower())
+                {
+                    Log.Information(message);
+                }
+                else if (level == TraceEventType.Warning.ToString().ToLower())
+                {
+                    Log.Warning(message);
+                }
+                else if (level == TraceEventType.Critical.ToString().ToLower())
+                {
+                    Log.Fatal(message);
+                }
+                else if (level == TraceEventType.Error.ToString().ToLower())
+                {
+                    Log.Error(message);
+                }
+                else
+                {
+                    Log.Debug(message);
+                }
             };
             
             Logger.LogAction = (o, level, message, parameters) =>

@@ -238,7 +238,7 @@ namespace Itinero.Network.Tiles
             return edgeId.Value;
         }
         
-        internal NetworkTile ApplyEdgeTypeMap((int id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
+        internal NetworkTile CloneForEdgeTypeMap((int id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
         {
             var edges = new MemoryArray<byte>(_edges.Length);
             var pointers = new MemoryArray<uint>(_pointers.Length);
@@ -259,8 +259,8 @@ namespace Itinero.Network.Tiles
                 {
                     p += DecodeEdgeId(p, out edgeId);
                 }
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var _);
-                p += (uint)_edges.GetDynamicInt32Nullable(p, out var length);
+                p += (uint)_edges.GetDynamicUInt32Nullable(p, out var _);
+                p += (uint)_edges.GetDynamicUInt32Nullable(p, out var length);
                 var tailHeadOrder = _edges[p];
                 p++;
                 p += DecodePointer(p, out var shapePointer);
@@ -435,7 +435,7 @@ namespace Itinero.Network.Tiles
 
         internal uint DecodeEdgePointerId(uint location, out uint? edgeProfileId)
         {
-            return (uint) _edges.GetDynamicInt32Nullable(location, out edgeProfileId);
+            return (uint) _edges.GetDynamicUInt32Nullable(location, out edgeProfileId);
         }
 
         private void SerializeEdgesAndVertices(Stream stream)

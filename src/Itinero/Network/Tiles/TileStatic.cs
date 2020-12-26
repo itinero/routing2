@@ -119,7 +119,7 @@ namespace Itinero.Network.Tiles
                 }
 
                 // move on with y.
-                y--;
+                y++;
             }
         }
     }

@@ -361,7 +361,7 @@ namespace Itinero.Network.Storage
             return data.SetDynamicUInt32(i, value.Value);
         }
 
-        public static long GetDynamicInt32Nullable(this ArrayBase<byte> data, long i, out uint? value)
+        public static long GetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, out uint? value)
         {
             var c = data.GetDynamicUInt32(i, out var unsigned);
             value = (unsigned == 0) ? null : (uint?)unsigned - 1;

@@ -185,5 +185,25 @@ namespace Itinero.Tests.Network.Storage
             Assert.Equal(10, data.GetDynamicUInt64(0, out var result));
             Assert.Equal(ulong.MaxValue, result);
         }
+        
+        [Fact]
+        public void BitCoder_ShouldCodeDynamic_UInt32Nullable_Null()
+        {
+            var data = new MemoryArray<byte>(10);
+
+            Assert.Equal(1, data.SetDynamicUInt32Nullable(0, null));
+            Assert.Equal(1, data.GetDynamicUInt32Nullable(0, out var result));
+            Assert.Null(result);
+        }
+        
+        [Fact]
+        public void BitCoder_ShouldCodeDynamic_UInt32Nullable_0()
+        {
+            var data = new MemoryArray<byte>(10);
+
+            Assert.Equal(1, data.SetDynamicUInt32Nullable(0, 0));
+            Assert.Equal(1, data.GetDynamicUInt32Nullable(0, out var result));
+            Assert.Equal((uint?)0, result);
+        }
     }
 }

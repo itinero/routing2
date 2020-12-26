@@ -2,6 +2,7 @@ using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routes;
 using Itinero.Routing;
+using Itinero.Snapping;
 
 namespace Itinero.Tests.Functional.Tests
 {

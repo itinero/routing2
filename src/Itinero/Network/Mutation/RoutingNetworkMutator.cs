@@ -45,7 +45,7 @@ namespace Itinero.Network.Mutation
 
             // update the tile if needed.
             if (tile.EdgeTypeMapId == edgeTypeMap.id) return tile;
-            _tiles[localTileId] = tile.ApplyEdgeTypeMap(edgeTypeMap);
+            _tiles[localTileId] = tile.CloneForEdgeTypeMap(edgeTypeMap);
             return tile;
         }
 
@@ -67,7 +67,7 @@ namespace Itinero.Network.Mutation
             {
                 if (tile.EdgeTypeMapId == edgeTypeMap.id) return (tile, edgeTypeMap.func);
 
-                tile = tile.ApplyEdgeTypeMap(edgeTypeMap);
+                tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
                 _tiles[localTileId] = tile;
                 return (tile, edgeTypeMap.func);
             }
