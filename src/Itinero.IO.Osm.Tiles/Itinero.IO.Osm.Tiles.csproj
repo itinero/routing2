@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <AssemblyName>Itinero.IO.Osm.Tiles</AssemblyName>
         <LangVersion>latest</LangVersion>
         <Authors>Itinero Contributors</Authors>
