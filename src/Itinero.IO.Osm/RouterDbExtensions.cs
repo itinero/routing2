@@ -14,11 +14,11 @@ namespace Itinero.IO.Osm
         /// <param name="routerDb">The router db.</param>
         /// <param name="data">The data.</param>
         /// <param name="configure">The configure function.</param>
-        public static void UseOsmData(this RouterDb routerDb, OsmStreamSource data, Action<DataProviderSettings> configure = null)
+        public static void UseOsmData(this RouterDb routerDb, OsmStreamSource data, Action<DataProviderSettings>? configure = null)
         {
             // get writer.
-            if (routerDb.HasMutable) throw new InvalidOperationException($"Cannot add data to a {nameof(RouterDb)} that is only being written to.");
-            using var routerDbWriter = routerDb.GetAsMutable();
+            if (routerDb.HasMutableNetwork) throw new InvalidOperationException($"Cannot add data to a {nameof(RouterDb)} that is only being written to.");
+            using var routerDbWriter = routerDb.GetMutableNetwork();
             
             // create settings.
             var settings = new DataProviderSettings();

@@ -1,6 +1,6 @@
 using System.IO;
-using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Tiles;
+using Itinero.Network;
 using Xunit;
 
 namespace Itinero.Tests.IO.Osm.Tiles

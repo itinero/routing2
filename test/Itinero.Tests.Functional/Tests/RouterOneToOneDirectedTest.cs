@@ -1,17 +1,19 @@
-using Itinero.Algorithms;
 using Itinero.Geo.Directions;
+using Itinero.Network;
 using Itinero.Profiles;
-using Itinero.Routers;
+using Itinero.Routes;
+using Itinero.Routing;
+using Itinero.Snapping;
 
 namespace Itinero.Tests.Functional.Tests
 {
     /// <summary>
     /// A simple point-to-point routing test.
     /// </summary>
-    public class RouterOneToOneDirectedTest : FunctionalTest<Route, (Network routerDb, (SnapPoint sp, DirectionEnum? direction) sp1, (SnapPoint sp, DirectionEnum? direction) sp2, 
+    public class RouterOneToOneDirectedTest : FunctionalTest<Route, (RoutingNetwork routerDb, (SnapPoint sp, DirectionEnum? direction) sp1, (SnapPoint sp, DirectionEnum? direction) sp2, 
         Profile profile)>
     {
-        protected override Route Execute((Network routerDb, (SnapPoint sp, DirectionEnum? direction) sp1, (SnapPoint sp, DirectionEnum? direction) sp2, Profile profile) input)
+        protected override Route Execute((RoutingNetwork routerDb, (SnapPoint sp, DirectionEnum? direction) sp1, (SnapPoint sp, DirectionEnum? direction) sp2, Profile profile) input)
         {
             var (routerDb, sp1, sp2, profile) = input;
 

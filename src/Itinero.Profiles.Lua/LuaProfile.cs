@@ -38,15 +38,10 @@ namespace Itinero.Profiles.Lua
             return new LuaProfile(s);
         }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
+        /// <inheritdoc/>
         public override string Name { get; }
 
-        /// <summary>
-        /// Get a function to calculate properties for a set given edge attributes.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public sealed override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
         {
             lock (_script)
@@ -65,7 +60,7 @@ namespace Itinero.Profiles.Lua
                 }
                 if (!hasValue) return EdgeFactor.NoFactor;
 
-                // call factor_and_speed function.
+                // call factor function.
                 _resultsTable.Clear();
                 _script.Call(_script.Globals["factor"], _attributesTable, _resultsTable);
 
@@ -111,6 +106,48 @@ namespace Itinero.Profiles.Lua
 
                 return new EdgeFactor((uint)(forwardFactor * 100), (uint)(backwardFactor * 100), 
                     (ushort)(speedForward * 100), (ushort)(speedBackward * 100), canStop);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
+        {
+            lock (_script)
+            {
+                // build lua table.
+                _attributesTable.Clear();
+                if (attributes == null)
+                {
+                    return Profiles.TurnCostFactor.Empty;
+                }
+                var hasValue = false;
+                foreach (var attribute in attributes)
+                {
+                    hasValue = true;
+                    _attributesTable.Set(attribute.key, DynValue.NewString(attribute.value));
+                }
+                if (!hasValue) return Profiles.TurnCostFactor.Empty;
+
+                // call turn_cost_factor function.
+                _resultsTable.Clear();
+                _script.Call(_script.Globals["turn_cost_factor"], _attributesTable, _resultsTable);
+
+                // get the results.
+                if (!_resultsTable.TryGetDouble("factor", out var factor))
+                {
+                    factor = 0;
+                }
+
+                var turnCostFactor = Profiles.TurnCostFactor.Empty;
+                if (factor < 0) 
+                {
+                    turnCostFactor = Profiles.TurnCostFactor.Binary;
+                }
+                else if (factor > 0)
+                {
+                    turnCostFactor = new TurnCostFactor((uint)(factor * 10));
+                }
+                return turnCostFactor;
             }
         }
     }

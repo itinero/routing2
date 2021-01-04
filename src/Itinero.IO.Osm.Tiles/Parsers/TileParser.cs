@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Itinero.Data;
-using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Tiles.Parsers.Semantics;
 using Itinero.Logging;
+using Itinero.Network;
+using Itinero.Network.Attributes;
+using Itinero.Network.Writer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -26,7 +26,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         private static readonly Lazy<Dictionary<string, TagMapperConfig>> ReverseMappingLazy = new Lazy<Dictionary<string, TagMapperConfig>>(
             () => TagMapperConfigParser.Parse(Extensions.LoadEmbeddedResourceStream("Itinero.IO.Osm.Tiles.ontology.mapping_config.json")));
 
-        internal static JObject Parse(this Stream stream, Tile tile)
+        internal static JObject? Parse(this Stream stream, Tile tile)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             return null;
         }
         
-        internal static bool AddOsmTile(this Network.NetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
+        internal static bool AddOsmTile(this RoutingNetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
             JObject jsonObject)
         {
             var nodeLocations = new Dictionary<long, ((double longitude, double latitude) location, bool inTile)>();

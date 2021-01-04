@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
-using Itinero.Data.Graphs;
 using Itinero.IO.Osm.Tiles.Parsers;
+using Itinero.Network;
 
 namespace Itinero.IO.Osm.Tiles
 {
@@ -34,9 +34,9 @@ namespace Itinero.IO.Osm.Tiles
             routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
             routerDb.UsageNotifier.OnBoxTouched += TouchBox;
             
-            // hook up deserialization.
-            (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
-                this.WriteTo);
+            // // hook up deserialization.
+            // (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
+            //     this.WriteTo);
         }
 
         private DataProvider(RouterDb routerDb, string baseUrl, uint zoom,
@@ -51,12 +51,12 @@ namespace Itinero.IO.Osm.Tiles
             routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
             routerDb.UsageNotifier.OnBoxTouched += TouchBox;
             
-            // hook up deserialization.
-            (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
-                this.WriteTo);
+            // // hook up deserialization.
+            // (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
+            //     this.WriteTo);
         }
         
-        internal void VertexTouched(Network network, VertexId vertexId)
+        internal void VertexTouched(RoutingNetwork network, VertexId vertexId)
         {
             if (_loadedTiles.Contains(vertexId.TileId)) return;
 
@@ -89,7 +89,7 @@ namespace Itinero.IO.Osm.Tiles
             }
         }
 
-        internal void TouchBox(Network network, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+        internal void TouchBox(RoutingNetwork network, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
         {
             // build the tile range.
             var tileRange = new TileRange(box, (int)_zoom);

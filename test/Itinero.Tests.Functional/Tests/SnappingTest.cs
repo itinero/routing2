@@ -1,14 +1,15 @@
-using Itinero.Algorithms;
+using Itinero.Network;
 using Itinero.Profiles;
+using Itinero.Snapping;
 
 namespace Itinero.Tests.Functional.Tests
 {
-    internal class SnappingTest : FunctionalTest<SnapPoint, (Network routerDb, double longitude, double latitude, Profile profile)>
+    internal class SnappingTest : FunctionalTest<SnapPoint, (RoutingNetwork routerDb, double longitude, double latitude, Profile profile)>
     {
-        protected override SnapPoint Execute((Network routerDb, double longitude, double latitude, Profile profile) input)
+        protected override SnapPoint Execute((RoutingNetwork routerDb, double longitude, double latitude, Profile profile) input)
         {
-            var result = input.routerDb.Snap((input.longitude, input.latitude), input.profile);
-
+            var result = input.routerDb.Snap().Using(input.profile).To((input.longitude, input.latitude));
+            
             return result.Value;
         }
         

@@ -2,6 +2,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Itinero.Network;
+using Itinero.Snapping;
 
 namespace Itinero.IO.Json.GeoJson
 {
@@ -16,19 +18,18 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="snapPoint">The snap point.</param>
         /// <param name="routerDb">The router db.</param>
         /// <returns>A geojson string.</returns>
-        public static string ToGeoJson(this SnapPoint snapPoint, Network routerDb)
+        public static string ToGeoJson(this SnapPoint snapPoint, RoutingNetwork routerDb)
         {
-            using (var stream = new MemoryStream())
+            using var stream = new MemoryStream();
+            
+            using (var jsonWriter = new Utf8JsonWriter(stream))
             {
-                using (var jsonWriter = new Utf8JsonWriter(stream))
-                {
-                    jsonWriter.WriteFeatureCollectionStart();
-                    jsonWriter.WriteFeatures(snapPoint, routerDb);  
-                    jsonWriter.WriteFeatureCollectionEnd();
-                }
-                
-                return Encoding.UTF8.GetString(stream.ToArray());
+                jsonWriter.WriteFeatureCollectionStart();
+                WriteFeatures(jsonWriter, snapPoint, routerDb);  
+                jsonWriter.WriteFeatureCollectionEnd();
             }
+                
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
 
         /// <summary>
@@ -37,10 +38,8 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="snapPoint">The snap point.</param>
         /// <param name="routerDb">The router db.</param>
         /// <param name="jsonWriter">The json writer.</param>
-        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, SnapPoint snapPoint, Network routerDb)
+        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, SnapPoint snapPoint, RoutingNetwork routerDb)
         {
-            if (jsonWriter == null) jsonWriter = new Utf8JsonWriter(new MemoryStream());
-            
             jsonWriter.WriteFeatureStart();
             jsonWriter.WriteProperties(Enumerable.Empty<(string key, string value)>());
 

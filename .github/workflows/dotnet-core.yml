@@ -1,0 +1,79 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Setup .NET Core 5.
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.101
+    - name: Restore packages.
+      run: dotnet restore
+    - name: Build all projects.
+      run: dotnet build --configuration Release --no-restore
+    - name: Test with coverage report.
+      run: dotnet test --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+      working-directory: ./test/Itinero.Tests/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero.IO.Osm/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero.Profiles.Lua/
+    - name: Nuget push
+      run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/anyways-open/index.json
+      working-directory: ./src/
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+    - name: Copy test coverage report to branch named folder.
+      run: mkdir ./${{ steps.extract_branch.outputs.branch }}/ && rsync -avm --include='*.xml' -f 'hide,! */' ./test/Itinero.Tests/TestResults/ ./${{ steps.extract_branch.outputs.branch }}/
+    - name: Generate test coverage report.
+      uses: danielpalme/ReportGenerator-GitHub-Action@4.8.2
+      with:
+        reports: '${{ steps.extract_branch.outputs.branch }}/**/*.xml' 
+        targetdir: '${{ steps.extract_branch.outputs.branch }}-new' 
+        reporttypes: 'Html;Badges' 
+        assemblyfilters: '-protobuf-net' 
+        verbosity: 'Info' 
+        title: '' 
+        tag: '${{ github.run_number }}_${{ github.run_id }}'
+    - name: Checkout test coverage results branch.
+      uses: actions/checkout@v2
+      with:
+        ref: 'docs/coverage'
+        clean: 'false' 
+    - name: Move results report to correct folder.
+      run: rsync -avm ./${{ steps.extract_branch.outputs.branch }}-new/ ./${{ steps.extract_branch.outputs.branch }}/
+    - name: Cleanup
+      run: rm -r ${{ steps.extract_branch.outputs.branch }}-new/
+    - name: Cleanup
+      run: rm -r src/Itinero.IO.Osm.Tiles/ontology
+    - name: Cleanup
+      run: rm -r test/Itinero.Tests/TestResults/
+    - name: Commit test results.
+      run: git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" && git stage -A && git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
+    - name: Push test results.
+      uses: ad-m/github-push-action@master
+      if: ${{ success() }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: 'docs/coverage'

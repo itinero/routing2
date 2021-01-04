@@ -15,5 +15,11 @@ namespace Itinero.Profiles
         {
             return new EdgeFactor(1, 1, 1, 1);
         }
+
+        /// <inheritdoc/>
+        public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
+        {
+            return Profiles.TurnCostFactor.Empty;
+        }
     }
 }

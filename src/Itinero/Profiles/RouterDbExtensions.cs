@@ -1,12 +1,31 @@
+using System.Collections;
+using System.Collections.Generic;
+
 namespace Itinero.Profiles
 {
+    /// <summary>
+    /// Extension methods related to profiles and router dbs.
+    /// </summary>
     public static class RouterDbExtensions
     {
-        internal static EdgeFactor FactorInEdgeDirection(this NetworkEdgeEnumerator enumerator, Profile profile)
+        /// <summary>
+        /// Prepares the router db for use with the given profiles.
+        /// </summary>
+        /// <param name="routerDb">The router dbs.</param>
+        /// <param name="profiles">The profiles.</param>
+        public static void PrepareFor(this RouterDb routerDb, params Profile[] profiles)
         {
-            var factor = profile.Factor(enumerator.Attributes);
-            if (!enumerator.Forward) factor = factor.Reverse;
-            return factor;
+            routerDb.ProfileConfiguration.AddProfiles(profiles);
+        }
+        
+        /// <summary>
+        /// Prepares the router db for use with the given profiles.
+        /// </summary>
+        /// <param name="routerDb">The router dbs.</param>
+        /// <param name="profiles">The profiles.</param>
+        public static void PrepareFor(this RouterDb routerDb, IEnumerable<Profile> profiles)
+        {
+            routerDb.ProfileConfiguration.AddProfiles(profiles);
         }
     }
 }
