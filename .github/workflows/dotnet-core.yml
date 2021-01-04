@@ -28,6 +28,18 @@ jobs:
     - name: Test with coverage report.
       run: dotnet test --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       working-directory: ./test/Itinero.Tests/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero.IO.Osm/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero.Profiles.Lua/
+    - name: Nuget push
+      run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/anyways-open/index.json
+      working-directory: ./src/
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
