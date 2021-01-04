@@ -5,6 +5,16 @@ using Itinero.Instructions.Instructions;
 
 namespace Itinero.Instructions
 {
+    /**
+     * Given a list of IInstructionConstructors, the SimpleInstructionGenerator will construct a route in the following way:
+     * - Try to generate a base instruction with the first instruction in the list. If this fails, try the next one
+     * - Check the shape-index of the generated instruction and move the index of the route forward
+     * - Try to generate a new instruction as described above
+     *
+     * This means that the list of 'baseInstructionConstructors' should go from "very specialized" to "very generic", e.g.
+     * the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
+     * whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
+     */
     public class SimpleInstructionGenerator : IInstructionGenerator
     {
         private readonly IEnumerable<IInstructionConstructor> _constructors;

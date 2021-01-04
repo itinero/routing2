@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace Itinero.Instructions
 {
+    /**
+     * Allows easy access between shapes and meta of a route
+     */
     public class IndexedRoute
     {
         public readonly Route Route;
