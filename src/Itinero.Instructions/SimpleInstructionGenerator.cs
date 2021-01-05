@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Instructions.Instructions;
+using Itinero.Routes;
 
 namespace Itinero.Instructions
 {

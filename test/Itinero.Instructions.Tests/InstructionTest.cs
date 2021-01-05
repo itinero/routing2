@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions;
 using Itinero.Instructions.Instructions;
+using Itinero.Instructions.ToText;
+using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions
+namespace Itinero.Instructions.Tests
 {
     public class InstructionTest
     {
@@ -30,7 +31,7 @@ namespace Itinero.Tests.Instructions
                     (3.2157111167907715, 51.216222284739125), // 5
                     (3.215475082397461, 51.21605763557773),
 
-                    /*
+                   
                 //  Kruising scheepsdale: 1ste vak
                 (3.215265870094299, 51.215849303141894),
                 //  Kruising scheepsdale: 2de vak; Filips de goedelaan (fietsstraat)
@@ -38,50 +39,51 @@ namespace Itinero.Tests.Instructions
                 (3.213919401168823, 51.21336940272057),
                 // Karel de stoute, even links-rechts
                 (3.2133668661117554, 51.212247019059234), // 10
-                // Fietspad graaf-visartpark
-                (3.2135170698165894, 51.21221341433617),
-                (3.2133883237838745, 51.21213948385911),
-                // Brug langs sluizencomplex
-                (3.2130208611488342, 51.21113805024932),
-                // Gewone fietspad op buitenvest
-                (3.2129216194152828, 51.21093977725382),
-                (3.2129859924316406, 51.21066084939121), // 15
-                // Fietspad langs expressweg
-                (3.212905526161194, 51.21026765905277),
-                (3.213372230529785, 51.21001729251517),
-                (3.2134768366813655, 51.21000553029537),
+                /*
+               // Fietspad graaf-visartpark
+               (3.2135170698165894, 51.21221341433617),
+               (3.2133883237838745, 51.21213948385911),
+               // Brug langs sluizencomplex
+               (3.2130208611488342, 51.21113805024932),
+               // Gewone fietspad op buitenvest
+               (3.2129216194152828, 51.21093977725382),
+               (3.2129859924316406, 51.21066084939121), // 15
+               // Fietspad langs expressweg
+               (3.212905526161194, 51.21026765905277),
+               (3.213372230529785, 51.21001729251517),
+               (3.2134768366813655, 51.21000553029537),
 
-                // Oversteek bypass
-                (3.21361094713211, 51.21001393188127),
-                (3.2136230170726776, 51.20994839947071), // 20
+               // Oversteek bypass
+               (3.21361094713211, 51.21001393188127),
+               (3.2136230170726776, 51.20994839947071), // 20
 
-                // Tussenschot
-                (3.213661909103393, 51.209859342455665),
-                // Oversteek expressweg
-                (3.213754445314407, 51.20979044917488),
-                // Fietspad langs expressweg
-                (3.2136256992816925, 51.2094846289770),
-                // Buiten smedenvest
-                (3.2128357887268066, 51.20994839947071),
-                (3.212476372718811, 51.20893011464751), // 25
-                (3.2124173641204834, 51.2084125619158),
-                (3.2123905420303345, 51.2079857445725),
-                (3.2124334573745728, 51.20721611905115),
+               // Tussenschot
+               (3.213661909103393, 51.209859342455665),
+               // Oversteek expressweg
+               (3.213754445314407, 51.20979044917488),
+               // Fietspad langs expressweg
+               (3.2136256992816925, 51.2094846289770),
+               // Buiten smedenvest
+               (3.2128357887268066, 51.20994839947071),
+               (3.212476372718811, 51.20893011464751), // 25
+               (3.2124173641204834, 51.2084125619158),
+               (3.2123905420303345, 51.2079857445725),
+               (3.2124334573745728, 51.20721611905115),
 
-                // Verbinding naar brugge plus
-                (3.2124119997024536, 51.20699556351492),
-                (3.2123228162527084, 51.20697749891944), //30
+               // Verbinding naar brugge plus
+               (3.2124119997024536, 51.20699556351492),
+               (3.2123228162527084, 51.20697749891944), //30
 
-                // Lange vesting / oprit
-                (3.2119647413492203, 51.20704345566401),
-                (3.211677074432373, 51.207132098019024),
-                (3.2115429639816284, 51.20723124282065),
-                (3.2112854719161987, 51.20738920189418),
+               // Lange vesting / oprit
+               (3.2119647413492203, 51.20704345566401),
+               (3.211677074432373, 51.207132098019024),
+               (3.2115429639816284, 51.20723124282065),
+               (3.2112854719161987, 51.20738920189418),
 
-                // Lange vesting (straat
-                (3.211108446121216, 51.207431212194878), // 35
-                (3.2107543945312496, 51.20722284072709),
-                (3.210188448429107, 51.206962375066624) //*/
+               // Lange vesting (straat
+               (3.211108446121216, 51.207431212194878), // 35
+               (3.2107543945312496, 51.20722284072709),
+               (3.210188448429107, 51.206962375066624) //*/
                 },
                 ShapeMeta = new List<Route.Meta>
                 {
@@ -180,21 +182,14 @@ namespace Itinero.Tests.Instructions
                 }
             };
 
+            var start = new Route.Stop {Coordinate = (3.219408541917801, 51.21541415412617), Shape = 0, Distance = 10};
+            // estimated m between the pinned start point and the snapped startpoint
 
-
-
-
-
-
-            var start = new Route.Stop();
-            start.Coordinate = (3.219408541917801, 51.21541415412617);
-            start.Shape = 0;
-            start.Distance = 10; // estimated m between the pinned start point and the snapped startpoint
-
-            var stop = new Route.Stop();
-            stop.Coordinate = (3.2099054753780365, 51.20692456541283);
-            stop.Shape = route.Shape.Count - 1;
-            stop.Distance = 15; // estimated m between the pinned start point and the snapped startpoint
+            var stop = new Route.Stop
+            {
+                Coordinate = (3.2099054753780365, 51.20692456541283), Shape = route.Shape.Count - 1, Distance = 15
+            };
+            // estimated m between the pinned start point and the snapped startpoint
 
 
             route.Stops = new List<Route.Stop>
@@ -204,8 +199,14 @@ namespace Itinero.Tests.Instructions
 
 
             var instructionGenerator = new SimpleInstructionGenerator(new BaseInstructionConstructor());
-            var instructions = instructionGenerator.GenerateInstructions(route);
-
+            var instructions = instructionGenerator.GenerateInstructions(route).ToList();
+            var toText = new SubstituteText(new[]
+                {
+                    ("Turn ", false),
+                    ("TurnDegrees", true)
+                }
+            );
+            var texts = instructions.Select(toText.ToText).ToList();
             // For use in the debugger
             var instructionsStr = string.Join("\n", instructions.Select((instr, i) => (i + ". " + instr.ToString())));
 

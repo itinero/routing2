@@ -1,4 +1,5 @@
 using System;
+using Itinero.Routes;
 
 namespace Itinero.Instructions
 {

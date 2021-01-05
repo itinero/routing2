@@ -13,7 +13,7 @@ namespace Itinero.Instructions.Instructions
         /// The 'turnDegrees' is relative to the actual startpoint, thus if walking from the startpoint to the snappedpoint, the amount of degrees to turn then
         /// </remarks>
         /// </summary>
-        public readonly int AbsoluteStartingDegrees;
+        public readonly int StartDegrees;
 
         /// <summary>
         /// The distance between the actual start point and the snapped start point on the road
@@ -23,7 +23,7 @@ namespace Itinero.Instructions.Instructions
         public StartInstruction(int turnDegrees, int absoluteStartingDegrees, uint projectionDistance) :
             base(0, 0, turnDegrees)
         {
-            AbsoluteStartingDegrees = absoluteStartingDegrees;
+            StartDegrees = absoluteStartingDegrees;
             ProjectionDistance = projectionDistance;
         }
 
@@ -38,7 +38,7 @@ namespace Itinero.Instructions.Instructions
         public override string ToString()
         {
             return
-                $"Start by going {ProjectionDistance}m towards the road, then turn {TurnDegrees}° to start a {AbsoluteStartingDegrees}° journey";
+                $"Start by going {ProjectionDistance}m towards the road, then turn {TurnDegrees}° to start a {StartDegrees}° journey";
         }
     }
 }

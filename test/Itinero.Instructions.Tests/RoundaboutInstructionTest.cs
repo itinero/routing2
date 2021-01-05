@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Itinero.Instructions;
 using Itinero.Instructions.Instructions;
+using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions
+namespace Itinero.Instructions.Tests
 {
     public class RoundaboutInstructionTest
     {

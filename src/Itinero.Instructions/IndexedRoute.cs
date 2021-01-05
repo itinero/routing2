@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Itinero.Routes;
 
 namespace Itinero.Instructions
 {
