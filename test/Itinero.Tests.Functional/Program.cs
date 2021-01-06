@@ -42,7 +42,7 @@ namespace Itinero.Tests.Functional
             routerDb.PrepareFor(bicycle);
             
             using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+                "http://data.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
             // using var osmStream = File.OpenRead(Staging.Download.Get("belgium-latest.osm.pbf", 
             //     "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf"));
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
