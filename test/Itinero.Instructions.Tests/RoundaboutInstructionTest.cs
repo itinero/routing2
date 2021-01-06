@@ -54,7 +54,7 @@ namespace Itinero.Instructions.Tests
             };
             var gen = RoundaboutInstruction.Constructor;
 
-            var instr = (RoundaboutInstruction) gen.Construct(new IndexedRoute(route), 1, out var used);
+            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
             Assert.NotNull(instr);
             Assert.Equal("right", instr.TurnDegrees.DegreesToText());
             Assert.Equal(0, instr.ExitNumber);
@@ -116,7 +116,7 @@ namespace Itinero.Instructions.Tests
             };
             var gen = RoundaboutInstruction.Constructor;
 
-            var instr = (RoundaboutInstruction) gen.Construct(new IndexedRoute(route), 1, out var used);
+            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
             Assert.NotNull(instr);
             Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
             Assert.Equal(1, instr.ExitNumber);

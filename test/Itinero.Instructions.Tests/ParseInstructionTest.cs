@@ -15,6 +15,14 @@ namespace Itinero.Instructions.Tests
             Assert.Equal("Turn 42 around, so you are at 42", result);
         }
 
+        
+        [Fact]
+        public void ParseRenderValue_SubstitutionWithNoSpace_SubstitutionInstruction()
+        {
+            var parsed = FromJson.ParseRenderValue("Take the ${exitNumber}th exit");
+            var result = parsed.ToText(new RoundaboutInstruction(0,5, 42, 5));
+            Assert.Equal("Take the 5th exit", result);
+        }
         [Fact]
         public void ParseCondition_AdvancedCondition_CorrectResult()
         {
@@ -24,7 +32,7 @@ namespace Itinero.Instructions.Tests
                 " \"$startDegrees>135&$startDegrees<=225\": \"Start south\", " +
                 "\"$startDegrees>225\": \"Start west\" }}";
 
-            var toText = FromJson.FromJSON(JObject.Parse(input));
+            var toText = FromJson.ParseInstructionToText(JObject.Parse(input));
             var north = toText.ToText(new StartInstruction(0, 0, 0));
             Assert.Equal("Start north", north);
             var east = toText.ToText(new StartInstruction(0, 50, 0));

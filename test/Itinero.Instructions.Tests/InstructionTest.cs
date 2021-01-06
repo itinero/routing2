@@ -198,7 +198,7 @@ namespace Itinero.Instructions.Tests
             };
 
 
-            var instructionGenerator = new SimpleInstructionGenerator(new BaseInstructionConstructor());
+            var instructionGenerator = new LinearInstructionGenerator(new BaseInstructionGenerator());
             var instructions = instructionGenerator.GenerateInstructions(route).ToList();
             var toText = new SubstituteText(new[]
                 {

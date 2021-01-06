@@ -11,7 +11,7 @@ namespace Itinero.Instructions.Tests
         [Fact]
         public void GenerateCrossroad_SimpleCrossroad_GetCrossroadInstruction()
         {
-            var gen = IntersectionInstruction.Constructor;
+            var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
             var route = new Route();
@@ -50,7 +50,7 @@ namespace Itinero.Instructions.Tests
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
-            var instr = (IntersectionInstruction) gen.Construct(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
             Assert.NotNull(instr);
             Assert.Equal(1, used);
             Assert.Contains("cross the road", instr.Mode());
@@ -60,7 +60,7 @@ namespace Itinero.Instructions.Tests
         [Fact]
         public void GenerateCrossroad_KeepLeft_GetCrossroadInstruction()
         {
-            var gen = IntersectionInstruction.Constructor;
+            var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
             var route = new Route();
@@ -94,7 +94,7 @@ namespace Itinero.Instructions.Tests
 
                 // The left turn has been removed
             };
-            var instr = (IntersectionInstruction) gen.Construct(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
             Assert.NotNull(instr);
             Assert.Equal(1, used);
             Assert.Contains("keep left", instr.Mode());
@@ -103,7 +103,7 @@ namespace Itinero.Instructions.Tests
         [Fact]
         public void GenerateCrossroad_SimpleLeft_GetCrossroadInstruction()
         {
-            var gen = IntersectionInstruction.Constructor;
+            var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
             var route = new Route();
@@ -147,7 +147,7 @@ namespace Itinero.Instructions.Tests
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
-            var instr = (IntersectionInstruction) gen.Construct(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
             Assert.NotNull(instr);
             Assert.Equal(0u, instr.ActualIndex);
             Assert.Equal(1, used);
@@ -158,7 +158,7 @@ namespace Itinero.Instructions.Tests
         [Fact]
         public void GenerateCrossroad_SimpleRight_GetCrossroadInstruction()
         {
-            var gen = IntersectionInstruction.Constructor;
+            var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the north-east
             var route = new Route();
@@ -202,7 +202,7 @@ namespace Itinero.Instructions.Tests
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
-            var instr = (IntersectionInstruction) gen.Construct(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
             Assert.NotNull(instr);
             Assert.Equal(2u, instr.ActualIndex);
             Assert.Equal(1, used);
