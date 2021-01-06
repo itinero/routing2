@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Instructions;
 using Itinero.Routes;
 
-namespace Itinero.Instructions
+namespace Itinero.Instructions.Instructions
 {
     /**
      * Given a list of IInstructionConstructors, the SimpleInstructionGenerator will construct a route in the following way:
@@ -16,18 +15,24 @@ namespace Itinero.Instructions
      * the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
      * whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
      */
-    public class SimpleInstructionGenerator : IInstructionGenerator
+    public class LinearInstructionGenerator
     {
-        private readonly IEnumerable<IInstructionConstructor> _constructors;
+        private readonly IEnumerable<IInstructionGenerator> _constructors;
 
-        public SimpleInstructionGenerator(
-            IEnumerable<IInstructionConstructor> constructors)
+        public LinearInstructionGenerator(
+            IEnumerable<string> constructorNames):
+            this(constructorNames.Select(name => AllGenerators.AllGeneratorsDict[name]))
+        {
+        }
+        
+        public LinearInstructionGenerator(
+            IEnumerable<IInstructionGenerator> constructors)
         {
             _constructors = constructors;
         }
 
-        public SimpleInstructionGenerator(
-            params IInstructionConstructor[] constructors) :
+        public LinearInstructionGenerator(
+            params IInstructionGenerator[] constructors) :
             this(constructors.ToList())
         {
         }
@@ -36,7 +41,7 @@ namespace Itinero.Instructions
         {
             foreach (var constructor in _constructors)
             {
-                var instruction = constructor.Construct(r, currentOffset, out used);
+                var instruction = constructor.Generate(r, currentOffset, out used);
                 if (instruction != null && used > 0)
                 {
                     return instruction;
@@ -46,7 +51,7 @@ namespace Itinero.Instructions
                 {
                     throw new Exception(
                         "Hanging instruction generation: an instruction was emitted but the offset was zero. This is a bug in " +
-                        constructor.Name);
+                        constructor.GetType().Name);
                 }
             }
 

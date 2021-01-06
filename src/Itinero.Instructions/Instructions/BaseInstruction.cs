@@ -1,5 +1,3 @@
-using System;
-
 namespace Itinero.Instructions.Instructions
 {
     /// <summary>
@@ -80,11 +78,9 @@ namespace Itinero.Instructions.Instructions
         }
     }
 
-    public class BaseInstructionConstructor : IInstructionConstructor
+    public class BaseInstructionGenerator : IInstructionGenerator
     {
-        public string Name => "BaseInstruction";
-
-        public BaseInstruction Construct(IndexedRoute route, int offset, out int usedInstructions)
+        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
         {
             if (offset >= route.Shape.Count - 1)
             {
@@ -107,19 +103,4 @@ namespace Itinero.Instructions.Instructions
             return instruction;
         }
     }
-
-
-    /*
-     * Ideas for 'low hanging fruit':
-     * Go over the bridge
-     * Go through the tunnel
-     *     => (how does this combine with underground crossroads, e.g. beneath koekelberg? Should we ignore small culvert bridges?
-     *
-     * Higher hanging fruit:
-     *     This is a cyclestreet - cyclists should not be overtaken by cars
-     *     Go left/right after the traffic lights
-     *     Go right at the intersection (which has a speed table)
-     *     Follow the blue network until you see the red network
-     *     ...
-     */
 }

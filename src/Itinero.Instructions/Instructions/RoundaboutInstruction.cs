@@ -2,17 +2,17 @@ namespace Itinero.Instructions.Instructions
 {
     public class RoundaboutInstruction : BaseInstruction
     {
-        /// <summary>
-        /// The number of the exit to take (zero-based)
-        /// </summary>
-        public int ExitNumber { get; }
+        public static RoundaboutInstructionGenerator Constructor = new RoundaboutInstructionGenerator();
 
         /**
          * This boolean is here for cases as:  https://www.openstreetmap.org/directions?engine=graphhopper_car&route=50.94569%2C3.15129%3B50.94636%2C3.15186#map=19/50.94623/3.15189
          */
-        public bool ExitIsOnTheInside { get; }
+        public readonly bool ExitIsOnTheInside;
 
-        public static RoundaboutInstructionGenerator Constructor = new RoundaboutInstructionGenerator();
+        /// <summary>
+        ///     The number of the exit to take (zero-based)
+        /// </summary>
+        public readonly int ExitNumber;
 
         public RoundaboutInstruction(
             int shapeIndex,
@@ -32,21 +32,19 @@ namespace Itinero.Instructions.Instructions
         }
     }
 
-    public class RoundaboutInstructionGenerator : IInstructionConstructor
+    public class RoundaboutInstructionGenerator : IInstructionGenerator
     {
         public string Name { get; } = "Roundabout";
 
-        public BaseInstruction Construct(IndexedRoute route, int offset, out int usedInstructions)
+        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
         {
             // The roundabout instruction starts when the next segment is on the roundabout ("Go on the roundabout...")
             // and ends when the person leaves the roundabout ("... and take the n'th exit")
 
             usedInstructions = 0;
             if (route.Last == offset)
-            {
                 // No next entries
                 return null;
-            }
 
             var inDegrees = route.DepartingDirectionAt(offset); // Offset is still on the rampup
             usedInstructions = 1;

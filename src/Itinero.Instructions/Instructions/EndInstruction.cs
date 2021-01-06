@@ -30,4 +30,19 @@ namespace Itinero.Instructions.Instructions
             return $"Your destination lies {ProjectionDistance}m away from the road";
         }
     }
+
+    public class EndInstructionGenerator : IInstructionGenerator
+    {
+        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
+        {
+            if (route.Route.Shape.Count == offset)
+            {
+                usedInstructions = 1;
+                return new EndInstruction(offset, 0, 0);
+            }
+
+            usedInstructions = 0;
+            return null;
+        }
+    }
 }

@@ -1,12 +1,26 @@
 {
-  "base": "Turn {TurnDegrees}",
-  "end": "You have arrived at your destination",
-  "start": {
-    "startDegrees>=-45&startDegrees<=45": "Start north",
-    "startDegrees>45&startDegrees<=135": "Start east",
-    "startDegrees>135&startDegrees<=225": "Start south",
-    "startDegrees>225": "Start west"
-  },
-  
-  "roundabout": "Enter the roundabout and take the {ExitNumber}th exit "
+  "name": "Default instruction generator",
+  "description": "Generates default instructions",
+  "about:generators": "When generating instructions, every of the below generators will be tried from left to right. The first generator that succeeds in creating an instruction will be used. This implies that very specific generators should be first, and very general instructions (base) should be last",
+  "generators": [
+    "roundabout",
+    "start",
+    "end",
+    "base"
+  ],
+  "about:languages":"Maps language codes onto InstructionToText-configurations", 
+  "languages": {
+    "en": {
+      "base": "Turn  $turnDegrees$",
+      "end": "You have arrived at your destination",
+      "start": {
+        "$startDegrees>=-45&$startDegrees<=45": "Start north",
+        "$startDegrees>45&$startDegrees<=135": "Start east",
+        "$startDegrees>135&$startDegrees<=225": "Start south",
+        "$startDegrees>225": "Start west"
+      },
+      "roundabout": "Enter the roundabout and take the ${ExitNumber}th exit "
+    }
+  }
 }
+

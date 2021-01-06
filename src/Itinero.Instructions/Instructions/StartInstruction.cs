@@ -41,4 +41,19 @@ namespace Itinero.Instructions.Instructions
                 $"Start by going {ProjectionDistance}m towards the road, then turn {TurnDegrees}° to start a {StartDegrees}° journey";
         }
     }
+
+    public class StartInstructionGenerator : IInstructionGenerator
+    {
+        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
+        {
+            if (offset == 0)
+            {
+                usedInstructions = 1;
+                return new StartInstruction(0, 0, 0);
+            }
+
+            usedInstructions = 0;
+            return null;
+        }
+    }
 }

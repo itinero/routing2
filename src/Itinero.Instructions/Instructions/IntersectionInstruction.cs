@@ -12,7 +12,7 @@ namespace Itinero.Instructions.Instructions
     /// </summary>
     public class IntersectionInstruction : BaseInstruction
     {
-        public static IInstructionConstructor Constructor = new IntersectionInstructionGenerator();
+        public static IInstructionGenerator Generator = new IntersectionInstructionGenerator();
 
         /// <summary>
         /// The list with all the branches and properties of all the roads at this crossroads, *except* the one we just came from.
@@ -126,11 +126,9 @@ namespace Itinero.Instructions.Instructions
                 $"On the crossing: {Mode()} (road {ActualIndex + 1}/{AllRoads.Count} if left to right indexed) ({base.ToString()})";
         }
 
-        internal class IntersectionInstructionGenerator : IInstructionConstructor
+        public class IntersectionInstructionGenerator : IInstructionGenerator
         {
-            public string Name { get; }
-
-            public BaseInstruction Construct(IndexedRoute route, int offset, out int usedInstructions)
+            public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
             {
                 usedInstructions = 0;
 

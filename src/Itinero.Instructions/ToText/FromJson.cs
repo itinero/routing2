@@ -9,7 +9,7 @@ namespace Itinero.Instructions.ToText
 {
     public class FromJson
     {
-        private static readonly Regex RenderValueRegex = new Regex(@"^(\$[^ ]*|[^\$]+)*$");
+        private static readonly Regex RenderValueRegex = new Regex(@"^(\${[^ ]*}|\$[^ ]*|[^\$]+)*$");
 
         private static readonly List<(string, Predicate<(string a, string b)>)> _operators =
             new List<(string, Predicate<(string a, string b)>)>
@@ -22,8 +22,27 @@ namespace Itinero.Instructions.ToText
                 (">", t => BothDouble(t, d => d.a > d.b))
             };
 
-        
-        
+
+        /**
+         * Parses the full pipeline
+         */
+        public Dictionary<string, RouteToInstructions> ParseRouteToInstructions(JObject jobj)
+        {
+            var generators = new LinearInstructionGenerator(jobj["generators"].Value<List<string>>());
+            var languages = jobj["languages"] as JObject;
+            if (languages == null) throw new ArgumentException("JObject does not contain a languages object");
+
+            var gens = new Dictionary<string, RouteToInstructions>();
+            foreach (var (langCode, toText) in languages)
+            {
+                gens[langCode] = new RouteToInstructions(generators,
+                    ParseInstructionToText(toText as JObject)
+                );
+            }
+
+            return gens;
+        }
+
         /**
          * Parses a JSON-file and converts it into a InstructionToText.
          * This is done as following:
@@ -54,7 +73,7 @@ namespace Itinero.Instructions.ToText
          * A rendervalue is a string such as "Take the {exitNumber}th exit", where 'exitNumber' is substituted by the corresponding field declared in the instruction.
          * If that substitution fails, the result will be null which will either cause an error in rendering or a condition to fail.
          */
-        public static IInstructionToText FromJSON(JObject jobj)
+        public static IInstructionToText ParseInstructionToText(JObject jobj)
         {
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
             var lowPriority = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
@@ -72,7 +91,7 @@ namespace Itinero.Instructions.ToText
         {
             if (j.Type == JTokenType.String) return ParseRenderValue(j.Value<string>());
 
-            if (j is JObject o) return FromJSON(o);
+            if (j is JObject o) return ParseInstructionToText(o);
 
             throw new ArgumentException("Invalid value in ParseSubObj" + j);
         }
@@ -102,7 +121,7 @@ namespace Itinero.Instructions.ToText
                 if (condition.IndexOf(key, StringComparison.Ordinal) < 0) continue;
 
                 // Get the two parts of the condition...
-                var parts = condition.Split(key).Select(renderValue => ParseRenderValue(renderValue,false))
+                var parts = condition.Split(key).Select(renderValue => ParseRenderValue(renderValue, false))
                     .ToList();
                 if (parts.Count() != 2)
                     throw new ArgumentException("Parsing condition " + condition +
@@ -111,7 +130,8 @@ namespace Itinero.Instructions.ToText
                 // We pull the instruction from thin air by returning a lambda instead
                 return (instruction =>
                 {
-                    Console.WriteLine("COmparing"+key+"of"+instruction+" of parts "+parts[0]+", "+parts[1]);
+                    Console.WriteLine(
+                        "COmparing" + key + "of" + instruction + " of parts " + parts[0] + ", " + parts[1]);
                     return op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction)));
                 }, false);
             }
@@ -126,10 +146,16 @@ namespace Itinero.Instructions.ToText
                     .Select(m =>
                     {
                         var v = m.Value;
-                        if (v.StartsWith("$")) return (v.Substring(1, v.Length - 1), true);
+                        if (v.StartsWith("$"))
+                        {
+                            v = v.Substring(1).Trim('{', '}').ToLower();
+                            return (v, true);
+                        }
+
                         return (m.Value, false);
-                    })
+                    }).ToList()
                 ;
+            if (parts.Count == 0) throw new Exception("Could not parse value " + value);
 
             return new SubstituteText(parts, crashOnNotFound);
         }
