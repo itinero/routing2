@@ -11,14 +11,15 @@ namespace Itinero.Instructions.Instructions
         /// </summary>
         public readonly uint ProjectionDistance;
 
-        public EndInstruction(int turnDegrees, uint projectionDistance, int index) :
-            base(index, index, turnDegrees)
+        public EndInstruction(IndexedRoute route, int turnDegrees, uint projectionDistance, int index) :
+            base(route, index, index, turnDegrees)
         {
             ProjectionDistance = projectionDistance;
         }
 
 
         public EndInstruction(IndexedRoute route) : this(
+            route,
             0,
             (uint) route.DistanceToNextPoint(route.Last),
             route.Shape.Count - 1)
@@ -33,16 +34,14 @@ namespace Itinero.Instructions.Instructions
 
     public class EndInstructionGenerator : IInstructionGenerator
     {
-        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
+        public BaseInstruction Generate(IndexedRoute route, int offset)
         {
-            if (route.Route.Shape.Count == offset)
-            {
-                usedInstructions = 1;
-                return new EndInstruction(offset, 0, 0);
+            if (route.Route.Shape.Count != offset) {
+                return null;
             }
 
-            usedInstructions = 0;
-            return null;
+            return new EndInstruction(route);
+
         }
     }
 }

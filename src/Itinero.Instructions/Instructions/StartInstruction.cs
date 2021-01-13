@@ -20,15 +20,15 @@ namespace Itinero.Instructions.Instructions
         /// </summary>
         public readonly uint ProjectionDistance;
 
-        public StartInstruction(int turnDegrees, int absoluteStartingDegrees, uint projectionDistance) :
-            base(0, 0, turnDegrees)
+        public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees, uint projectionDistance) :
+            base(route, 0, 0, turnDegrees)
         {
             StartDegrees = absoluteStartingDegrees;
             ProjectionDistance = projectionDistance;
         }
 
 
-        public StartInstruction(IndexedRoute route) : this(
+        public StartInstruction(IndexedRoute route) : this(route, 
             route.DirectionChangeAt(0),
             route.DepartingDirectionAt(0).NormalizeDegrees(), 
             (uint) route.DistanceToNextPoint(-1))
@@ -44,15 +44,13 @@ namespace Itinero.Instructions.Instructions
 
     public class StartInstructionGenerator : IInstructionGenerator
     {
-        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
+        public BaseInstruction Generate(IndexedRoute route, int offset)
         {
             if (offset == 0)
             {
-                usedInstructions = 1;
-                return new StartInstruction(0, 0, 0);
+                return new StartInstruction(route);
             }
 
-            usedInstructions = 0;
             return null;
         }
     }

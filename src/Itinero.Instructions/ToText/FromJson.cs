@@ -11,7 +11,7 @@ namespace Itinero.Instructions.ToText
     {
         private static readonly Regex RenderValueRegex = new Regex(@"^(\${[^ ]*}|\$[^ ]*|[^\$]+)*$");
 
-        private static readonly List<(string, Predicate<(string a, string b)>)> _operators =
+        private static readonly List<(string, Predicate<(string a, string b)>)> Operators =
             new List<(string, Predicate<(string a, string b)>)>
             {
                 // This is a list, as we first need to match '<=' and '>=', otherwise we might think the match is "abc<" = "def", not "abc" <= "def
@@ -26,21 +26,18 @@ namespace Itinero.Instructions.ToText
         /**
          * Parses the full pipeline
          */
-        public Dictionary<string, RouteToInstructions> ParseRouteToInstructions(JObject jobj)
+        public static (Instructions.LinearInstructionGenerator generators, Dictionary<string, IInstructionToText> toTexts) ParseRouteToInstructions(JObject jobj)
         {
-            var generators = new LinearInstructionGenerator(jobj["generators"].Value<List<string>>());
+            var generators = new Instructions.LinearInstructionGenerator(jobj["generators"].ToObject<List<string>>());
             var languages = jobj["languages"] as JObject;
             if (languages == null) throw new ArgumentException("JObject does not contain a languages object");
 
-            var gens = new Dictionary<string, RouteToInstructions>();
-            foreach (var (langCode, toText) in languages)
-            {
-                gens[langCode] = new RouteToInstructions(generators,
-                    ParseInstructionToText(toText as JObject)
-                );
+            var toTexts = new Dictionary<string, IInstructionToText>();
+            foreach (var (langCode, toText) in languages) {
+                toTexts[langCode] = ParseInstructionToText(toText as JObject);
             }
 
-            return gens;
+            return (generators, toTexts);
         }
 
         /**
@@ -53,6 +50,10 @@ namespace Itinero.Instructions.ToText
          * 
          * "InstructionType": the 'type' of the instruction must match the given string, e.g. 'Roundabout', 'Start', 'Base', ...
          * These are the same as the classnames of 'Instruction/*.cs' (but not case sensitive and the Instruction can be dropped)
+         *
+         * "$someVariable": some variable has to exist.
+         *
+         * "condition1&condition2": all the conditions have to match
          * 
          * If the condition contains a "=","
          * <
@@ -114,7 +115,7 @@ namespace Itinero.Instructions.ToText
                 return (instruction => cs.All(p => p.Invoke(instruction)), false);
             }
 
-            foreach (var (key, op) in _operators)
+            foreach (var (key, op) in Operators)
             {
                 // We iterate over all the possible operator keywords: '=', '<=', '>=', ...
                 // If they are found, we apply the actual operator
@@ -131,13 +132,15 @@ namespace Itinero.Instructions.ToText
                 return (instruction =>
                 {
                     Console.WriteLine(
-                        "COmparing" + key + "of" + instruction + " of parts " + parts[0] + ", " + parts[1]);
+                        "Comparing" + key + "of" + instruction + " of parts " + parts[0] + ", " + parts[1]);
                     return op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction)));
                 }, false);
             }
 
-            // At this point, the condition is a simple type matching
-            return (instruction => instruction.Type == condition, false);
+            // At this point, the condition is a single string
+            // This could either be a type matching or a substitution that has to exist
+            var rendered = ParseRenderValue(condition, false);
+            return (instruction => instruction.Type == condition || rendered.ToText(instruction) != null, false);
         }
 
         public static SubstituteText ParseRenderValue(string value, bool crashOnNotFound = true)

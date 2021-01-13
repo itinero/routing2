@@ -8,18 +8,25 @@
     "end",
     "base"
   ],
-  "about:languages":"Maps language codes onto InstructionToText-configurations", 
+  "about:languages": "Maps language codes onto InstructionToText-configurations",
   "languages": {
     "en": {
-      "base": "Turn  $turnDegrees$",
+      "base": {
+        "$.name": "Turn $turnDegrees onto $.name",
+        "*": "Turn  $turnDegrees"
+      },
       "end": "You have arrived at your destination",
       "start": {
-        "$startDegrees>=-45&$startDegrees<=45": "Start north",
+        "$startDegrees>=-225&$startDegrees<=-135": "Start south",
+        "$startDegrees>-135&$startDegrees<=-45": "Start west",
+        "$startDegrees>-45&$startDegrees<=45": "Start north",
         "$startDegrees>45&$startDegrees<=135": "Start east",
         "$startDegrees>135&$startDegrees<=225": "Start south",
-        "$startDegrees>225": "Start west"
+        "$startDegrees>225": "Start west",
+        "*": "Start heading $startDegrees"
       },
-      "roundabout": "Enter the roundabout and take the ${ExitNumber}th exit "
+      "roundabout": "Enter the roundabout and take the ${ExitNumber}th exit",
+      "*": "Could not generate an instruction for $type"
     }
   }
 }

@@ -3,7 +3,7 @@ using Itinero.Instructions.ToText;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Itinero.Instructions.Tests
+namespace Itinero.Tests.Instructions
 {
     public class ParseInstructionTest
     {
@@ -20,7 +20,7 @@ namespace Itinero.Instructions.Tests
         public void ParseRenderValue_SubstitutionWithNoSpace_SubstitutionInstruction()
         {
             var parsed = FromJson.ParseRenderValue("Take the ${exitNumber}th exit");
-            var result = parsed.ToText(new RoundaboutInstruction(0,5, 42, 5));
+            var result = parsed.ToText(new RoundaboutInstruction(null, 0,5, 42, 5));
             Assert.Equal("Take the 5th exit", result);
         }
         [Fact]
@@ -33,11 +33,11 @@ namespace Itinero.Instructions.Tests
                 "\"$startDegrees>225\": \"Start west\" }}";
 
             var toText = FromJson.ParseInstructionToText(JObject.Parse(input));
-            var north = toText.ToText(new StartInstruction(0, 0, 0));
+            var north = toText.ToText(new StartInstruction(null, 0, 0, 0));
             Assert.Equal("Start north", north);
-            var east = toText.ToText(new StartInstruction(0, 50, 0));
+            var east = toText.ToText(new StartInstruction(null, 0, 50, 0));
             Assert.Equal("Start east", east);
-            var west = toText.ToText(new StartInstruction(0, 275, 0));
+            var west = toText.ToText(new StartInstruction(null,0, 275, 0));
             Assert.Equal("Start west", west);
         }
 

@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Itinero.Instructions;
 using Itinero.Instructions.Instructions;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Instructions.Tests
+namespace Itinero.Tests.Instructions
 {
     public class IntersectionInstructionTest
     {
@@ -50,9 +51,9 @@ namespace Itinero.Instructions.Tests
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
-            Assert.Equal(1, used);
+            Assert.Equal(2, instr.ShapeIndexEnd);
             Assert.Contains("cross the road", instr.Mode());
         }
 
@@ -94,9 +95,9 @@ namespace Itinero.Instructions.Tests
 
                 // The left turn has been removed
             };
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
-            Assert.Equal(1, used);
+            Assert.Equal(2,instr.ShapeIndexEnd);
             Assert.Contains("keep left", instr.Mode());
         }
 
@@ -147,10 +148,10 @@ namespace Itinero.Instructions.Tests
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal(0u, instr.ActualIndex);
-            Assert.Equal(1, used);
+            Assert.Equal(2, instr.ShapeIndexEnd);
             Assert.Contains("left", instr.Mode());
         }
 
@@ -202,10 +203,10 @@ namespace Itinero.Instructions.Tests
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
+            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal(2u, instr.ActualIndex);
-            Assert.Equal(1, used);
+            Assert.Equal(2, instr.ShapeIndexEnd);
             Assert.Contains("right", instr.Mode());
         }
 

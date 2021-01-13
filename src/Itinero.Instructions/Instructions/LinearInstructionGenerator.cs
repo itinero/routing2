@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Routes;
 
-namespace Itinero.Instructions.Instructions
-{
+namespace Itinero.Instructions.Instructions {
     /**
      * Given a list of IInstructionConstructors, the SimpleInstructionGenerator will construct a route in the following way:
      * - Try to generate a base instruction with the first instruction in the list. If this fails, try the next one
@@ -15,51 +14,34 @@ namespace Itinero.Instructions.Instructions
      * the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
      * whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
      */
-    public class LinearInstructionGenerator
-    {
+    public class LinearInstructionGenerator {
         private readonly IEnumerable<IInstructionGenerator> _constructors;
 
         public LinearInstructionGenerator(
-            IEnumerable<string> constructorNames):
-            this(constructorNames.Select(name => AllGenerators.AllGeneratorsDict[name]))
-        {
-        }
-        
+            IEnumerable<string> constructorNames) :
+            this(constructorNames.Select(name => AllGenerators.AllGeneratorsDict[name])) { }
+
         public LinearInstructionGenerator(
-            IEnumerable<IInstructionGenerator> constructors)
-        {
+            IEnumerable<IInstructionGenerator> constructors) {
             _constructors = constructors;
         }
 
         public LinearInstructionGenerator(
             params IInstructionGenerator[] constructors) :
-            this(constructors.ToList())
-        {
-        }
+            this(constructors.ToList()) { }
 
-        private BaseInstruction ConstructNext(IndexedRoute r, int currentOffset, out int used)
-        {
-            foreach (var constructor in _constructors)
-            {
-                var instruction = constructor.Generate(r, currentOffset, out used);
-                if (instruction != null && used > 0)
-                {
+        private BaseInstruction ConstructNext(IndexedRoute r, int currentOffset) {
+            foreach (var constructor in _constructors) {
+                var instruction = constructor.Generate(r, currentOffset);
+                if (instruction != null) {
                     return instruction;
-                }
-
-                if (instruction != null && used == 0)
-                {
-                    throw new Exception(
-                        "Hanging instruction generation: an instruction was emitted but the offset was zero. This is a bug in " +
-                        constructor.GetType().Name);
                 }
             }
 
             throw new Exception("Could not generate instruction");
         }
 
-        public IEnumerable<BaseInstruction> GenerateInstructions(Route route)
-        {
+        public IEnumerable<BaseInstruction> GenerateInstructions(Route route) {
             var indexedRoute = new IndexedRoute(route);
             var instructions = new List<BaseInstruction>();
 
@@ -67,14 +49,17 @@ namespace Itinero.Instructions.Instructions
 
 
             var currentIndex = 0;
-            while (currentIndex < route.Shape.Count - 1)
-            {
-                var instruction = ConstructNext(indexedRoute, currentIndex, out var used);
+            while (currentIndex < route.Shape.Count() - 1) {
+                var instruction = ConstructNext(indexedRoute, currentIndex);
                 instructions.Add(instruction);
-                currentIndex += used;
+                if (instruction.ShapeIndexEnd == currentIndex) {
+                    currentIndex++;
+                }
+                else {
+                    currentIndex = instruction.ShapeIndexEnd;
+                }
             }
 
-            instructions.Add(new EndInstruction(indexedRoute));
             return instructions;
         }
     }

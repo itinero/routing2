@@ -25,7 +25,13 @@ namespace Itinero.Instructions.Instructions
                 if (name.EndsWith("generator"))
                 {
                     dict[name] = generator;
-                    name = name.Substring(0, "generator".Length);
+                    name = name.Substring(0, name.Length - "generator".Length);
+                }
+                
+                if (name.EndsWith("instruction"))
+                {
+                    dict[name] = generator;
+                    name = name.Substring(0,name.Length - "instruction".Length);
                 }
 
                 dict[name] = generator;

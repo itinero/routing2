@@ -23,9 +23,9 @@ namespace Itinero.Instructions.Instructions
         public readonly uint ActualIndex;
 
 
-        public IntersectionInstruction(int shapeIndex, int shapeIndexEnd, int turnDegrees,
+        public IntersectionInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees,
             List<(int relativeDegrees, IEnumerable<(string, string)> tags)> allRoads, uint actualIndex) : base(
-            shapeIndex, shapeIndexEnd, turnDegrees)
+        route,    shapeIndex, shapeIndexEnd, turnDegrees)
         {
             AllRoads = allRoads;
             ActualIndex = actualIndex;
@@ -128,11 +128,8 @@ namespace Itinero.Instructions.Instructions
 
         public class IntersectionInstructionGenerator : IInstructionGenerator
         {
-            public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
+            public BaseInstruction Generate(IndexedRoute route, int offset)
             {
-                usedInstructions = 0;
-
-
                 if (route.Last == offset + 1)
                 {
                     // The next maneuver is 'arrive', no need to emit a complicated intersection-instruction
@@ -166,8 +163,7 @@ namespace Itinero.Instructions.Instructions
 
 
 
-                usedInstructions = 1;
-                var instruction = new IntersectionInstruction(
+                var instruction = new IntersectionInstruction(route,
                     offset,
                     offset + 1,
                     directionChange,

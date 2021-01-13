@@ -1,5 +1,4 @@
-namespace Itinero.Instructions.Instructions
-{
+namespace Itinero.Instructions.Instructions {
     /// <summary>
     ///     An instruction is a piece that describes a traveller how they should behave to reach their destination.
     ///     An instruction applies on one or more segments, and contains two parts:
@@ -25,8 +24,7 @@ namespace Itinero.Instructions.Instructions
     ///     - Written instructions, on app, which should show the appropriate text at the right time
     ///     - Extra information, e.g. about the street currently travelled, the next street, the upcoming turn, ...
     /// </summary>
-    public class BaseInstruction
-    {
+    public class BaseInstruction {
         /// <summary>
         ///     The index of the start of the segment
         /// </summary>
@@ -50,51 +48,46 @@ namespace Itinero.Instructions.Instructions
         public readonly string Type;
 
 
-        public BaseInstruction(int shapeIndex, int shapeIndexEnd, int turnDegrees)
-        {
+        public BaseInstruction(IndexedRoute route,
+            int shapeIndex, int shapeIndexEnd, int turnDegrees) {
+            Route = route;
             ShapeIndex = shapeIndex;
             ShapeIndexEnd = shapeIndexEnd;
             TurnDegrees = turnDegrees;
             Type = Tp(this);
         }
 
-        public BaseInstruction(int shapeIndex, double turnDegrees)
-        {
+        public BaseInstruction(int shapeIndex, double turnDegrees) {
             ShapeIndex = shapeIndex;
             ShapeIndexEnd = shapeIndex + 1;
             TurnDegrees = turnDegrees.NormalizeDegrees();
             Type = Tp(this);
         }
 
-        private static string Tp(object o)
-        {
+        public IndexedRoute Route {
+            get; /* Important - because this is a property, it'll won't be picked up in the substitutions because that one only loads fields */
+        }
+
+        private static string Tp(object o) {
             var tp = o.GetType().Name.ToLower();
             return tp.EndsWith("instruction") ? tp.Substring(0, tp.Length - "instruction".Length) : tp;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"Follow from p{ShapeIndex} to p{ShapeIndexEnd}, where you turn {TurnDegrees}°";
         }
     }
 
-    public class BaseInstructionGenerator : IInstructionGenerator
-    {
-        public BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions)
-        {
-            if (offset >= route.Shape.Count - 1)
-            {
-                usedInstructions = 0;
+    public class BaseInstructionGenerator : IInstructionGenerator {
+        public BaseInstruction Generate(IndexedRoute route, int offset) {
+            if (offset >= route.Shape.Count - 1) {
                 return null;
             }
 
-            usedInstructions = 1;
-
-            (double, double) nextPoint;
-            if (route.Shape.Count - 2 == offset)
-                nextPoint = route.Route.Stops[route.Route.Stops.Count - 1].Coordinate;
-            else
-                nextPoint = route.Shape[offset + 2];
+            (double, double) nextPoint =
+                route.Shape.Count - 2 == offset
+                    ? route.Route.Stops[^1].Coordinate
+                    : route.Shape[offset + 2];
 
             var nextDirection = Utils.AngleBetween(route.Shape[offset + 1], nextPoint);
             var currentDirection = Utils.AngleBetween(route.Shape[offset], route.Shape[offset + 1]);

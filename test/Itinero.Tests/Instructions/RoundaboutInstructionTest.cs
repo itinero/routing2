@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Itinero.Instructions;
 using Itinero.Instructions.Instructions;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Instructions.Tests
+namespace Itinero.Tests.Instructions
 {
     public class RoundaboutInstructionTest
     {
@@ -54,11 +55,11 @@ namespace Itinero.Instructions.Tests
             };
             var gen = RoundaboutInstruction.Constructor;
 
-            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
+            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("right", instr.TurnDegrees.DegreesToText());
             Assert.Equal(0, instr.ExitNumber);
-            Assert.Equal(3, used);
+            Assert.Equal(4, instr.ShapeIndexEnd);
         }
 
         [Fact]
@@ -116,11 +117,11 @@ namespace Itinero.Instructions.Tests
             };
             var gen = RoundaboutInstruction.Constructor;
 
-            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1, out var used);
+            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
             Assert.Equal(1, instr.ExitNumber);
-            Assert.Equal(5, used);
+            Assert.Equal(6, instr.ShapeIndexEnd);
         }
     }
 }

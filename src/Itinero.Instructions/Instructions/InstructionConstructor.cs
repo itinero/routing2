@@ -13,6 +13,6 @@ namespace Itinero.Instructions.Instructions
         /// </remarks>
         /// </summary>
         /// <returns></returns>
-        BaseInstruction Generate(IndexedRoute route, int offset, out int usedInstructions);
+        BaseInstruction Generate(IndexedRoute route, int offset);
     }
 }

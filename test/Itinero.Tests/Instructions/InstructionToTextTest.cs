@@ -2,7 +2,7 @@ using Itinero.Instructions.Instructions;
 using Itinero.Instructions.ToText;
 using Xunit;
 
-namespace Itinero.Instructions.Tests
+namespace Itinero.Tests.Instructions
 {
     public class InstructionToTextTest
     {

@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Instructions;
 using Itinero.Instructions.Instructions;
 using Itinero.Instructions.ToText;
 using Itinero.Routes;
 using Xunit;
+using LinearInstructionGenerator = Itinero.Instructions.LinearInstructionGenerator;
 
-namespace Itinero.Instructions.Tests
+namespace Itinero.Tests.Instructions
 {
     public class InstructionTest
     {
@@ -207,10 +209,9 @@ namespace Itinero.Instructions.Tests
                 }
             );
             var texts = instructions.Select(toText.ToText).ToList();
-            // For use in the debugger
-            var instructionsStr = string.Join("\n", instructions.Select((instr, i) => (i + ". " + instr.ToString())));
 
             Assert.NotEmpty(instructions);
+            Assert.Equal("Turn 98", texts[0]);
         }
 
 
