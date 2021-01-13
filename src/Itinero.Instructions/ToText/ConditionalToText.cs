@@ -6,10 +6,10 @@ namespace Itinero.Instructions.ToText
 {
     public class ConditionalToText: IInstructionToText
     {
-        private readonly IEnumerable<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;
+        public readonly List<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;
 
         public ConditionalToText(
-            IEnumerable<(Predicate<BaseInstruction>, IInstructionToText)> options
+            List<(Predicate<BaseInstruction>, IInstructionToText)> options
             )
         {
             _options = options;

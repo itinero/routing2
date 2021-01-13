@@ -21,7 +21,7 @@ namespace Itinero.Instructions.Instructions
         public EndInstruction(IndexedRoute route) : this(
             route,
             0,
-            (uint) route.DistanceToNextPoint(route.Last),
+            (uint) 0,
             route.Shape.Count - 1)
         {
         }
@@ -36,7 +36,7 @@ namespace Itinero.Instructions.Instructions
     {
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
-            if (route.Route.Shape.Count != offset) {
+            if (route.Route.Shape.Count -1 != offset ) {
                 return null;
             }
 

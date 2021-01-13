@@ -44,12 +44,8 @@ namespace Itinero.Instructions.Instructions {
         public IEnumerable<BaseInstruction> GenerateInstructions(Route route) {
             var indexedRoute = new IndexedRoute(route);
             var instructions = new List<BaseInstruction>();
-
-            instructions.Add(new StartInstruction(indexedRoute));
-
-
             var currentIndex = 0;
-            while (currentIndex < route.Shape.Count() - 1) {
+            while (currentIndex < route.Shape.Count - 1) {
                 var instruction = ConstructNext(indexedRoute, currentIndex);
                 instructions.Add(instruction);
                 if (instruction.ShapeIndexEnd == currentIndex) {

@@ -73,6 +73,10 @@ namespace Itinero.Instructions.ToText
          * 
          * A rendervalue is a string such as "Take the {exitNumber}th exit", where 'exitNumber' is substituted by the corresponding field declared in the instruction.
          * If that substitution fails, the result will be null which will either cause an error in rendering or a condition to fail.
+         *
+         * Other notes:
+         * A POSITIVE angle is going left,
+         * A NEGATIVE angle is going right
          */
         public static IInstructionToText ParseInstructionToText(JObject jobj)
         {
@@ -85,7 +89,7 @@ namespace Itinero.Instructions.ToText
                 (isLowPriority ? lowPriority : conditions).Add((p, sub));
             }
 
-            return new ConditionalToText(conditions.Concat(lowPriority));
+            return new ConditionalToText(conditions.Concat(lowPriority).ToList());
         }
 
         private static IInstructionToText ParseSubObj(JToken j)
@@ -126,21 +130,20 @@ namespace Itinero.Instructions.ToText
                     .ToList();
                 if (parts.Count() != 2)
                     throw new ArgumentException("Parsing condition " + condition +
-                                                " failed, it has an operator, but to much matches");
+                                                " failed, it has an operator, but to much matches. Maybe you forgot to add an '&' between the conditions?");
                 // And apply the instruction on it!
                 // We pull the instruction from thin air by returning a lambda instead
-                return (instruction =>
-                {
-                    Console.WriteLine(
-                        "Comparing" + key + "of" + instruction + " of parts " + parts[0] + ", " + parts[1]);
-                    return op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction)));
-                }, false);
+                return (instruction => op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction))), false);
             }
 
             // At this point, the condition is a single string
             // This could either be a type matching or a substitution that has to exist
             var rendered = ParseRenderValue(condition, false);
-            return (instruction => instruction.Type == condition || rendered.ToText(instruction) != null, false);
+            if (rendered.SubstitutedValueCount() > 0) {
+                return (instruction => rendered.ToText(instruction) != null, false);
+            }
+
+            return (instruction => instruction.Type == condition, false);
         }
 
         public static SubstituteText ParseRenderValue(string value, bool crashOnNotFound = true)

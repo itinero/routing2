@@ -12,17 +12,32 @@
   "languages": {
     "en": {
       "base": {
-        "$.name": "Turn $turnDegrees onto $.name",
-        "*": "Turn  $turnDegrees"
+        "$.name": {
+          "$turnDegrees<=-135": "Turn sharply left onto $.name",
+          "$turnDegrees>-135&$turnDegrees<=-65": "Turn left onto $.name",
+          "$turnDegrees>-65&$turnDegrees<=-25": "Turn slightly left onto $.name",
+          "$turnDegrees>-25&$turnDegrees<25": "Continue onto $.name",
+          "$turnDegrees>=135": "Turn sharply right onto $.name",
+          "$turnDegrees<135&$turnDegrees>=65": "Turn right onto $.name",
+          "$turnDegrees<65&&$turnDegrees>=25": "Turn slightly right onto $.name"
+        },
+        "*": {
+          "$turnDegrees<=-135": "Turn sharply left",
+          "$turnDegrees>-135&$turnDegrees<=-65": "Turn left",
+          "$turnDegrees>-65&$turnDegrees<=-25": "Turn slightly left",
+          "$turnDegrees<-25$turnDegrees<25": "Continue",
+          "$turnDegrees>=135": "Turn sharply right",
+          "$turnDegrees<135&$turnDegrees>=65": "Turn right",
+          "$turnDegrees<65&$turnDegrees>=25": "Turn slightly right"
+        }
       },
       "end": "You have arrived at your destination",
       "start": {
-        "$startDegrees>=-225&$startDegrees<=-135": "Start south",
+        "$startDegrees<=-135": "Start south",
         "$startDegrees>-135&$startDegrees<=-45": "Start west",
         "$startDegrees>-45&$startDegrees<=45": "Start north",
         "$startDegrees>45&$startDegrees<=135": "Start east",
-        "$startDegrees>135&$startDegrees<=225": "Start south",
-        "$startDegrees>225": "Start west",
+        "$startDegrees>135": "Start south",
         "*": "Start heading $startDegrees"
       },
       "roundabout": "Enter the roundabout and take the ${ExitNumber}th exit",

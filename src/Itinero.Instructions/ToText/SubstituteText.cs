@@ -54,7 +54,7 @@ namespace Itinero.Instructions.ToText {
                     var firstChar = text.ToCharArray()[0];
                     if (indices.Keys.Contains(firstChar)) {
                         var key = text.Substring(1);
-                        var segment = instruction.Route.Meta[instruction.ShapeIndex + indices[firstChar]]?.Attributes;
+                        var segment = instruction.Route?.Meta[instruction.ShapeIndex + indices[firstChar]]?.Attributes;
                         if (segment == null || !segment.TryGetValue(key, out var v)) {
                             if (_crashOnMissingKey) {
                                 throw new KeyNotFoundException("The segment does not contain a key  " + text);
@@ -82,6 +82,14 @@ namespace Itinero.Instructions.ToText {
             }
 
             return resultText;
+        }
+
+        public override string ToString() {
+            return string.Join("", this._text.Select(txt => txt.textOrVarName));
+        }
+
+        public int SubstitutedValueCount() {
+            return _text.Where(v => v.substitute).Count();
         }
     }
 }

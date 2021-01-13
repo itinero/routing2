@@ -17,7 +17,7 @@ namespace Itinero.Tests.Instructions
                     ("TurnDegrees", true),
                     (" degrees", false)
                 });
-            var baseInstruction = new BaseInstruction(0, 42);
+            var baseInstruction = new BaseInstruction(null, 0, 42);
 
             var result = basicTurnInstruction.ToText(baseInstruction);
             Assert.Equal("Turn 42 degrees", result);

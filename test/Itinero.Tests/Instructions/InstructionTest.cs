@@ -41,145 +41,28 @@ namespace Itinero.Tests.Instructions
                 (3.213919401168823, 51.21336940272057),
                 // Karel de stoute, even links-rechts
                 (3.2133668661117554, 51.212247019059234), // 10
-                /*
-               // Fietspad graaf-visartpark
-               (3.2135170698165894, 51.21221341433617),
-               (3.2133883237838745, 51.21213948385911),
-               // Brug langs sluizencomplex
-               (3.2130208611488342, 51.21113805024932),
-               // Gewone fietspad op buitenvest
-               (3.2129216194152828, 51.21093977725382),
-               (3.2129859924316406, 51.21066084939121), // 15
-               // Fietspad langs expressweg
-               (3.212905526161194, 51.21026765905277),
-               (3.213372230529785, 51.21001729251517),
-               (3.2134768366813655, 51.21000553029537),
-
-               // Oversteek bypass
-               (3.21361094713211, 51.21001393188127),
-               (3.2136230170726776, 51.20994839947071), // 20
-
-               // Tussenschot
-               (3.213661909103393, 51.209859342455665),
-               // Oversteek expressweg
-               (3.213754445314407, 51.20979044917488),
-               // Fietspad langs expressweg
-               (3.2136256992816925, 51.2094846289770),
-               // Buiten smedenvest
-               (3.2128357887268066, 51.20994839947071),
-               (3.212476372718811, 51.20893011464751), // 25
-               (3.2124173641204834, 51.2084125619158),
-               (3.2123905420303345, 51.2079857445725),
-               (3.2124334573745728, 51.20721611905115),
-
-               // Verbinding naar brugge plus
-               (3.2124119997024536, 51.20699556351492),
-               (3.2123228162527084, 51.20697749891944), //30
-
-               // Lange vesting / oprit
-               (3.2119647413492203, 51.20704345566401),
-               (3.211677074432373, 51.207132098019024),
-               (3.2115429639816284, 51.20723124282065),
-               (3.2112854719161987, 51.20738920189418),
-
-               // Lange vesting (straat
-               (3.211108446121216, 51.207431212194878), // 35
-               (3.2107543945312496, 51.20722284072709),
-               (3.210188448429107, 51.206962375066624) //*/
+       
                 },
                 ShapeMeta = new List<Route.Meta>
                 {
-                    new Route.Meta
-                    {
+                    new() {
                         Distance = 0,
                         Shape = 0,
                         Attributes = new[] {("name", "blokstraat"), ("highway", "residential")}
                     },
-                    new Route.Meta {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
-                    new Route.Meta
-                    {
+                    new() {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
+                    new() {
                         Distance = 15,
                         Shape = 3,
                         Attributes = new[] {("name", "Veldmaarschalk Fochstraat"), ("highway", "residential")}
                     },
-                    new Route.Meta
-                    {
+                    new() {
                         Distance = 200,
                         Shape = 4,
                         Attributes = new[]
                         {
                             ("name", "Werfstraat"), ("cyclestreet", "yes"), ("highway", "residential")
                         }
-                    }
-                },
-                Branches = new[]
-                {
-                    // First crossing of queen lizzie
-                    new Route.Branch()
-                    {
-                        Shape = 2,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "primary"), ("name", "Koningin Elisabethlaan")
-                        },
-                        Coordinate = (3.21843221783638, 51.216730089286074)
-                    },
-                    new Route.Branch()
-                    {
-                        Shape = 2,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "primary"), ("name", "Koningin Elisabethlaan")
-                        },
-                        Coordinate = (3.2177583128213882, 51.216221864716495)
-                    },
-                    // Second crossing of queen lizzie
-                    new Route.Branch()
-                    {
-                        Shape = 3,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "primary"), ("name", "Koningin Elisabethlaan")
-                        },
-                        Coordinate = (3.2177898287773132, 51.2164717774993)
-                    },
-                    new Route.Branch()
-                    {
-                        Shape = 3,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "primary"), ("name", "Koningin Elisabethlaan")
-                        },
-                        Coordinate = (3.2190048694610596, 51.21737145228511)
-                    },
-                    new Route.Branch()
-                    {
-                        Shape = 3,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "primary_link"), ("name", "Koningin Elisabethlaan")
-                        },
-                        Coordinate = (3.2184328883886337, 51.216730089286074)
-                    },
-
-                    // crossroads of werfstraat / Veldmr. Fochstraat 
-                    new Route.Branch()
-                    {
-                        Shape = 4,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "residential"), ("name", "Werfstraat")
-                        },
-                        Coordinate = (3.2186079025268555, 51.21813418800571)
-                    },
-                    new Route.Branch()
-                    {
-                        Shape = 4,
-                        Attributes = new List<(string key, string value)>
-                        {
-                            ("highway", "residential"), ("name", "Veldmaarschalk Fochstraat")
-                        },
-                        Coordinate = (3.216794729232788, 51.21848699100294)
                     }
                 }
             };
@@ -200,7 +83,7 @@ namespace Itinero.Tests.Instructions
             };
 
 
-            var instructionGenerator = new LinearInstructionGenerator(new BaseInstructionGenerator());
+            var instructionGenerator = new LinearInstructionGenerator(new BaseInstructionGenerator(), new StartInstructionGenerator(), new EndInstructionGenerator());
             var instructions = instructionGenerator.GenerateInstructions(route).ToList();
             var toText = new SubstituteText(new[]
                 {
@@ -211,7 +94,7 @@ namespace Itinero.Tests.Instructions
             var texts = instructions.Select(toText.ToText).ToList();
 
             Assert.NotEmpty(instructions);
-            Assert.Equal("Turn 98", texts[0]);
+            Assert.Equal("Turn 32", texts[2]);
         }
 
 

@@ -26,7 +26,8 @@ namespace Itinero.Instructions.Instructions {
     /// </summary>
     public class BaseInstruction {
         /// <summary>
-        ///     The index of the start of the segment
+        ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
+        ///     which starts at 'ShapeIndex', what should they do next?
         /// </summary>
         public readonly int ShapeIndex;
 
@@ -57,7 +58,8 @@ namespace Itinero.Instructions.Instructions {
             Type = Tp(this);
         }
 
-        public BaseInstruction(int shapeIndex, double turnDegrees) {
+        public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees) {
+            Route = route;
             ShapeIndex = shapeIndex;
             ShapeIndexEnd = shapeIndex + 1;
             TurnDegrees = turnDegrees.NormalizeDegrees();
@@ -80,20 +82,17 @@ namespace Itinero.Instructions.Instructions {
 
     public class BaseInstructionGenerator : IInstructionGenerator {
         public BaseInstruction Generate(IndexedRoute route, int offset) {
-            if (offset >= route.Shape.Count - 1) {
+            if (offset == 0) {
+                // We are at the very beginning of the route, "turning" as such isn't really defined here
                 return null;
             }
 
-            (double, double) nextPoint =
-                route.Shape.Count - 2 == offset
-                    ? route.Route.Stops[^1].Coordinate
-                    : route.Shape[offset + 2];
+            if (offset >= route.Shape.Count - 1) {
+                // The current offset is already the last index of the shape; this is the endpoint
+                return null;
+            }
 
-            var nextDirection = Utils.AngleBetween(route.Shape[offset + 1], nextPoint);
-            var currentDirection = Utils.AngleBetween(route.Shape[offset], route.Shape[offset + 1]);
-            var instruction = new BaseInstruction(offset, nextDirection - currentDirection);
-
-            return instruction;
+            return new BaseInstruction(route, offset, route.DirectionChangeAt(offset));
         }
     }
 }

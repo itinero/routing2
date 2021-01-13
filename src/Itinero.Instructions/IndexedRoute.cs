@@ -54,6 +54,9 @@ namespace Itinero.Instructions
         private static List<List<Route.Branch>> BuildBranchesList(Route route)
         {
             var branches = new List<List<Route.Branch>>();
+            if (route.Branches == null) {
+                return branches;
+            }
 
             foreach (var _ in route.Shape)
             {

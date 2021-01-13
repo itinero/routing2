@@ -29,9 +29,9 @@ namespace Itinero.Instructions.Instructions
 
 
         public StartInstruction(IndexedRoute route) : this(route, 
-            route.DirectionChangeAt(0),
+            0,
             route.DepartingDirectionAt(0).NormalizeDegrees(), 
-            (uint) route.DistanceToNextPoint(-1))
+         0)
         {
         }
 

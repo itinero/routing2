@@ -3,16 +3,20 @@ namespace Itinero.Instructions.Instructions
     public interface IInstructionGenerator
     {
         /// <summary>
-        /// Generates an instruction for the route at the given offset.
-        /// Returns the instruction and how much shape-points have been used
+        /// An instructionGenerator will attempt to create an instruction for the given route at the given location.
         ///
-        ///<remarks>
-        ///Returns (null, 0) if no instruction was generated with this constructor.
-        /// This can be the case e.g. for a roundabout-instruction-generator when there is no roundabout.
-        /// (This will never happen for the BaseInstruction, which will always use exactly one shapepoint)
-        /// </remarks>
+        /// This should be interpreted as:
+        /// given that the traveller is following the given route and is located _at_ the start of the segment of the shapepoint,
+        /// what should they do next?
+        ///
+        /// It is up to the implementing IInstructionGenerator to generate an appropriate instruction - if any _is_ appropriate.
+        /// Some generators will be highly specialized and give an instruction in rare cases (e.g. roundabouts),
+        /// other generators are generic and will always give a result.
+        ///
         /// </summary>
-        /// <returns></returns>
+        /// <param name="route"></param>
+        /// <param name="offset"></param>
+        /// <returns>The appropriate instruction; null otherwise</returns>
         BaseInstruction Generate(IndexedRoute route, int offset);
     }
 }
