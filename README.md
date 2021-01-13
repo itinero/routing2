@@ -20,3 +20,8 @@ To consume routable tiles and make Itinero more flexible. Itinero should be able
   - [x] Load tiles on demand.
 - [x] Experiment with routing algorithms on top of this.
 - [x] Build a proper resolving algorithm and verify performance.
+
+
+## Development
+
+**This repo uses submodules**. After cloning, run `git submodule init && git submodule update` to get all the dependencies. The OSM-ontology is saved in a submodule.

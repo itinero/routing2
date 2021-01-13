@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Network.Tiles;
+using Itinero.Routes;
 using Itinero.Tests.Network.Tiles;
 using Xunit;
 
@@ -27,6 +29,25 @@ namespace Itinero.Tests
             {
                 coordinateComparer ??= ItineroAsserts.GetCoordinateComparer();
                 Assert.Equal(shape, enumerator.Shape, coordinateComparer);
+            }
+        }
+
+        public static void SameLocations((double longitude, double latitude) expected,
+            (double longitude, double latitude) actual,
+            double toleranceInMeters = 1)
+        {
+            var distance = expected.DistanceEstimateInMeter(actual);
+            if (distance > toleranceInMeters) Assert.True(false, "Coordinates are too far apart to be considered at the same location.");
+        }
+
+        public static void RouteMatches((double longitude, double latitude)[] shape, Route route,
+            double toleranceInMeters = 1)
+        {
+            Assert.Equal(shape.Length, route.Shape.Count);
+
+            for (var s = 0; s < shape.Length; s++)
+            {
+                ItineroAsserts.SameLocations(shape[s], route.Shape[s]);
             }
         }
     }

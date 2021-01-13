@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Logging;
@@ -39,7 +40,7 @@ namespace Itinero.Tests.Functional
             {
                 Zoom = 14
             });
-            routerDb.PrepareFor(bicycle);
+            // routerDb.PrepareFor(bicycle);
             
             using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
                 "http://data.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
@@ -57,8 +58,9 @@ namespace Itinero.Tests.Functional
             var snap2 = latest.Snap().To(5.972356796264648,
                 49.93735597155516).Value;
             var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            var json = route.Value.ToGeoJson();
             
-            // routerDb.PrepareFor(bicycle);
+            routerDb.PrepareFor(bicycle);
 
             snap1 = latest.Snap().To(5.9732794761657715,
                 49.93364075288293).Value;

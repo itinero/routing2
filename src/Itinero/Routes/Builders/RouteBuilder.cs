@@ -54,11 +54,19 @@ namespace Itinero.Routes.Builders
                     }
                 }
 
-                route.Shape.AddRange(edgeEnumerator.GetShapeBetween(offset1, offset2));
+                // add shape points to route.
+                using var shapeBetween = edgeEnumerator.GetShapeBetween(offset1, offset2).GetEnumerator();
+                // skip first if there are already previous edges.
+                if (route.Shape.Count > 0 && offset1 == 0) shapeBetween.MoveNext();
+                while (shapeBetween.MoveNext())
+                {
+                    route.Shape.Add(shapeBetween.Current);
+                }
             }
             
             return route;
         }
+        
         private static readonly ThreadLocal<RouteBuilder> DefaultLazy = new ThreadLocal<RouteBuilder>(() => new RouteBuilder());
         
         /// <summary>
