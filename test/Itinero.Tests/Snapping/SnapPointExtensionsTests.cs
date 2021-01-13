@@ -76,36 +76,6 @@ namespace Itinero.Tests.Snapping
             var result = routerDb.Latest.Snap().To(new VertexId(0, 1));
             Assert.True(result.IsError);
         }
-
-        [Fact]
-        public void Snap1()
-        {
-            var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude)[]
-                {
-                    (4.801073670387268, 51.268064181900094),
-                    (4.801771044731140, 51.268886491558250),
-                    (4.802438914775848, 51.268097745847655)
-                },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]
-                {
-                    (0, 1, new (double longitude, double latitude)[]
-                    {
-                        (4.800950288772583, 51.268426671236426),
-                        (4.801242649555205, 51.268816008449830)
-                    }),
-                    (1, 2, new (double longitude, double latitude)[]
-                    {
-                        (4.802066087722777, 51.268582742153434),
-                        (4.801921248435973, 51.268258852454680)
-                    })
-                });
-
-            var network = routerDb.Latest;
-
-            var edgeEnumerator = network.GetEdgeEnumerator();
-            
-            var snap2 = network.Snap().To((4.802438914775848, 51.268097745847650));
-        }
         
         [Fact]
         public void Snap_OneVertex_ShouldFail()
@@ -251,6 +221,98 @@ namespace Itinero.Tests.Snapping
             Assert.False(result.IsError);
             Assert.True(result.Value.LocationOnNetwork(routerDbLatest).DistanceEstimateInMeter(location) < 1);
             Assert.Equal(edges[0], result.Value.EdgeId);
+        }
+
+        [Fact]
+        public void Snap_TwoEdgeWithShapes_VertexLocation0_ShouldReturnVertex0()
+        {
+            var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude)[]
+                {
+                    (4.801073670387268, 51.268064181900094),
+                    (4.801771044731140, 51.268886491558250),
+                    (4.802438914775848, 51.268097745847655)
+                },
+                new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]
+                {
+                    (0, 1, new (double longitude, double latitude)[]
+                    {
+                        (4.800950288772583, 51.268426671236426),
+                        (4.801242649555205, 51.268816008449830)
+                    }),
+                    (1, 2, new (double longitude, double latitude)[]
+                    {
+                        (4.802066087722777, 51.268582742153434),
+                        (4.801921248435973, 51.268258852454680)
+                    })
+                });
+
+            var network = routerDb.Latest;
+            
+            var result = network.Snap().To((4.801073670387268, 51.268064181900094));
+            Assert.False(result.IsError);
+            Assert.Equal(edges[0], result.Value.EdgeId);
+            Assert.True(result.Value.LocationOnNetwork(network).DistanceEstimateInMeter(network.GetVertex(vertices[0])) < 1);
+        }
+
+        [Fact]
+        public void Snap_TwoEdgeWithShapes_VertexLocation1_ShouldReturnVertex1()
+        {
+            var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude)[]
+                {
+                    (4.801073670387268, 51.268064181900094),
+                    (4.801771044731140, 51.268886491558250),
+                    (4.802438914775848, 51.268097745847655)
+                },
+                new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]
+                {
+                    (0, 1, new (double longitude, double latitude)[]
+                    {
+                        (4.800950288772583, 51.268426671236426),
+                        (4.801242649555205, 51.268816008449830)
+                    }),
+                    (1, 2, new (double longitude, double latitude)[]
+                    {
+                        (4.802066087722777, 51.268582742153434),
+                        (4.801921248435973, 51.268258852454680)
+                    })
+                });
+
+            var network = routerDb.Latest;
+            
+            var result = network.Snap().To((4.801771044731140, 51.268886491558250));
+            Assert.False(result.IsError);
+            Assert.True(result.Value.LocationOnNetwork(network).DistanceEstimateInMeter(network.GetVertex(vertices[1])) < 1);
+        }
+
+        [Fact]
+        public void Snap_TwoEdgeWithShapes_VertexLocation2_ShouldReturnVertex2()
+        {
+            var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude)[]
+                {
+                    (4.801073670387268, 51.268064181900094),
+                    (4.801771044731140, 51.268886491558250),
+                    (4.802438914775848, 51.268097745847655)
+                },
+                new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]
+                {
+                    (0, 1, new (double longitude, double latitude)[]
+                    {
+                        (4.800950288772583, 51.268426671236426),
+                        (4.801242649555205, 51.268816008449830)
+                    }),
+                    (1, 2, new (double longitude, double latitude)[]
+                    {
+                        (4.802066087722777, 51.268582742153434),
+                        (4.801921248435973, 51.268258852454680)
+                    })
+                });
+
+            var network = routerDb.Latest;
+            
+            var result = network.Snap().To((4.802438914775848, 51.268097745847655));
+            Assert.False(result.IsError);
+            Assert.Equal(edges[1], result.Value.EdgeId);
+            Assert.True(result.Value.LocationOnNetwork(network).DistanceEstimateInMeter(network.GetVertex(vertices[2])) < 1);
         }
 
         [Fact]

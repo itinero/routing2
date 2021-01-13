@@ -44,6 +44,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// <returns>True if the vertex exists.</returns>
         public bool MoveTo(VertexId vertex)
         {
+            _fromLocation = null;
+            _toLocation = null;
+            
             if (_tileEnumerator.TileId == vertex.TileId) return _tileEnumerator.MoveTo(vertex);
 
             // move to the tile.
@@ -61,6 +64,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
         public bool MoveToEdge(EdgeId edgeId, bool forward = true)
         {
+            _fromLocation = null;
+            _toLocation = null;
+            
             if (_tileEnumerator.TileId == edgeId.TileId) return _tileEnumerator.MoveTo(edgeId, forward);
 
             // move to the tile.
@@ -76,6 +82,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         public void Reset()
         {
+            _fromLocation = null;
+            _toLocation = null;
+            
             _tileEnumerator.Reset();
         }
 
@@ -85,6 +94,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// <returns>True if there is data available.</returns>
         public bool MoveNext()
         {
+            _fromLocation = null;
+            _toLocation = null;
+            
             return _tileEnumerator.MoveNext();
         }
 

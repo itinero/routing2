@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Routing;
 using Itinero.Snapping;
+using Itinero.Tests.Profiles;
 using Xunit;
 
 namespace Itinero.Tests.Routing

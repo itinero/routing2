@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Itinero.Profiles;
 
-namespace Itinero.Tests
+namespace Itinero.Tests.Profiles
 {
     internal static class ProfileScaffolding
     {
