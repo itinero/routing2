@@ -51,6 +51,8 @@ namespace Itinero.Instructions.ToText
          * "InstructionType": the 'type' of the instruction must match the given string, e.g. 'Roundabout', 'Start', 'Base', ...
          * These are the same as the classnames of 'Instruction/*.cs' (but not case sensitive and the Instruction can be dropped)
          *
+         * "extensions": is a special key. The containing object's top levels have keys which are calculated and 'injected' into the instruction and can be used as a value to substitute. This is ideal to encode 'left', 'right', 'slightly left', ...
+         *
          * "$someVariable": some variable has to exist.
          *
          * "condition1&condition2": all the conditions have to match
@@ -82,19 +84,35 @@ namespace Itinero.Instructions.ToText
         {
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
             var lowPriority = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
+
+            var extensions = new Dictionary<string, IInstructionToText>();
+            
+            
             foreach (var (key, value) in jobj)
             {
-                var (p, isLowPriority) = ParseCondition(key);
-                var sub = ParseSubObj(value);
+                if (key == "extensions") {
+
+                    var extensionsSource = (JObject) value;
+                    foreach (var (extKey, extValue) in extensionsSource) {
+                        extensions.Add(extKey, 
+                            ParseSubObj(extValue, extensions)
+                            );
+                    }
+                    continue;
+                }
+                
+                
+                var (p, isLowPriority) = ParseCondition(key, extensions);
+                var sub = ParseSubObj(value, extensions);
                 (isLowPriority ? lowPriority : conditions).Add((p, sub));
             }
 
             return new ConditionalToText(conditions.Concat(lowPriority).ToList());
         }
 
-        private static IInstructionToText ParseSubObj(JToken j)
+        private static IInstructionToText ParseSubObj(JToken j, Dictionary<string, IInstructionToText> extensions)
         {
-            if (j.Type == JTokenType.String) return ParseRenderValue(j.Value<string>());
+            if (j.Type == JTokenType.String) return ParseRenderValue(j.Value<string>(), extensions);
 
             if (j is JObject o) return ParseInstructionToText(o);
 
@@ -107,14 +125,15 @@ namespace Itinero.Instructions.ToText
             return false;
         }
 
-        public static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition)
+        public static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
+            Dictionary<string, IInstructionToText> extensions = null)
         {
             if (condition == "*") return (_ => true, true);
 
             if (condition.IndexOf("&", StringComparison.Ordinal) >= 0)
             {
                 var cs = condition.Split("&")
-                    .Select(ParseCondition)
+                    .Select(condition1 => ParseCondition(condition1, extensions))
                     .Select(t => t.predicate);
                 return (instruction => cs.All(p => p.Invoke(instruction)), false);
             }
@@ -126,7 +145,7 @@ namespace Itinero.Instructions.ToText
                 if (condition.IndexOf(key, StringComparison.Ordinal) < 0) continue;
 
                 // Get the two parts of the condition...
-                var parts = condition.Split(key).Select(renderValue => ParseRenderValue(renderValue, false))
+                var parts = condition.Split(key).Select(renderValue => ParseRenderValue(renderValue, extensions, false))
                     .ToList();
                 if (parts.Count() != 2)
                     throw new ArgumentException("Parsing condition " + condition +
@@ -138,7 +157,7 @@ namespace Itinero.Instructions.ToText
 
             // At this point, the condition is a single string
             // This could either be a type matching or a substitution that has to exist
-            var rendered = ParseRenderValue(condition, false);
+            var rendered = ParseRenderValue(condition, extensions, false);
             if (rendered.SubstitutedValueCount() > 0) {
                 return (instruction => rendered.ToText(instruction) != null, false);
             }
@@ -146,7 +165,7 @@ namespace Itinero.Instructions.ToText
             return (instruction => instruction.Type == condition, false);
         }
 
-        public static SubstituteText ParseRenderValue(string value, bool crashOnNotFound = true)
+        public static SubstituteText ParseRenderValue(string value, Dictionary<string, IInstructionToText> extensions,  bool crashOnNotFound = true)
         {
             var parts = RenderValueRegex.Match(value).Groups[1].Captures
                     .Select(m =>
@@ -163,7 +182,7 @@ namespace Itinero.Instructions.ToText
                 ;
             if (parts.Count == 0) throw new Exception("Could not parse value " + value);
 
-            return new SubstituteText(parts, crashOnNotFound);
+            return new SubstituteText(parts, extensions, crashOnNotFound);
         }
     }
 }

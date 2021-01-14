@@ -94,7 +94,7 @@ namespace Itinero.Tests.Instructions
             var texts = instructions.Select(toText.ToText).ToList();
 
             Assert.NotEmpty(instructions);
-            Assert.Equal("Turn 32", texts[2]);
+            Assert.Equal("Turn -57", texts[2]);
         }
 
 

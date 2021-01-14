@@ -10,6 +10,12 @@ namespace Itinero.Instructions.ToText {
      */
     public class SubstituteText : IInstructionToText {
         private readonly bool _crashOnMissingKey;
+
+        /**
+         * Extra "fields" to convert this into a string
+         */
+        private readonly Dictionary<string, IInstructionToText> _extensions;
+
         private readonly IEnumerable<(string textOrVarName, bool substitute)> _text;
 
         private readonly Dictionary<char, int> indices = new Dictionary<char, int> {
@@ -18,8 +24,13 @@ namespace Itinero.Instructions.ToText {
             {'+', 1}
         };
 
+        public SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$")))){
+            
+        }
+
         public SubstituteText(
             IEnumerable<(string textOrVarName, bool substitute)> text,
+            Dictionary<string, IInstructionToText> extensions = null,
             bool crashOnMissingKey = true
         ) {
             var allTexts = new List<(string textOrVarName, bool substitute)>();
@@ -33,6 +44,7 @@ namespace Itinero.Instructions.ToText {
             }
 
             _text = allTexts;
+            _extensions = extensions;
             _crashOnMissingKey = crashOnMissingKey;
         }
 
@@ -68,9 +80,13 @@ namespace Itinero.Instructions.ToText {
                     else if (subsValues.TryGetValue(text, out var newValue)) {
                         resultText += newValue;
                     }
+                    else if (_extensions != null && _extensions.TryGetValue(text, out var subs)) {
+                        resultText += subs.ToText(instruction);
+                    }
                     else if (_crashOnMissingKey) {
-                        throw new KeyNotFoundException("The instruction does not contain a field with name " + text +
-                                                       "; try one of " + string.Join(", ", subsValues.Keys));
+                        throw new KeyNotFoundException(
+                            "The instruction does not contain a field or extension with name " + text +
+                            "; try one of " + string.Join(", ", subsValues.Keys));
                     }
                     else {
                         return null;
@@ -85,11 +101,11 @@ namespace Itinero.Instructions.ToText {
         }
 
         public override string ToString() {
-            return string.Join("", this._text.Select(txt => txt.textOrVarName));
+            return string.Join("", _text.Select(txt => txt.textOrVarName));
         }
 
         public int SubstitutedValueCount() {
-            return _text.Where(v => v.substitute).Count();
+            return _text.Count(v => v.substitute);
         }
     }
 }

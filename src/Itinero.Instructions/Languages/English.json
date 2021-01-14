@@ -11,25 +11,24 @@
   "about:languages": "Maps language codes onto InstructionToText-configurations",
   "languages": {
     "en": {
-      "base": {
-        "$.name": {
-          "$turnDegrees<=-135": "Turn sharply left onto $.name",
-          "$turnDegrees>-135&$turnDegrees<=-65": "Turn left onto $.name",
-          "$turnDegrees>-65&$turnDegrees<=-25": "Turn slightly left onto $.name",
-          "$turnDegrees>-25&$turnDegrees<25": "Continue onto $.name",
-          "$turnDegrees>=135": "Turn sharply right onto $.name",
-          "$turnDegrees<135&$turnDegrees>=65": "Turn right onto $.name",
-          "$turnDegrees<65&&$turnDegrees>=25": "Turn slightly right onto $.name"
+      "extensions": {
+        "onto": {
+          "$.name": "on $.name",
+          "*": ""
         },
-        "*": {
-          "$turnDegrees<=-135": "Turn sharply left",
-          "$turnDegrees>-135&$turnDegrees<=-65": "Turn left",
-          "$turnDegrees>-65&$turnDegrees<=-25": "Turn slightly left",
-          "$turnDegrees<-25$turnDegrees<25": "Continue",
-          "$turnDegrees>=135": "Turn sharply right",
-          "$turnDegrees<135&$turnDegrees>=65": "Turn right",
-          "$turnDegrees<65&$turnDegrees>=25": "Turn slightly right"
+        "lr": {
+          "$turnDegrees<=-135": "sharply left",
+          "$turnDegrees>-135&$turnDegrees<=-65": "left",
+          "$turnDegrees>-65&$turnDegrees<=-25": "slightly left",
+          "$turnDegrees>-25&$turnDegrees<25": "straight",
+          "$turnDegrees>=135": "sharply right",
+          "$turnDegrees<135&$turnDegrees>=65": "right",
+          "$turnDegrees<65&&$turnDegrees>=25": "slightly right"
         }
+      },
+      "base": {
+        "$turnDegrees>-25&$turnDegrees<25": "Continue $onto",
+        "*": "Turn $lr"
       },
       "end": "You have arrived at your destination",
       "start": {
@@ -40,7 +39,16 @@
         "$startDegrees>135": "Start south",
         "*": "Start heading $startDegrees"
       },
-      "roundabout": "Enter the roundabout and take the ${ExitNumber}th exit",
+      "roundabout": {
+        "$exitNumber=1": "Go $lr on the roundabout by taking the first exit",
+        "$exitNumber=2": "Go $lr on the roundabout by taking the second exit",
+        "$exitNumber=3": "Go $lr on the roundabout by taking the third exit",
+        "$exitNumber=4": "Go $lr on the roundabout by taking the fourth exit",
+        "$exitNumber=5": "Go $lr on the roundabout by taking the fifth exit",
+        "$exitNumber=6": "Go $lr on the roundabout by taking the sixth exit",
+        "$exitNumber=7": "Go $lr on the roundabout by taking the seventh exit",
+        "*": "Go $lr on the roundabout by taking the ${exitNumber}th exit"
+      },
       "*": "Could not generate an instruction for $type"
     }
   }

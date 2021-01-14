@@ -8,11 +8,17 @@ namespace Itinero.Tests {
             return parts;
         }
 
+        public static Route GenerateRoute(
+            params ((double lon, double lat)[] coordinates, List<(string, string)> segmentAttributes)[] parts) {
+            return GenerateRoute(new List<Route.Branch>(), parts);
+        }
+
         /**
          * Generates a route object to use in testing.
          * Note: the last coordinate of each segments SHOULD NOT BE included (except for the last segment)
          */
         public static Route GenerateRoute(
+            List<Route.Branch> branches,
             params ((double lon, double lat)[] coordinates, List<(string, string)> segmentAttributes)[] parts) {
             var meta = parts.Select(
                 (part, i) => new Route.Meta {
@@ -25,12 +31,12 @@ namespace Itinero.Tests {
                 allCoordinates.AddRange(part.coordinates);
             }
 
-            Route.Branch[] branches = System.Array.Empty<Route.Branch>();
+            Route.Branch[] branchesArr = branches?.ToArray() ?? System.Array.Empty<Route.Branch>();
             
             return new Route {
                 ShapeMeta = meta,
                 Shape = allCoordinates,
-                Branches = branches
+                Branches = branchesArr
             };
         }
     }

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime;
 using Itinero.Routes;
 
 namespace Itinero.Instructions
@@ -136,6 +138,14 @@ namespace Itinero.Instructions
         public int DirectionChangeAt(int offset)
         {
             return (DepartingDirectionAt(offset) - ArrivingDirectionAt(offset)).NormalizeDegrees();
+        }
+
+        public string GeojsonPoints() {
+            var parts = this.Shape.Select(
+                (s, i) => "{ \"type\": \"Feature\", \"properties\": { \"marker-color\": \"#7e7e7e\", \"marker-size\": \"medium\", \"marker-symbol\": \"\", \"index\": \"" +
+                          i + "\" }, \"geometry\": { \"type\": \"Point\", \"coordinates\": [ " + s.longitude + "," +
+                          s.latitude + " ] }}");
+            return string.Join(",", parts);
         }
         
     }
