@@ -21,7 +21,7 @@ namespace Itinero.Network.Tiles
             
             if (_shapes.Length <= pointer + 8)
             {
-                _shapes.Resize(_shapes.Length + 1024);
+                _shapes.Resize(_shapes.Length + DefaultSizeIncrease);
             }
 
             using var enumerator = shape.GetEnumerator();
@@ -34,7 +34,7 @@ namespace Itinero.Network.Tiles
                     TileStatic.ToLocalTileCoordinates(_zoom, _tileId, current.longitude, current.latitude, resolution);
                 if (_shapes.Length <= pointer + 8)
                 {
-                    _shapes.Resize(_shapes.Length + 1024);
+                    _shapes.Resize(_shapes.Length + DefaultSizeIncrease);
                 }
                 if (count == 0)
                 {

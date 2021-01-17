@@ -11,6 +11,7 @@ namespace Itinero.Network.Tiles
 {
     internal partial class NetworkTile
     {
+        private const int DefaultSizeIncrease = 16;
         private const int CoordinateSizeInBytes = 3; // 3 bytes = 24 bits = 4096 x 4096, the needed resolution depends on the zoom-level, higher, less resolution.
         private const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
         private const int TileSizeInIndex = 5; // 4 bytes for the pointer, 1 for the size.
@@ -124,7 +125,7 @@ namespace Itinero.Network.Tiles
             _nextVertexId++;
             
             // make room for edges.
-            if (vertexId.LocalId >= _pointers.Length) _pointers.Resize(_pointers.Length + 1024);
+            if (vertexId.LocalId >= _pointers.Length) _pointers.Resize(_pointers.Length + DefaultSizeIncrease);
 
             return vertexId;
         }
@@ -332,7 +333,7 @@ namespace Itinero.Network.Tiles
             var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
             if (_coordinates.Length <= tileCoordinatePointer + CoordinateSizeInBytes * 2)
             {
-                _coordinates.Resize(_coordinates.Length + 1024);
+                _coordinates.Resize(_coordinates.Length + DefaultSizeIncrease);
             }
 
             const int resolution = (1 << TileResolutionInBits) - 1;
@@ -363,7 +364,7 @@ namespace Itinero.Network.Tiles
             { // same tile, only store local id.
                 if (edges.Length <= location + 5)
                 {
-                    edges.Resize(edges.Length + 1024);
+                    edges.Resize(edges.Length + DefaultSizeIncrease);
                 }
                 
                 return (uint)edges.SetDynamicUInt32(location, vertexId.LocalId);
@@ -372,7 +373,7 @@ namespace Itinero.Network.Tiles
             // other tile, store full id.
             if (edges.Length <= location + 10)
             {
-                edges.Resize(edges.Length + 1024);
+                edges.Resize(edges.Length + DefaultSizeIncrease);
             }
             
             var encodedId = vertexId.Encode();
@@ -410,7 +411,7 @@ namespace Itinero.Network.Tiles
             // TODO: save the diff instead of the full pointer.
             if (edges.Length <= location + 5)
             {
-                edges.Resize(edges.Length + 1024);
+                edges.Resize(edges.Length + DefaultSizeIncrease);
             }
             return (uint) edges.SetDynamicUInt32(location, 
                 pointer.EncodeAsNullableData());
@@ -427,7 +428,7 @@ namespace Itinero.Network.Tiles
         {
             while (edges.Length <= pointer + 5)
             {
-                edges.Resize(edges.Length + 1024);
+                edges.Resize(edges.Length + DefaultSizeIncrease);
             }
             return (uint) edges.SetDynamicUInt32Nullable(pointer, data);
         }
