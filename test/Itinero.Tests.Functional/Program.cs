@@ -42,60 +42,64 @@ namespace Itinero.Tests.Functional
             });
             // routerDb.PrepareFor(bicycle);
             
-            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            // using var osmStream = File.OpenRead(Staging.Download.Get("belgium-latest.osm.pbf", 
-            //     "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf"));
+            //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+            //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+            using var osmStream = File.OpenRead(args[0]);
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
             progress.RegisterSource(osmPbfStream);
             routerDb.UseOsmData(progress);
-
-            var latest = routerDb.Latest;
-
-            var snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            var snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            var json = route.Value.ToGeoJson();
             
-            routerDb.PrepareFor(bicycle);
-
-            snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            json = route.Value.ToGeoJson();
-            
-            using (var outputStream = File.Open("luxembourg.routerdb", FileMode.Create))
+            using (var outputStream = File.Open(args[1], FileMode.Create))
             {
                 routerDb.WriteTo(outputStream);
             }
 
-            latest = routerDb.Latest;
-
-            snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            json = route.Value.ToGeoJson();
-
-            using (var inputStream = File.OpenRead("luxembourg.routerdb"))
-            {
-                routerDb = RouterDb.ReadFrom(inputStream);
-            }
-
-            latest = routerDb.Latest;
-
-            snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            json = route.Value.ToGeoJson();
+            // var latest = routerDb.Latest;
+            //
+            // var snap1 = latest.Snap().To(5.9732794761657715,
+            //     49.93364075288293).Value;
+            // var snap2 = latest.Snap().To(5.972356796264648,
+            //     49.93735597155516).Value;
+            // var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            // var json = route.Value.ToGeoJson();
+            //
+            // routerDb.PrepareFor(bicycle);
+            //
+            // snap1 = latest.Snap().To(5.9732794761657715,
+            //     49.93364075288293).Value;
+            // snap2 = latest.Snap().To(5.972356796264648,
+            //     49.93735597155516).Value;
+            // route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            // json = route.Value.ToGeoJson();
+            //
+            // using (var outputStream = File.Open("luxembourg.routerdb", FileMode.Create))
+            // {
+            //     routerDb.WriteTo(outputStream);
+            // }
+            //
+            // latest = routerDb.Latest;
+            //
+            // snap1 = latest.Snap().To(5.9732794761657715,
+            //     49.93364075288293).Value;
+            // snap2 = latest.Snap().To(5.972356796264648,
+            //     49.93735597155516).Value;
+            // route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            // json = route.Value.ToGeoJson();
+            //
+            // using (var inputStream = File.OpenRead("luxembourg.routerdb"))
+            // {
+            //     routerDb = RouterDb.ReadFrom(inputStream);
+            // }
+            //
+            // latest = routerDb.Latest;
+            //
+            // snap1 = latest.Snap().To(5.9732794761657715,
+            //     49.93364075288293).Value;
+            // snap2 = latest.Snap().To(5.972356796264648,
+            //     49.93735597155516).Value;
+            // route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            // json = route.Value.ToGeoJson();
 
             //
             // var latest = routerDb.Network;
