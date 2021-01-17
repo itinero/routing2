@@ -93,12 +93,14 @@ namespace Itinero.Tests.Network.Tiles
             var vertex2 = new VertexId(vertex1.TileId + 1, 451);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
-            Assert.Equal((uint)0, edge.LocalId);
+            Assert.Equal((uint)0 + EdgeId.MinCrossId, edge.LocalId);
 
-            var size = networkTile.DecodeVertex(edge.LocalId, out var localId, out var tileId);
+            var edgePointer = networkTile.GetEdgeCrossPointer(edge.LocalId - EdgeId.MinCrossId);
+            var size = networkTile.DecodeVertex(edgePointer,
+                out var localId, out var tileId);
             Assert.Equal((uint)0, localId);
             Assert.Equal((uint)vertex1.TileId, tileId);
-            size = networkTile.DecodeVertex(edge.LocalId + size, out localId, out tileId);
+            size = networkTile.DecodeVertex(edgePointer + size, out localId, out tileId);
             Assert.Equal((uint)451, localId);
             Assert.Equal((uint)vertex1.TileId + 1, tileId);
         }

@@ -131,7 +131,7 @@ namespace Itinero.Tests.Network.Writer
              });
              
              Assert.Equal(vertices[0].TileId, edges[0].TileId);
-             Assert.Equal((uint)0, edges[0].LocalId);
+             Assert.Equal((uint)EdgeId.MinCrossId + 0, edges[0].LocalId);
 
              var enumerator = network.GetEdgeEnumerator();
              Assert.True(enumerator.MoveTo(vertices[0]));

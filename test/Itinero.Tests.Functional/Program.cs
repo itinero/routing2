@@ -67,6 +67,7 @@ namespace Itinero.Tests.Functional
             snap2 = latest.Snap().To(5.972356796264648,
                 49.93735597155516).Value;
             route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            json = route.Value.ToGeoJson();
             
             using (var outputStream = File.Open("luxembourg.routerdb", FileMode.Create))
             {
@@ -80,6 +81,7 @@ namespace Itinero.Tests.Functional
             snap2 = latest.Snap().To(5.972356796264648,
                 49.93735597155516).Value;
             route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            json = route.Value.ToGeoJson();
 
             using (var inputStream = File.OpenRead("luxembourg.routerdb"))
             {
@@ -93,6 +95,7 @@ namespace Itinero.Tests.Functional
             snap2 = latest.Snap().To(5.972356796264648,
                 49.93735597155516).Value;
             route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
+            json = route.Value.ToGeoJson();
 
             //
             // var latest = routerDb.Network;

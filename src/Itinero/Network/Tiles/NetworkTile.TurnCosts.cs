@@ -198,7 +198,7 @@ namespace Itinero.Network.Tiles
             // skip edge id if needed.
             if (t1 != t2)
             {
-                size = this.DecodeEdgeId(pointer, out _);
+                size = (uint)_edges.GetDynamicUInt32(pointer, out _);
                 pointer += size;
             }
             

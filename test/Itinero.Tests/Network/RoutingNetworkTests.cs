@@ -105,6 +105,7 @@ namespace Itinero.Tests.Network
                  return a.Where(x => x.key == "highway");
              });
              routerDb.SetEdgeTypeMap(attributeSetMap);
+             network = routerDb.Latest;
              
              var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
              {
@@ -121,11 +122,12 @@ namespace Itinero.Tests.Network
              Assert.Equal(1U, enumerator.EdgeTypeId);
 
              // update edge type func to include maxspeed.
-             attributeSetMap = new AttributeSetMapMock(102948, a =>
+             attributeSetMap = new AttributeSetMapMock(1029445, a =>
              {
                  return a.Where(x => x.key == "highway" || x.key == "maxspeed");
              });
              routerDb.SetEdgeTypeMap(attributeSetMap);
+             network = routerDb.Latest;
              
              enumerator = network.GetEdgeEnumerator();
              enumerator.MoveToEdge(edges[0]);
