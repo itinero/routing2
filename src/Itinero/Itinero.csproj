@@ -14,7 +14,7 @@
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
-    <PackageVersion>2.0.0-alpha-001</PackageVersion>
+    <PackageVersion>2.0.0-alpha-003</PackageVersion>
     <Title>Routeplanner for .NET</Title>
     <PackageTags>osm, openstreetmap, routing, mapping</PackageTags>
   </PropertyGroup>

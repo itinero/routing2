@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.IO.Osm.Collections;
+using Itinero.IO.Osm.Filters;
 using Itinero.IO.Osm.Restrictions;
 using Itinero.Logging;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Mutation;
-using Itinero.Network.Restrictions;
 using OsmSharp;
 using OsmSharp.Db;
 using OsmSharp.Streams;
@@ -20,10 +20,13 @@ namespace Itinero.IO.Osm
         private readonly NodeIndex _nodeIndex;
         private readonly RoutingNetworkMutator _mutableRouterDb;
         private readonly RoutingNetworkMutatorEdgeEnumerator _mutableRouterDbEdgeEnumerator;
+        private readonly ITagsFilter _tagsFilter;
 
-        public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb)
+        public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
+            ITagsFilter tagsFilter)
         {
             _mutableRouterDb = mutableRouterDb;
+            _tagsFilter = tagsFilter;
 
             _mutableRouterDbEdgeEnumerator = _mutableRouterDb.GetEdgeEnumerator();
             
@@ -69,7 +72,8 @@ namespace Itinero.IO.Osm
 
         public override void AddWay(Way way)
         {
-            if (!way.Tags.ContainsKey("highway")) return;
+            var filteredTags = _tagsFilter.Filter(way);
+            if (filteredTags == null) return;
             
             if (_firstPass)
             { // keep track of nodes that are used as routing nodes.
@@ -121,7 +125,7 @@ namespace Itinero.IO.Osm
 
                     var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
                         shape: shape,
-                        attributes: way.Tags.Select(x => (x.Key, x.Value)));
+                        attributes: filteredTags);
                     vertex1 = vertex2;
                     shape.Clear();
 
