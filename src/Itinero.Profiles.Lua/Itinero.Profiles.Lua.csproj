@@ -13,7 +13,7 @@
         <PackageIconUrl>http://www.itinero.tech/logos/itinero_logo_notext.svg.128.png</PackageIconUrl>
         <RepositoryUrl>https://github.com/itinero/routing2/</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageVersion>2.0.0-alpha-002</PackageVersion>
+        <PackageVersion>2.0.0-alpha-003</PackageVersion>
         <Title>Routeplanner for .NET</Title>
         <PackageTags>osm, openstreetmap, routing, mapping</PackageTags>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
