@@ -2,7 +2,7 @@ using Xunit;
 using System.Linq;
 using Itinero.Network;
 
-namespace Itinero.Tests.Networks.Mutation
+namespace Itinero.Tests.Network.Mutation
 {
     public class RoutingNetworkMutatorTests
     {

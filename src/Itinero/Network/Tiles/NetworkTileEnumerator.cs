@@ -83,8 +83,12 @@ namespace Itinero.Network.Tiles
                 throw new InvalidOperationException("Move to graph tile first.");
             if (this.TileId != edge.TileId) throw new ArgumentOutOfRangeException(nameof(edge), 
                 "Cannot move to edge not in current tile, move to the tile first.");
-
+        
             _nextEdgePointer = edge.LocalId;
+            if (edge.LocalId >= EdgeId.MinCrossId)
+            {
+                _nextEdgePointer = Tile.GetEdgeCrossPointer(edge.LocalId - EdgeId.MinCrossId);
+            }
             
             // decode edge data.
             this.EdgeId = edge;
@@ -98,18 +102,13 @@ namespace Itinero.Network.Tiles
             _nextEdgePointer += size;
             size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
-
-            var flipEdge = false;
+        
             if (vertex1.TileId != vertex2.TileId)
             {
-                size = Tile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
+                size = Tile.DecodeEdgeCrossId(_nextEdgePointer.Value, out var edgeCrossId);
                 _nextEdgePointer += size;
-
-                if (edgeId != null)
-                {
-                    this.EdgeId = edgeId.Value;
-                    flipEdge = true;
-                }
+                
+                this.EdgeId = new EdgeId(vertex1.TileId, edgeCrossId);
             }
             
             // get edge profile id.
@@ -129,12 +128,12 @@ namespace Itinero.Network.Tiles
             size = Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
-
+        
             if (forward)
             {
                 this.Vertex1 = vertex1;
                 this.Vertex2 = vertex2;
-                this.Forward = !flipEdge;
+                this.Forward = true;
                 
                 _nextEdgePointer = vp1;
             }
@@ -142,7 +141,7 @@ namespace Itinero.Network.Tiles
             {
                 this.Vertex1 = vertex2;
                 this.Vertex2 = vertex1;
-                this.Forward = flipEdge;
+                this.Forward = false;
                 
                 _nextEdgePointer = vp2;
             }
@@ -201,17 +200,12 @@ namespace Itinero.Network.Tiles
             size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
 
-            var flipEdge = false;
             if (vertex1.TileId != vertex2.TileId)
             {
-                size = Tile.DecodeEdgeId(_nextEdgePointer.Value, out var edgeId);
+                size = Tile.DecodeEdgeCrossId(_nextEdgePointer.Value, out var edgeCrossId);
                 _nextEdgePointer += size;
-
-                if (edgeId != null)
-                {
-                    this.EdgeId = edgeId.Value;
-                    flipEdge = true;
-                }
+                
+                this.EdgeId = new EdgeId(vertex1.TileId, edgeCrossId);
             }
             
             // get edge profile id.
@@ -239,14 +233,14 @@ namespace Itinero.Network.Tiles
                 _nextEdgePointer = vp1;
 
                 this.Vertex2 = vertex2;
-                this.Forward = !flipEdge;
+                this.Forward = true;
             }
             else
             {
                 _nextEdgePointer = vp2;
 
                 this.Vertex2 = vertex1;
-                this.Forward = flipEdge;
+                this.Forward = false;
             }
 
             return true;

@@ -9,6 +9,16 @@ namespace Itinero.Network
     public readonly struct EdgeId : IEquatable<EdgeId>
     {
         /// <summary>
+        /// The minimum id for edges crossing tile boundaries.
+        /// </summary>
+        internal const uint MinCrossId = MaxLocalId + 1;
+        
+        /// <summary>
+        /// The maximum number of internal edges in one tile.
+        /// </summary>
+        internal const uint MaxLocalId = (uint.MaxValue / 2) - 1;
+    
+        /// <summary>
         /// Creates a new edge id.
         /// </summary>
         /// <param name="tileId">The tile id.</param>
@@ -23,7 +33,7 @@ namespace Itinero.Network
         /// Gets or sets the tile id.
         /// </summary>
         public uint TileId { get; }
-        
+
         /// <summary>
         /// Gets or sets the local id.
         /// </summary>
@@ -49,6 +59,10 @@ namespace Itinero.Network
         /// <returns></returns>
         public override string ToString()
         {
+            if (this.LocalId >= MinCrossId)
+            {
+                return $"{this.LocalId} (X {this.LocalId - MinCrossId}) @ {this.TileId} ";
+            }
             return $"{this.LocalId} @ {this.TileId}";
         }
         

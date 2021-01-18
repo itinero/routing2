@@ -108,7 +108,7 @@ namespace Itinero.Network.Tiles
             // and initialize new slots with null.
             while (_turnCostPointers.Length < vertex.LocalId)
             {
-                _turnCostPointers.Resize(_turnCostPointers.Length + 1024);
+                _turnCostPointers.Resize(_turnCostPointers.Length + DefaultSizeIncrease);
             }
             
             // make sure there is space in the turn cost array.
@@ -116,7 +116,7 @@ namespace Itinero.Network.Tiles
             var maxLength = _turnCostPointer + 5 + 1 + (count * count) * 5 + 5; 
             while (_turnCosts.Length < maxLength)
             {
-                _turnCosts.Resize(_turnCosts.Length + 1024);
+                _turnCosts.Resize(_turnCosts.Length + DefaultSizeIncrease);
             }
 
             // update pointer to reflect new data.
@@ -198,7 +198,7 @@ namespace Itinero.Network.Tiles
             // skip edge id if needed.
             if (t1 != t2)
             {
-                size = this.DecodeEdgeId(pointer, out _);
+                size = (uint)_edges.GetDynamicUInt32(pointer, out _);
                 pointer += size;
             }
             
