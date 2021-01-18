@@ -1,6 +1,6 @@
 using System;
 
-namespace Itinero.Instructions.Instructions {
+namespace Itinero.Instructions.Generators {
     /**
      * A bend in the road is there if:
      * - Within the first 100m, the road turns at least 25°
@@ -9,12 +9,12 @@ namespace Itinero.Instructions.Instructions {
      * * OR the branches on the turn-to side are all service roads or tracks and the current one isn't that too
      * - There are no major bends in the other direction (thus: every individual bend is at least 0°)
      */
-    public class FollowBendInstruction : BaseInstruction {
+    internal class FollowBendInstruction : BaseInstruction {
         public FollowBendInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
             route, shapeIndex, shapeIndexEnd, turnDegrees) { }
     }
 
-    public class FollowBendGenerator : IInstructionGenerator {
+    internal class FollowBendGenerator : IInstructionGenerator {
 
         private static bool DoesFollowBend(IndexedRoute route, int shapeI, double dAngle, int angleSign) {
             // We aren't allowed to have branches on the inner side, to avoid confusing situations

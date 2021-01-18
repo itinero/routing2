@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Instructions {
+namespace Itinero.Instructions.Generators {
     /// <summary>
     ///     An instruction is a piece that describes a traveller how they should behave to reach their destination.
     ///     An instruction applies on one or more segments, and contains two parts:
@@ -24,7 +24,7 @@ namespace Itinero.Instructions.Instructions {
     ///     - Written instructions, on app, which should show the appropriate text at the right time
     ///     - Extra information, e.g. about the street currently travelled, the next street, the upcoming turn, ...
     /// </summary>
-    public class BaseInstruction {
+    internal class BaseInstruction {
         /// <summary>
         ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
         ///     which starts at 'ShapeIndex', what should they do next?
@@ -80,7 +80,7 @@ namespace Itinero.Instructions.Instructions {
         }
     }
 
-    public class BaseInstructionGenerator : IInstructionGenerator {
+    internal class BaseInstructionGenerator : IInstructionGenerator {
         public BaseInstruction Generate(IndexedRoute route, int offset) {
             if (offset == 0) {
                 // We are at the very beginning of the route, "turning" as such isn't really defined here

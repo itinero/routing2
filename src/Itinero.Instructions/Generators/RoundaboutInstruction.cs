@@ -1,6 +1,6 @@
-namespace Itinero.Instructions.Instructions
+namespace Itinero.Instructions.Generators
 {
-    public class RoundaboutInstruction : BaseInstruction
+    internal class RoundaboutInstruction : BaseInstruction
     {
         public static RoundaboutInstructionGenerator Constructor = new RoundaboutInstructionGenerator();
 
@@ -33,7 +33,7 @@ namespace Itinero.Instructions.Instructions
         }
     }
 
-    public class RoundaboutInstructionGenerator : IInstructionGenerator
+    internal class RoundaboutInstructionGenerator : IInstructionGenerator
     {
         public string Name { get; } = "Roundabout";
 

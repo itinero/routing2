@@ -1,17 +1,17 @@
 using System;
 
-namespace Itinero.Instructions.Instructions {
+namespace Itinero.Instructions.Generators {
     /**
      * The follow along is more or less the 'continue along this road' instruction.
      * It is issued if no single bend is more then 35° (incl) at a time
      * 
      */
-    public class FollowAlongInstruction : BaseInstruction {
+    internal class FollowAlongInstruction : BaseInstruction {
         public FollowAlongInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
             route, shapeIndex, shapeIndexEnd, turnDegrees) { }
     }
 
-    public class FollowAllowGenerator : IInstructionGenerator {
+    internal class FollowAllowGenerator : IInstructionGenerator {
         public BaseInstruction Generate(IndexedRoute route, int offset) {
             if (offset == 0 || offset == route.Last) {
                 // We never a follow along as first or as last...

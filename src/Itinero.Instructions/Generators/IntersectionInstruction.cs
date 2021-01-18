@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Itinero.Instructions.Instructions
+namespace Itinero.Instructions.Generators
 {
     /// <summary>
     /// The crossroad-instructions is an instruction that helps travellers cross intersections.
@@ -10,7 +10,7 @@ namespace Itinero.Instructions.Instructions
     /// And lets be honest, 'turn right' isn't all that clear when there is a road slightly right, right and sharp right.
     /// 
     /// </summary>
-    public class IntersectionInstruction : BaseInstruction
+    internal class IntersectionInstruction : BaseInstruction
     {
         public static IInstructionGenerator Generator = new IntersectionInstructionGenerator();
 

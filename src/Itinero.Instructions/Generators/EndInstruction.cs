@@ -1,10 +1,10 @@
-namespace Itinero.Instructions.Instructions
+namespace Itinero.Instructions.Generators
 {
     /***
      * The 'startInstruction' represents the projection from the actual startpoint (e.g. an adress) to the snapped point on the road.
      * It doesn't really have an associated segment.
      */
-    public class EndInstruction : BaseInstruction
+    internal class EndInstruction : BaseInstruction
     {
         /// <summary>
         /// The distance between the actual start point and the snapped start point on the road
@@ -32,7 +32,7 @@ namespace Itinero.Instructions.Instructions
         }
     }
 
-    public class EndInstructionGenerator : IInstructionGenerator
+    internal class EndInstructionGenerator : IInstructionGenerator
     {
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {

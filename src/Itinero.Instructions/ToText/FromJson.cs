@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Itinero.Instructions.Instructions;
+using Itinero.Instructions.Generators;
 using Newtonsoft.Json.Linq;
 
 namespace Itinero.Instructions.ToText
 {
-    public class FromJson
+    internal class FromJson
     {
         private static readonly Regex RenderValueRegex = new Regex(@"^(\${[^ ]*}|\$[^ ]*|[^\$]+)*$");
 
@@ -26,18 +26,18 @@ namespace Itinero.Instructions.ToText
         /**
          * Parses the full pipeline
          */
-        public static (Instructions.LinearInstructionGenerator generators, Dictionary<string, IInstructionToText> toTexts) ParseRouteToInstructions(JObject jobj)
+        public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts) ParseRouteToInstructions(JObject jobj)
         {
-            var generators = new Instructions.LinearInstructionGenerator(jobj["generators"].ToObject<List<string>>());
+            var generator = new LinearInstructionGenerator(jobj["generators"].ToObject<List<string>>());
             var languages = jobj["languages"] as JObject;
             if (languages == null) throw new ArgumentException("JObject does not contain a languages object");
 
             var toTexts = new Dictionary<string, IInstructionToText>();
             foreach (var (langCode, toText) in languages) {
-                toTexts[langCode] = ParseInstructionToText(toText as JObject);
+                toTexts[langCode] = ParseInstructionToText(toText as JObject, "/");
             }
 
-            return (generators, toTexts);
+            return (generator, toTexts);
         }
 
         /**
@@ -80,7 +80,7 @@ namespace Itinero.Instructions.ToText
          * A POSITIVE angle is going left,
          * A NEGATIVE angle is going right
          */
-        public static IInstructionToText ParseInstructionToText(JObject jobj)
+        public static IInstructionToText ParseInstructionToText(JObject jobj, string context = "")
         {
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
             var lowPriority = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
@@ -95,26 +95,26 @@ namespace Itinero.Instructions.ToText
                     var extensionsSource = (JObject) value;
                     foreach (var (extKey, extValue) in extensionsSource) {
                         extensions.Add(extKey, 
-                            ParseSubObj(extValue, extensions)
+                            ParseSubObj(extValue, context + ".extensions."+ extKey, extensions)
                             );
                     }
                     continue;
                 }
                 
                 
-                var (p, isLowPriority) = ParseCondition(key, extensions);
-                var sub = ParseSubObj(value, extensions);
+                var (p, isLowPriority) = ParseCondition(key, context+"."+key,extensions);
+                var sub = ParseSubObj(value, context + "."+key, extensions);
                 (isLowPriority ? lowPriority : conditions).Add((p, sub));
             }
 
             return new ConditionalToText(conditions.Concat(lowPriority).ToList());
         }
 
-        private static IInstructionToText ParseSubObj(JToken j, Dictionary<string, IInstructionToText> extensions)
+        private static IInstructionToText ParseSubObj(JToken j, string context, Dictionary<string, IInstructionToText> extensions)
         {
-            if (j.Type == JTokenType.String) return ParseRenderValue(j.Value<string>(), extensions);
+            if (j.Type == JTokenType.String) return ParseRenderValue(j.Value<string>(), extensions, context);
 
-            if (j is JObject o) return ParseInstructionToText(o);
+            if (j is JObject o) return ParseInstructionToText(o, context);
 
             throw new ArgumentException("Invalid value in ParseSubObj" + j);
         }
@@ -126,6 +126,7 @@ namespace Itinero.Instructions.ToText
         }
 
         public static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
+            string context = "",
             Dictionary<string, IInstructionToText> extensions = null)
         {
             if (condition == "*") return (_ => true, true);
@@ -133,7 +134,7 @@ namespace Itinero.Instructions.ToText
             if (condition.IndexOf("&", StringComparison.Ordinal) >= 0)
             {
                 var cs = condition.Split("&")
-                    .Select(condition1 => ParseCondition(condition1, extensions))
+                    .Select((condition1, i) => ParseCondition(condition1, context+"&"+i, extensions))
                     .Select(t => t.predicate);
                 return (instruction => cs.All(p => p.Invoke(instruction)), false);
             }
@@ -145,7 +146,7 @@ namespace Itinero.Instructions.ToText
                 if (condition.IndexOf(key, StringComparison.Ordinal) < 0) continue;
 
                 // Get the two parts of the condition...
-                var parts = condition.Split(key).Select(renderValue => ParseRenderValue(renderValue, extensions, false))
+                var parts = condition.Split(key).Select(renderValue => ParseRenderValue(renderValue, extensions, context + "." +key, false))
                     .ToList();
                 if (parts.Count() != 2)
                     throw new ArgumentException("Parsing condition " + condition +
@@ -157,7 +158,7 @@ namespace Itinero.Instructions.ToText
 
             // At this point, the condition is a single string
             // This could either be a type matching or a substitution that has to exist
-            var rendered = ParseRenderValue(condition, extensions, false);
+            var rendered = ParseRenderValue(condition, extensions, context, false);
             if (rendered.SubstitutedValueCount() > 0) {
                 return (instruction => rendered.ToText(instruction) != null, false);
             }
@@ -165,7 +166,9 @@ namespace Itinero.Instructions.ToText
             return (instruction => instruction.Type == condition, false);
         }
 
-        public static SubstituteText ParseRenderValue(string value, Dictionary<string, IInstructionToText> extensions,  bool crashOnNotFound = true)
+        public static SubstituteText ParseRenderValue(string value, Dictionary<string, IInstructionToText> extensions,  
+            string context = "",
+            bool crashOnNotFound = true)
         {
             var parts = RenderValueRegex.Match(value).Groups[1].Captures
                     .Select(m =>
@@ -180,7 +183,7 @@ namespace Itinero.Instructions.ToText
                         return (m.Value, false);
                     }).ToList()
                 ;
-            if (parts.Count == 0) throw new Exception("Could not parse value " + value);
+           // if (parts.Count == 0) throw new Exception("Could not parse value " + (value == "" ? "<empty string>" : value) + " within context "+context+": no parts found");
 
             return new SubstituteText(parts, extensions, crashOnNotFound);
         }

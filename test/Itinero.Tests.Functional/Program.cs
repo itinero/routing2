@@ -1,48 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.IO.Json.GeoJson;
-using Itinero.IO.Osm;
+using System.Linq;
 using Itinero.IO.Osm.Tiles.Parsers;
-using Itinero.Logging;
 using Itinero.Profiles;
 using Itinero.Routing;
 using Itinero.Snapping;
+using Itinero.Tests.Functional.Download;
+using OsmSharp.Logging;
 using Serilog;
 using Serilog.Events;
+using TraceEventType = Itinero.Logging.TraceEventType;
 
-namespace Itinero.Tests.Functional
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
+namespace Itinero.Tests.Functional {
+    internal class Program {
+        private static void Main(string[] args) {
             EnableLogging();
-            
+
             // make sure the results folder exists.
-            if (!Directory.Exists("results"))
-            {
+            if (!Directory.Exists("results")) {
                 Directory.CreateDirectory("results");
             }
-            
+
             // do some local caching.
-            if (!Directory.Exists("cache"))
-            {
+            if (!Directory.Exists("cache")) {
                 Directory.CreateDirectory("cache");
             }
-            TileParser.DownloadFunc = Download.DownloadHelper.Download;
+
+            TileParser.DownloadFunc = DownloadHelper.Download;
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
-            
+
+            /*
+           
             // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration()
-            {
+            var routerDb = new RouterDb(new RouterDbConfiguration() {
                 Zoom = 14
             });
-            // routerDb.PrepareFor(bicycle);
             
-
+            routerDb.PrepareFor(bicycle);
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
             using var osmStream = File.OpenRead(args[0]);
@@ -55,8 +52,29 @@ namespace Itinero.Tests.Functional
             {
                 routerDb.WriteTo(outputStream);
             }
+//*/
+            var routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
+            routerDb.PrepareFor(bicycle);
 
-            // var latest = routerDb.Latest;
+            var latest = routerDb.Latest;
+
+            var instructions = Instructions.Instructions.FromFile(args[2]);
+
+            void TestInstructions(string name, (double lon, double lat) from, (double lon, double lat) to) {
+                var route = latest.Route(bicycle).From(latest.Snap().To(from))
+                    .To(latest.Snap().To(to)).Calculate().Value;
+                var instr = instructions.Generate(route, "en");
+                File.WriteAllText(name + ".txt", string.Join("\n", instr.Select(i => i.Item2)));
+            }
+
+
+            TestInstructions("pietervdvn2station",
+                (3.2201850414276123, 51.21573337581372),
+                (3.218393325805664, 51.19681315008202));
+
+            TestInstructions("benoitlaan", (3.2120606303215027, 51.21027101966819), (3.199746608734131,
+                51.20655402916297));
+
             //
             // var snap1 = latest.Snap().To(5.9732794761657715,
             //     49.93364075288293).Value;
@@ -450,8 +468,7 @@ namespace Itinero.Tests.Functional
             // }
         }
 
-        private static void EnableLogging()
-        {
+        private static void EnableLogging() {
             var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -464,78 +481,60 @@ namespace Itinero.Tests.Functional
 #else
             var loggingBlacklist = new HashSet<string>();
 #endif
-            OsmSharp.Logging.Logger.LogAction = (o, level, message, parameters) =>
-            {
-                if (loggingBlacklist.Contains(o))
-                {
+            Logger.LogAction = (o, level, message, parameters) => {
+                if (loggingBlacklist.Contains(o)) {
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o))
-                {
+                if (!string.IsNullOrEmpty(o)) {
                     message = $"[{o}] {message}";
                 }
 
-                if (level == TraceEventType.Verbose.ToString().ToLower())
-                {
+                if (level == TraceEventType.Verbose.ToString().ToLower()) {
                     Log.Debug(message);
                 }
-                else if (level == TraceEventType.Information.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Information.ToString().ToLower()) {
                     Log.Information(message);
                 }
-                else if (level == TraceEventType.Warning.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Warning.ToString().ToLower()) {
                     Log.Warning(message);
                 }
-                else if (level == TraceEventType.Critical.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Critical.ToString().ToLower()) {
                     Log.Fatal(message);
                 }
-                else if (level == TraceEventType.Error.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Error.ToString().ToLower()) {
                     Log.Error(message);
                 }
-                else
-                {
+                else {
                     Log.Debug(message);
                 }
             };
-            
-            Logger.LogAction = (o, level, message, parameters) =>
-            {
-                if (loggingBlacklist.Contains(o))
-                {
+
+            Logging.Logger.LogAction = (o, level, message, parameters) => {
+                if (loggingBlacklist.Contains(o)) {
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o))
-                {
+                if (!string.IsNullOrEmpty(o)) {
                     message = $"[{o}] {message}";
                 }
 
-                if (level == TraceEventType.Verbose.ToString().ToLower())
-                {
+                if (level == TraceEventType.Verbose.ToString().ToLower()) {
                     Log.Debug(message);
                 }
-                else if (level == TraceEventType.Information.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Information.ToString().ToLower()) {
                     Log.Information(message);
                 }
-                else if (level == TraceEventType.Warning.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Warning.ToString().ToLower()) {
                     Log.Warning(message);
                 }
-                else if (level == TraceEventType.Critical.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Critical.ToString().ToLower()) {
                     Log.Fatal(message);
                 }
-                else if (level == TraceEventType.Error.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Error.ToString().ToLower()) {
                     Log.Error(message);
                 }
-                else
-                {
+                else {
                     Log.Debug(message);
                 }
             };

@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
-using Itinero.Instructions.Instructions;
+using System.Runtime.CompilerServices;
+using Itinero.Instructions.Generators;
 
+[assembly: InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 namespace Itinero.Instructions.ToText
 {
-    public class ConditionalToText: IInstructionToText
+    internal class ConditionalToText: IInstructionToText
     {
-        public readonly List<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;
+        internal readonly List<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;
 
         public ConditionalToText(
             List<(Predicate<BaseInstruction>, IInstructionToText)> options

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Instructions;
+using Itinero.Instructions.Generators;
 using Itinero.Network.Attributes;
 
 namespace Itinero.Instructions.ToText {
@@ -8,7 +8,7 @@ namespace Itinero.Instructions.ToText {
      * Instruction to text changes an instruction object into text based on simple substitution.
      * It uses reflection to create a dictionary of all available fields, which are substituted
      */
-    public class SubstituteText : IInstructionToText {
+    internal class SubstituteText : IInstructionToText {
         private readonly bool _crashOnMissingKey;
 
         /**

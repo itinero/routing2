@@ -1,8 +1,12 @@
+using System.Runtime.CompilerServices;
 using Reminiscence.Collections;
 
-namespace Itinero.Instructions.Instructions
+[assembly: InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
+namespace Itinero.Instructions.Generators
 {
-    public class AllGenerators
+    internal static class AllGenerators
     {
         private static List<IInstructionGenerator> Generators = new List<IInstructionGenerator>
         {

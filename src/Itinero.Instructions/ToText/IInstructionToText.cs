@@ -1,8 +1,8 @@
-using Itinero.Instructions.Instructions;
+using Itinero.Instructions.Generators;
 
 namespace Itinero.Instructions.ToText
 {
-    public interface IInstructionToText
+    internal interface IInstructionToText
     {
         string ToText(BaseInstruction instruction);
     }

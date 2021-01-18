@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.Intrinsics.Arm;
 using Itinero.Instructions;
-using Itinero.Instructions.Instructions;
+using Itinero.Instructions.Generators;
 using Itinero.Routes;
 using Xunit;
 

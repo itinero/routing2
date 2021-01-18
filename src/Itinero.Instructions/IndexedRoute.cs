@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime;
@@ -32,9 +33,11 @@ namespace Itinero.Instructions
         }
 
 
-        private List<Route.Meta> BuildMetaList(Route route)
-        {
+        private List<Route.Meta> BuildMetaList(Route route) {
             var metas = new List<Route.Meta>();
+            if (route.ShapeMeta == null || route.ShapeMeta.Count == 0) {
+                throw new ArgumentException("Cannot generate route instructions if metainformation is missing");
+            }
 
             var currentMeta = route.ShapeMeta[0];
             var currentMetaIndex = 0;

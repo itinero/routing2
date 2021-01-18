@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Instructions.Generators;
 using Itinero.Routes;
 
-namespace Itinero.Instructions.Instructions {
+namespace Itinero.Instructions {
     /**
      * Given a list of IInstructionConstructors, the SimpleInstructionGenerator will construct a route in the following way:
      * - Try to generate a base instruction with the first instruction in the list. If this fails, try the next one
@@ -14,7 +15,7 @@ namespace Itinero.Instructions.Instructions {
      * the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
      * whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
      */
-    public class LinearInstructionGenerator {
+    internal class LinearInstructionGenerator {
         private readonly IEnumerable<IInstructionGenerator> _constructors;
 
         public LinearInstructionGenerator(
@@ -44,8 +45,9 @@ namespace Itinero.Instructions.Instructions {
         public IEnumerable<BaseInstruction> GenerateInstructions(Route route) {
             var indexedRoute = new IndexedRoute(route);
             var instructions = new List<BaseInstruction>();
+
             var currentIndex = 0;
-            while (currentIndex < route.Shape.Count - 1) {
+            while (currentIndex < route.Shape.Count) {
                 var instruction = ConstructNext(indexedRoute, currentIndex);
                 instructions.Add(instruction);
                 if (instruction.ShapeIndexEnd == currentIndex) {
