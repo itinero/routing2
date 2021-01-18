@@ -18,15 +18,7 @@ namespace Itinero.Instructions.ToText {
 
         private readonly IEnumerable<(string textOrVarName, bool substitute)> _text;
 
-        private readonly Dictionary<char, int> indices = new Dictionary<char, int> {
-            {'.', 0},
-            {'-', -1},
-            {'+', 1}
-        };
-
-        public SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$")))){
-            
-        }
+        public SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$")))) { }
 
         public SubstituteText(
             IEnumerable<(string textOrVarName, bool substitute)> text,
@@ -64,9 +56,22 @@ namespace Itinero.Instructions.ToText {
             foreach (var (text, substitute) in _text) {
                 if (substitute) {
                     var firstChar = text.ToCharArray()[0];
-                    if (indices.Keys.Contains(firstChar)) {
+                    if (firstChar == '.' || firstChar == '+' || firstChar == '-') {
                         var key = text.Substring(1);
-                        var segment = instruction.Route?.Meta[instruction.ShapeIndex + indices[firstChar]]?.Attributes;
+                        int index = 0;
+                        switch (firstChar) {
+                            case '+':
+                                index = instruction.ShapeIndexEnd + 1;
+                                break;
+                            case '-':
+                                index = instruction.ShapeIndexEnd - 1;
+                                break;
+                            case '.':
+                                index = instruction.ShapeIndex;
+                                break;
+                        }
+
+                        var segment = instruction.Route?.Meta[index]?.Attributes;
                         if (segment == null || !segment.TryGetValue(key, out var v)) {
                             if (_crashOnMissingKey) {
                                 throw new KeyNotFoundException("The segment does not contain a key  " + text);
