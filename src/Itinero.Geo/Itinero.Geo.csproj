@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <PackageVersion>2.0.0-alpha-001</PackageVersion>
+        <PackageVersion>2.0.0-alpha-002</PackageVersion>
         <Title>Routeplanner for .NET</Title>
     </PropertyGroup>
 
