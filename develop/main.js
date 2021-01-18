@@ -332,9 +332,11 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Collections.UniqueIdMap`1", "rp": "Itinero.IO.Osm_UniqueIdMap_1.html", "cl": 0, "ucl": 76, "cal": 76, "tl": 151, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Collections.UnsignedNodeIndex", "rp": "Itinero.IO.Osm_UnsignedNodeIndex.html", "cl": 0, "ucl": 293, "cal": 293, "tl": 455, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 90, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.CompleteOsmGeoExtensions", "rp": "Itinero.IO.Osm_CompleteOsmGeoExtensions.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 16, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.DataProviderSettings", "rp": "Itinero.IO.Osm_DataProviderSettings.html", "cl": 0, "ucl": 1, "cal": 1, "tl": 15, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Filters.RoutingTagsFilter", "rp": "Itinero.IO.Osm_RoutingTagsFilter.html", "cl": 0, "ucl": 23, "cal": 23, "tl": 56, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Restrictions.RestrictionParser", "rp": "Itinero.IO.Osm_RestrictionParser.html", "cl": 53, "ucl": 38, "cal": 91, "tl": 154, "ct": "LineCoverage", "mc": "-", "cb": 35, "tb": 70, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.RouterDbExtensions", "rp": "Itinero.IO.Osm_RouterDbExtensions.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 34, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 4, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.RouterDbStreamTarget", "rp": "Itinero.IO.Osm_RouterDbStreamTarget.html", "cl": 0, "ucl": 136, "cal": 136, "tl": 231, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 68, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.RouterDbExtensions", "rp": "Itinero.IO.Osm_RouterDbExtensions.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 38, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 4, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.RouterDbStreamTarget", "rp": "Itinero.IO.Osm_RouterDbStreamTarget.html", "cl": 0, "ucl": 139, "cal": 139, "tl": 235, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 66, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "Itinero.IO.Osm.Tiles",
