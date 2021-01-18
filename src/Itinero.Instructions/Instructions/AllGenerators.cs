@@ -10,7 +10,9 @@ namespace Itinero.Instructions.Instructions
             new EndInstructionGenerator(),
             new StartInstructionGenerator(),
             new IntersectionInstruction.IntersectionInstructionGenerator(),
-            new RoundaboutInstructionGenerator()
+            new RoundaboutInstructionGenerator(),
+            new FollowAllowGenerator(),
+            new FollowBendGenerator()
         };
 
         public static Dictionary<string, IInstructionGenerator> AllGeneratorsDict = GetDict();

@@ -135,9 +135,20 @@ namespace Itinero.Instructions
             return Utils.AngleBetween(prevPoint, Shape[offset]);
         }
 
-        public int DirectionChangeAt(int offset)
+        /// <summary>
+        /// The direction change at a given shape index.
+        /// Going straight on at this shape will result in 0° here.
+        ///
+        /// Making a perfectly right turn, results in -90°
+        /// Making a perfectly left turn results in +90°
+        ///
+        /// Value will always be between +180 and -180
+        /// </summary>
+        /// <param name="shape"></param>
+        /// <returns></returns>
+        public int DirectionChangeAt(int shape)
         {
-            return (DepartingDirectionAt(offset) - ArrivingDirectionAt(offset)).NormalizeDegrees();
+            return (DepartingDirectionAt(shape) - ArrivingDirectionAt(shape)).NormalizeDegrees();
         }
 
         public string GeojsonPoints() {

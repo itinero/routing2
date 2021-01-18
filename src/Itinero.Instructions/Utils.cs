@@ -65,6 +65,9 @@ namespace Itinero.Instructions
             return meta.GetAttributeOrDefault(key, null);
         }
 
+        /**
+         * Normalizes degrees to be between -180 (incl) and 180 (excl)
+         */
         public static int NormalizeDegrees(this double degrees)
         {
             if (degrees <= -180)
