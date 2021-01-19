@@ -14,8 +14,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
@@ -43,8 +43,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
@@ -72,8 +72,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
@@ -94,8 +94,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
@@ -116,9 +116,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2, vertex3;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -150,10 +150,10 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2, vertex3, vertex4;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227);
-                vertex4 = writer.AddVertex(4.797334671020508, 51.26241166347257);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227, (float?)null);
+                vertex4 = writer.AddVertex(4.797334671020508, 51.26241166347257, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -189,9 +189,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2, vertex3;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -273,8 +273,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
@@ -343,10 +343,10 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2, vertex3, vertex4;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227);
-                vertex4 = writer.AddVertex(4.797334671020508, 51.26241166347257);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227, (float?)null);
+                vertex4 = writer.AddVertex(4.797334671020508, 51.26241166347257, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -389,15 +389,15 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             VertexId vertex1, vertex2, vertex3;
             using (var writer = routerDb.GetMutableNetwork())
             {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227);
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
-                edge3 = writer.AddEdge(vertex3, vertex3, new (double longitude, double latitude)[]
+                edge3 = writer.AddEdge(vertex3, vertex3, new (double longitude, double latitude, float? e)[]
                 {
-                    (4.797334671020508, 51.26241166347257)
+                    (4.797334671020508, 51.26241166347257, (float?)null)
                 });
             }
             

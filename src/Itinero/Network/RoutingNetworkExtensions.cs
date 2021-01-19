@@ -15,11 +15,11 @@ namespace Itinero.Network
         /// <param name="vertex">The vertex.</param>
         /// <returns>The location.</returns>
         /// <exception cref="ArgumentOutOfRangeException">When the vertex doesn't exist.</exception>
-        public static (double longitude, double latitude) GetVertex(this RoutingNetwork routingNetwork, VertexId vertex)
+        public static (double longitude, double latitude, float? e) GetVertex(this RoutingNetwork routingNetwork, VertexId vertex)
         {
-            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude)) throw new ArgumentOutOfRangeException(nameof(vertex));
+            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) throw new ArgumentOutOfRangeException(nameof(vertex));
 
-            return (longitude, latitude);
+            return (longitude, latitude, e);
         }
         
         /// <summary>

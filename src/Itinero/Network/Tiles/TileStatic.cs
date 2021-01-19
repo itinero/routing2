@@ -5,8 +5,8 @@ namespace Itinero.Network.Tiles
 {
     internal static class TileStatic
     {
-        private static void ValidateBox(this ((double longitude, double latitude) topLeft, 
-            (double longitude, double latitude) bottomRight) box)
+        private static void ValidateBox(this ((double longitude, double latitude, float? e) topLeft, 
+            (double longitude, double latitude, float? e) bottomRight) box)
         {
             if (box.topLeft.latitude < box.bottomRight.latitude) throw new ArgumentOutOfRangeException($"Top is lower than bottom.");
         }
@@ -85,8 +85,8 @@ namespace Itinero.Network.Tiles
             return (x, y);
         }
 
-        public static IEnumerable<(uint x, uint y)> TileRange(this ((double longitude, double latitude) topLeft, 
-            (double longitude, double latitude) bottomRight) box, int zoom)
+        public static IEnumerable<(uint x, uint y)> TileRange(this ((double longitude, double latitude, float? e) topLeft, 
+            (double longitude, double latitude, float? e) bottomRight) box, int zoom)
         {
             box.ValidateBox();
 

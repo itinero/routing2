@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.Geo.Elevation;
 using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
@@ -10,6 +11,8 @@ using Itinero.Routing;
 using Itinero.Snapping;
 using Serilog;
 using Serilog.Events;
+using SRTM;
+using SRTM.Sources;
 
 namespace Itinero.Tests.Functional
 {
@@ -31,6 +34,40 @@ namespace Itinero.Tests.Functional
                 Directory.CreateDirectory("cache");
             }
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
+            
+            // create a new srtm data instance.
+            // it accepts a folder to download and cache data into.
+            var srtmCache = new DirectoryInfo("srtm-cache");
+            if (!srtmCache.Exists)
+            {
+                srtmCache.Create();
+            }
+            // setup elevation integration.
+            var srtmData = new SRTMData(srtmCache.FullName)
+            {
+                GetMissingCell = (string path, string name) =>
+                {
+                    var filename = name + ".hgt.zip";
+                    var hgt = System.IO.Path.Combine(path, filename);
+
+                    if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            };
+            ElevationHandler.GetElevation = (lat, lon) =>
+            {
+                var elevation = srtmData.GetElevation(lat, lon);
+                if (!elevation.HasValue)
+                {
+                    return 0;
+                }
+
+                return (short) elevation;
+            };
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
@@ -42,9 +79,9 @@ namespace Itinero.Tests.Functional
             });
             // routerDb.PrepareFor(bicycle);
             
-            //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-            //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            using var osmStream = File.OpenRead(args[0]);
+            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+            //using var osmStream = File.OpenRead(args[0]);
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
             progress.RegisterSource(osmPbfStream);

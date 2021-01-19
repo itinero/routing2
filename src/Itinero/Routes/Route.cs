@@ -15,7 +15,7 @@ namespace Itinero.Routes
         /// <summary>
         /// Gets or sets the shape.
         /// </summary>
-        public List<(double longitude, double latitude)> Shape { get; set; } = new List<(double longitude, double latitude)>();
+        public List<(double longitude, double latitude, float? e)> Shape { get; set; } = new List<(double longitude, double latitude, float? e)>();
 
         /// <summary>
         /// Gets or sets the attributes.
@@ -45,7 +45,7 @@ namespace Itinero.Routes
             /// <summary>
             /// Gets or sets the coordinates.
             /// </summary>
-            public (double longitude, double latitude) Coordinate { get; set; }
+            public (double longitude, double latitude, float? e) Coordinate { get; set; }
 
             /// <summary>
             /// Gets or sets the attributes.
@@ -166,7 +166,7 @@ namespace Itinero.Routes
             /// <summary>
             /// Gets or sets the coordinates.
             /// </summary>
-            public (double longitude, double latitude) Coordinate { get; set; }
+            public (double longitude, double latitude, float? e) Coordinate { get; set; }
 
             /// <summary>
             /// Gets or sets the attributes.
@@ -541,7 +541,7 @@ namespace Itinero.Routes
         /// <summary>
         /// Gets the previous location.
         /// </summary>
-        public static (double longitude, double latitude) PreviousLocation(this RoutePosition position)
+        public static (double longitude, double latitude, float? e) PreviousLocation(this RoutePosition position)
         {
             return position.Route.Shape[position.Shape - 1];
         }
@@ -549,7 +549,7 @@ namespace Itinero.Routes
         /// <summary>
         /// Gets the next location.
         /// </summary>
-        public static (double longitude, double latitude) NextLocation(this RoutePosition position)
+        public static (double longitude, double latitude, float? e) NextLocation(this RoutePosition position)
         {
             return position.Route.Shape[position.Shape + 1];
         }
@@ -557,7 +557,7 @@ namespace Itinero.Routes
         /// <summary>
         /// Gets the location.
         /// </summary>
-        public static (double longitude, double latitude) Location(this RoutePosition position)
+        public static (double longitude, double latitude, float? e) Location(this RoutePosition position)
         {
             return position.Route.Shape[position.Shape];
         }

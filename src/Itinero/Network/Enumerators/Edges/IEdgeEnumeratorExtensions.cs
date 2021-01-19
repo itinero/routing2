@@ -12,7 +12,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The complete shape.</returns>
-        public static IEnumerable<(double longitude, double latitude)> GetCompleteShape<T, S>(
+        public static IEnumerable<(double longitude, double latitude, float? e)> GetCompleteShape<T, S>(
             this T enumerator)
             where T : IEdgeEnumerator<S>
             where S : IEdgeEnumerable
@@ -48,7 +48,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-        internal static IEnumerable<(double longitude, double latitude)> GetShapeBetween<T, S>(this T enumerator,
+        internal static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween<T, S>(this T enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
             where T : IEdgeEnumerator<S>
             where S : IEdgeEnumerable
@@ -83,7 +83,7 @@ namespace Itinero.Network.Enumerators.Edges
             if (offset1 == 0 && includeVertices) yield return previous;
             for (var i = 0; i < shape.Count + 1; i++)
             {
-                (double longitude, double latitude) next;
+                (double longitude, double latitude, float? e) next;
                 if (i < shape.Count)
                 {
                     // the 
@@ -141,7 +141,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
-        internal static (double longitude, double latitude) LocationOnEdge<T, S>(this T enumerator, in ushort offset)
+        internal static (double longitude, double latitude, float? e) LocationOnEdge<T, S>(this T enumerator, in ushort offset)
             where T : IEdgeEnumerator<S>
             where S : IEdgeEnumerable
         {
@@ -157,14 +157,14 @@ namespace Itinero.Network.Enumerators.Edges
                 {
                     var segmentOffsetLength = segmentLength + currentLength - targetLength;
                     var segmentOffset = 1 - (segmentOffsetLength / segmentLength);
-                    short? elevation = null;
-//                    if (shape[i - 1].Elevation.HasValue && 
-//                        shape[i].Elevation.HasValue)
-//                    {
-//                        elevation = (short)(shape[i - 1].Elevation.Value + (segmentOffset * (shape[i].Elevation.Value - shape[i - 1].Elevation.Value)));
-//                    }
+                    float? e = null;
+                    if (shape[i - 1].e.HasValue && 
+                        shape[i].e.HasValue)
+                    {
+                        e = (float)(shape[i - 1].e.Value + (segmentOffset * (shape[i].e.Value - shape[i - 1].e.Value)));
+                    }
                     return (shape[i - 1].longitude + (segmentOffset * (shape[i].longitude - shape[i - 1].longitude)),
-                        shape[i - 1].latitude + (segmentOffset * (shape[i].latitude - shape[i - 1].latitude)));
+                        shape[i - 1].latitude + (segmentOffset * (shape[i].latitude - shape[i - 1].latitude)), e);
                 }
 
                 currentLength += segmentLength;

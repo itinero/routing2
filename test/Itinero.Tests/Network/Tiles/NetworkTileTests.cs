@@ -42,7 +42,7 @@ namespace Itinero.Tests.Network.Tiles
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             
             Assert.False(networkTile.TryGetVertex(new VertexId(networkTile.TileId, 0), 
-                out var longitude, out var latitude));
+                out var longitude, out var latitude, out _));
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Itinero.Tests.Network.Tiles
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 = networkTile.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             
-            Assert.True(networkTile.TryGetVertex(vertex1, out var longitude, out var latitude));
+            Assert.True(networkTile.TryGetVertex(vertex1, out var longitude, out var latitude, out _));
             Assert.Equal(4.7868, longitude, 4);
             Assert.Equal(51.2643, latitude, 4);
         }
@@ -261,7 +261,7 @@ namespace Itinero.Tests.Network.Tiles
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
             var vertex2 = networkTile.AddVertex(4.86737, 51.267849);
             var vertex3 = networkTile.AddVertex(4.86737, 51.267849);
-            var shape = new[] {(4.86638, 51.269728)};
+            var shape = new[] {(4.86638, 51.269728, (float?)null)};
             var edge1 = networkTile.AddEdge(vertex1, vertex2, shape, attributes: new []
             {
                 ("key1", "value1")

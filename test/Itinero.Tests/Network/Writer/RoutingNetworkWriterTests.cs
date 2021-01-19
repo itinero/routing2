@@ -13,9 +13,9 @@ namespace Itinero.Tests.Network.Writer
             // when adding a vertex to a tile the network should always generate an id in the same tile.
             
             var network = new RoutingNetwork(new RouterDb());
-            var (vertices, _) = network.Write(new (double longitude, double latitude)[]
+            var (vertices, _) = network.Write(new (double longitude, double latitude, float? e)[]
             {
-                (4.7868, 51.2643)
+                (4.7868, 51.2643, (float?)null)
             });
 
             Assert.Equal(Tile.WorldToTile(4.7868, 51.2643, network.Zoom).LocalId, vertices[0].TileId);
@@ -28,16 +28,16 @@ namespace Itinero.Tests.Network.Writer
             // when adding a vertex to a tile the network should always generate an id in the same tile.
 
             var network = new RoutingNetwork(new RouterDb());
-            var (vertices, _) = network.Write(new (double longitude, double latitude)[]
+            var (vertices, _) = network.Write(new (double longitude, double latitude, float? e)[]
             {
-                (4.7868, 51.2643)
+                (4.7868, 51.2643, (float?)null)
             });
 
             // when adding the vertex a second time it should generate the same tile but a new local id.
             
-            (vertices, _) = network.Write(new (double longitude, double latitude)[]
+            (vertices, _) = network.Write(new (double longitude, double latitude, float? e)[]
             {
-                (4.7868, 51.2643)
+                (4.7868, 51.2643, (float?)null)
             });
 
             Assert.Equal((uint) 89546969, vertices[0].TileId);
@@ -50,12 +50,12 @@ namespace Itinero.Tests.Network.Writer
             // when adding a vertex to a tile the network should store the location accurately.
 
             var network = new RoutingNetwork(new RouterDb());
-            var (vertices, _) = network.Write(new (double longitude, double latitude)[]
+            var (vertices, _) = network.Write(new (double longitude, double latitude, float? e)[]
             {
-                (4.7868, 51.2643)
+                (4.7868, 51.2643, (float?)null)
             });
 
-            Assert.True(network.TryGetVertex(vertices[0], out var longitude, out var latitude));
+            Assert.True(network.TryGetVertex(vertices[0], out var longitude, out var latitude, out _));
             Assert.Equal(4.7868, longitude, 4);
             Assert.Equal(51.2643, latitude, 4);
         }
@@ -67,9 +67,9 @@ namespace Itinero.Tests.Network.Writer
             // local id.
 
             var network = new RoutingNetwork(new RouterDb());
-            var (vertices, _) = network.Write(new (double longitude, double latitude)[]
+            var (vertices, _) = network.Write(new (double longitude, double latitude, float? e)[]
             {
-                (4.7868, 51.2643)
+                (4.7868, 51.2643, (float?)null)
             });
 
             var tile = Tile.FromLocalId(vertices[0].TileId, network.Zoom);
@@ -82,11 +82,11 @@ namespace Itinero.Tests.Network.Writer
          public void RoutingNetworkWriter_TwoVertices_AddEdge_ShouldReturn0()
          {
              var network = new RoutingNetwork(new RouterDb());
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (4.792613983154297, 51.26535213392538),
-                 (4.797506332397461, 51.26674845584085)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]
+                 (4.792613983154297, 51.26535213392538, (float?)null),
+                 (4.797506332397461, 51.26674845584085, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[]
              {
                  (0, 1, null)
              });
@@ -98,12 +98,12 @@ namespace Itinero.Tests.Network.Writer
          public void RoutingNetworkWriter_ThreeVertices_AddSecondEdge_ShouldReturnPointerAsId()
          {
              var network = new RoutingNetwork(new RouterDb());
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (4.792613983154297, 51.26535213392538),
-                 (4.797506332397461, 51.26674845584085),
-                 (4.797506332397461, 51.26674845584085)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]
+                 (4.792613983154297, 51.26535213392538, (float?)null),
+                 (4.797506332397461, 51.26674845584085, (float?)null),
+                 (4.797506332397461, 51.26674845584085, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[]
              {
                  (0, 1, null),
                  (0, 2, null)
@@ -121,11 +121,11 @@ namespace Itinero.Tests.Network.Writer
              // we test this by enumeration edges for both vertices.
              
              var network = new RoutingNetwork(new RouterDb());
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (3.1074142456054688,51.31012070202407),
-                 (3.146638870239258,51.31060357805506)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape, IEnumerable<(string key, string value)>? attributes)[]
+                 (3.1074142456054688,51.31012070202407, (float?)null),
+                 (3.146638870239258,51.31060357805506, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape, IEnumerable<(string key, string value)>? attributes)[]
              {
                  (0, 1, null, null)
              });

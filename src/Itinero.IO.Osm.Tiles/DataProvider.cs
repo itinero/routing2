@@ -89,7 +89,7 @@ namespace Itinero.IO.Osm.Tiles
             }
         }
 
-        internal void TouchBox(RoutingNetwork network, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+        internal void TouchBox(RoutingNetwork network, ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box)
         {
             // build the tile range.
             var tileRange = new TileRange(box, (int)_zoom);

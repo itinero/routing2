@@ -15,7 +15,7 @@ namespace Itinero.Tests.Network.Tiles
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
             var edge = graphTile.AddEdge(vertex1, vertex2, new []{ (4.86786,
-                51.26909)});
+                51.26909, (float?)null)});
 
             var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
@@ -40,15 +40,15 @@ namespace Itinero.Tests.Network.Tiles
             {
                 (
                     4.867324233055115,
-                    51.269695361396586
+                    51.269695361396586, (float?)null
                 ),
                 (
                     4.867860674858093,
-                    51.26909794023487
+                    51.26909794023487, (float?)null
                 ),
                 (
                     4.868037700653076,
-                    51.26838639478469
+                    51.26838639478469, (float?)null
                 )
             });
 

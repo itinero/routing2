@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Geo.Elevation;
 using Itinero.IO.Osm.Collections;
 using Itinero.IO.Osm.Filters;
 using Itinero.IO.Osm.Restrictions;
@@ -93,7 +94,7 @@ namespace Itinero.IO.Osm
                 if (_restrictionWayMembers.ContainsKey(osmGeoKey)) edgesList = new List<EdgeId>(1);
                 
                 var vertex1 = VertexId.Empty;
-                var shape = new List<(double longitude, double latitude)>();
+                var shape = new List<(double longitude, double latitude, float? e)>();
                 for (var n = 0; n < way.Nodes.Length; n++)
                 {
                     var node = way.Nodes[n];
@@ -105,14 +106,17 @@ namespace Itinero.IO.Osm
                             break;
                         }
                         
+                        // add elevation.
+                        var coordinate = ((double)longitude, (double)latitude).AddElevation(null);
+                        
                         if (!isCore)
                         { // node is just a shape point, keep it but don't add is as a vertex.
-                            shape.Add((longitude, latitude));
+                            shape.Add(coordinate);
                             continue;
                         }
                         else
                         { // node is a core vertex, add it as a vertex.
-                            vertex2 = _mutableRouterDb.AddVertex(longitude, latitude);
+                            vertex2 = _mutableRouterDb.AddVertex(coordinate);
                             _vertexPerNode[node] = vertex2;
                         }
                     }

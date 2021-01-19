@@ -13,12 +13,12 @@
         /// <summary>
         /// A delegate to get elevation.
         /// </summary>
-        public delegate short? GetElevationDelegate(double longitude, double latitude);
+        public delegate float? GetElevationDelegate(double longitude, double latitude);
 
         /// <summary>
         /// Add elevation to the given coordinate.
         /// </summary>
-        public static short? Elevation(this (double longitude, double latitude) coordinate)
+        public static float? Elevation(this (double longitude, double latitude) coordinate)
         {
             return GetElevation?.Invoke(coordinate.longitude, coordinate.latitude);
         }

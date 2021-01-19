@@ -54,7 +54,7 @@ namespace Itinero.IO.Json.GeoJson
         /// </summary>
         /// <param name="jsonWriter">The json writer.</param>
         /// <param name="location">The location.</param>
-        public static void WritePoint(this Utf8JsonWriter jsonWriter, (double longitude, double latitude) location)
+        public static void WritePoint(this Utf8JsonWriter jsonWriter, (double longitude, double latitude, float? e) location)
         {
             jsonWriter.WriteStartObject();
             jsonWriter.WriteString("type", "Point");
@@ -63,10 +63,10 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WriteStartArray();
             jsonWriter.WriteNumberValue(location.longitude);
             jsonWriter.WriteNumberValue(location.latitude);
-//                    if (route.Shape[i].Elevation.HasValue)
-//                    {
-//                        jsonWriter.WriteArrayValue(route.Shape[i].Elevation.Value.ToInvariantString());
-//                    }
+            if (location.e != null)
+            {
+                jsonWriter.WriteNumberValue(location.e.Value);
+            }
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
         }
@@ -77,7 +77,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="jsonWriter">The json writer.</param>
         /// <param name="coordinates">The coordinates.</param>
         public static void WriteLineString(this Utf8JsonWriter jsonWriter,
-            IEnumerable<(double longitude, double latitude)> coordinates)
+            IEnumerable<(double longitude, double latitude, float? e)> coordinates)
         {
             jsonWriter.WriteStartObject();
             jsonWriter.WriteString("type", "LineString");

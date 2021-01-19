@@ -4,7 +4,6 @@ using System.IO;
 using Itinero.IO;
 using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
-using Reminiscence;
 using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles
@@ -12,16 +11,12 @@ namespace Itinero.Network.Tiles
     internal partial class NetworkTile
     {
         private const int DefaultSizeIncrease = 16;
-        private const int CoordinateSizeInBytes = 3; // 3 bytes = 24 bits = 4096 x 4096, the needed resolution depends on the zoom-level, higher, less resolution.
-        private const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
-        private const int TileSizeInIndex = 5; // 4 bytes for the pointer, 1 for the size.
         
         private readonly uint _tileId;
         private readonly int _zoom; // the zoom level.
         private readonly int _edgeTypeMapId; // the edge type index id.
 
         private uint _nextVertexId = 0; // the next vertex id.
-        private readonly ArrayBase<byte> _coordinates; // the vertex coordinates.
         // the pointers, per vertex, to their first edge.
         // TODO: investigate if it's worth storing these with less precision, one tile will never contain this much data.
         // TODO: investigate if we can not use one-increasing vertex ids but also use their pointers like with the edges.
@@ -114,11 +109,12 @@ namespace Itinero.Network.Tiles
         /// </summary>
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
+        /// <param name="e">The elevation in meters.</param>
         /// <returns>The ID of the new vertex.</returns>
-        public VertexId AddVertex(double longitude, double latitude)
+        public VertexId AddVertex(double longitude, double latitude, float? e = null)
         {
             // set coordinate.
-            SetCoordinate(_nextVertexId, longitude, latitude);
+            SetCoordinate(_nextVertexId, longitude, latitude, e);
 
             // create id.
             var vertexId = new VertexId(_tileId, _nextVertexId);
@@ -136,14 +132,16 @@ namespace Itinero.Network.Tiles
         /// <param name="vertex">The vertex.</param>
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
+        /// <param name="elevation">The elevation.</param>
         /// <returns>True if the vertex exists.</returns>
-        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
+        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? elevation)
         {
             longitude = default;
             latitude = default;
+            elevation = null;
             if (vertex.LocalId >= _nextVertexId) return false;
             
-            GetCoordinate(vertex.LocalId, out longitude, out latitude);
+            GetCoordinate(vertex.LocalId, out longitude, out latitude, out elevation);
             return true;
         }
 
@@ -158,7 +156,7 @@ namespace Itinero.Network.Tiles
         /// <param name="edgeTypeId">The edge type id, if any.</param>
         /// <param name="length">The length in centimeters.</param>
         /// <returns>The new edge id.</returns>
-        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude)>? shape = null,
+        public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeTypeId = null, uint? length = null)
         {
             if (vertex2.TileId != _tileId)
@@ -326,31 +324,6 @@ namespace Itinero.Network.Tiles
             return new NetworkTile(_zoom, _tileId, edgeTypeMap.id, _nextCrossTileId, pointers, edges, crossEdgePointers, _coordinates,
                 _shapes, _attributes, _strings, _turnCosts, _nextVertexId, _nextEdgeId, 
                 _nextAttributePointer, _nextShapePointer, _nextStringId);
-        }
-
-        private void SetCoordinate(uint localId, double longitude, double latitude)
-        {    
-            var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
-            if (_coordinates.Length <= tileCoordinatePointer + CoordinateSizeInBytes * 2)
-            {
-                _coordinates.Resize(_coordinates.Length + DefaultSizeIncrease);
-            }
-
-            const int resolution = (1 << TileResolutionInBits) - 1;
-            var (x, y) = TileStatic.ToLocalTileCoordinates(_zoom, _tileId, longitude, latitude, resolution);
-            _coordinates.SetFixed(tileCoordinatePointer, CoordinateSizeInBytes, x);
-            _coordinates.SetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, y);
-        }
-
-        private void GetCoordinate(uint localId, out double longitude, out double latitude)
-        {
-            var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
-            
-            const int resolution = (1 << TileResolutionInBits) - 1;
-            _coordinates.GetFixed(tileCoordinatePointer, CoordinateSizeInBytes, out var x);
-            _coordinates.GetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, out var y);
-
-            TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out longitude, out latitude);
         }
 
         internal uint VertexEdgePointer(uint vertex)

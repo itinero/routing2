@@ -16,7 +16,7 @@ namespace Itinero.Network.Search
         /// <param name="box">The box to enumerate in.</param>
         /// <returns>An enumerator with all the vertices and their location.</returns>
         public static IEdgeEnumerator<RoutingNetwork> SearchEdgesInBox(this RoutingNetwork network, 
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box)
         {
             var vertices = network.SearchVerticesInBox(box);
             return new VertexEdgeEnumerator(network, vertices.Select((i) => i.vertex));
@@ -30,7 +30,7 @@ namespace Itinero.Network.Search
         /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
         /// <returns>The closest edge to the center of the box inside the given box.</returns>
         public static SnapPoint SnapInBox(this RoutingNetwork network,
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
+            ((double longitude, double , float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box, 
             Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null)
         {
             bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum)
@@ -168,7 +168,7 @@ namespace Itinero.Network.Search
         /// <param name="nonOrthogonalEdges">When true the best potential location on each edge is returned, when false only orthogonal projected points.</param>
         /// <returns>All edges that could potentially be relevant snapping points, not only the closest.</returns>
         public static IEnumerable<SnapPoint> SnapAllInBox(this RoutingNetwork routerDb,
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, 
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box, 
             Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
         {
             var edges = new HashSet<EdgeId>();

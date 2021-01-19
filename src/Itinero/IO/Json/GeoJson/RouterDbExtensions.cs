@@ -15,7 +15,7 @@ namespace Itinero.IO.Json.GeoJson
     public static class RouterDbExtensions
     {
         public static string ToGeoJson(this RoutingNetwork routerDb,
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box)
         {
             using var stream = new MemoryStream();
             using (var jsonWriter = new Utf8JsonWriter(stream))
@@ -35,7 +35,7 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="box">The bounding box.</param>
         /// <param name="jsonWriter">The json writer.</param>
         public static void WriteFeatures(this Utf8JsonWriter jsonWriter, RoutingNetwork routerDb, 
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box)
         {
             var vertices = new HashSet<VertexId>();
             var edges = new HashSet<EdgeId>();

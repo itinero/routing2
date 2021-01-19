@@ -22,7 +22,7 @@ namespace Itinero.Network.Writer
             _network = network;
         }
         
-        public VertexId AddVertex(double longitude, double latitude)
+        public VertexId AddVertex(double longitude, double latitude, float? elevation = null)
         {
             // get the local tile id.
             var (x, y) = TileStatic.WorldToTile(longitude, latitude, _network.Zoom);
@@ -31,11 +31,11 @@ namespace Itinero.Network.Writer
             // get the tile (or create it).
             var (tile, _) = _network.GetTileForWrite(localTileId);
 
-            return tile.AddVertex(longitude, latitude);
+            return tile.AddVertex(longitude, latitude, elevation);
         }
         
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
-            IEnumerable<(double longitude, double latitude)>? shape = null,
+            IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null)
         {
             // get the tile (or create it).
@@ -46,16 +46,16 @@ namespace Itinero.Network.Writer
             var edgeTypeId = attributes != null ? (uint?)edgeTypeMap(attributes) : null;
             
             // get the edge length in centimeters.
-            if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude))
+            if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude, out var e))
             {
                 throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex1} not found.");
             }
-            var vertex1Location = (longitude, latitude);
-            if (!_network.TryGetVertex(vertex2, out longitude, out latitude))
+            var vertex1Location = (longitude, latitude, e);
+            if (!_network.TryGetVertex(vertex2, out longitude, out latitude, out e))
             {
                 throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex2} not found.");
             }
-            var vertex2Location = (longitude, latitude);
+            var vertex2Location = (longitude, latitude, e);
             
             var length = (uint)(vertex1Location.DistanceEstimateInMeterShape(
                 vertex2Location, shape) * 100);

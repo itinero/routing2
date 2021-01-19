@@ -22,14 +22,14 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         bool Forward { get; }
 
-        (double longitude, double latitude) FromLocation { get; }
+        (double longitude, double latitude, float? e) FromLocation { get; }
 
         /// <summary>
         /// Gets the source vertex.
         /// </summary>
         VertexId From { get; }
 
-        (double longitude, double latitude) ToLocation { get; }
+        (double longitude, double latitude, float? e) ToLocation { get; }
 
         /// <summary>
         /// Gets the target vertex.
@@ -45,7 +45,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// Gets the shape.
         /// </summary>
         /// <returns>The shape.</returns>
-        IEnumerable<(double longitude, double latitude)> Shape { get; }
+        IEnumerable<(double longitude, double latitude, float? e)> Shape { get; }
 
         /// <summary>
         /// Gets the attributes.

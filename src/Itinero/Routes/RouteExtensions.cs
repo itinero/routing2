@@ -35,7 +35,7 @@ namespace Itinero.Routes
 
             // merge shape.
             var shapeLength = route1.Shape.Count + route2.Shape.Count - 1;
-            var shape = new (double longitude, double latitude)[route1.Shape.Count + route2.Shape.Count - 1];
+            var shape = new (double longitude, double latitude, float? e)[route1.Shape.Count + route2.Shape.Count - 1];
             route1.Shape.CopyTo(shape, 0);
             route2.Shape.CopyTo(shape, route1.Shape.Count - 1);
 
@@ -300,8 +300,7 @@ namespace Itinero.Routes
                 {
                     distanceToShape = distanceOfSegment;
                 }
-                distanceOfSegment += (route.Shape[i].longitude, route.Shape[i].latitude).DistanceEstimateInMeter(
-                    (route.Shape[i + 1].longitude, route.Shape[i + 1].latitude));
+                distanceOfSegment += route.Shape[i].DistanceEstimateInMeter(route.Shape[i + 1]);
             }
             var ratio = distanceToShape / distanceOfSegment;
             distance = ((endDistance - startDistance) * ratio) + startDistance;
@@ -364,7 +363,7 @@ namespace Itinero.Routes
 //        /// <param name="timeFromStartInSeconds">The time in seconds to the projected point from the start of the route.</param>
 //        /// <param name="shape">The shape segment of the route the point was projected on to.</param>
 //        /// <returns></returns>
-//        public static bool ProjectOn(this Route route, int startShape, (double longitude, double latitude) coordinate, out (double longitude, double latitude) projected, out int shape,
+//        public static bool ProjectOn(this Route route, int startShape, (double longitude, double latitude, float? e) coordinate, out (double longitude, double latitude, float? e) projected, out int shape,
 //            out double distanceFromStartInMeter, out double timeFromStartInSeconds)
 //        {
 //            var distance = double.MaxValue;

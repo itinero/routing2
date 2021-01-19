@@ -13,9 +13,9 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
             
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
@@ -32,10 +32,10 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
             
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
@@ -58,10 +58,10 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
             
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex2, vertex1);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
@@ -84,10 +84,10 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
             
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex3, vertex2);
@@ -110,11 +110,11 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
             
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex5 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex5 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex2, vertex3);

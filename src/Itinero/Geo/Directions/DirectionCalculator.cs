@@ -5,8 +5,8 @@ namespace Itinero.Geo.Directions
         /// <summary>
         /// Calculates the angle in radians at coordinate2.
         /// </summary>
-        public static double Angle((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2, 
-            (double longitude, double latitude) coordinate3)
+        public static double Angle((double longitude, double latitude, float? e) coordinate1, (double longitude, double latitude, float? e) coordinate2, 
+            (double longitude, double latitude, float? e) coordinate3)
         {
             var v11 = coordinate1.latitude - coordinate2.latitude;
             var v10 = coordinate1.longitude - coordinate2.longitude;
@@ -76,8 +76,8 @@ namespace Itinero.Geo.Directions
             return angle;
         }
 
-        public static RelativeDirection Calculate((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2, 
-            (double longitude, double latitude) coordinate3)
+        public static RelativeDirection Calculate((double longitude, double latitude, float? e) coordinate1, (double longitude, double latitude, float? e) coordinate2, 
+            (double longitude, double latitude, float? e) coordinate3)
         {
             var direction = new RelativeDirection();
 
@@ -129,9 +129,9 @@ namespace Itinero.Geo.Directions
         /// <summary>
         /// Calculates the direction of a segment.
         /// </summary>
-        public static DirectionEnum Calculate((double longitude, double latitude) coordinate1, (double longitude, double latitude) coordinate2)
+        public static DirectionEnum Calculate((double longitude, double latitude, float? e) coordinate1, (double longitude, double latitude, float? e) coordinate2)
         {
-            var angle = (double)DirectionCalculator.Angle((coordinate1.latitude + 0.01f, coordinate1.longitude),
+            var angle = (double)DirectionCalculator.Angle((coordinate1.latitude + 0.01f, coordinate1.longitude, null),
                 coordinate1, coordinate2);
 
             angle = angle.ToDegrees();
