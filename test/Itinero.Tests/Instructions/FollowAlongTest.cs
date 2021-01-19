@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.Arm;
 using Itinero.Instructions;
 using Itinero.Instructions.Generators;
 using Itinero.Routes;
@@ -21,15 +20,20 @@ namespace Itinero.Tests.Instructions {
                 new List<(string, string)> {
                     ("highway", "residential"),
                     ("name", "Klaverstraat")
+                }),
+            (RouteScaffolding.P((3.2170093059539795, 51.21416580806587)),
+                new List<(string, string)> {
+                    ("name", "Ezelstraat"),
+                    ("highway", "tertiary")
                 }));
 
         [Fact]
         public void GenerateFollowAlong_SimpleExample_GetFollowAlong() {
-            var followAlong =new FollowAllowGenerator().Generate(new IndexedRoute(Klaverstraat), 1);
+            var followAlong = new FollowAlongGenerator().Generate(new IndexedRoute(Klaverstraat), 1);
             Assert.NotNull(followAlong);
             Assert.Equal("followalong", followAlong.Type);
             Assert.Equal(1, followAlong.ShapeIndex);
-            Assert.Equal(6, followAlong.ShapeIndexEnd);
+            Assert.Equal(5, followAlong.ShapeIndexEnd);
         }
     }
 }

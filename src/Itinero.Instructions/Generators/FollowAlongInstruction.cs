@@ -1,4 +1,5 @@
 using System;
+using Itinero.Network.Attributes;
 
 namespace Itinero.Instructions.Generators {
     /**
@@ -11,44 +12,46 @@ namespace Itinero.Instructions.Generators {
             route, shapeIndex, shapeIndexEnd, turnDegrees) { }
     }
 
-    internal class FollowAllowGenerator : IInstructionGenerator {
+    internal class FollowAlongGenerator : IInstructionGenerator {
         public BaseInstruction Generate(IndexedRoute route, int offset) {
             if (offset == 0 || offset == route.Last) {
                 // We never a follow along as first or as last...
                 return null;
             }
-            var usedShapes = 0;
+            var usedShapes = 1;
             var totalDistance = 0.0;
-            // We walk forward and detect a true gentle bend:
+            route.Meta[offset].Attributes.TryGetValue("name", out var name);
             while (offset + usedShapes < route.Last) {
-                var distance = route.DistanceToNextPoint(offset + usedShapes);
-                
                 var dAngle = route.DirectionChangeAt(offset + usedShapes);
-                if (dAngle > 35) {
+                if (Math.Abs(dAngle) > 35) {
                     // To much turn for a follow along...
                     break;
                 }
-
+                
+                route.Meta[offset + usedShapes].Attributes.TryGetValue("name", out var newName);
+                if (name != newName) {
+                    // Different street!
+                    break;
+                }
+                var distance = route.DistanceToNextPoint(offset + usedShapes);
                 totalDistance += distance;
-                // We keep the total angle too; as it might turn more then 180°
-                // We do NOT normalize the angle
+                
                 usedShapes++;
             }
 
-
-            if (usedShapes <= 1) {
+            if (usedShapes <= 2) {
                 // To short for a follow along
                 return null;
             }
 
             var totalChange =
-                (route.ArrivingDirectionAt(offset+ usedShapes) - route.ArrivingDirectionAt(offset )).NormalizeDegrees();
+                (route.ArrivingDirectionAt(offset + usedShapes) - route.ArrivingDirectionAt(offset )).NormalizeDegrees();
 
             // A gentle bend also does turn, at least a few degrees per meter
             if (Math.Abs(totalChange) < 45) {
                 // THere is little change - does it at least turn a bit?
-                if (Math.Abs(totalChange) / totalDistance < 2.5) {
-                    // Nope, we turn only 2.5 per meter - that isn't a lot
+                if (Math.Abs(totalChange) / totalDistance >= 2.5) {
+                    // Nope, we turn more then 2.5°/m, this is 'followBend'-material
                     return null;
                 }
             }
@@ -56,7 +59,7 @@ namespace Itinero.Instructions.Generators {
             return new FollowAlongInstruction(
                 route,
                 offset,
-                offset + usedShapes,
+                offset + usedShapes - 1,
                 totalChange
             );
         }

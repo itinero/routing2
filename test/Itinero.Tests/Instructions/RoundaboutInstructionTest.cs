@@ -58,7 +58,7 @@ namespace Itinero.Tests.Instructions
             var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("right", instr.TurnDegrees.DegreesToText());
-            Assert.Equal(0, instr.ExitNumber);
+            Assert.Equal(1, instr.ExitNumber);
             Assert.Equal(4, instr.ShapeIndexEnd);
         }
 
@@ -120,7 +120,7 @@ namespace Itinero.Tests.Instructions
             var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
-            Assert.Equal(1, instr.ExitNumber);
+            Assert.Equal(2, instr.ExitNumber);
             Assert.Equal(6, instr.ShapeIndexEnd);
         }
     }

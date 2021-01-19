@@ -1,4 +1,5 @@
 using System;
+using Itinero.Network.Attributes;
 
 namespace Itinero.Instructions.Generators {
     /**
@@ -18,6 +19,10 @@ namespace Itinero.Instructions.Generators {
 
         private static bool DoesFollowBend(IndexedRoute route, int shapeI, double dAngle, int angleSign) {
             // We aren't allowed to have branches on the inner side, to avoid confusing situations
+
+            if (shapeI >= route.Branches.Count) {
+                return true;
+            }
             
             foreach (var branch in route.Branches[shapeI]) {
                 // What is the angle-difference of the branch?
@@ -59,7 +64,8 @@ namespace Itinero.Instructions.Generators {
 
             var angleDiff = route.DirectionChangeAt(offset);
             var angleSign = Math.Sign(angleDiff);
-            var usedShapes = 0;
+            var usedShapes = 1;
+            route.Meta[offset].Attributes.TryGetValue("name", out var name);
 
 
             var totalDistance = 0.0;
@@ -85,6 +91,11 @@ namespace Itinero.Instructions.Generators {
                     break;
                 }
                 
+                route.Meta[offset + usedShapes].Attributes.TryGetValue("name", out var newName);
+                if (name != newName) {
+                    // Different street
+                    break;
+                }
                 
                 totalDistance += distance;
                 angleDiff += dAngle;
@@ -94,7 +105,7 @@ namespace Itinero.Instructions.Generators {
             }
 
 
-            if (usedShapes <= 1) {
+            if (usedShapes <= 2) {
                 // A 'bend' isn't a bend if there is only one point, otherwise it is a turn...
                 return null;
             }
@@ -102,7 +113,7 @@ namespace Itinero.Instructions.Generators {
 
             // A gentle bend also does turn, at least a few degrees per meter
             if (Math.Abs(angleDiff) < 45) {
-                // THere is little change - does it at least turn a bit?
+                // There is little change - does it at least turn a bit?
                 if (Math.Abs(angleDiff) / totalDistance < 2.5) {
                     // Nope, we turn only 2.5° per meter - that isn't a lot
                     return null;
@@ -112,7 +123,7 @@ namespace Itinero.Instructions.Generators {
             return new FollowBendInstruction(
                 route,
                 offset,
-                offset + usedShapes,
+                offset + usedShapes - 1,
                 angleDiff
             );
         }

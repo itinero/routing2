@@ -20,18 +20,21 @@ namespace Itinero.Instructions.Generators
         /// </summary>
         public readonly uint ProjectionDistance;
 
-        public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees, uint projectionDistance) :
+        public readonly BaseInstruction then;
+
+        public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees, uint projectionDistance, BaseInstruction contained = null) :
             base(route, 0, 0, turnDegrees)
         {
             StartDegrees = absoluteStartingDegrees;
             ProjectionDistance = projectionDistance;
+            then = contained;
         }
 
 
-        public StartInstruction(IndexedRoute route) : this(route, 
+        public StartInstruction(IndexedRoute route, BaseInstruction contained = null) : this(route, 
             0,
             route.DepartingDirectionAt(0).NormalizeDegrees(), 
-         0)
+         0, contained)
         {
         }
 

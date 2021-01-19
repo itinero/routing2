@@ -27,13 +27,13 @@ namespace Itinero.Instructions {
             return new Instructions(generator, languages);
         }
 
-        public (int shapeIndex, string)[] Generate(Route r, string language) {
+        public (int shapeIndex, int shapeEnd, string)[] Generate(Route r, string language) {
             if (!_instructionToTexts.TryGetValue(language, out var instructionToText)) {
                 throw new ArgumentException("Language " + language + " not supported; only supported languages are"+ string.Join(", ", _instructionToTexts.Keys));
             }
 
             var instructions = _generator.GenerateInstructions(r);
-            var texts = instructions.Select(i => (i.ShapeIndex, instructionToText.ToText(i)));
+            var texts = instructions.Select(i => (i.ShapeIndex, i.ShapeIndexEnd, instructionToText.ToText(i)));
             return texts.ToArray();
         }
         

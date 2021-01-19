@@ -34,14 +34,8 @@ namespace Itinero.Instructions.Generators
 
     internal class EndInstructionGenerator : IInstructionGenerator
     {
-        public BaseInstruction Generate(IndexedRoute route, int offset)
-        {
-            if (route.Route.Shape.Count -1 != offset ) {
-                return null;
-            }
-
-            return new EndInstruction(route);
-
+        public BaseInstruction Generate(IndexedRoute route, int offset) {
+            return (route.Last - 1 == offset) ? new EndInstruction(route) : null;
         }
     }
 }

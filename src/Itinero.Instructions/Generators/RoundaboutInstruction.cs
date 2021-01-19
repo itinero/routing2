@@ -1,7 +1,5 @@
-namespace Itinero.Instructions.Generators
-{
-    internal class RoundaboutInstruction : BaseInstruction
-    {
+namespace Itinero.Instructions.Generators {
+    internal class RoundaboutInstruction : BaseInstruction {
         public static RoundaboutInstructionGenerator Constructor = new RoundaboutInstructionGenerator();
 
         /**
@@ -10,7 +8,7 @@ namespace Itinero.Instructions.Generators
         public readonly bool ExitIsOnTheInside;
 
         /// <summary>
-        ///     The number of the exit to take (zero-based)
+        ///     The number of the exit to take (one-based)
         /// </summary>
         public readonly int ExitNumber;
 
@@ -20,39 +18,41 @@ namespace Itinero.Instructions.Generators
             int shapeIndexEnd,
             int turnDegrees,
             int exitNumber,
-            bool exitIsOnTheInside = false) : base(route, shapeIndex, shapeIndexEnd, turnDegrees)
-        {
+            bool exitIsOnTheInside = false) : base(route, shapeIndex, shapeIndexEnd, turnDegrees) {
             ExitNumber = exitNumber;
             ExitIsOnTheInside = exitIsOnTheInside;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"Take the roundabout to go {TurnDegrees.DegreesToText()} via the {ExitNumber + 1}th exit."
                    + (ExitIsOnTheInside ? "WARNING: this exit is on the inner side of the roundabout!" : "");
         }
     }
 
-    internal class RoundaboutInstructionGenerator : IInstructionGenerator
-    {
+    internal class RoundaboutInstructionGenerator : IInstructionGenerator {
         public string Name { get; } = "Roundabout";
 
-        public BaseInstruction Generate(IndexedRoute route, int offset)
-        {
+        public BaseInstruction Generate(IndexedRoute route, int offset) {
             // The roundabout instruction starts when the next segment is on the roundabout ("Go on the roundabout...")
             // and ends when the person leaves the roundabout ("... and take the n'th exit")
 
-            if (route.Last == offset)
-                // No next entries
+            if (offset >= route.Last - 1) { // No next entries
                 return null;
+            }
 
             var inDegrees = route.DepartingDirectionAt(offset); // Offset is still on the rampup
             var usedInstructions = 1;
             var exitCount = 0;
-            while (route.Meta[offset + usedInstructions].GetAttributeOrNull("junction") == "roundabout")
-            {
-                exitCount += route.Branches[offset + usedInstructions].Count;
+            while (route.Meta[offset + usedInstructions].GetAttributeOrNull("junction") == "roundabout") {
+                if (route.Branches.Count > offset + usedInstructions) {
+                    exitCount += route.Branches[offset + usedInstructions].Count;
+                }
                 usedInstructions++;
+            }
+
+            if (usedInstructions == 1) {
+                // We didn't find a roundabout in the end
+                return null;
             }
 
 
@@ -62,7 +62,7 @@ namespace Itinero.Instructions.Generators
                 offset,
                 offset + usedInstructions,
                 (outDegrees - inDegrees).NormalizeDegrees(),
-                exitCount
+                exitCount + 1
             );
         }
     }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
@@ -8,7 +9,7 @@ namespace Itinero.Tests.Instructions {
     public class ParseInstructionTest {
         [Fact]
         public void ParseRenderValue_SimpleValue_SubstitutionInstruction() {
-            var parsed = FromJson.ParseRenderValue("Turn $turnDegrees around, so you are at $tUrnDeGReEs", null);
+            var parsed = FromJson.ParseRenderValue("Turn $turnDegrees around, so you are at $tUrnDeGReEs");
             var result = parsed.ToText(new BaseInstruction(null, 0, 42));
             Assert.Equal("Turn 42 around, so you are at 42", result);
         }
@@ -16,7 +17,7 @@ namespace Itinero.Tests.Instructions {
 
         [Fact]
         public void ParseRenderValue_SubstitutionWithNoSpace_SubstitutionInstruction() {
-            var parsed = FromJson.ParseRenderValue("Take the ${exitNumber}th exit", null);
+            var parsed = FromJson.ParseRenderValue("Take the ${exitNumber}th exit");
             var result = parsed.ToText(new RoundaboutInstruction(null, 0, 5, 42, 5));
             Assert.Equal("Take the 5th exit", result);
         }
@@ -173,7 +174,8 @@ namespace Itinero.Tests.Instructions {
                 "      \"*\":\"right\"" +
                 "    }" +
                 "  }," +
-                "\"base\": \"Go $lr\"" +
+                "\"base\": \"Go $lr\"," +
+                "\"roundabout\": \"Go $lr\"" +
                 "}";
             var toText = FromJson.ParseInstructionToText(JObject.Parse(format));
 
@@ -183,6 +185,27 @@ namespace Itinero.Tests.Instructions {
             var r = toText.ToText(new BaseInstruction(null, 0, -90));
             Assert.Equal("Go right", r);
 
+
+            var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
+            Assert.Equal("Go left", round);
+
+        }
+        
+        [Fact]
+        public void ParseFormat_WithNestedAndExtensions_ExtensionsTrigger() {
+            var format =
+                "{" +
+                "\"extensions\": {" +
+                "   \"lr\": {" +
+                "      \"$turnDegrees>0\":\"left\"," +
+                "      \"*\":\"right\"" +
+                "    }" +
+                "  }," +
+                "\"roundabout\": {\"*\": \"Go $lr\"}" +
+                "}";
+            var toText = FromJson.ParseInstructionToText(JObject.Parse(format), null, new Dictionary<string, IInstructionToText>());
+            var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
+            Assert.Equal("Go left", round);
 
         }
     }

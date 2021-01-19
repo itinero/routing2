@@ -4,7 +4,8 @@
   "about:generators": "When generating instructions, every of the below generators will be tried from left to right. The first generator that succeeds in creating an instruction will be used. This implies that very specific generators should be first, and very general instructions (base) should be last",
   "generators": [
     "roundabout",
-    "start",
+    "followbend",
+    "followalong",
     "end",
     "base"
   ],
@@ -12,32 +13,37 @@
   "languages": {
     "en": {
       "extensions": {
-        "onto": {
+        "on": {
           "$.name": "on $.name",
           "*": ""
         },
+        "onto": {
+          "$+name": "on $+name",
+          "*": ""
+        },
         "lr": {
-          "$turnDegrees<=-135": "sharply left",
-          "$turnDegrees>-135&$turnDegrees<=-65": "left",
-          "$turnDegrees>-65&$turnDegrees<=-25": "slightly left",
+          "$turnDegrees<=-135": "sharply right",
+          "$turnDegrees>-135&$turnDegrees<=-65": "right",
+          "$turnDegrees>-65&$turnDegrees<=-25": "slightly right",
           "$turnDegrees>-25&$turnDegrees<25": "straight",
-          "$turnDegrees>=135": "sharply right",
-          "$turnDegrees<135&$turnDegrees>=65": "right",
-          "$turnDegrees<65&&$turnDegrees>=25": "slightly right"
+          "$turnDegrees>=135": "sharply left",
+          "$turnDegrees<135&$turnDegrees>=65": "left",
+          "$turnDegrees<65&$turnDegrees>=25": "slightly left",
+          "*": "$turnDegrees°"
         }
       },
       "base": {
-        "$turnDegrees>-25&$turnDegrees<25": "Continue $onto",
-        "*": "Turn $lr"
+        "$turnDegrees>-25&$turnDegrees<25": "(Base) Continue $on till $onto",
+        "*": "Turn $lr $onto"
       },
       "end": "You have arrived at your destination",
       "start": {
-        "$startDegrees<=-135": "Start south",
-        "$startDegrees>-135&$startDegrees<=-45": "Start west",
-        "$startDegrees>-45&$startDegrees<=45": "Start north",
-        "$startDegrees>45&$startDegrees<=135": "Start east",
-        "$startDegrees>135": "Start south",
-        "*": "Start heading $startDegrees"
+        "$startDegrees<=-135": "Start south $on, then $then",
+        "$startDegrees>-135&$startDegrees<=-45": "Start west $on, then $then",
+        "$startDegrees>-45&$startDegrees<=45": "Start north $on, then $then",
+        "$startDegrees>45&$startDegrees<=135": "Start east $on, then $then",
+        "$startDegrees>135": "Start south $on, then $then",
+        "*": "Start heading $startDegrees $on, then $then"
       },
       "roundabout": {
         "$exitNumber=1": "Go $lr on the roundabout by taking the first exit",
@@ -48,6 +54,17 @@
         "$exitNumber=6": "Go $lr on the roundabout by taking the sixth exit",
         "$exitNumber=7": "Go $lr on the roundabout by taking the seventh exit",
         "*": "Go $lr on the roundabout by taking the ${exitNumber}th exit"
+      },
+      "followbend": {
+        "$.name!=$+name&$.name&$+name": "Follow $.name which bends $lr, $onto",
+        "$.name": "Follow $.name which bends $lr",
+        "$.highway=cycleway&$+name": "Follow the cyclepath which bends $lr, $onto",
+        "$.highway=cycleway": "Follow the cyclepath which bends $lr",
+        "*": "Follow the road which bends $lr"
+      },
+      "followalong": {
+        "$.highway=cycleway": "Follow the cyclepath",
+        "*": "Follow along $on"
       },
       "*": "Could not generate an instruction for $type"
     }

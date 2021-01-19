@@ -20,7 +20,14 @@ namespace Itinero.Instructions {
 
         public LinearInstructionGenerator(
             IEnumerable<string> constructorNames) :
-            this(constructorNames.Select(name => AllGenerators.AllGeneratorsDict[name])) { }
+            this(constructorNames.Select(name => {
+            if (AllGenerators.AllGeneratorsDict.TryGetValue(name, out var gen)) {
+                return gen;
+            }
+
+            throw new Exception(("The generator " + name + "; try one of " +
+                                 String.Join(", ", AllGenerators.AllGeneratorsDict.Keys)));
+        })) { }
 
         public LinearInstructionGenerator(
             IEnumerable<IInstructionGenerator> constructors) {
@@ -47,7 +54,7 @@ namespace Itinero.Instructions {
             var instructions = new List<BaseInstruction>();
 
             var currentIndex = 0;
-            while (currentIndex < route.Shape.Count) {
+            while (currentIndex < indexedRoute.Last) {
                 var instruction = ConstructNext(indexedRoute, currentIndex);
                 instructions.Add(instruction);
                 if (instruction.ShapeIndexEnd == currentIndex) {
@@ -58,6 +65,8 @@ namespace Itinero.Instructions {
                 }
             }
 
+            instructions[0] = new StartInstruction(indexedRoute, instructions[0]);
+            
             return instructions;
         }
     }

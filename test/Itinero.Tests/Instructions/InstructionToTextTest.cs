@@ -40,6 +40,8 @@ namespace Itinero.Tests.Instructions {
                     ("Turn ", false),
                     ("direction", true)
                 },
+                null,
+                "during a unit test",
                 extensions
             );
             var left = compound.ToText(new BaseInstruction(null, 0, 90));

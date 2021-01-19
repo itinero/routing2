@@ -89,12 +89,11 @@ namespace Itinero.Tests.Instructions
                 {
                     ("Turn ", false),
                     ("TurnDegrees", true)
-                }
-            );
+                });
             var texts = instructions.Select(toText.ToText).ToList();
 
             Assert.NotEmpty(instructions);
-            Assert.Equal("Turn -57", texts[2]);
+            Assert.Equal("Turn -57", texts[1]);
         }
 
 

@@ -11,12 +11,14 @@ namespace Itinero.Instructions.ToText
     internal class ConditionalToText: IInstructionToText
     {
         internal readonly List<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;
+        private readonly string _context;
 
         public ConditionalToText(
-            List<(Predicate<BaseInstruction>, IInstructionToText)> options
-            )
-        {
+            List<(Predicate<BaseInstruction>, IInstructionToText)> options,
+            string context = "context not set"
+            ) {
             _options = options;
+            _context = context;
         }
 
         public string ToText(BaseInstruction instruction)
@@ -29,7 +31,7 @@ namespace Itinero.Instructions.ToText
                 }
             }
 
-            throw new ArgumentException("Fallthrough on the predicates for instruction " + instruction);
+            throw new ArgumentException("Fallthrough on the predicates for instruction " + instruction+ " during "+_context);
         }
     }
 }

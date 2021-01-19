@@ -12,8 +12,6 @@ namespace Itinero.Instructions.Generators
     /// </summary>
     internal class IntersectionInstruction : BaseInstruction
     {
-        public static IInstructionGenerator Generator = new IntersectionInstructionGenerator();
-
         /// <summary>
         /// The list with all the branches and properties of all the roads at this crossroads, *except* the one we just came from.
         /// They are sorted by their relativeDegrees (where 0° is straight on the direction we came from)

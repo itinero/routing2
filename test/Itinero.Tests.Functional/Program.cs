@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Itinero.Instructions;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
+using Itinero.Profiles.Lua.Osm;
 using Itinero.Routing;
 using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
@@ -29,8 +31,8 @@ namespace Itinero.Tests.Functional {
 
             TileParser.DownloadFunc = DownloadHelper.Download;
 
-            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
-            var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
+            var bicycle = OsmProfiles.Bicycle;
+            var pedestrian = OsmProfiles.Pedestrian;
 
             /*
            
@@ -42,7 +44,7 @@ namespace Itinero.Tests.Functional {
             routerDb.PrepareFor(bicycle);
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            using var osmStream = File.OpenRead(args[0]);
+            /*using var osmStream = File.OpenRead(args[0]);
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
             progress.RegisterSource(osmPbfStream);
@@ -51,8 +53,10 @@ namespace Itinero.Tests.Functional {
             using (var outputStream = File.Open(args[1], FileMode.Create))
             {
                 routerDb.WriteTo(outputStream);
-            }
-//*/
+            }*/
+
+
+            //*/
             var routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
             routerDb.PrepareFor(bicycle);
 
@@ -64,7 +68,8 @@ namespace Itinero.Tests.Functional {
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
                     .To(latest.Snap().To(to)).Calculate().Value;
                 var instr = instructions.Generate(route, "en");
-                File.WriteAllText(name + ".txt", string.Join("\n", instr.Select(i => i.Item2)));
+                File.WriteAllText(name + ".geojson", IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonLines(instr)));
+                File.WriteAllText(name+".points.geojson", IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonPoints()));
             }
 
 
@@ -74,6 +79,7 @@ namespace Itinero.Tests.Functional {
 
             TestInstructions("benoitlaan", (3.2120606303215027, 51.21027101966819), (3.199746608734131,
                 51.20655402916297));
+
 
             //
             // var snap1 = latest.Snap().To(5.9732794761657715,

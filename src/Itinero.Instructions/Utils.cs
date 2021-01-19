@@ -3,6 +3,10 @@ using Itinero.Routes;
 
 namespace Itinero.Instructions
 {
+
+    internal class Box<T> {
+        public T Content { get; set; }
+    }
     internal static class Utils
     {
         private const double RADIUS_OF_EARTH = 6371000;

@@ -82,17 +82,13 @@ namespace Itinero.Instructions.Generators {
 
     internal class BaseInstructionGenerator : IInstructionGenerator {
         public BaseInstruction Generate(IndexedRoute route, int offset) {
-            if (offset == 0) {
-                // We are at the very beginning of the route, "turning" as such isn't really defined here
-                return null;
-            }
-
-            if (offset >= route.Shape.Count - 1) {
+           
+            if (offset + 1 >= route.Last) {
                 // The current offset is already the last index of the shape; this is the endpoint
                 return null;
             }
-
-            return new BaseInstruction(route, offset, route.DirectionChangeAt(offset));
+            // We are on the end of segment 'offset', what should we do next?
+            return new BaseInstruction(route, offset, route.DirectionChangeAt(offset + 1));
         }
     }
 }

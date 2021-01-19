@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Reminiscence.Collections;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -15,7 +15,7 @@ namespace Itinero.Instructions.Generators
             new StartInstructionGenerator(),
             new IntersectionInstruction.IntersectionInstructionGenerator(),
             new RoundaboutInstructionGenerator(),
-            new FollowAllowGenerator(),
+            new FollowAlongGenerator(),
             new FollowBendGenerator()
         };
 
