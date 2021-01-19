@@ -97,22 +97,29 @@ namespace Itinero.Routes
         public class Meta
         {
             /// <summary>
-            /// Gets or sets the shape index.
-            /// </summary>
+            /// A route has a list of coordinates named 'Shape'.
+            /// This meta-object gives information about a part of the route,
+            /// namely about the starting at route.Shape[this.Shape] and running
+            /// until the next object.
+            /// </summary
             public int Shape { get; set; }
 
             /// <summary>
-            /// Gets or sets the attributes.
+            /// The attributes of the described segment, copied from the underlying datasource.
+            /// These are thus the OpenStreetMap-tags (if the underlying data source is OSM)
             /// </summary>
             public IEnumerable<(string key, string value)> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the relative direction flag of the attributes.
+            /// One can travel in two directions over an edge; forward and backward.
+            /// If the flag AttributesDirection is true, the route travel in the forwqrd direction
             /// </summary>
             public bool AttributesDirection { get; set; }
 
             /// <summary>
-            /// Gets or sets the profile.
+            /// The name of the profile used for routeplanning this segment.
+            /// In most cases, this will always be identical, but might differ in multimodal routes
             /// </summary>
             public string Profile { get; set; }
 
@@ -138,12 +145,13 @@ namespace Itinero.Routes
             }
 
             /// <summary>
-            /// The distance in meter.
+            /// The length of the described segment
             /// </summary>
             public double Distance { get; set; }
 
             /// <summary>
-            /// The time in seconds.
+            /// The time needed to travel over this segment.
+            /// The speed on this segment can be calculated by using this.Distance/this.Time
             /// </summary>
             public double Time { get; set; }
         }
