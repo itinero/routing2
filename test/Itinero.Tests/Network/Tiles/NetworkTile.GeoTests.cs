@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Itinero.Tests.Network.Tiles
 {
-    public partial class NetworkTileTests
+    public class NetworkTile_GeoTests
     {
         [Fact]
         public void NetworkTile_AddVertex0_ShouldStoreCoordinates()
@@ -39,6 +39,19 @@ namespace Itinero.Tests.Network.Tiles
             
             Assert.True(networkTile.TryGetVertex(vertex2, out _, out _, out var elevation));
             Assert.Equal(1541, elevation);
+        }
+
+        [Fact]
+        public void NetworkTile_AddEdge0_EmptyShape_ShouldStoreEdge()
+        {
+            var networkTile = new NetworkTile(14, 
+                TileStatic.ToLocalId(4.86638, 51.269728, 14));
+            var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
+            var vertex2 = networkTile.AddVertex(4.86737, 51.267849);
+
+            var edge = networkTile.AddEdge(vertex1, vertex2, 
+                System.Array.Empty<(double longitude, double latitude, float? e)>());
+            Assert.Equal((uint)0, edge.LocalId);
         }
         
         [Fact]

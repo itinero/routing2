@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Itinero.Tests.Network.Tiles
 {
-    public class NetworkTileEnumeratorTests
+    public class NetworkTile_EnumeratorTests
     {
         [Fact]
         public void NetworkTileEnumerator_OneVertex_MoveToVertex_ShouldReturnTrue()

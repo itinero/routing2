@@ -416,7 +416,7 @@ namespace Itinero.Network.Tiles
             return (uint) _edges.GetDynamicUInt32Nullable(location, out edgeProfileId);
         }
 
-        private void SerializeEdgesAndVertices(Stream stream)
+        private void WriteEdgesAndVerticesTo(Stream stream)
         {
             // write vertex pointers.
             stream.WriteVarUInt32(_nextVertexId);
@@ -438,16 +438,9 @@ namespace Itinero.Network.Tiles
             {
                 stream.WriteVarUInt32(_crossEdgePointers[i]);
             }
-
-            // write vertex locations.
-            var coordinateBytes = _nextVertexId * CoordinateSizeInBytes * 2;
-            for (var i = 0; i < coordinateBytes; i++)
-            {
-                stream.WriteByte(_coordinates[i]);
-            }
         }
 
-        private void DeserializeEdgesAndVertices(Stream stream)
+        private void ReadEdgesAndVerticesFrom(Stream stream)
         {
             // read vertex pointers.
             _nextVertexId = stream.ReadVarUInt32();
@@ -471,14 +464,6 @@ namespace Itinero.Network.Tiles
             for (var i = 0; i < _nextCrossTileId; i++)
             {
                 _crossEdgePointers[i] = stream.ReadVarUInt32();
-            }
-
-            // read vertex locations.
-            var coordinateBytes = _nextVertexId * CoordinateSizeInBytes * 2;
-            _coordinates.Resize(coordinateBytes);
-            for (var i = 0; i < coordinateBytes; i++)
-            {
-                _coordinates[i] = (byte)stream.ReadByte();
             }
         }
     }

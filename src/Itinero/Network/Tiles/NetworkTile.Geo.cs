@@ -98,6 +98,9 @@ namespace Itinero.Network.Tiles
             var originalPointer = _nextShapePointer;
             var blockPointer = originalPointer;
             var pointer = blockPointer + 1;
+            
+            // make sure there is space for the block pointer.
+            _shapes.EnsureMinimumSize(blockPointer);
 
             var coordinateBlockSize = 8;
             if (_elevation != null) coordinateBlockSize += 4;
@@ -213,8 +216,20 @@ namespace Itinero.Network.Tiles
             } while (count == 255);
         }
 
-        private void SerializeShapes(Stream stream)
+        private void WriteGeoTo(Stream stream)
         {
+            stream.WriteVarInt32Nullable(_elevation);
+            
+            // write vertex locations.
+            var coordinateSize = CoordinateSizeInBytes * 2;
+            if (_elevation != null) coordinateSize += ElevationSizeInBytes;
+            var coordinateBytes = _nextVertexId * coordinateSize;
+            for (var i = 0; i < coordinateBytes; i++)
+            {
+                stream.WriteByte(_coordinates[i]);
+            }
+            
+            // write shape locations.
             stream.WriteVarUInt32(_nextShapePointer);
             for (var i = 0; i < _nextShapePointer; i++)
             {
@@ -222,8 +237,20 @@ namespace Itinero.Network.Tiles
             }
         }
 
-        private void DeserializeShapes(Stream stream)
+        private void ReadGeoFrom(Stream stream)
         {
+            _elevation = stream.ReadVarInt32Nullable();
+
+            // read vertex locations.
+            var coordinateSize = CoordinateSizeInBytes * 2;
+            if (_elevation != null) coordinateSize += ElevationSizeInBytes;
+            var coordinateBytes = _nextVertexId * coordinateSize;
+            _coordinates.Resize(coordinateBytes);
+            for (var i = 0; i < coordinateBytes; i++)
+            {
+                _coordinates[i] = (byte)stream.ReadByte();
+            }
+            
             _nextShapePointer = stream.ReadVarUInt32();
             _shapes.Resize(_nextShapePointer);
             for (var i = 0; i < _nextShapePointer; i++)

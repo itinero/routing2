@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Itinero.Tests.Network.Tiles
 {
-    public partial class NetworkTileTests
+    public class NetworkTileTests
     {
         [Fact]
         public void NetworkTile_AddVertex_TileEmpty_ShouldReturn0()
