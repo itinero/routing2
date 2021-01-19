@@ -113,7 +113,7 @@ namespace Itinero.Routes
             /// <summary>
             /// Gets or sets the relative direction flag of the attributes.
             /// One can travel in two directions over an edge; forward and backward.
-            /// If the flag AttributesDirection is true, the route travel in the forwqrd direction
+            /// If the flag AttributesDirection is true, the route travel in the forward direction
             /// </summary>
             public bool AttributesDirection { get; set; }
 
