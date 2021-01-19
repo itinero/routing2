@@ -17,7 +17,7 @@ namespace Itinero.Network.Tiles
         {
             if (array.Length > position) return;
 
-            var increase = ((position + 1 - array.Length) / step) + 1;
+            var increase = System.Math.DivRem(position - array.Length, step, out _) + 1;
             increase *= step;
 
             var size = array.Length;

@@ -46,18 +46,6 @@ namespace Itinero.Tests.Network.Tiles
         }
 
         [Fact]
-        public void NetworkTile_TryGetVertex0_Vertex0Exists_ShouldReturnTrueAndLatLon()
-        {
-            var networkTile = new NetworkTile(14, 
-                TileStatic.ToLocalId(4.7868, 51.2643, 14));
-            var vertex1 = networkTile.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
-            
-            Assert.True(networkTile.TryGetVertex(vertex1, out var longitude, out var latitude, out _));
-            Assert.Equal(4.7868, longitude, 4);
-            Assert.Equal(51.2643, latitude, 4);
-        }
-
-        [Fact]
         public void NetworkTile_AddEdge0_VerticesExist_ShouldReturn0()
         {
             var networkTile = new NetworkTile(14, 

@@ -121,7 +121,7 @@ namespace Itinero.Network.Tiles
             _nextVertexId++;
             
             // make room for edges.
-            if (vertexId.LocalId >= _pointers.Length) _pointers.Resize(_pointers.Length + DefaultSizeIncrease);
+            _pointers.EnsureMinimumSize(vertexId.LocalId, DefaultSizeIncrease);
 
             return vertexId;
         }

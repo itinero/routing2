@@ -23,7 +23,6 @@ namespace Itinero.Network.Tiles
         
         private void SetCoordinate(uint localId, double longitude, double latitude, float? e)
         {    
-            var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
             
             // set elevation if needed.
             if (_elevation != null && e == null)
@@ -39,16 +38,20 @@ namespace Itinero.Network.Tiles
             }
             
             // make sure coordinates fit.
+            uint tileCoordinatePointer;
             if (_elevation == null)
             {
                 // don't store elevation.
-                _coordinates.EnsureMinimumSize(tileCoordinatePointer + CoordinateSizeInBytes * 2);
+                tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
+                _coordinates.EnsureMinimumSize(tileCoordinatePointer + CoordinateSizeInBytes * 2,
+                    DefaultSizeIncrease);
             }
             else
             {
                 // store elevation.
-                _coordinates.EnsureMinimumSize(tileCoordinatePointer + CoordinateSizeInBytes * 2,
-                    ElevationSizeInBytes);
+                tileCoordinatePointer = localId * (CoordinateSizeInBytes * 2 + ElevationSizeInBytes);
+                _coordinates.EnsureMinimumSize(tileCoordinatePointer + CoordinateSizeInBytes * 2 + ElevationSizeInBytes,
+                    DefaultSizeIncrease);
             }
 
             // write coordinates.
@@ -71,7 +74,9 @@ namespace Itinero.Network.Tiles
 
         private void GetCoordinate(uint localId, out double longitude, out double latitude, out float? elevation)
         {
-            var tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
+            var tileCoordinatePointer = _elevation == null ? 
+                localId * CoordinateSizeInBytes * 2 :
+                localId * (CoordinateSizeInBytes * 2 + ElevationSizeInBytes);
             
             const int resolution = (1 << TileResolutionInBits) - 1;
             _coordinates.GetFixed(tileCoordinatePointer, CoordinateSizeInBytes, out var x);
@@ -93,29 +98,32 @@ namespace Itinero.Network.Tiles
             var originalPointer = _nextShapePointer;
             var blockPointer = originalPointer;
             var pointer = blockPointer + 1;
-            
-            if (_shapes.Length <= pointer + 8)
-            {
-                _shapes.Resize(_shapes.Length + DefaultSizeIncrease);
-            }
+
+            var coordinateBlockSize = 8;
+            if (_elevation != null) coordinateBlockSize += 4;
 
             using var enumerator = shape.GetEnumerator();
             var count = 0;
-            (int x, int y) previous = (int.MaxValue, int.MaxValue);
+            (int x, int y, int? eOffset) previous = (int.MaxValue, int.MaxValue, null);
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
                 var (x, y) =
                     TileStatic.ToLocalTileCoordinates(_zoom, _tileId, current.longitude, current.latitude, resolution);
-                if (_shapes.Length <= pointer + 8)
-                {
-                    _shapes.Resize(_shapes.Length + DefaultSizeIncrease);
-                }
+                int? eOffset = null;
+                var e = current.e ?? 0;
+                if (_elevation != null) eOffset = (int) (e * 10) - _elevation.Value;
+                
+                // make sure there is space for this coordinate.
+                _shapes.EnsureMinimumSize(pointer + coordinateBlockSize);
+                
+                // store coordinate.
                 if (count == 0)
                 {
                     // first coordinate.
                     pointer += (uint) _shapes.SetDynamicInt32(pointer, x);
                     pointer += (uint) _shapes.SetDynamicInt32(pointer, y);
+                    if (eOffset != null) pointer += (uint) _shapes.SetDynamicInt32(pointer, eOffset.Value);
                 }
                 else
                 {
@@ -124,6 +132,12 @@ namespace Itinero.Network.Tiles
                     var diffY = y - previous.y;
                     pointer += (uint) _shapes.SetDynamicInt32(pointer, diffX);
                     pointer += (uint) _shapes.SetDynamicInt32(pointer, diffY);
+                    if (eOffset != null)
+                    {
+                        if (previous.eOffset == null) throw new ArgumentException("Not all points have elevation set.");
+                        var diffE = eOffset.Value - previous.eOffset.Value;
+                        pointer += (uint) _shapes.SetDynamicInt32(pointer, diffE);
+                    }
                 }
 
                 if (count == 255)
@@ -139,7 +153,7 @@ namespace Itinero.Network.Tiles
                     count++;
                 }
 
-                previous = (x, y);
+                previous = (x, y, eOffset);
             }
 
             // a block is still open, close it.
@@ -156,7 +170,7 @@ namespace Itinero.Network.Tiles
             
             const int resolution = (1 << TileResolutionInBits) - 1;
             var count = -1;
-            (int x, int y) previous = (int.MaxValue, int.MaxValue); 
+            (int x, int y, int? eOffset) previous = (int.MaxValue, int.MaxValue, null); 
             do
             {
                 count = _shapes[p];
@@ -166,17 +180,35 @@ namespace Itinero.Network.Tiles
                 {
                     p += (uint)_shapes.GetDynamicInt32(p, out var x);
                     p += (uint)_shapes.GetDynamicInt32(p, out var y);
+                    int? eOffset = null;
+                    if (_elevation != null)
+                    {
+                        p += (uint) _shapes.GetDynamicInt32(p, out var e);
+                        eOffset = e;
+                    }
 
                     if (previous.x != int.MaxValue)
                     {
                         x = previous.x + x;
                         y = previous.y + y;
+                        if (_elevation != null)
+                        {
+                            if (previous.eOffset == null) throw new ArgumentException("Not all points have elevation set.");
+                            eOffset = previous.eOffset.Value + eOffset;
+                        }
+                    }
+
+                    int? elevation = null;
+                    if (_elevation != null)
+                    {
+                        if (eOffset == null) throw new ArgumentException("Not all points have elevation set.");
+                        elevation = _elevation.Value + eOffset.Value;
                     }
                     
                     TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out var longitude, out var latitude);
-                    yield return (longitude, latitude, null);
+                    yield return (longitude, latitude, elevation / 10.0f);
 
-                    previous = (x, y);
+                    previous = (x, y, eOffset);
                 }
             } while (count == 255);
         }
