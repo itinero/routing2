@@ -56,14 +56,14 @@ namespace Itinero.Routes.Builders {
                     shapeBetween.MoveNext();
                 }
 
-                route.ShapeMeta.Add(new Route.Meta {
-                    Shape = route.Shape.Count,
-                    Attributes = attributes,
-                    AttributesDirection = direction,
-                    Distance = distance,
-                    Profile = profile.Name,
-                    Time = time
-                });
+                     route.ShapeMeta.Add(new Route.Meta {
+                        Shape = route.Shape.Count,
+                        Attributes = attributes,
+                        AttributesDirection = direction,
+                        Distance = distance,
+                        Profile = profile.Name,
+                        Time = time
+                    });
 
                 while (shapeBetween.MoveNext()) {
                     route.Shape.Add(shapeBetween.Current);

@@ -86,7 +86,7 @@ namespace Itinero.Instructions {
         public double DepartingDirectionAt(int offset) {
             (double, double) nextPoint;
             if (Last == offset) {
-                nextPoint = Route.Stops[Route.Stops.Count - 1].Coordinate;
+                nextPoint = Route.Stops[^1].Coordinate;
             }
             else {
                 nextPoint = Shape[offset + 1];
