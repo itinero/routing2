@@ -58,7 +58,7 @@ namespace Itinero.Tests.Functional
                     return false;
                 }
             };
-            ElevationHandler.GetElevation = (lat, lon) =>
+            ElevationHandler.Default = new ElevationHandler((lat, lon) =>
             {
                 var elevation = srtmData.GetElevation(lat, lon);
                 if (!elevation.HasValue)
@@ -67,7 +67,7 @@ namespace Itinero.Tests.Functional
                 }
 
                 return (short) elevation;
-            };
+            });
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
