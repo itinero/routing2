@@ -6,8 +6,6 @@
         <AssemblyName>Itinero.Profiles.Lua</AssemblyName>
         <LangVersion>latest</LangVersion>
         <PackageId>Itinero.Profiles.Lua</PackageId>
-        <PackageVersion>2.0.0-alpha-003</PackageVersion>
-        <Title>Routeplanner for .NET</Title>
         <PackageTags>osm, openstreetmap, routing, mapping</PackageTags>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
