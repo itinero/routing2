@@ -17,21 +17,14 @@ namespace Itinero.Routes.Builders {
         /// </summary>
         public static RouteBuilder Default => DefaultLazy.Value;
 
-        /// <summary>
-        ///     Builds a route from the given path for the given profile.
-        /// </summary>
-        /// <param name="db">The router db.</param>
-        /// <param name="profile">The profile.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="forward">The forward flag.</param>
-        /// <returns>The route.</returns>
-        public Result<Route> Build(RoutingNetwork db, Profile profile, Path path, bool forward = true) {
+        ///<inheritdoc/>
+        public Result<Route> Build(RoutingNetwork db, Profile profile, Path path) {
             var edgeEnumerator = db.GetEdgeEnumerator();
             var route = new Route {Profile = profile.Name};
 
             foreach (var (edge, direction, offset1, offset2) in path) {
-                
-                edgeEnumerator.MoveToEdge(edge, direction == forward /* AKA: if forward is false, flip direction */);
+                    edgeEnumerator.MoveToEdge(edge, direction);
+              
 
                 var attributes = edgeEnumerator.Attributes;
                 var factor = profile.Factor(attributes);
@@ -55,19 +48,20 @@ namespace Itinero.Routes.Builders {
                 if (route.Shape.Count > 0 && offset1 == 0) {
                     shapeBetween.MoveNext();
                 }
-
-                route.ShapeMeta.Add(new Route.Meta {
-                    Shape = route.Shape.Count,
-                    Attributes = attributes,
-                    AttributesDirection = direction,
-                    Distance = distance,
-                    Profile = profile.Name,
-                    Time = time
-                });
+              
 
                 while (shapeBetween.MoveNext()) {
                     route.Shape.Add(shapeBetween.Current);
                 }
+                
+                route.ShapeMeta.Add(new Route.Meta {
+                    Shape = route.Shape.Count - 1,
+                    Attributes = attributes,
+                    AttributesAreForward = direction,
+                    Distance = distance,
+                    Profile = profile.Name,
+                    Time = time
+                });
             }
 
             return route;

@@ -97,30 +97,38 @@ namespace Itinero.Routes
         public class Meta
         {
             /// <summary>
+            /// The index of the last Shape where this Meta-information is valid
+            /// </summary>
+            /// <remarkss>
             /// A route has a list of coordinates named 'Shape'.
             /// This meta-object gives information about a part of the route,
             /// namely about the starting at route.Shape[this.Shape] and running
             /// until the next object.
-            /// </summary
+            /// </remarks>
             public int Shape { get; set; }
 
             /// <summary>
-            /// The attributes of the described segment, copied from the underlying datasource.
-            /// These are thus the OpenStreetMap-tags (if the underlying data source is OSM)
+            /// The attributes of the described segment from the underlying datasource.
             /// </summary>
+            /// <remarks>
+            /// These are thus the OpenStreetMap-tags (if the underlying data source is OSM)
+            /// </remarks>
             public IEnumerable<(string key, string value)> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the relative direction flag of the attributes.
-            /// One can travel in two directions over an edge; forward and backward.
-            /// If the flag AttributesDirection is true, the route travel in the forward direction
             /// </summary>
-            public bool AttributesDirection { get; set; }
+            /// <remarks>
+            /// One can travel in two directions over an edge; forward and backward.
+            /// The attributes however are always defined in the forward direction.
+            /// If this flag is false, the attributes might have to be interpreted differently
+            /// </remarks>
+            public bool AttributesAreForward { get; set; }
 
             /// <summary>
             /// The name of the profile used for routeplanning this segment.
-            /// In most cases, this will always be identical, but might differ in multimodal routes
             /// </summary>
+            /// <remarks>In most cases, this will always be identical for the entire route, but might be different for different segments in multimodal routes</remarks>
             public string Profile { get; set; }
 
             /// <summary>
