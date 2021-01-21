@@ -35,14 +35,13 @@ namespace Itinero.Instructions {
                 throw new ArgumentException("Cannot generate route instructions if metainformation is missing");
             }
 
-            for (var index = 0; index < route.ShapeMeta.Count; index++) {
-                var meta = route.ShapeMeta[index];
-                var start = meta.Shape;
-                var end = index + 1 == route.ShapeMeta.Count ? route.Shape.Count : route.ShapeMeta[index + 1].Shape;
-                for (int j = start; j < end; j++) {
+            foreach (var meta in route.ShapeMeta) {
+                // Meta.shape indicates the last 
+                while (metas.Count < meta.Shape - 1) {
                     metas.Add(meta);
                 }
             }
+
             return metas;
         }
 
