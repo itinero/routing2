@@ -99,7 +99,7 @@ namespace Itinero.Routes
             /// <summary>
             /// The index of the last Shape where this Meta-information is valid
             /// </summary>
-            /// <remarkss>
+            /// <remarks>
             /// A route has a list of coordinates named 'Shape'.
             /// This meta-object gives information about a part of the route,
             /// namely from the previous point till 'Shape' (shape is included)
