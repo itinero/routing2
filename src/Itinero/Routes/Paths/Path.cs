@@ -13,6 +13,7 @@ namespace Itinero.Routes.Paths
     public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
     {
         private readonly List<(EdgeId edge, bool forward)> _edges;
+        public List<(EdgeId edge, bool forward)> Edges => _edges;
         private readonly RoutingNetworkEdgeEnumerator _edgeEnumerator;
         private readonly RoutingNetwork _graph;
 

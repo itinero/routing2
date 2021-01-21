@@ -37,7 +37,7 @@ namespace Itinero.Routing
         public static Result<Route> Calculate(this IRouterOneToOne oneToOneRouter)
         {
             return RouteBuilder.Default.Build(oneToOneRouter.Network, oneToOneRouter.Settings.Profile,
-                oneToOneRouter.Path(), true);
+                oneToOneRouter.Path());
         }
         
         /// <summary>

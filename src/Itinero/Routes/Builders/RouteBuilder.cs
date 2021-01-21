@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -17,21 +18,41 @@ namespace Itinero.Routes.Builders {
         /// </summary>
         public static RouteBuilder Default => DefaultLazy.Value;
 
-        /// <summary>
-        ///     Builds a route from the given path for the given profile.
-        /// </summary>
-        /// <param name="db">The router db.</param>
-        /// <param name="profile">The profile.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="forward">The forward flag.</param>
-        /// <returns>The route.</returns>
-        public Result<Route> Build(RoutingNetwork db, Profile profile, Path path, bool forward = true) {
-            var edgeEnumerator = db.GetEdgeEnumerator();
-            var route = new Route {Profile = profile.Name};
+        /// <inheritdoc />
+        public Result<Route> Build(RoutingNetwork routingNetwork, Profile profile, Path path) {
+            var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
 
+            // SpareEnumerator is used in the branch-calculation. IT offers no guarantees about the state
+            var spareEnumerator = routingNetwork.GetEdgeEnumerator();
+            var route = new Route {Profile = profile.Name};
+            var branches = new List<Route.Branch>();
+            var seenEdges = 0;
+
+            var allEdgeIds = new HashSet<EdgeId>();
+            foreach (var edge in path.Edges) {
+                allEdgeIds.Add(edge.edge);
+            }
+            
             foreach (var (edge, direction, offset1, offset2) in path) {
-                
-                edgeEnumerator.MoveToEdge(edge, direction == forward /* AKA: if forward is false, flip direction */);
+                if (route.Shape.Count == 0) {
+                    // This is the first edge of the route - we have to check for branches at the start loction
+                    bool firstEdgeIsFullyContained;
+                    if (direction) {
+                        // Forward: we look to offset1
+                        firstEdgeIsFullyContained = offset1 == 0;
+                    }
+                    else {
+                        firstEdgeIsFullyContained = offset2 == ushort.MaxValue;
+                    }
+
+                    if (firstEdgeIsFullyContained) {
+                        // We check for branches
+                        edgeEnumerator.MoveToEdge(edge, direction);
+                        AddBranches(edgeEnumerator.From, edgeEnumerator, spareEnumerator, 0, branches, allEdgeIds);
+                    }
+                }
+
+                edgeEnumerator.MoveToEdge(edge, direction);
 
                 var attributes = edgeEnumerator.Attributes;
                 var factor = profile.Factor(attributes);
@@ -39,10 +60,10 @@ namespace Itinero.Routes.Builders {
                 distance = (offset2 - offset1) / (double) ushort.MaxValue * distance;
                 route.TotalDistance += distance;
 
-                var speed = forward ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
+                var speed =factor.ForwardSpeedMeterPerSecond ;
                 if (speed <= 0) {
                     // Something is wrong here
-                    throw new ArgumentException("Got a negative speed!");
+                    throw new ArgumentException("Speed is zero! Did you pass a wrong profile to the route builder?");
                 }
 
                 var time = distance / speed;
@@ -51,26 +72,96 @@ namespace Itinero.Routes.Builders {
 
                 // add shape points to route.
                 using var shapeBetween = edgeEnumerator.GetShapeBetween(offset1, offset2).GetEnumerator();
-                // skip first if there are already previous edges.
+                // skip first coordinate if there are already previous edges.
                 if (route.Shape.Count > 0 && offset1 == 0) {
                     shapeBetween.MoveNext();
                 }
 
-                     route.ShapeMeta.Add(new Route.Meta {
-                        Shape = route.Shape.Count,
-                        Attributes = attributes,
-                        AttributesDirection = direction,
-                        Distance = distance,
-                        Profile = profile.Name,
-                        Time = time
-                    });
 
                 while (shapeBetween.MoveNext()) {
                     route.Shape.Add(shapeBetween.Current);
                 }
+
+                route.ShapeMeta.Add(new Route.Meta {
+                    Shape = route.Shape.Count - 1,
+                    Attributes = attributes,
+                    AttributesAreForward = direction,
+                    Distance = distance,
+                    Profile = profile.Name,
+                    Time = time
+                });
+
+                // Intermediate points of an edge will never have branches
+                // So, to calculate branches, it is enough to only look at the last point of the edge
+                // (and the first point of the first edge - a true edge case)
+                // (Also note that the first and last edge might not be needed entirely, so that means we possible can ignore those branches)
+
+                // What is the end vertex? Add its branches...
+                if (seenEdges + 1 == path.Count) {
+                    // Hmm, this is the last edge
+                    // We should add the branches of it, but only if the edge is completely contained
+                    bool lastEdgeIsFullyContained;
+                    if (!direction) {
+                        // Backward: we look to offset1
+                        lastEdgeIsFullyContained = offset1 == 0;
+                    }
+                    else {
+                        lastEdgeIsFullyContained = offset2 == ushort.MaxValue;
+                    }
+
+                    if (lastEdgeIsFullyContained) {
+                        AddBranches(edgeEnumerator.To,
+                            edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches, allEdgeIds);
+                    }
+                }
+                else {
+                    AddBranches(edgeEnumerator.To, edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches, allEdgeIds);
+                }
+
+                seenEdges++;
             }
 
+            route.Branches = branches.ToArray();
+
             return route;
+        }
+
+        /// <summary>
+        ///     Calculate all the branches of 'centralVertexid' 
+        /// </summary>
+        /// <param name="edgeEnumerator">The edge enumerator, moved to the point of which the branches should be added</param>
+        /// <param name="spareEnumerator">An extra enumerator to use. Will be moved during the call</param>
+        /// <param name="centralVertexId">The vertex id of the point under consideration</param>
+        /// <param name="shapeIndex">The index of the shape of the current vertex</param>
+        /// <param name="addTo">All the branches are collected into this collection</param>
+        /// <param name="branchBlacklist">Edges in this list won't be used as branches</param>
+        private void AddBranches(VertexId centralVertexId, RoutingNetworkEdgeEnumerator edgeEnumerator,
+            RoutingNetworkEdgeEnumerator spareEnumerator, int shapeIndex,
+            ICollection<Route.Branch> addTo, HashSet<EdgeId> branchBlacklist) {
+            edgeEnumerator.MoveTo(centralVertexId);
+            while (edgeEnumerator.MoveNext()) {
+                // Iterates over all edges of the endvertex
+               
+                if (branchBlacklist.Contains(edgeEnumerator.Id)) {
+                    // We make sure not to pick the current nor the next edge of the path
+                    // This is simple as we have a hashset containing _all_ the edge ids ¯\_(ツ)_/¯
+                    continue;
+                }
+                
+                // If the vertex of the crossroads are the same as the from, we would walk forward over the branch if we would take it
+                var isForward = edgeEnumerator.Forward;
+                spareEnumerator.MoveToEdge(edgeEnumerator.Id, isForward);
+                using var shapeEnum = spareEnumerator.GetShapeBetween(includeVertices:false).GetEnumerator();
+                shapeEnum.MoveNext();// Init enumerator at first value
+                shapeEnum.MoveNext();
+                var branch = new Route.Branch {
+                    Attributes = edgeEnumerator.Attributes,
+                    Shape = shapeIndex,
+                    AttributesAreForward = isForward,
+                    Coordinate = shapeEnum.Current
+                };
+                addTo.Add(branch);
+            }
         }
     }
 }
