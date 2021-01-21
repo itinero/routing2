@@ -1,12 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Network;
 namespace Itinero.Tests
 {
     internal static class RouterDbScaffolding
     {
-        public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb((double longitude, double latitude)[] vertices, 
-            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape)[] edges)
-        {            
+        public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb(
+            (double longitude, double latitude)[] vertices,
+            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape, List<(string, string)>
+                attributes)[] edges) {
             var routerDb = new RouterDb();
 
             using var writer = routerDb.GetMutableNetwork();
@@ -19,10 +21,15 @@ namespace Itinero.Tests
             var edgeIds = new EdgeId[edges.Length];
             for (var e = 0; e < edges.Length; e++)
             {
-                edgeIds[e] = writer.AddEdge(vertexIds[edges[e].from], vertexIds[edges[e].to], edges[e].shape);
+                edgeIds[e] = writer.AddEdge(vertexIds[edges[e].from], vertexIds[edges[e].to], edges[e].shape, edges[e].attributes);
             }
 
             return (routerDb,vertexIds,edgeIds);
+        }
+
+        public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb((double longitude, double latitude)[] vertices, 
+            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape)[] edges) {
+            return BuildRouterDb(vertices, edges.Select(v => (v.from, v.to, v.shape, new List<(string, string)>())).ToArray());
         }
     }
 }
