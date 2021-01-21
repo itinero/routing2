@@ -102,8 +102,7 @@ namespace Itinero.Routes
             /// <remarkss>
             /// A route has a list of coordinates named 'Shape'.
             /// This meta-object gives information about a part of the route,
-            /// namely about the starting at route.Shape[this.Shape] and running
-            /// until the next object.
+            /// namely from the previous point till 'Shape' (shape is included)
             /// </remarks>
             public int Shape { get; set; }
 
