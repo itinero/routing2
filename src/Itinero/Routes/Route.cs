@@ -165,23 +165,27 @@ namespace Itinero.Routes
         }
 
         /// <summary>
-        /// Gets or sets the branches.
+        /// The list of edges where the traveller passes by
         /// </summary>
         public Branch[] Branches { get; set; }
 
         /// <summary>
-        /// Represents a branch.
+        /// A branch is a which the traveller passes by when following the route.
+        /// It are thus the roads not taken.
         /// </summary>
         public class Branch
         {
             /// <summary>
-            /// Gets or sets the shape index.
+            /// The index of the coordinate where this branch branches of
             /// </summary>
             public int Shape { get; set; }
 
             /// <summary>
-            /// Gets or sets the coordinates.
+            /// The end-coordinate of the branch.
             /// </summary>
+            /// <remarks>
+            /// The start-coordinate of the branch can be obtained with route.Shape[this.Shape]
+            /// </remarks>
             public (double longitude, double latitude) Coordinate { get; set; }
 
             /// <summary>
@@ -190,9 +194,9 @@ namespace Itinero.Routes
             public IEnumerable<(string key, string value)> Attributes { get; set; }
 
             /// <summary>
-            /// Gets or sets the relative direction flag of the attributes.
+            /// If walking from the route onto the branch, the attributes are interpreted in a forward manner if this flag is true
             /// </summary>
-            public bool AttributesDirection { get; set; }
+            public bool AttributesAreForward { get; set; }
 
             /// <summary>
             /// Creates a clone of this object.
