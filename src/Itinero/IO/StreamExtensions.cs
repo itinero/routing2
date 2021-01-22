@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Itinero.Data
+namespace Itinero.IO
 {
     internal static class StreamExtensions
     {
@@ -25,20 +25,6 @@ namespace Itinero.Data
             stream.Read(data, 0, (int)size);
 
             return System.Text.Encoding.Unicode.GetString(data, 0, data.Length);
-        }
-
-        internal static long ReadInt64(this Stream stream)
-        {
-            var longBytes = new byte[8];
-            stream.Read(longBytes, 0, 8);
-            return BitConverter.ToInt64(longBytes, 0);
-        }
-
-        internal static int ReadInt32(this Stream stream)
-        {
-            var bytes = new byte[4];
-            stream.Read(bytes, 0, bytes.Length);
-            return BitConverter.ToInt32(bytes, 0);
         }
     }
 }

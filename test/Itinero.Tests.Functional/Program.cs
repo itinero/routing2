@@ -77,7 +77,7 @@ namespace Itinero.Tests.Functional
             {
                 Zoom = 14
             });
-            // routerDb.PrepareFor(bicycle);
+            routerDb.PrepareFor(bicycle);
             
             using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
                 "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
