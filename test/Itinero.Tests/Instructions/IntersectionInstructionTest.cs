@@ -30,7 +30,7 @@ namespace Itinero.Tests.Instructions
             {
                 new Route.Meta
                 {
-                    Shape = 0,
+                    Shape = 4,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 }
             };
@@ -79,7 +79,7 @@ namespace Itinero.Tests.Instructions
             {
                 new Route.Meta
                 {
-                    Shape = 0,
+                    Shape = 4,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 }
             };
@@ -122,12 +122,12 @@ namespace Itinero.Tests.Instructions
             {
                 new Route.Meta
                 {
-                    Shape = 0,
+                    Shape = 1,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
                 new Route.Meta
                 {
-                    Shape = 1,
+                    Shape = 3,
                     Attributes = new[] {("name", "Groenestraat"), ("highway", "residential")}
                 }
             };
@@ -177,12 +177,12 @@ namespace Itinero.Tests.Instructions
             {
                 new Route.Meta
                 {
-                    Shape = 0,
+                    Shape = 1,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
                 new Route.Meta
                 {
-                    Shape = 1,
+                    Shape = 3,
                     Attributes = new[] {("name", "Groenestraat"), ("highway", "residential")}
                 }
             };

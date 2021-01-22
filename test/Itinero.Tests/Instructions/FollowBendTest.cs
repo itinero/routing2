@@ -18,6 +18,7 @@ namespace Itinero.Tests.Instructions {
             (3.2879215478897095, 51.25222597720485),
             (3.287878632545471, 51.25207824465225),
             (3.287953734397888, 51.25196072978281),
+            (3.2880690693855286, 51.251900293447285),
             (3.2884150743484497, 51.25177942053796)
         );
 
@@ -60,9 +61,9 @@ namespace Itinero.Tests.Instructions {
                 new IndexedRoute(Rabattestraat), 8
             );
             Assert.NotNull(bend);
-            Assert.Equal(62, bend.TurnDegrees);
+            Assert.Equal(85, bend.TurnDegrees);
             Assert.Equal(8, bend.ShapeIndex);
-            Assert.Equal(10, bend.ShapeIndexEnd);
+            Assert.Equal(11, bend.ShapeIndexEnd);
         }
 
         [Fact]
@@ -71,9 +72,9 @@ namespace Itinero.Tests.Instructions {
                 new IndexedRoute(Rabattestraat), 1
             );
             Assert.NotNull(bend);
-            Assert.Equal(-163, bend.TurnDegrees);
+            Assert.Equal(-143, bend.TurnDegrees);
             Assert.Equal(1, bend.ShapeIndex);
-            Assert.Equal(7, bend.ShapeIndexEnd);
+            Assert.Equal(6, bend.ShapeIndexEnd);
         }
         
         [Fact]
@@ -82,9 +83,9 @@ namespace Itinero.Tests.Instructions {
                 new IndexedRoute(RabattestraatWithOuterBranch), 1
             );
             Assert.NotNull(bend);
-            Assert.Equal(-163, bend.TurnDegrees);
+            Assert.Equal(-143, bend.TurnDegrees);
             Assert.Equal(1, bend.ShapeIndex);
-            Assert.Equal(7, bend.ShapeIndexEnd);
+            Assert.Equal(6, bend.ShapeIndexEnd);
         }
         
         [Fact]
@@ -94,9 +95,9 @@ namespace Itinero.Tests.Instructions {
             );
             // We follow the bend, but only until we reach the inner branch
             Assert.NotNull(bend);
-            Assert.Equal(-97, bend.TurnDegrees);
+            Assert.Equal(-77, bend.TurnDegrees);
             Assert.Equal(1, bend.ShapeIndex);
-            Assert.Equal(4, bend.ShapeIndexEnd);
+            Assert.Equal(3, bend.ShapeIndexEnd);
         }
     }
 }

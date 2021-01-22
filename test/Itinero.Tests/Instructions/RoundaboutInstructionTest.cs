@@ -13,53 +13,40 @@ namespace Itinero.Tests.Instructions
         {
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
-            var route = new Route();
-            route.Profile = "bicycle.something";
-            route.Shape = new List<(double longitude, double latitude)>
-            {
-                (3.1850286573171616, 51.20640699014240), // Ramp-up
-                (3.1848630309104920, 51.20649017227455),
-                (3.1847423315048218, 51.20651705939626), // on the roundabout
-                (3.1847235560417170, 51.20658847823707), // Still on the roundabout
-                (3.1846323609352107, 51.20662628816679), // the exit
-                (3.1846685707569122, 51.20672627427577) // ramp-down
-            };
-
-            route.ShapeMeta = new List<Route.Meta>
-            {
-                new Route.Meta
-                {
-                    Attributes = new[] {("highway", "residential"), ("name", "Legeweg")},
-                    Shape = 0
+            var route = new Route {
+                Profile = "bicycle.something",
+                Shape = new List<(double longitude, double latitude)> {
+                    (3.1850286573171616, 51.20640699014240), // Ramp-up
+                    (3.1848630309104920, 51.20649017227455),
+                    (3.1847423315048218, 51.20651705939626), // on the roundabout
+                    (3.1847235560417170, 51.20658847823707), // Still on the roundabout
+                    (3.1846323609352107, 51.20662628816679), // the exit
+                    (3.1846685707569122, 51.20672627427577), 
+                    (3.1847423315048218, 51.20736399569539)// ramp-down
                 },
-                new Route.Meta
-                {
-                    Attributes = new[] {("junction", "roundabout"), ("highway", "residential"), ("name", "Legeweg")},
-                    Shape = 2
+                ShapeMeta = new List<Route.Meta> {
+                    new Route.Meta {Attributes = new[] {("highway", "residential"), ("name", "Legeweg")},
+                        Shape = 2},
+                    new Route.Meta {
+                        Attributes =
+                            new[] {("junction", "roundabout"), ("highway", "residential"), ("name", "Legeweg")},
+                        Shape = 4
+                    },
+                    new Route.Meta {
+                        Attributes = new[] {("highway", "residential"), ("name", "Sint-Hubertuslaan")},
+                        Shape = 6
+                    }
                 },
-                new Route.Meta
-                {
-                    Attributes = new[] {("highway", "residential"), ("name", "Sint-Hubertuslaan")},
-                    Shape = 4
-                }
-            };
+                Branches = new Route.Branch[0]};
 
-            route.Branches = new[]
-            {
-                new Route.Branch
-                {
-                    Coordinate = (3.184565305709839, 51.206622927285395),
-                    Shape = 4,
-                    Attributes = new[] {("junction", "roundabout"), ("highway", "residential"), ("name", "Legeweg")}
-                }
-            };
-            var gen = RoundaboutInstruction.Constructor;
+
+            var gen = new RoundaboutInstructionGenerator();
 
             var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("right", instr.TurnDegrees.DegreesToText());
             Assert.Equal(1, instr.ExitNumber);
-            Assert.Equal(4, instr.ShapeIndexEnd);
+            Assert.Equal(3, instr.ShapeIndexEnd);
         }
 
         [Fact]
@@ -86,17 +73,17 @@ namespace Itinero.Tests.Instructions
                 new Route.Meta
                 {
                     Attributes = new[] {("highway", "residential"), ("name", "Legeweg")},
-                    Shape = 0
-                },
-                new Route.Meta
-                {
-                    Attributes = new[] {("junction", "roundabout"), ("highway", "residential"), ("name", "Legeweg")},
                     Shape = 2
                 },
                 new Route.Meta
                 {
-                    Attributes = new[] {("highway", "residential"), ("name", "Sint-Hubertuslaan")},
+                    Attributes = new[] {("junction", "roundabout"), ("highway", "residential"), ("name", "Legeweg")},
                     Shape = 6
+                },
+                new Route.Meta
+                {
+                    Attributes = new[] {("highway", "residential"), ("name", "Sint-Hubertuslaan")},
+                    Shape = 7
                 }
             };
 
@@ -113,15 +100,17 @@ namespace Itinero.Tests.Instructions
                     Coordinate = (3.184565305709839, 51.206622927285395),
                     Shape = 6,
                     Attributes = new[] {("junction", "roundabout"), ("highway", "residential"), ("name", "Legeweg")}
-                }
+                },
+                
             };
-            var gen = RoundaboutInstruction.Constructor;
+            var gen = new RoundaboutInstructionGenerator();
 
             var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
             Assert.Equal(2, instr.ExitNumber);
-            Assert.Equal(6, instr.ShapeIndexEnd);
+            Assert.Equal(5, instr.ShapeIndexEnd);
+            Assert.Equal(2, instr.ExitNumber);
         }
     }
 }

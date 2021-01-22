@@ -68,7 +68,7 @@ namespace Itinero.Instructions.ToText {
                         var index = 0;
                         switch (firstChar) {
                             case '+':
-                                index = instruction.ShapeIndexEnd + 1;
+                                index = instruction.ShapeIndexEnd;
                                 break;
                             case '-':
                                 index = instruction.ShapeIndex - 1;

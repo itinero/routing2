@@ -47,18 +47,18 @@ namespace Itinero.Tests.Instructions
                 {
                     new() {
                         Distance = 0,
-                        Shape = 0,
+                        Shape = 3,
                         Attributes = new[] {("name", "blokstraat"), ("highway", "residential")}
                     },
                     new() {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
                     new() {
                         Distance = 15,
-                        Shape = 3,
+                        Shape = 4,
                         Attributes = new[] {("name", "Veldmaarschalk Fochstraat"), ("highway", "residential")}
                     },
                     new() {
                         Distance = 200,
-                        Shape = 4,
+                        Shape = 10,
                         Attributes = new[]
                         {
                             ("name", "Werfstraat"), ("cyclestreet", "yes"), ("highway", "residential")
