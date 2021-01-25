@@ -6,10 +6,10 @@ namespace Itinero.Tests.Network
     public static class RoutingNetworkScaffolding
     {
         public static (VertexId[] vertices, EdgeId[] edges) Write(this RoutingNetwork network, 
-            (double longitude, double latitude)[] vertices, 
+            (double longitude, double latitude, float? e)[] vertices, 
             (int from, int to)[]? edges = null)
         {
-            var fullEdges = new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape, IEnumerable<(string key, string attribute)>? attributes)[edges?.Length ?? 0];
+            var fullEdges = new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape, IEnumerable<(string key, string attribute)>? attributes)[edges?.Length ?? 0];
 
             if (edges != null)
             {
@@ -23,10 +23,10 @@ namespace Itinero.Tests.Network
         }
         
         public static (VertexId[] vertices, EdgeId[] edges) Write(this RoutingNetwork network, 
-            (double longitude, double latitude)[] vertices, 
-            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape)[]? edges)
+            (double longitude, double latitude, float? e)[] vertices, 
+            (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[]? edges)
         {
-            var fullEdges = new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape, IEnumerable<(string key, string attribute)>? attributes)[edges?.Length ?? 0];
+            var fullEdges = new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape, IEnumerable<(string key, string attribute)>? attributes)[edges?.Length ?? 0];
 
             if (edges != null)
             {
@@ -40,15 +40,15 @@ namespace Itinero.Tests.Network
         }
         
         public static (VertexId[] vertices, EdgeId[] edges) Write(this RoutingNetwork network, 
-            (double longitude, double latitude)[] vertices, 
-            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape, IEnumerable<(string key, string attribute)>? attributes)[]? edges)
+            (double longitude, double latitude, float? e)[] vertices, 
+            (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape, IEnumerable<(string key, string attribute)>? attributes)[]? edges)
         {
-            edges ??= new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape, IEnumerable<(string key, string attribute)>? attributes)[0];
+            edges ??= new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape, IEnumerable<(string key, string attribute)>? attributes)[0];
             using var writer = network.GetWriter();
             var vertexIds = new VertexId[vertices.Length];
             for (var v = 0; v < vertices.Length; v++)
             {
-                vertexIds[v] = writer.AddVertex(vertices[v].longitude, vertices[v].latitude);
+                vertexIds[v] = writer.AddVertex(vertices[v].longitude, vertices[v].latitude, (float?)null);
             }
 
             var edgeIds = new EdgeId[edges.Length];

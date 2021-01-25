@@ -1,5 +1,4 @@
 using System;
-using Itinero.IO.Osm.Filters;
 using OsmSharp.Streams;
 
 namespace Itinero.IO.Osm
@@ -27,9 +26,10 @@ namespace Itinero.IO.Osm
             
             // get settings.
             var tagsFilter = settings.TagsFilter;
+            var elevationHandler = settings.ElevationHandler;
             
             // use writer to fill router db.
-            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, tagsFilter);
+            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, tagsFilter, elevationHandler);
             routerDbStreamTarget.RegisterSource(data);
             routerDbStreamTarget.Initialize();
             routerDbStreamTarget.Pull();

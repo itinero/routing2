@@ -12,7 +12,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The complete shape.</returns>
-        public static IEnumerable<(double longitude, double latitude)> GetCompleteShape(
+        public static IEnumerable<(double longitude, double latitude, float? e)> GetCompleteShape(
             this RoutingNetworkEdgeEnumerator enumerator)
         {
             return enumerator.GetCompleteShape<RoutingNetworkEdgeEnumerator, RoutingNetwork>();
@@ -36,7 +36,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <param name="offset2">The end offset.</param>
         /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-        internal static IEnumerable<(double longitude, double latitude)> GetShapeBetween(this RoutingNetworkEdgeEnumerator enumerator,
+        internal static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween(this RoutingNetworkEdgeEnumerator enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
         {
             return enumerator.GetShapeBetween<RoutingNetworkEdgeEnumerator, RoutingNetwork>(offset1, offset2, includeVertices);
@@ -48,7 +48,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <param name="enumerator">The enumerator.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
-        internal static (double longitude, double latitude) LocationOnEdge(this RoutingNetworkEdgeEnumerator enumerator, in ushort offset)
+        internal static (double longitude, double latitude, float? e) LocationOnEdge(this RoutingNetworkEdgeEnumerator enumerator, in ushort offset)
         {
             return enumerator.LocationOnEdge<RoutingNetworkEdgeEnumerator, RoutingNetwork>(offset);
         }

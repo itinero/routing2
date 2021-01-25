@@ -249,7 +249,7 @@ namespace Itinero.Network.Tiles
         /// <summary>
         /// Gets the shape of the given edge (not including vertex locations).
         /// </summary>
-        public IEnumerable<(double longitude, double latitude)> Shape
+        public IEnumerable<(double longitude, double latitude, float? e)> Shape
         {
             get
             {

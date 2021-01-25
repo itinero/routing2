@@ -27,6 +27,7 @@ namespace Itinero.Network.Enumerators.Vertices
         private uint _currentVertex = uint.MaxValue;
         private double _currentLatitude;
         private double _currentLongitude;
+        private float? _currentElevation;
         
         public bool MoveNext()
         {
@@ -38,7 +39,7 @@ namespace Itinero.Network.Enumerators.Vertices
                     _currentVertex = 0;
 
                     if (_routingNetwork.TryGetVertex(new VertexId(_currentTile, _currentVertex), 
-                        out _currentLongitude, out _currentLatitude))
+                        out _currentLongitude, out _currentLatitude, out _currentElevation))
                     {
                         return true;
                     }
@@ -51,7 +52,7 @@ namespace Itinero.Network.Enumerators.Vertices
             {
                 _currentVertex++;
                 if (_routingNetwork.TryGetVertex(new VertexId(_currentTile, _currentVertex), 
-                    out _currentLongitude, out _currentLatitude))
+                    out _currentLongitude, out _currentLatitude, out _currentElevation))
                 {
                     return true;
                 }
@@ -72,7 +73,7 @@ namespace Itinero.Network.Enumerators.Vertices
 
         public VertexId Current => new VertexId(_currentTile, _currentVertex);
 
-        public (double longitude, double latitude) Location => (_currentLongitude, _currentLatitude);
+        public (double longitude, double latitude, float? e) Location => (_currentLongitude, _currentLatitude, _currentElevation);
 
         public void Dispose()
         {

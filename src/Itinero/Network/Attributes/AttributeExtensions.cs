@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Itinero.IO;
 
 namespace Itinero.Network.Attributes
 {
@@ -96,7 +98,7 @@ namespace Itinero.Network.Attributes
         {
             if (attributes == null) throw new ArgumentNullException(nameof(attributes));
 
-            foreach (var a in attributes)
+            foreach (var a in other)
             {
                 attributes.AddOrReplace(a.key, a.value);
             }
@@ -123,6 +125,58 @@ namespace Itinero.Network.Attributes
             
             attributes.Add((key, value));
             return false;
+        }
+
+        /// <summary>
+        /// Writes the attributes to the given stream starting at the current position of the stream.
+        /// </summary>
+        /// <param name="attributes">The attributes to write.</param>
+        /// <returns>The number of byte written.</returns>
+        internal static long WriteAttributesTo(this IEnumerable<(string key, string value)> attributes, Stream stream)
+        {
+            var pos = stream.Position;
+            foreach (var (key, value) in attributes)
+            {
+                var bytes = System.Text.Encoding.Unicode.GetBytes(key);
+                stream.WriteVarInt32(bytes.Length + 1); // 0 is null, end of the attribute set.
+                stream.Write(bytes, 0, bytes.Length);
+                
+                bytes = System.Text.Encoding.Unicode.GetBytes(value);
+                stream.WriteVarInt32(bytes.Length);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+            stream.WriteVarInt32(0);
+
+            return stream.Position - pos;
+        }
+
+        /// <summary>
+        /// Reads the attributes from the given stream starting at the current position of the stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <returns>The attributes read.</returns>
+        internal static IEnumerable<(string key, string value)> ReadAttributesFrom(this Stream stream)
+        {
+            var attributes = new List<(string key, string value)>();
+            
+            var keySize = stream.ReadVarInt32();
+            while (keySize > 0)
+            {
+                var bytes = new byte[keySize - 1];
+                stream.Read(bytes, 0, bytes.Length);
+                var key = System.Text.Encoding.Unicode.GetString(bytes);
+                
+                var valueSize = stream.ReadVarInt32();
+                bytes = new byte[valueSize];
+                stream.Read(bytes, 0, bytes.Length);
+                var value = System.Text.Encoding.Unicode.GetString(bytes);
+                
+                attributes.Add((key, value));
+                
+                keySize = stream.ReadVarInt32();
+            }
+
+            return attributes;
         }
     }
 }

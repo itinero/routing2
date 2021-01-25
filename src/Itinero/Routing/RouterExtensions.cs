@@ -92,17 +92,17 @@ namespace Itinero.Routing
             return true;
         }
 
-        internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)?
+        internal static ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)?
             MaxBoxFor(this RoutingSettings settings,
                 RoutingNetwork routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sps)
         {
             return settings.MaxBoxFor(routerDb, sps.Select(x => x.sp));
         }
 
-        internal static ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? MaxBoxFor(this RoutingSettings settings, 
+        internal static ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)? MaxBoxFor(this RoutingSettings settings, 
             RoutingNetwork routerDb, IEnumerable<SnapPoint> sp)
         {
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)? maxBox =
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)? maxBox =
                 null;
 
             if (!(settings.MaxDistance < double.MaxValue)) return null;

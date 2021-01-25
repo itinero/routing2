@@ -88,7 +88,7 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude)> locations)
+        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations)
         {
             foreach (var location in locations)
             {

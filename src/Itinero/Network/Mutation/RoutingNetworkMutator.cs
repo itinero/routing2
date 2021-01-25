@@ -102,7 +102,7 @@ namespace Itinero.Network.Mutation
 
         public int Zoom => _network.Zoom;
 
-        public VertexId AddVertex(double longitude, double latitude)
+        public VertexId AddVertex(double longitude, double latitude, float? e = null)
         {
             // get the local tile id.
             var (x, y) = TileStatic.WorldToTile(longitude, latitude, _network.Zoom);
@@ -115,10 +115,10 @@ namespace Itinero.Network.Mutation
             var (tile, _) = this.GetTileForWrite(localTileId);
 
             // add the vertex.
-            return tile.AddVertex(longitude, latitude);
+            return tile.AddVertex(longitude, latitude, e);
         }
 
-        internal bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
+        internal bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? e)
         {
             var localTileId = vertex.TileId;
 
@@ -127,6 +127,7 @@ namespace Itinero.Network.Mutation
             {
                 longitude = default;
                 latitude = default;
+                e = null;
                 return false;
             }
 
@@ -135,15 +136,16 @@ namespace Itinero.Network.Mutation
             {
                 longitude = default;
                 latitude = default;
+                e = null;
                 return false;
             }
 
             // check if the vertex exists.
-            return tile.TryGetVertex(vertex, out longitude, out latitude);
+            return tile.TryGetVertex(vertex, out longitude, out latitude, out e);
         }
 
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
-            IEnumerable<(double longitude, double latitude)>? shape = null,
+            IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null)
         {
             var (tile, edgeTypeFunc) = this.GetTileForWrite(vertex1.TileId);

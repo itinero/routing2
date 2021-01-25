@@ -14,8 +14,8 @@ namespace Itinero.Tests.Network.Mutation
             VertexId vertex2;
             using (var mutable = routerDb.GetMutableNetwork())
             {
-                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 mutable.AddEdge(vertex1, vertex2);
             }
@@ -38,15 +38,15 @@ namespace Itinero.Tests.Network.Mutation
             {
                 var vertex1 = mutable.AddVertex(
                     4.792613983154297,
-                    51.26535213392538);
+                    51.26535213392538, (float?)null);
                 var vertex2 = mutable.AddVertex(
                     4.797506332397461,
-                    51.26674845584085);
+                    51.26674845584085, (float?)null);
 
                 edge = mutable.AddEdge(vertex1, vertex2, shape: new[]
                 {
                     (4.795167446136475,
-                        51.26580191532799)
+                        51.26580191532799, (float?)null)
                 });
             }
 
@@ -70,10 +70,10 @@ namespace Itinero.Tests.Network.Mutation
             {
                 var vertex1 = mutable.AddVertex(
                     4.792613983154297,
-                    51.26535213392538);
+                    51.26535213392538, (float?)null);
                 var vertex2 = mutable.AddVertex(
                     4.797506332397461,
-                    51.26674845584085);
+                    51.26674845584085, (float?)null);
 
                 edge = mutable.AddEdge(vertex1, vertex2, attributes: new [] { ("highway", "residential") });
             }
@@ -93,9 +93,9 @@ namespace Itinero.Tests.Network.Mutation
             VertexId vertex1, vertex2, vertex3;
             using (var mutable = routerDb.GetMutableNetwork())
             {
-                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
-                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
-                vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
+                vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = mutable.AddEdge(vertex1, vertex2);
                 edge2 = mutable.AddEdge(vertex2, vertex3);

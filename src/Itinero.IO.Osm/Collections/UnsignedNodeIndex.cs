@@ -289,15 +289,15 @@ namespace Itinero.IO.Osm.Collections
         /// <summary>
         /// Gets the coordinate for the given node.
         /// </summary>
-        public bool TryGetValue(long id, out (double longitude, double latitude) coordinate, out bool isCore)
+        public bool TryGetValue(long id, out (double longitude, double latitude, float? e) coordinate, out bool isCore)
         {
             if (this.TryGetValue(id, out var latitude, out var longitude, out isCore))
             {
-                coordinate = (longitude, latitude);
+                coordinate = (longitude, latitude, null);
                 return true;
             }
 
-            coordinate = (default, default);
+            coordinate = (default, default, null);
             return false;
         }
 

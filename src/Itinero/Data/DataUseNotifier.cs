@@ -21,10 +21,10 @@ namespace Itinero.Data
         /// <summary>
         /// Event raised when data within a bounding box was touched.
         /// </summary>
-        public event Action<RoutingNetwork, ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight)>? OnBoxTouched;
+        public event Action<RoutingNetwork, ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)>? OnBoxTouched;
 
         internal void NotifyBox(RoutingNetwork network, 
-            ((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box)
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box)
         {
             OnBoxTouched?.Invoke(network, box);
         }

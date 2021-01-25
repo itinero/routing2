@@ -20,13 +20,13 @@ namespace Itinero.Tests.Network
              });
              routerDb.SetEdgeTypeMap(attributeSetMap);
              
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (4.800467491149902,51.26896368721961),
-                 (4.801111221313477,51.26676859478893)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape,IEnumerable<(string key, string value)>? attributes)[]
+                 (4.800467491149902,51.26896368721961, (float?)null),
+                 (4.801111221313477,51.26676859478893, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,IEnumerable<(string key, string value)>? attributes)[]
              {
-                 (0, 1, new (double longitude, double latitude)[0], new (string key, string value)[] {("highway", "residential")})
+                 (0, 1, new (double longitude, double latitude, float? e)[0], new (string key, string value)[] {("highway", "residential")})
              });
              
              var enumerator = network.GetEdgeEnumerator();
@@ -47,15 +47,15 @@ namespace Itinero.Tests.Network
              });
              routerDb.SetEdgeTypeMap(attributeSetMap);
              
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (4.800467491149902,51.26896368721961),
-                 (4.801111221313477,51.26676859478893),
-                 (4.801111221313477,51.26676859478893)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape,IEnumerable<(string key, string value)>? attributes)[]
+                 (4.800467491149902,51.26896368721961, (float?)null),
+                 (4.801111221313477,51.26676859478893, (float?)null),
+                 (4.801111221313477,51.26676859478893, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,IEnumerable<(string key, string value)>? attributes)[]
              {
-                 (0, 1, new (double longitude, double latitude)[0], new (string key, string value)[] {("highway", "residential")}),
-                 (0, 2, new (double longitude, double latitude)[0], new (string key, string value)[] {("highway", "residential")})
+                 (0, 1, new (double longitude, double latitude, float? e)[0], new (string key, string value)[] {("highway", "residential")}),
+                 (0, 2, new (double longitude, double latitude, float? e)[0], new (string key, string value)[] {("highway", "residential")})
              });
              
              var enumerator = network.GetEdgeEnumerator();
@@ -76,15 +76,15 @@ namespace Itinero.Tests.Network
              });
              routerDb.SetEdgeTypeMap(attributeSetMap);
              
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (4.800467491149902,51.26896368721961),
-                 (4.801111221313477,51.26676859478893),
-                 (4.801111221313477,51.26676859478893)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape,IEnumerable<(string key, string value)>? attributes)[]
+                 (4.800467491149902,51.26896368721961, (float?)null),
+                 (4.801111221313477,51.26676859478893, (float?)null),
+                 (4.801111221313477,51.26676859478893, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,IEnumerable<(string key, string value)>? attributes)[]
              {
-                 (0, 1, new (double longitude, double latitude)[0], new (string key, string value)[] {("highway", "residential")}),
-                 (0, 2, new (double longitude, double latitude)[0], new (string key, string value)[] {("highway", "primary")})
+                 (0, 1, new (double longitude, double latitude, float? e)[0], new (string key, string value)[] {("highway", "residential")}),
+                 (0, 2, new (double longitude, double latitude, float? e)[0], new (string key, string value)[] {("highway", "primary")})
              });
              
              var enumerator = network.GetEdgeEnumerator();
@@ -107,13 +107,13 @@ namespace Itinero.Tests.Network
              routerDb.SetEdgeTypeMap(attributeSetMap);
              network = routerDb.Latest;
              
-             var (vertices, edges) = network.Write(new (double longitude, double latitude)[]
+             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
              {
-                 (4.800467491149902,51.26896368721961),
-                 (4.801111221313477,51.26676859478893)
-             }, new (int @from, int to, IEnumerable<(double longitude, double latitude)>? shape,IEnumerable<(string key, string value)>? attributes)[]
+                 (4.800467491149902,51.26896368721961, (float?)null),
+                 (4.801111221313477,51.26676859478893, (float?)null)
+             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,IEnumerable<(string key, string value)>? attributes)[]
              {
-                 (0, 1, new (double longitude, double latitude)[0], new (string key, string value)[] {("highway", "residential"),
+                 (0, 1, new (double longitude, double latitude, float? e)[0], new (string key, string value)[] {("highway", "residential"),
                      ("maxspeed", "50")})
              });
              

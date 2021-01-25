@@ -102,7 +102,7 @@ namespace Itinero.Network.Tiles
             return id;
         }
 
-        private void SerializeAttributes(Stream stream)
+        private void WriteAttributesTo(Stream stream)
         {
             stream.WriteVarUInt32(_nextAttributePointer);
             for (var i = 0; i < _nextAttributePointer; i++)
@@ -117,7 +117,7 @@ namespace Itinero.Network.Tiles
             }
         }
 
-        private void DeserializeAttributes(Stream stream)
+        private void ReadAttributesFrom(Stream stream)
         {
             _nextAttributePointer = stream.ReadVarUInt32();
             _attributes.Resize(_nextAttributePointer);

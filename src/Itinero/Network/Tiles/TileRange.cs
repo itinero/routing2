@@ -8,7 +8,7 @@
 // {
 //     internal struct TileRange : IEnumerable<Tile>
 //     {
-//         public TileRange(((double longitude, double latitude) topLeft, (double longitude, double latitude) bottomRight) box, int zoom)
+//         public TileRange(((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box, int zoom)
 //         {
 //             var topLeft = Tile.WorldToTile(box.topLeft.longitude, box.topLeft.latitude, zoom);
 //             var bottomRight = Tile.WorldToTile(box.bottomRight.longitude, box.bottomRight.latitude, zoom);

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Itinero.Tests.Network.Tiles
 {
-    public partial class NetworkTileTests
+    public class NetworkTile_AttributesTests
     {
         [Fact]
         public void NetworkTile_AddEdge0_OneAttribute_ShouldStoreAttribute()

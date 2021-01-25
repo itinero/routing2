@@ -1,26 +1,37 @@
 ﻿namespace Itinero.Geo.Elevation
 {
     /// <summary>
-    /// An elevation handler.
+    /// The default elevation handler.
     /// </summary>
-    public static class ElevationHandler
+    public class ElevationHandler : IElevationHandler
     {
+        private readonly GetElevationDelegate _getElevation;
+        
         /// <summary>
-        /// Gets or sets the delegate to get elevation.
+        /// Creates a new elevation handler.
         /// </summary>
-        public static GetElevationDelegate? GetElevation { get; set; }
+        /// <param name="getElevation">The function to get elevation from.</param>
+        public ElevationHandler(GetElevationDelegate getElevation)
+        {
+            _getElevation = getElevation;
+        }
 
         /// <summary>
         /// A delegate to get elevation.
         /// </summary>
-        public delegate short? GetElevationDelegate(double longitude, double latitude);
+        public delegate float? GetElevationDelegate(double longitude, double latitude);
 
         /// <summary>
         /// Add elevation to the given coordinate.
         /// </summary>
-        public static short? Elevation(this (double longitude, double latitude) coordinate)
+        public float? Elevation(double longitude, double latitude)
         {
-            return GetElevation?.Invoke(coordinate.longitude, coordinate.latitude);
+            return _getElevation?.Invoke(longitude, latitude);
         }
+        
+        /// <summary>
+        /// Gets or sets the default elevation handler.
+        /// </summary>
+        public static ElevationHandler? Default { get; set; }
     }
 }
