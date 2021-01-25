@@ -2,39 +2,35 @@
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Geo.Elevation;
-using Itinero.IO.Json.GeoJson;
-using Itinero.IO.Osm;
-using Itinero.IO.Osm.Tiles;
+using Itinero.Instructions;
 using Itinero.IO.Osm.Tiles.Parsers;
-using Itinero.Logging;
 using Itinero.Profiles;
+using Itinero.Profiles.Lua.Osm;
 using Itinero.Routing;
 using Itinero.Snapping;
+using Itinero.Tests.Functional.Download;
+using OsmSharp.Logging;
 using Serilog;
 using Serilog.Events;
 using SRTM;
 using SRTM.Sources;
+using TraceEventType = Itinero.Logging.TraceEventType;
 
-namespace Itinero.Tests.Functional
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
+namespace Itinero.Tests.Functional {
+    internal class Program {
+        private static void Main(string[] args) {
             EnableLogging();
-            
+
             // make sure the results folder exists.
-            if (!Directory.Exists("results"))
-            {
+            if (!Directory.Exists("results")) {
                 Directory.CreateDirectory("results");
             }
-            
+
             // do some local caching.
-            if (!Directory.Exists("cache"))
-            {
+            if (!Directory.Exists("cache")) {
                 Directory.CreateDirectory("cache");
             }
-            TileParser.DownloadFunc = Download.DownloadHelper.Download;
+            TileParser.DownloadFunc = DownloadHelper.Download;
             
             // create a new srtm data instance.
             // it accepts a folder to download and cache data into.
@@ -49,7 +45,7 @@ namespace Itinero.Tests.Functional
                 GetMissingCell = (string path, string name) =>
                 {
                     var filename = name + ".hgt.zip";
-                    var hgt = System.IO.Path.Combine(path, filename);
+                    var hgt = Path.Combine(path, filename);
 
                     if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename))
                     {
@@ -70,16 +66,20 @@ namespace Itinero.Tests.Functional
                 return (short) elevation;
             });
 
-            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
-            var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
-            
+            TileParser.DownloadFunc = DownloadHelper.Download;
+
+            var bicycle = OsmProfiles.Bicycle;
+            var pedestrian = OsmProfiles.Pedestrian;
+
+            /*
+           
             // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration()
-            {
+            var routerDb = new RouterDb(new RouterDbConfiguration() {
                 Zoom = 14
             });
             routerDb.PrepareFor(bicycle);
             
+            routerDb.PrepareFor(bicycle);
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
             /*using var osmStream = File.OpenRead(args[0]);
@@ -96,14 +96,23 @@ namespace Itinero.Tests.Functional
                 routerDb.WriteTo(outputStream);
             }*/
 
+            //*/
+            var routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
+            routerDb.PrepareFor(bicycle);
+
+            var latest = routerDb.Latest;
+
+            var instructions = Instructions.Instructions.FromFile(args[2]);
+
             routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
             
             void TestInstructions(string name, (double lon, double lat, float? e) from, (double lon, double lat, float? e) to) {
                 var latest = routerDb.Latest;
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
                     .To(latest.Snap().To(to)).Calculate().Value;
-               // var instr = instructions.Generate(route, "en");
-               // File.WriteAllText(name + ".txt", string.Join("\n", instr.Select(i => i.Item2)));
+                var instr = instructions.Generate(route, "en");
+                File.WriteAllText(name + ".geojson", IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonLines(instr)));
+                File.WriteAllText(name+".points.geojson", IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonPoints()));
             }
 
 
@@ -508,8 +517,7 @@ namespace Itinero.Tests.Functional
             // }
         }
 
-        private static void EnableLogging()
-        {
+        private static void EnableLogging() {
             var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -522,78 +530,60 @@ namespace Itinero.Tests.Functional
 #else
             var loggingBlacklist = new HashSet<string>();
 #endif
-            OsmSharp.Logging.Logger.LogAction = (o, level, message, parameters) =>
-            {
-                if (loggingBlacklist.Contains(o))
-                {
+            Logger.LogAction = (o, level, message, parameters) => {
+                if (loggingBlacklist.Contains(o)) {
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o))
-                {
+                if (!string.IsNullOrEmpty(o)) {
                     message = $"[{o}] {message}";
                 }
 
-                if (level == TraceEventType.Verbose.ToString().ToLower())
-                {
+                if (level == TraceEventType.Verbose.ToString().ToLower()) {
                     Log.Debug(message);
                 }
-                else if (level == TraceEventType.Information.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Information.ToString().ToLower()) {
                     Log.Information(message);
                 }
-                else if (level == TraceEventType.Warning.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Warning.ToString().ToLower()) {
                     Log.Warning(message);
                 }
-                else if (level == TraceEventType.Critical.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Critical.ToString().ToLower()) {
                     Log.Fatal(message);
                 }
-                else if (level == TraceEventType.Error.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Error.ToString().ToLower()) {
                     Log.Error(message);
                 }
-                else
-                {
+                else {
                     Log.Debug(message);
                 }
             };
-            
-            Logger.LogAction = (o, level, message, parameters) =>
-            {
-                if (loggingBlacklist.Contains(o))
-                {
+
+            Logging.Logger.LogAction = (o, level, message, parameters) => {
+                if (loggingBlacklist.Contains(o)) {
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o))
-                {
+                if (!string.IsNullOrEmpty(o)) {
                     message = $"[{o}] {message}";
                 }
 
-                if (level == TraceEventType.Verbose.ToString().ToLower())
-                {
+                if (level == TraceEventType.Verbose.ToString().ToLower()) {
                     Log.Debug(message);
                 }
-                else if (level == TraceEventType.Information.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Information.ToString().ToLower()) {
                     Log.Information(message);
                 }
-                else if (level == TraceEventType.Warning.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Warning.ToString().ToLower()) {
                     Log.Warning(message);
                 }
-                else if (level == TraceEventType.Critical.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Critical.ToString().ToLower()) {
                     Log.Fatal(message);
                 }
-                else if (level == TraceEventType.Error.ToString().ToLower())
-                {
+                else if (level == TraceEventType.Error.ToString().ToLower()) {
                     Log.Error(message);
                 }
-                else
-                {
+                else {
                     Log.Debug(message);
                 }
             };

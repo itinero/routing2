@@ -1,3 +1,5 @@
+using System;
+
 namespace Itinero.Geo.Directions
 {
     internal static class DirectionCalculator
@@ -191,5 +193,6 @@ namespace Itinero.Geo.Directions
             }
             return degrees;
         }
+
     }
 }
