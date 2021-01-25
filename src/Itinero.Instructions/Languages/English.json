@@ -33,8 +33,10 @@
         }
       },
       "base": {
-        "$.name!=$+name&$.name&$+name": "Continue on $.name onto $+name",
-        "$turnDegrees>-25&$turnDegrees<25": "Continue $on",
+        "$turnDegrees>-25&$turnDegrees<25": {
+        "$.name!=$+name&$.name&$+name":"Continue on $.name onto $+name",
+          "*":"Continue $on"
+        },
         "*": "Turn $lr $onto"
       },
       "end": "You have arrived at your destination",

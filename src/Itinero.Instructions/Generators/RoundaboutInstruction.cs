@@ -60,7 +60,7 @@ namespace Itinero.Instructions.Generators {
 
             return new RoundaboutInstruction(route,
                 offset,
-                offset + usedInstructions - 1,
+                offset + usedInstructions,
                 (outDegrees - inDegrees).NormalizeDegrees(),
                 exitCount + 1
             );

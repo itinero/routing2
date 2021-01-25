@@ -46,7 +46,7 @@ namespace Itinero.Tests.Instructions
             Assert.NotNull(instr);
             Assert.Equal("right", instr.TurnDegrees.DegreesToText());
             Assert.Equal(1, instr.ExitNumber);
-            Assert.Equal(3, instr.ShapeIndexEnd);
+            Assert.Equal(4, instr.ShapeIndexEnd);
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace Itinero.Tests.Instructions
             Assert.NotNull(instr);
             Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
             Assert.Equal(2, instr.ExitNumber);
-            Assert.Equal(5, instr.ShapeIndexEnd);
+            Assert.Equal(6, instr.ShapeIndexEnd);
             Assert.Equal(2, instr.ExitNumber);
         }
     }
