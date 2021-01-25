@@ -46,7 +46,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
         internal static bool AddOsmTile(this RoutingNetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
             JObject jsonObject)
         {
-            var nodeLocations = new Dictionary<long, ((double longitude, double latitude) location, bool inTile)>();
+            var nodeLocations = new Dictionary<long, ((double longitude, double latitude, float? e) location, bool inTile)>();
             var waysData = new Dictionary<long, (List<long> nodes, IEnumerable<(string key, string value)> attributes)>();
             var nodes = new HashSet<long>();
             var coreNodes = new HashSet<long>();
@@ -74,7 +74,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     // determine if node is in tile or not.
                     var inTile = Tile.WorldToTile(lon, lat,
                                      tile.Zoom).LocalId == tile.LocalId;
-                    nodeLocations[nodeId] = ((lon, lat),
+                    nodeLocations[nodeId] = ((lon, lat, null),
                         inTile);
                 }
                 else if (id.StartsWith("http://www.openstreetmap.org/way/"))
@@ -141,7 +141,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 }
             }
 
-            var shape = new List<(double longitude, double latitude)>();
+            var shape = new List<(double longitude, double latitude, float? e)>();
             foreach (var wayPairs in waysData)
             {
                 // prepare for next way.
@@ -197,7 +197,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         if (!globalIdMap.TryGet(node1Id, out var vertex))
                         {
                             vertex = networkWriter.AddVertex(node1Data.location.longitude,
-                                node1Data.location.latitude);
+                                node1Data.location.latitude, null);
                             globalIdMap.Set(node1Id, vertex);
                             updated = true;
                         }
@@ -229,7 +229,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         if (!globalIdMap.TryGet(node2Id, out var vertex))
                         {
                             vertex = networkWriter.AddVertex(node2Data.location.longitude,
-                                node2Data.location.latitude);
+                                node2Data.location.latitude, null);
                             
                             globalIdMap.Set(node2Id, vertex);
                             updated = true;

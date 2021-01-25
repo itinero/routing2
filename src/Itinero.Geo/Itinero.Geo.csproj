@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../../Itinero.Common.props" />
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <PackageVersion>2.0.0-alpha-003</PackageVersion>
-        <Title>Routeplanner for .NET</Title>
     </PropertyGroup>
 
     <ItemGroup>

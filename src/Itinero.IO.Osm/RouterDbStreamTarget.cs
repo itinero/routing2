@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Geo.Elevation;
 using Itinero.IO.Osm.Collections;
 using Itinero.IO.Osm.Filters;
 using Itinero.IO.Osm.Restrictions;
@@ -21,12 +22,14 @@ namespace Itinero.IO.Osm
         private readonly RoutingNetworkMutator _mutableRouterDb;
         private readonly RoutingNetworkMutatorEdgeEnumerator _mutableRouterDbEdgeEnumerator;
         private readonly ITagsFilter _tagsFilter;
+        private readonly IElevationHandler? _elevationHandler;
 
         public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
-            ITagsFilter tagsFilter)
+            ITagsFilter tagsFilter, IElevationHandler? elevationHandler = null)
         {
             _mutableRouterDb = mutableRouterDb;
             _tagsFilter = tagsFilter;
+            _elevationHandler = elevationHandler;
 
             _mutableRouterDbEdgeEnumerator = _mutableRouterDb.GetEdgeEnumerator();
             
@@ -82,7 +85,7 @@ namespace Itinero.IO.Osm
                 {
                     _nodeIndex.AddId(way.Nodes[i]);
                 }
-                _nodeIndex.AddId(way.Nodes[way.Nodes.Length - 1]);
+                _nodeIndex.AddId(way.Nodes[^1]);
             }
             else
             {
@@ -93,10 +96,9 @@ namespace Itinero.IO.Osm
                 if (_restrictionWayMembers.ContainsKey(osmGeoKey)) edgesList = new List<EdgeId>(1);
                 
                 var vertex1 = VertexId.Empty;
-                var shape = new List<(double longitude, double latitude)>();
-                for (var n = 0; n < way.Nodes.Length; n++)
+                var shape = new List<(double longitude, double latitude, float? e)>();
+                foreach (var node in way.Nodes)
                 {
-                    var node = way.Nodes[n];
                     if (!_vertexPerNode.TryGetValue(node, out var vertex2))
                     { // no already a vertex, get the coordinates and it's status.
                         if (!_nodeIndex.TryGetValue(node, out var latitude, out var longitude, out var isCore, out _, out _))
@@ -105,14 +107,18 @@ namespace Itinero.IO.Osm
                             break;
                         }
                         
+                        // add elevation.
+                        var coordinate = ((double)longitude, (double)latitude).AddElevation(
+                            elevationHandler: _elevationHandler);
+                        
                         if (!isCore)
                         { // node is just a shape point, keep it but don't add is as a vertex.
-                            shape.Add((longitude, latitude));
+                            shape.Add(coordinate);
                             continue;
                         }
                         else
                         { // node is a core vertex, add it as a vertex.
-                            vertex2 = _mutableRouterDb.AddVertex(longitude, latitude);
+                            vertex2 = _mutableRouterDb.AddVertex(coordinate);
                             _vertexPerNode[node] = vertex2;
                         }
                     }

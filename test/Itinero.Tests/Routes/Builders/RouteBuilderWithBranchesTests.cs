@@ -7,7 +7,7 @@ using Itinero.Tests.Routes.Paths;
 using Xunit;
 
 namespace Itinero.Tests.Routes.Builders {
-    public class RouteBuilderWitthBranchesTests {
+    public class RouteBuilderWithBranchesTests {
         [Fact]
         public void RouteBuilder_BranchesAtStart_BranchesAreAdded() {
             var center = (4.801073670387268, 51.268064181900094);

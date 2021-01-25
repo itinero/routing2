@@ -75,8 +75,9 @@ namespace Itinero.Network
         /// <param name="vertex">The vertex.</param>
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
+        /// <param name="elevation">The elevation.</param>
         /// <returns>The vertex.</returns>
-        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude)
+        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? elevation)
         {
             var localTileId = vertex.TileId;
 
@@ -86,11 +87,12 @@ namespace Itinero.Network
             {
                 longitude = default;
                 latitude = default;
+                elevation = null;
                 return false;
             }
 
             // check if the vertex exists.
-            return tile.TryGetVertex(vertex, out longitude, out latitude);
+            return tile.TryGetVertex(vertex, out longitude, out latitude, out elevation);
         }
 
         /// <summary>

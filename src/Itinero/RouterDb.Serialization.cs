@@ -36,6 +36,9 @@ namespace Itinero
             
             // write turn cost type map data.
             _turnCostTypeIndex.WriteTo(stream);
+            
+            // write attributes.
+            this.WriteAttributesTo(stream);
         }
     }
 }

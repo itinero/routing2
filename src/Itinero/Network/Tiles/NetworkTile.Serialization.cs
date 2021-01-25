@@ -10,18 +10,18 @@ namespace Itinero.Network.Tiles
             var version = 1;
             stream.WriteVarInt32(version);
             
-            // write tileid/zoom.
+            // write tile id/zoom.
             stream.WriteVarInt32(_zoom);
             stream.WriteVarUInt32(_tileId);
             
             // write vertices and edges.
-            this.SerializeEdgesAndVertices(stream);
+            this.WriteEdgesAndVerticesTo(stream);
             
             // write attributes.
-            this.SerializeAttributes(stream);
+            this.WriteAttributesTo(stream);
             
             // write shapes.
-            this.SerializeShapes(stream);
+            this.WriteGeoTo(stream);
         }
 
         public static NetworkTile ReadFrom(Stream stream)
@@ -37,13 +37,13 @@ namespace Itinero.Network.Tiles
             var graphTile = new NetworkTile(zoom, tileId);
             
             // read vertices and edges.
-            graphTile.DeserializeEdgesAndVertices(stream);
+            graphTile.ReadEdgesAndVerticesFrom(stream);
             
             // read attributes.
-            graphTile.DeserializeAttributes(stream);
+            graphTile.ReadAttributesFrom(stream);
             
             // read shapes.
-            graphTile.DeserializeShapes(stream);
+            graphTile.ReadGeoFrom(stream);
 
             return graphTile;
         }

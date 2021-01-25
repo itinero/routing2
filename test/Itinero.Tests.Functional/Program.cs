@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.Geo.Elevation;
 using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
@@ -11,6 +12,8 @@ using Itinero.Routing;
 using Itinero.Snapping;
 using Serilog;
 using Serilog.Events;
+using SRTM;
+using SRTM.Sources;
 
 namespace Itinero.Tests.Functional
 {
@@ -32,6 +35,40 @@ namespace Itinero.Tests.Functional
                 Directory.CreateDirectory("cache");
             }
             TileParser.DownloadFunc = Download.DownloadHelper.Download;
+            
+            // create a new srtm data instance.
+            // it accepts a folder to download and cache data into.
+            var srtmCache = new DirectoryInfo("srtm-cache");
+            if (!srtmCache.Exists)
+            {
+                srtmCache.Create();
+            }
+            // setup elevation integration.
+            var srtmData = new SRTMData(srtmCache.FullName)
+            {
+                GetMissingCell = (string path, string name) =>
+                {
+                    var filename = name + ".hgt.zip";
+                    var hgt = System.IO.Path.Combine(path, filename);
+
+                    if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            };
+            ElevationHandler.Default = new ElevationHandler((lat, lon) =>
+            {
+                var elevation = srtmData.GetElevation(lat, lon);
+                if (!elevation.HasValue)
+                {
+                    return 0;
+                }
+
+                return (short) elevation;
+            });
 
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
             var pedestrian = Itinero.Profiles.Lua.Osm.OsmProfiles.Pedestrian;
@@ -41,11 +78,14 @@ namespace Itinero.Tests.Functional
             {
                 Zoom = 14
             });
-            // routerDb.PrepareFor(bicycle);
+            routerDb.PrepareFor(bicycle);
             
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
             /*using var osmStream = File.OpenRead(args[0]);
+            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+            //using var osmStream = File.OpenRead(args[0]);
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
             progress.RegisterSource(osmPbfStream);
@@ -58,7 +98,7 @@ namespace Itinero.Tests.Functional
 
             routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
             
-            void TestInstructions(string name, (double lon, double lat) from, (double lon, double lat) to) {
+            void TestInstructions(string name, (double lon, double lat, float? e) from, (double lon, double lat, float? e) to) {
                 var latest = routerDb.Latest;
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
                     .To(latest.Snap().To(to)).Calculate().Value;
@@ -68,11 +108,11 @@ namespace Itinero.Tests.Functional
 
 
             TestInstructions("pietervdvn2station",
-                (3.2201850414276123, 51.21573337581372),
-                (3.218393325805664, 51.19681315008202));
+                (3.2201850414276123, 51.21573337581372, null),
+                (3.218393325805664, 51.19681315008202, null));
 
-            TestInstructions("benoitlaan", (3.2120606303215027, 51.21027101966819), (3.199746608734131,
-                51.20655402916297));
+            TestInstructions("benoitlaan", (3.2120606303215027, 51.21027101966819, null), (3.199746608734131,
+                51.20655402916297, null));
             
             // var latest = routerDb.Latest;
             //

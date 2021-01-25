@@ -8,7 +8,7 @@ namespace Itinero.Tests.Functional.Tests
     {
         protected override SnapPoint Execute((RoutingNetwork routerDb, double longitude, double latitude, Profile profile) input)
         {
-            var result = input.routerDb.Snap().Using(input.profile).To((input.longitude, input.latitude));
+            var result = input.routerDb.Snap().Using(input.profile).To((input.longitude, input.latitude, null));
             
             return result.Value;
         }

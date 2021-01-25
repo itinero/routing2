@@ -12,6 +12,6 @@ namespace Itinero.Snapping
         /// </summary>
         /// <param name="locations">The locations.</param>
         /// <returns>The snapped locations.</returns>
-        IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude)> locations);
+        IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations);
     }
 }

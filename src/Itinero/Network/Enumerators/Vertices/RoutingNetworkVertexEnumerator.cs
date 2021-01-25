@@ -52,7 +52,8 @@ namespace Itinero.Network.Enumerators.Vertices
                 this.Current = new VertexId(_tileId, (uint) _localId);
 
                 // get vertex, if it exists, return true.
-                if (_tile.TryGetVertex(this.Current, out _, out _)) return true;
+                // TODO: this check can be done faster without reading coordinates.
+                if (_tile.TryGetVertex(this.Current, out _, out _, out _)) return true;
 
                 // vertex doesn't exist, move to the next tile.
                 _localId = -1;

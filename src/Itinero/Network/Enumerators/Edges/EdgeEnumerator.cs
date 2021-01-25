@@ -16,7 +16,7 @@ namespace Itinero.Network.Enumerators.Edges
             _tileEnumerator = new NetworkTileEnumerator();
         }
         
-        private (double longitude, double latitude) GetVertex(VertexId vertex)
+        private (double longitude, double latitude, float? e) GetVertex(VertexId vertex)
         {
             var tile = _tileEnumerator.Tile;
             if (tile == null || tile.TileId != vertex.TileId)
@@ -29,12 +29,12 @@ namespace Itinero.Network.Enumerators.Edges
                 throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
             }
 
-            if (!tile.TryGetVertex(vertex, out var longitude, out var latitude))
+            if (!tile.TryGetVertex(vertex, out var longitude, out var latitude, out var e))
             {
                 throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
             }
 
-            return (longitude, latitude);
+            return (longitude, latitude, e);
         }
 
         /// <summary>
@@ -107,9 +107,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         public bool Forward => _tileEnumerator.Forward;
 
-        private (double longitude, double latitude)? _fromLocation;
+        private (double longitude, double latitude, float? e)? _fromLocation;
 
-        public (double longitude, double latitude) FromLocation
+        public (double longitude, double latitude, float? e) FromLocation
         {
             get
             {
@@ -124,9 +124,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         public VertexId From => _tileEnumerator.Vertex1;
 
-        private (double longitude, double latitude)? _toLocation;
+        private (double longitude, double latitude, float? e)? _toLocation;
 
-        public (double longitude, double latitude) ToLocation
+        public (double longitude, double latitude, float? e) ToLocation
         {
             get
             {
@@ -150,7 +150,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// Gets the shape.
         /// </summary>
         /// <returns>The shape.</returns>
-        public IEnumerable<(double longitude, double latitude)> Shape => _tileEnumerator.Shape;
+        public IEnumerable<(double longitude, double latitude, float? e)> Shape => _tileEnumerator.Shape;
 
         /// <summary>
         /// Gets the attributes.

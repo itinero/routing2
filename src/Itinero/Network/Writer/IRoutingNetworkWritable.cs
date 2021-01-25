@@ -10,7 +10,7 @@ namespace Itinero.Network.Writer
         
         RouterDb RouterDb { get; }
 
-        bool TryGetVertex(VertexId vertexId, out double longitude, out double latitude);
+        bool TryGetVertex(VertexId vertexId, out double longitude, out double latitude, out float? elevation);
         
         (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) GetTileForWrite(uint localTileId);
         

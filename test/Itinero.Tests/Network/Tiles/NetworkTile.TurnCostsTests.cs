@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Itinero.Tests.Network.Tiles
 {
-    public partial class NetworkTileTests
+    public class NetworkTile_TurnCostsTests
     {
         [Fact]
         public void NetworkTile_AddTurnCosts_2_Edges_1Turn_ShouldAddTailAndHead()

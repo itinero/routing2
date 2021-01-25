@@ -20,7 +20,7 @@ namespace Itinero.Snapping
         /// <param name="routerDb">The router db.</param>
         /// <param name="snapPoint">The snap point.</param>
         /// <returns>The location on the network.</returns>
-        public static (double longitude, double latitude) LocationOnNetwork(this SnapPoint snapPoint, RoutingNetwork routerDb)
+        public static (double longitude, double latitude, float? e) LocationOnNetwork(this SnapPoint snapPoint, RoutingNetwork routerDb)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
             enumerator.MoveToEdge(snapPoint.EdgeId);
@@ -161,7 +161,7 @@ namespace Itinero.Snapping
             }
 
             // calculate and return angle.
-            var toNorth =  (location1.longitude, location1.latitude + 0.001f);
+            var toNorth =  (location1.longitude, location1.latitude + 0.001f, (float?)null);
             var angleRadians = DirectionCalculator.Angle(location2, location1,  toNorth);
             return angleRadians.ToDegrees().NormalizeDegrees();
         }
