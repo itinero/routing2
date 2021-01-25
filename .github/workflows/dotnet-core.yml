@@ -37,6 +37,9 @@ jobs:
     - name: Nuget Pack
       run: dotnet pack -c release
       working-directory: ./src/Itinero.Profiles.Lua/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero.Instructions/
     - name: Nuget push
       run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/anyways-open/index.json
       working-directory: ./src/
