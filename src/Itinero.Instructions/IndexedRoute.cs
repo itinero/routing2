@@ -29,7 +29,7 @@ namespace Itinero.Instructions {
             Branches = BuildBranchesList(route);
         }
 
-        public List<(double longitude, double latitude)> Shape => Route.Shape;
+        public List<(double longitude, double latitude, float? e)> Shape => Route.Shape;
         public int Last => Shape.Count - 1;
 
 
@@ -73,7 +73,7 @@ namespace Itinero.Instructions {
         }
 
         public double DistanceToNextPoint(int offset) {
-            (double longitude, double latitude) prevPoint;
+            (double longitude, double latitude, float? e) prevPoint;
             if (offset == -1) {
                 prevPoint = Route.Stops[0].Coordinate;
             }
@@ -81,7 +81,7 @@ namespace Itinero.Instructions {
                 prevPoint = Shape[offset];
             }
 
-            (double, double) nextPoint;
+            (double, double, float? e) nextPoint;
             if (Last == offset) {
                 nextPoint = Route.Stops[Route.Stops.Count - 1].Coordinate;
             }
@@ -93,7 +93,7 @@ namespace Itinero.Instructions {
         }
 
         public double DepartingDirectionAt(int offset) {
-            (double, double) nextPoint;
+            (double, double, float?) nextPoint;
             if (Last == offset) {
                 nextPoint = Route.Stops[^1].Coordinate;
             }
@@ -111,7 +111,7 @@ namespace Itinero.Instructions {
         /// <param name="offset"></param>
         /// <returns></returns>
         public double ArrivingDirectionAt(int offset) {
-            (double longitude, double latitude) prevPoint;
+            (double longitude, double latitude, float? e) prevPoint;
             if (offset == 0) {
                 prevPoint = Route.Stops[0].Coordinate;
             }

@@ -17,30 +17,30 @@ namespace Itinero.Tests.Instructions
             var route = new Route
             {
                 Profile = "bicycle.something",
-                Shape = new List<(double longitude, double latitude)>
+                Shape = new List<(double longitude, double latitude, float? e)>
                 {
                     // Blokstraat
-                    (3.2194970548152924, 51.215430955322816), // 0
-                    (3.218715190887451, 51.216450776477345),
+                    (3.2194970548152924, 51.215430955322816, null), // 0
+                    (3.218715190887451, 51.216450776477345, null),
 
                     // Crossing ring
-                    (3.218286037445068, 51.21661878438491),
+                    (3.218286037445068, 51.21661878438491, null),
 
                     // Veldmrschlk Fochstr
-                    (3.218286037445068, 51.21686071469478),
+                    (3.218286037445068, 51.21686071469478, null),
                     // Werfstraat
-                    (3.217722773551941, 51.21750249588503),
-                    (3.2157111167907715, 51.216222284739125), // 5
-                    (3.215475082397461, 51.21605763557773),
+                    (3.217722773551941, 51.21750249588503, null),
+                    (3.2157111167907715, 51.216222284739125, null), // 5
+                    (3.215475082397461, 51.21605763557773, null),
 
                    
                 //  Kruising scheepsdale: 1ste vak
-                (3.215265870094299, 51.215849303141894),
+                (3.215265870094299, 51.215849303141894, null),
                 //  Kruising scheepsdale: 2de vak; Filips de goedelaan (fietsstraat)
-                (3.2152444124221797, 51.2158005800975),
-                (3.213919401168823, 51.21336940272057),
+                (3.2152444124221797, 51.2158005800975, null),
+                (3.213919401168823, 51.21336940272057, null),
                 // Karel de stoute, even links-rechts
-                (3.2133668661117554, 51.212247019059234), // 10
+                (3.2133668661117554, 51.212247019059234, null), // 10
        
                 },
                 ShapeMeta = new List<Route.Meta>
@@ -67,12 +67,12 @@ namespace Itinero.Tests.Instructions
                 }
             };
 
-            var start = new Route.Stop {Coordinate = (3.219408541917801, 51.21541415412617), Shape = 0, Distance = 10};
+            var start = new Route.Stop {Coordinate = (3.219408541917801, 51.21541415412617, null), Shape = 0, Distance = 10};
             // estimated m between the pinned start point and the snapped startpoint
 
             var stop = new Route.Stop
             {
-                Coordinate = (3.2099054753780365, 51.20692456541283), Shape = route.Shape.Count - 1, Distance = 15
+                Coordinate = (3.2099054753780365, 51.20692456541283, null), Shape = route.Shape.Count - 1, Distance = 15
             };
             // estimated m between the pinned start point and the snapped startpoint
 
@@ -100,9 +100,9 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void Angles_AllOrthoDirections_CorrectAngle()
         {
-            var eflJuli_klaver = (3.2203030586242676, 51.215446076394535);
-            var straightN = (3.2203037291765213, 51.21552000156258);
-            var straightE = (3.2204418629407883, 51.215446496424235);
+            var eflJuli_klaver = (3.2203030586242676, 51.215446076394535, (float?)null);
+            var straightN = (3.2203037291765213, 51.21552000156258, (float?)null);
+            var straightE = (3.2204418629407883, 51.215446496424235, (float?)null);
 
             var n = Utils.AngleBetween(eflJuli_klaver, straightN);
             Assert.True(-5 < n && n < 5);

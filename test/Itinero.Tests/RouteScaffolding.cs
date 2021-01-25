@@ -4,12 +4,12 @@ using Itinero.Routes;
 
 namespace Itinero.Tests {
     public class RouteScaffolding {
-        public static (double lon, double lat)[] P(params (double lon, double lat)[] parts) {
+        public static (double lon, double lat, float? e)[] P(params (double lon, double lat, float? e)[] parts) {
             return parts;
         }
 
         public static Route GenerateRoute(
-            params ((double lon, double lat)[] coordinates, List<(string, string)> segmentAttributes)[] parts) {
+            params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[] parts) {
             return GenerateRoute(new List<Route.Branch>(), parts);
         }
 
@@ -19,8 +19,9 @@ namespace Itinero.Tests {
          */
         public static Route GenerateRoute(
             List<Route.Branch> branches,
-            params ((double lon, double lat)[] coordinates, List<(string, string)> segmentAttributes)[] parts) {
-            var allCoordinates = new List<(double longitude, double latitude)>();
+            params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[] parts)  
+        {
+            var allCoordinates = new List<(double longitude, double latitude, float? e)>();
             var metas = new List<Route.Meta>();
             foreach (var part in parts) {
                 allCoordinates.AddRange(part.coordinates);

@@ -16,8 +16,8 @@ namespace Itinero.Instructions
         /// Stolen from https://github.com/itinero/routing/blob/1764afc75db43a1459789592de175283f642123f/src/Itinero/LocalGeo/Coordinate.cs
         /// </summary>
         /// <remarks>Accuracy decreases with distance.</remarks>
-        public static double DistanceEstimateInMeter((double lon, double lat) c1,
-            (double lon, double lat) c2)
+        public static double DistanceEstimateInMeter((double lon, double lat, float? e) c1,
+            (double lon, double lat, float? e) c2)
         {
             var lat1Rad = c1.lat / 180d * Math.PI;
             var lon1Rad = c1.lon / 180d * Math.PI;
@@ -39,7 +39,7 @@ namespace Itinero.Instructions
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <returns></returns>
-        public static double AngleBetween((double lon, double lat) c1, (double lon, double lat) c2)
+        public static double AngleBetween((double lon, double lat, float? e) c1, (double lon, double lat, float? e) c2)
         {
             var dy = c2.lat - c1.lat;
             var dx = Math.Cos(Math.PI / 180 * c1.lat) * (c2.lon - c1.lon);

@@ -14,12 +14,12 @@ namespace Itinero.Tests.Instructions {
             // Coming from the south-west
             var route = new Route();
             route.Profile = "bicycle.something";
-            route.Shape = new List<(double longitude, double latitude)> {
-                (3.2175779342651363, 51.21153207328682),
-                (3.2173392176628113, 51.211704299781594),
-                (3.217163532972336, 51.21187904600573),
-                (3.217163532972336, 51.21187904600573),
-                (3.216855078935623, 51.212181489826555)
+            route.Shape = new List<(double longitude, double latitude, float? e)> {
+                (3.2175779342651363, 51.21153207328682, null),
+                (3.2173392176628113, 51.211704299781594, null),
+                (3.217163532972336, 51.21187904600573, null),
+                (3.217163532972336, 51.21187904600573, null),
+                (3.216855078935623, 51.212181489826555, null)
             };
 
             route.ShapeMeta = new List<Route.Meta> {
@@ -32,13 +32,13 @@ namespace Itinero.Tests.Instructions {
             route.Branches = new[] {
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.2176074385643, 51.21182023725436),
+                    Coordinate = (3.2176074385643, 51.21182023725436, null),
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 },
 
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.217085748910904, 51.21161524616228),
+                    Coordinate = (3.217085748910904, 51.21161524616228, null),
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
@@ -56,12 +56,12 @@ namespace Itinero.Tests.Instructions {
             // Coming from the south-west
             var route = new Route();
             route.Profile = "bicycle.something";
-            route.Shape = new List<(double longitude, double latitude)> {
-                (3.2175779342651363, 51.21153207328682),
-                (3.2173392176628113, 51.211704299781594),
-                (3.217163532972336, 51.21187904600573),
-                (3.217163532972336, 51.21187904600573),
-                (3.216855078935623, 51.212181489826555)
+            route.Shape = new List<(double longitude, double latitude, float? e)> {
+                (3.2175779342651363, 51.21153207328682, null),
+                (3.2173392176628113, 51.211704299781594, null),
+                (3.217163532972336, 51.21187904600573, null),
+                (3.217163532972336, 51.21187904600573, null),
+                (3.216855078935623, 51.212181489826555, null)
             };
 
             route.ShapeMeta = new List<Route.Meta> {
@@ -74,7 +74,7 @@ namespace Itinero.Tests.Instructions {
             route.Branches = new[] {
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.2176074385643, 51.21182023725436),
+                    Coordinate = (3.2176074385643, 51.21182023725436, null),
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
 
@@ -93,12 +93,12 @@ namespace Itinero.Tests.Instructions {
             // Coming from the south-west
             var route = new Route();
             route.Profile = "bicycle.something";
-            route.Shape = new List<(double longitude, double latitude)> {
-                (3.2175779342651363, 51.21153207328682),
-                (3.2173392176628113, 51.211704299781594),
+            route.Shape = new List<(double longitude, double latitude, float? e)> {
+                (3.2175779342651363, 51.21153207328682, null),
+                (3.2173392176628113, 51.211704299781594, null),
 
-                (3.217083066701889, 51.21161356590366),
-                (3.2166606187820435, 51.21148670620053)
+                (3.217083066701889, 51.21161356590366, null),
+                (3.2166606187820435, 51.21148670620053, null)
             };
 
             route.ShapeMeta = new List<Route.Meta> {
@@ -115,13 +115,13 @@ namespace Itinero.Tests.Instructions {
             route.Branches = new[] {
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.217179626226425, 51.2118614033882),
+                    Coordinate = (3.217179626226425, 51.2118614033882, null),
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
 
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.2176195085048676, 51.21182611813286),
+                    Coordinate = (3.2176195085048676, 51.21182611813286, null),
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
@@ -140,12 +140,12 @@ namespace Itinero.Tests.Instructions {
             // Coming from the north-east
             var route = new Route();
             route.Profile = "bicycle.something";
-            route.Shape = new List<(double longitude, double latitude)> {
-                (3.217179626226425, 51.2118614033882),
-                (3.2173392176628113, 51.211704299781594),
+            route.Shape = new List<(double longitude, double latitude, float? e)> {
+                (3.217179626226425, 51.2118614033882, null),
+                (3.2173392176628113, 51.211704299781594, null),
 
-                (3.217083066701889, 51.21161356590366),
-                (3.2166606187820435, 51.21148670620053)
+                (3.217083066701889, 51.21161356590366, null),
+                (3.2166606187820435, 51.21148670620053, null)
             };
 
             route.ShapeMeta = new List<Route.Meta> {
@@ -162,13 +162,13 @@ namespace Itinero.Tests.Instructions {
             route.Branches = new[] {
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.2175779342651363, 51.21153207328682),
+                    Coordinate = (3.2175779342651363, 51.21153207328682, null),
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
 
                 new Route.Branch {
                     Shape = 1,
-                    Coordinate = (3.2176195085048676, 51.21182611813286),
+                    Coordinate = (3.2176195085048676, 51.21182611813286, null),
                     Attributes = new[] {("name", "Groenesraat"), ("highway", "residential")}
                 }
             };
