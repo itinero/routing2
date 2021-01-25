@@ -39,6 +39,22 @@ namespace Itinero.Tests
             var distance = expected.DistanceEstimateInMeter(actual);
             if (distance > toleranceInMeters) Assert.True(false, "Coordinates are too far apart to be considered at the same location.");
         }
+        
+        public static void SameLocations((double longitude, double latitude) expected,
+            (double longitude, double latitude) actual,
+            double toleranceInMeters = 1)
+        {
+            SameLocations((expected.longitude, expected.latitude, 0f), 
+                (actual.longitude, actual.latitude, 0f), toleranceInMeters);
+        }
+        
+        public static void SameLocations((double longitude, double latitude) expected,
+            (double longitude, double latitude, float? e) actual,
+            double toleranceInMeters = 1)
+        {
+            SameLocations((expected.longitude, expected.latitude, 0f), 
+                actual, toleranceInMeters);
+        }
 
         public static void RouteMatches((double longitude, double latitude, float? e)[] shape, Route route,
             double toleranceInMeters = 1)

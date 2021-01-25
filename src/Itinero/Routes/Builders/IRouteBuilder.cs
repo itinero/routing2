@@ -10,6 +10,14 @@ namespace Itinero.Routes.Builders
     /// </summary>
     public interface IRouteBuilder
     {
-        Result<Route> Build(RoutingNetwork db, Profile profile, Path path, bool forward = true);
+        
+        /// <summary>
+        ///     Builds a route from the given path for the given profile.
+        /// </summary>
+        /// <param name="db">The router db.</param>
+        /// <param name="profile">The profile.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>The route.</returns>
+        Result<Route> Build(RoutingNetwork db, Profile profile, Path path);
     }
 }
