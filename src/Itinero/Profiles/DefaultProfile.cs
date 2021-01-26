@@ -13,7 +13,7 @@ namespace Itinero.Profiles
         /// <inheritdoc/>
         public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
         {
-            return new EdgeFactor(1, 1, 1, 1);
+            return new(1, 1, 1, 1);
         }
 
         /// <inheritdoc/>

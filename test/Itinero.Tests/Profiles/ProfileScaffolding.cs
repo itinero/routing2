@@ -10,9 +10,10 @@ namespace Itinero.Tests.Profiles
         private class SimpleProfile : Profile
         {
             public override string Name { get; } = "Test";
+
             public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
             {
-                return new EdgeFactor(1, 1, 1, 1, true);
+                return new(1, 1, 1, 1, true);
             }
 
             public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)

@@ -20,15 +20,15 @@ namespace Itinero.Snapping
         /// <param name="offset">The offset.</param>
         public SnapPoint(EdgeId edgeId, ushort offset)
         {
-            this.EdgeId = edgeId;
-            this.Offset = offset;
+            EdgeId = edgeId;
+            Offset = offset;
         }
-        
+
         /// <summary>
         /// Gets the edge id.
         /// </summary>
         public EdgeId EdgeId { get; }
-        
+
         /// <summary>
         /// Gets the offset.
         /// </summary>
@@ -40,7 +40,7 @@ namespace Itinero.Snapping
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{this.EdgeId} @ {this.Offset}";
+            return $"{EdgeId} @ {Offset}";
         }
     }
 }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Enumerators.Vertices
-{ 
+{
     internal class RoutingNetworkVertexEnumerator
     {
         private readonly RoutingNetwork _routingNetwork;
@@ -13,7 +13,7 @@ namespace Itinero.Network.Enumerators.Vertices
             _routingNetwork = routingNetwork;
             _tileEnumerator = routingNetwork.GetTileEnumerator();
 
-            this.Current = VertexId.Empty;
+            Current = VertexId.Empty;
         }
 
         private long _localId = -1;
@@ -22,42 +22,47 @@ namespace Itinero.Network.Enumerators.Vertices
 
         private void MoveNexTile()
         {
-            while (true)
-            {
-                if (!_tileEnumerator.MoveNext()) return;
+            while (true) {
+                if (!_tileEnumerator.MoveNext()) {
+                    return;
+                }
 
                 // get tile for reading.
                 _tileId = _tileEnumerator.Current;
                 _tile = _routingNetwork.GetTileForRead(_tileId);
-                
-                if (_tile != null) return;
+
+                if (_tile != null) {
+                    return;
+                }
             }
         }
 
         public bool MoveNext()
         {
-            while (true)
-            {
+            while (true) {
                 // when vertex is empty move to the first tile.
-                if (this.Current.IsEmpty())
-                {
-                    this.MoveNexTile();
+                if (Current.IsEmpty()) {
+                    MoveNexTile();
                 }
 
                 // no current tile here, no data.
-                if (_tile == null) return false;
+                if (_tile == null) {
+                    return false;
+                }
 
                 // move to the next vertex.
                 _localId++;
-                this.Current = new VertexId(_tileId, (uint) _localId);
+                Current = new VertexId(_tileId, (uint) _localId);
 
                 // get vertex, if it exists, return true.
                 // TODO: this check can be done faster without reading coordinates.
-                if (_tile.TryGetVertex(this.Current, out _, out _, out _)) return true;
+                if (_tile.TryGetVertex(Current, out _, out _, out _)) {
+                    return true;
+                }
 
                 // vertex doesn't exist, move to the next tile.
                 _localId = -1;
-                this.MoveNexTile();
+                MoveNexTile();
             }
         }
 
@@ -65,7 +70,7 @@ namespace Itinero.Network.Enumerators.Vertices
 
         public void Reset()
         {
-            this.Current = VertexId.Empty;
+            Current = VertexId.Empty;
             _localId = -1;
             _tileId = uint.MaxValue;
 

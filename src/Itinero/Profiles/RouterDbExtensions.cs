@@ -17,7 +17,7 @@ namespace Itinero.Profiles
         {
             routerDb.ProfileConfiguration.AddProfiles(profiles);
         }
-        
+
         /// <summary>
         /// Prepares the router db for use with the given profiles.
         /// </summary>

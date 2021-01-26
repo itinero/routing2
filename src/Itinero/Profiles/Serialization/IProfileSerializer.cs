@@ -11,7 +11,7 @@ namespace Itinero.Profiles.Serialization
         /// Used to identify the appropriate serializer for a profile.
         /// </summary>
         public string Id { get; }
-        
+
         /// <summary>
         /// Writes the given profile to the given stream.
         /// </summary>

@@ -3,10 +3,11 @@ using Itinero.Routes;
 
 namespace Itinero.Instructions
 {
-
-    internal class Box<T> {
+    internal class Box<T>
+    {
         public T Content { get; set; }
     }
+
     internal static class Utils
     {
         private const double RADIUS_OF_EARTH = 6371000;
@@ -39,7 +40,8 @@ namespace Itinero.Instructions
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <returns></returns>
-        public static double AngleBetween((double lon, double lat, float? e) c1, (double lon, double lat, float? e) c2)
+        public static double AngleBetween((double lon, double lat, float? e) c1,
+            (double lon, double lat, float? e) c2)
         {
             var dy = c2.lat - c1.lat;
             var dx = Math.Cos(Math.PI / 180 * c1.lat) * (c2.lon - c1.lon);
@@ -50,13 +52,11 @@ namespace Itinero.Instructions
                 * 180 / Math.PI; // Convert to degrees
 
             // A bit of normalization below:
-            if (angle <= -180)
-            {
+            if (angle <= -180) {
                 angle += 360;
             }
 
-            if (angle > 180)
-            {
+            if (angle > 180) {
                 angle -= 180;
             }
 
@@ -74,13 +74,11 @@ namespace Itinero.Instructions
          */
         public static int NormalizeDegrees(this double degrees)
         {
-            if (degrees <= -180)
-            {
+            if (degrees <= -180) {
                 degrees += 360;
             }
 
-            if (degrees > 180)
-            {
+            if (degrees > 180) {
                 degrees -= 360;
             }
 
@@ -89,44 +87,37 @@ namespace Itinero.Instructions
 
         public static string GetAttributeOrDefault(this Route.Meta meta, string key, string deflt)
         {
-            if (meta == null)
-            {
+            if (meta == null) {
                 return deflt;
             }
 
-            foreach (var (k, value) in meta.Attributes)
-            {
-                if (k.Equals(key))
-                {
+            foreach (var (k, value) in meta.Attributes) {
+                if (k.Equals(key)) {
                     return value;
                 }
             }
 
             return deflt;
         }
-        
+
         public static string DegreesToText(this int degrees)
         {
             var cutoff = 30;
-            if (-cutoff < degrees && degrees < cutoff)
-            {
+            if (-cutoff < degrees && degrees < cutoff) {
                 return "straight on";
             }
 
             var direction = "left";
-            if (degrees < 0)
-            {
+            if (degrees < 0) {
                 direction = "right";
             }
 
             degrees = Math.Abs(degrees);
-            if (degrees > 180 - cutoff)
-            {
+            if (degrees > 180 - cutoff) {
                 return "sharp " + direction;
             }
 
-            if (degrees < 2 * cutoff)
-            {
+            if (degrees < 2 * cutoff) {
                 return "slightly " + direction;
             }
 

@@ -10,7 +10,6 @@ namespace Itinero.Routes.Builders
     /// </summary>
     public interface IRouteBuilder
     {
-        
         /// <summary>
         ///     Builds a route from the given path for the given profile.
         /// </summary>

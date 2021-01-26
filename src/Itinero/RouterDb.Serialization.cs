@@ -13,7 +13,7 @@ namespace Itinero
         /// <returns>The router db as read from the stream.</returns>
         public static RouterDb ReadFrom(Stream stream)
         {
-            return new RouterDb(stream);
+            return new(stream);
         }
 
         /// <summary>
@@ -24,21 +24,20 @@ namespace Itinero
         {
             // write version #.
             stream.WriteVarInt32(1);
-            
+
             // write network.
-            using (var mutable = this.GetMutableNetwork())
-            {
+            using (var mutable = GetMutableNetwork()) {
                 mutable.WriteTo(stream);
             }
-            
+
             // write edge type map data.
             _edgeTypeIndex.WriteTo(stream);
-            
+
             // write turn cost type map data.
             _turnCostTypeIndex.WriteTo(stream);
-            
+
             // write attributes.
-            this.WriteAttributesTo(stream);
+            WriteAttributesTo(stream);
         }
     }
 }

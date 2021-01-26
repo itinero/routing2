@@ -11,7 +11,7 @@ namespace Itinero.Routing
         /// Gets the network.
         /// </summary>
         RoutingNetwork Network { get; }
-        
+
         /// <summary>
         /// Gets the settings.
         /// </summary>

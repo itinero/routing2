@@ -3,10 +3,13 @@ using Itinero.Instructions;
 using Itinero.Instructions.Generators;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class BaseInstructionTest {
+namespace Itinero.Tests.Instructions
+{
+    public class BaseInstructionTest
+    {
         [Fact]
-        public void GenerateBaseInstruction_SmallRoute_TurnsLeft() {
+        public void GenerateBaseInstruction_SmallRoute_TurnsLeft()
+        {
             var route = RouteScaffolding.GenerateRoute(
                 (RouteScaffolding.P(
                     (3.2200777530670166, 51.21591482715479, null)
@@ -31,7 +34,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateBaseInstruction_SmallRoute_TurnsRight() {
+        public void GenerateBaseInstruction_SmallRoute_TurnsRight()
+        {
             var route = RouteScaffolding.GenerateRoute(
                 (RouteScaffolding.P(
                     (3.2207858562469482, 51.21558888627144, null)

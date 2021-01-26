@@ -23,18 +23,19 @@ namespace Itinero.Profiles
 
         public void AddProfiles(IEnumerable<Profile> profiles)
         {
-            foreach (var profile in profiles)
-            {
+            foreach (var profile in profiles) {
                 _profiles[profile.Name] = (profile, new EdgeFactorCache());
             }
-            
-            this.UpdateEdgeTypeMap();
+
+            UpdateEdgeTypeMap();
         }
 
         internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache)
         {
             cache = null;
-            if (!_profiles.TryGetValue(profile.Name, out var profileValue)) return false;
+            if (!_profiles.TryGetValue(profile.Name, out var profileValue)) {
+                return false;
+            }
 
             cache = profileValue.cache;
             return true;

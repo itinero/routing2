@@ -21,22 +21,28 @@ namespace Itinero.Network.Restrictions
             where T : IEdgeEnumerable
         {
             var firstPart = new List<(EdgeId edge, bool forward)>(restrictedSequence);
-            if (firstPart.Count < 2) yield break; // no inverse possible.
+            if (firstPart.Count < 2) {
+                yield break; // no inverse possible.
+            }
 
             // get last.
             var last = firstPart[firstPart.Count - 1];
-            
+
             // enumerate all edges except the u-turn and the original sequence.
             var secondToLast = firstPart[firstPart.Count - 2];
             mutableNetworkEdgeEnumerator.MoveToEdge(secondToLast.edge, secondToLast.forward);
             mutableNetworkEdgeEnumerator.MoveTo(mutableNetworkEdgeEnumerator.To);
-            while (mutableNetworkEdgeEnumerator.MoveNext())
-            {
+            while (mutableNetworkEdgeEnumerator.MoveNext()) {
                 var id = mutableNetworkEdgeEnumerator.Id;
                 if (id == secondToLast.edge &&
-                    mutableNetworkEdgeEnumerator.Forward != secondToLast.forward) continue;
+                    mutableNetworkEdgeEnumerator.Forward != secondToLast.forward) {
+                    continue;
+                }
+
                 if (id == last.edge &&
-                    mutableNetworkEdgeEnumerator.Forward == last.forward) continue;
+                    mutableNetworkEdgeEnumerator.Forward == last.forward) {
+                    continue;
+                }
 
                 yield return firstPart.Take(firstPart.Count - 1)
                     .Append((mutableNetworkEdgeEnumerator.Id, mutableNetworkEdgeEnumerator.Forward));

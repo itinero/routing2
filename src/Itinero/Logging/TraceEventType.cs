@@ -27,18 +27,22 @@ namespace Itinero.Logging
         /// Critical.
         /// </summary>
         Critical,
+
         /// <summary>
         /// Error.
         /// </summary>
         Error,
+
         /// <summary>
         /// Warning.
         /// </summary>
         Warning,
+
         /// <summary>
         /// Verbose.
         /// </summary>
         Verbose,
+
         /// <summary>
         /// Information.
         /// </summary>

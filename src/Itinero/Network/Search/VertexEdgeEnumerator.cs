@@ -14,9 +14,9 @@ namespace Itinero.Network.Search
             _vertexEnumerator = vertices.GetEnumerator();
             RoutingNetworkEdgeEnumerator = graph.GetEdgeEnumerator();
         }
-        
+
         private bool _firstEdge = false;
-        
+
         public void Reset()
         {
             _firstEdge = false;
@@ -26,13 +26,12 @@ namespace Itinero.Network.Search
 
         public bool MoveNext()
         {
-            if (!_firstEdge)
-            {
-                while (_vertexEnumerator.MoveNext())
-                {
-                    while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
-                    {
-                        if (!RoutingNetworkEdgeEnumerator.MoveNext()) break;
+            if (!_firstEdge) {
+                while (_vertexEnumerator.MoveNext()) {
+                    while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current)) {
+                        if (!RoutingNetworkEdgeEnumerator.MoveNext()) {
+                            break;
+                        }
 
                         _firstEdge = true;
                         return true;
@@ -42,28 +41,30 @@ namespace Itinero.Network.Search
                 return false;
             }
 
-            while (true)
-            {
-                if (RoutingNetworkEdgeEnumerator.MoveNext())
-                {
+            while (true) {
+                if (RoutingNetworkEdgeEnumerator.MoveNext()) {
                     return true;
                 }
 
-                if (!_vertexEnumerator.MoveNext()) return false;
-                while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
-                {
-                    if (RoutingNetworkEdgeEnumerator.MoveNext()) return true;
-                    if (!_vertexEnumerator.MoveNext()) return false;
+                if (!_vertexEnumerator.MoveNext()) {
+                    return false;
+                }
+
+                while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current)) {
+                    if (RoutingNetworkEdgeEnumerator.MoveNext()) {
+                        return true;
+                    }
+
+                    if (!_vertexEnumerator.MoveNext()) {
+                        return false;
+                    }
                 }
             }
         }
 
         internal RoutingNetworkEdgeEnumerator RoutingNetworkEdgeEnumerator { get; }
 
-        public void Dispose()
-        {
-            
-        }
+        public void Dispose() { }
 
         public RoutingNetwork Network { get; }
 
@@ -79,6 +80,7 @@ namespace Itinero.Network.Search
         public uint? Length => RoutingNetworkEdgeEnumerator.Length;
         public byte? Head => RoutingNetworkEdgeEnumerator.Head;
         public byte? Tail => RoutingNetworkEdgeEnumerator.Tail;
+
         public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
         {
             return RoutingNetworkEdgeEnumerator.GetTurnCostTo(fromOrder);

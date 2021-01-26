@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Serilog;
 
 namespace Itinero.Tests.Functional.Performance
@@ -12,8 +13,8 @@ namespace Itinero.Tests.Functional.Performance
     public class PerformanceInfoConsumer
     {
         private readonly string _name; // Holds the name of this consumer.
-        private readonly System.Threading.Timer _memoryUsageTimer; // Holds the memory usage timer.
-        private readonly List<double> _memoryUsageLog = new List<double>(); // Holds the memory usage log.
+        private readonly Timer _memoryUsageTimer; // Holds the memory usage timer.
+        private readonly List<double> _memoryUsageLog = new(); // Holds the memory usage log.
         private long _memoryUsageLoggingDuration; // Holds the time spent on logging memory usage.
         private readonly int _iterations;
 
@@ -33,7 +34,7 @@ namespace Itinero.Tests.Functional.Performance
         {
             _name = name;
             _memoryUsageTimer =
-                new System.Threading.Timer(LogMemoryUsage, null, memUseLoggingInterval, memUseLoggingInterval);
+                new Timer(LogMemoryUsage, null, memUseLoggingInterval, memUseLoggingInterval);
             _iterations = iterations;
         }
 
@@ -43,8 +44,7 @@ namespace Itinero.Tests.Functional.Performance
         private void LogMemoryUsage(object state)
         {
             var ticksBefore = DateTime.Now.Ticks;
-            lock (_memoryUsageLog)
-            {
+            lock (_memoryUsageLog) {
                 GC.Collect();
                 var p = Process.GetCurrentProcess();
                 // ReSharper disable once PossibleInvalidOperationException
@@ -60,7 +60,7 @@ namespace Itinero.Tests.Functional.Performance
         /// <param name="key"></param>
         public static PerformanceInfoConsumer Create(string key)
         {
-            return new PerformanceInfoConsumer(key);
+            return new(key);
         }
 
         /// <summary>
@@ -81,10 +81,10 @@ namespace Itinero.Tests.Functional.Performance
             GC.Collect();
 
             var p = Process.GetCurrentProcess();
-            lock (_memoryUsageLog)
-            {
+            lock (_memoryUsageLog) {
                 _memory = p.PrivateMemorySize64;
             }
+
             _ticks = DateTime.Now.Ticks;
         }
 
@@ -111,8 +111,11 @@ namespace Itinero.Tests.Functional.Performance
         /// </summary>
         public void Report(string message, long i, long max)
         {
-            var currentPercentage = (int) Math.Round((i / (double) max) * 10, 0);
-            if (_previousPercentage == currentPercentage) return;
+            var currentPercentage = (int) Math.Round(i / (double) max * 10, 0);
+            if (_previousPercentage == currentPercentage) {
+                return;
+            }
+
             Log.Information(_name + ":" + message, currentPercentage * 10);
             _previousPercentage = currentPercentage;
         }
@@ -122,18 +125,19 @@ namespace Itinero.Tests.Functional.Performance
         /// </summary>
         public void Stop(string message)
         {
-            if (_memoryUsageTimer != null)
-            {
+            if (_memoryUsageTimer != null) {
                 // only dispose and stop when there IS a timer.
-                _memoryUsageTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _memoryUsageTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 _memoryUsageTimer.Dispose();
             }
 
-            if (!_ticks.HasValue) return;
-            lock (_memoryUsageLog)
-            {
+            if (!_ticks.HasValue) {
+                return;
+            }
+
+            lock (_memoryUsageLog) {
                 var seconds = new TimeSpan(DateTime.Now.Ticks - _ticks.Value - _memoryUsageLoggingDuration)
-                                  .TotalMilliseconds / 1000.0;
+                    .TotalMilliseconds / 1000.0;
                 var secondsPerIteration = seconds / _iterations;
 
                 GC.Collect();
@@ -142,30 +146,27 @@ namespace Itinero.Tests.Functional.Performance
                 Debug.Assert(_memory != null, nameof(_memory) + " != null");
                 var memoryDiff = Math.Round((p.PrivateMemorySize64 - _memory.Value) / 1024.0 / 1024.0, 4);
 
-                if (!string.IsNullOrWhiteSpace(message))
-                {
-                    message = ": "+message;
+                if (!string.IsNullOrWhiteSpace(message)) {
+                    message = ": " + message;
                 }
 
                 var memUsage = $"Memory: {memoryDiff}";
-                if (_memoryUsageLog.Count > 0)
-                {
+                if (_memoryUsageLog.Count > 0) {
                     // there was memory usage logging.
                     var max = _memoryUsageLog.Max();
                     memUsage = $" mem usage: {max}";
                 }
 
                 var iterationMessage = "";
-                if (_iterations > 1)
-                {
+                if (_iterations > 1) {
                     iterationMessage = $"(* {_iterations} = {seconds:F3}s total) ";
                 }
-                
+
                 Log.Information($"{_name}: Spent {secondsPerIteration:F3}s {iterationMessage}{memUsage} {message}");
             }
         }
     }
-    
+
     /// <summary>
     /// Extension methods for the performance info class.
     /// </summary>
@@ -190,8 +191,7 @@ namespace Itinero.Tests.Functional.Performance
             var info = new PerformanceInfoConsumer(name + " x " + count.ToString(), 10000, count);
             info.Start();
             var message = string.Empty;
-            while (count > 0)
-            {
+            while (count > 0) {
                 action();
                 count--;
             }
@@ -218,8 +218,7 @@ namespace Itinero.Tests.Functional.Performance
             var info = new PerformanceInfoConsumer(name + " x " + count.ToString(), 10000);
             info.Start();
             var message = string.Empty;
-            while (count > 0)
-            {
+            while (count > 0) {
                 message = action();
                 count--;
             }
@@ -247,16 +246,15 @@ namespace Itinero.Tests.Functional.Performance
             var info = new PerformanceInfoConsumer(name + " x " + count, 10000);
             info.Start();
             PerformanceTestResult<T> res = null;
-            while (count > 0)
-            {
+            while (count > 0) {
                 res = func();
                 count--;
             }
 
-            if (res == null)
-            {
+            if (res == null) {
                 throw new ArgumentNullException(nameof(res));
             }
+
             info.Stop(res.Message);
             return res.Result;
         }
@@ -264,7 +262,8 @@ namespace Itinero.Tests.Functional.Performance
         /// <summary>
         /// Tests performance for the given function.
         /// </summary>
-        public static TResult TestPerf<T, TResult>(this Func<T, PerformanceTestResult<TResult>> func, string name, T a)
+        public static TResult TestPerf<T, TResult>(this Func<T, PerformanceTestResult<TResult>> func, string name,
+            T a)
         {
             var info = new PerformanceInfoConsumer(name);
             info.Start();
@@ -276,17 +275,18 @@ namespace Itinero.Tests.Functional.Performance
         /// <summary>
         /// Tests performance for the given function.
         /// </summary>
-        public static TResult TestPerf<T, TResult>(this Func<T, PerformanceTestResult<TResult>> func, string name, T a, int count)
+        public static TResult TestPerf<T, TResult>(this Func<T, PerformanceTestResult<TResult>> func, string name, T a,
+            int count)
         {
             var info = new PerformanceInfoConsumer(name, count);
             info.Start();
             var res = func(a);
             count--;
-            while (count > 0)
-            {
+            while (count > 0) {
                 res = func(a);
                 count--;
             }
+
             info.Stop(res.Message);
             return res.Result;
         }

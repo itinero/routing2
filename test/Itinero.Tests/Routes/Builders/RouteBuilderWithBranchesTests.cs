@@ -6,10 +6,13 @@ using Itinero.Tests.Profiles;
 using Itinero.Tests.Routes.Paths;
 using Xunit;
 
-namespace Itinero.Tests.Routes.Builders {
-    public class RouteBuilderWithBranchesTests {
+namespace Itinero.Tests.Routes.Builders
+{
+    public class RouteBuilderWithBranchesTests
+    {
         [Fact]
-        public void RouteBuilder_BranchesAtStart_BranchesAreAdded() {
+        public void RouteBuilder_BranchesAtStart_BranchesAreAdded()
+        {
             var center = (4.801073670387268, 51.268064181900094);
 
             var b1 = (4.800550523695055, 51.2677764590809);
@@ -54,7 +57,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_ReversedBranchesAtStart_BranchesAreAdded() {
+        public void RouteBuilder_ReversedBranchesAtStart_BranchesAreAdded()
+        {
             var center = (4.801073670387268, 51.268064181900094);
 
             var b1 = (4.800550523695055, 51.2677764590809);
@@ -98,9 +102,10 @@ namespace Itinero.Tests.Routes.Builders {
             Assert.Equal(("name", "B3"), route.ShapeMeta[0].Attributes.ToList()[0]);
             Assert.Equal(("name", "C"), route.ShapeMeta[1].Attributes.ToList()[0]);
         }
-        
-         [Fact]
-        public void RouteBuilder_MixedBranchesAtMiddle_BranchesAreAdded() {
+
+        [Fact]
+        public void RouteBuilder_MixedBranchesAtMiddle_BranchesAreAdded()
+        {
             var center = (4.801073670387268, 51.268064181900094);
 
             var b1 = (4.800550523695055, 51.2677764590809);

@@ -6,7 +6,7 @@
     public class ElevationHandler : IElevationHandler
     {
         private readonly GetElevationDelegate _getElevation;
-        
+
         /// <summary>
         /// Creates a new elevation handler.
         /// </summary>
@@ -28,7 +28,7 @@
         {
             return _getElevation?.Invoke(longitude, latitude);
         }
-        
+
         /// <summary>
         /// Gets or sets the default elevation handler.
         /// </summary>

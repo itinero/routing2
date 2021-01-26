@@ -18,9 +18,9 @@ namespace Itinero.Routing
     {
         public RouterWeights(T router)
         {
-            this.Router = router;
+            Router = router;
         }
-        
+
         public T Router { get; }
     }
 }

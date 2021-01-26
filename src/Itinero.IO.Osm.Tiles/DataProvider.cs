@@ -26,14 +26,14 @@ namespace Itinero.IO.Osm.Tiles
         {
             _baseUrl = baseUrl;
             _zoom = 14;
-            
+
             _loadedTiles = new HashSet<uint>();
             _idMap = new GlobalIdMap();
 
             // get notified when a location/area is used.
             routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
             routerDb.UsageNotifier.OnBoxTouched += TouchBox;
-            
+
             // // hook up deserialization.
             // (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
             //     this.WriteTo);
@@ -50,69 +50,68 @@ namespace Itinero.IO.Osm.Tiles
             // get notified when a location/area is used.
             routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
             routerDb.UsageNotifier.OnBoxTouched += TouchBox;
-            
+
             // // hook up deserialization.
             // (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
             //     this.WriteTo);
         }
-        
+
         internal void VertexTouched(RoutingNetwork network, VertexId vertexId)
         {
-            if (_loadedTiles.Contains(vertexId.TileId)) return;
+            if (_loadedTiles.Contains(vertexId.TileId)) {
+                return;
+            }
 
-            lock (_loadedTiles)
-            {
-                if (_loadedTiles.Contains(vertexId.TileId))
-                {
+            lock (_loadedTiles) {
+                if (_loadedTiles.Contains(vertexId.TileId)) {
                     // tile was already loaded.
                     return;
                 }
 
                 // download the tile.
-                var tile = Tile.FromLocalId(vertexId.TileId, (int)_zoom);
+                var tile = Tile.FromLocalId(vertexId.TileId, (int) _zoom);
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
                 using var stream = TileParser.DownloadFunc(url);
-                
+
                 // parse the tile.
                 var parse = stream?.Parse(tile);
-                if (parse == null)
-                {
+                if (parse == null) {
                     return;
                 }
 
                 // add the data from the tile.
-                using (var routerDbInstanceWriter = network.GetWriter())
-                {
+                using (var routerDbInstanceWriter = network.GetWriter()) {
                     routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
                 }
+
                 _loadedTiles.Add(vertexId.TileId);
             }
         }
 
-        internal void TouchBox(RoutingNetwork network, ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight) box)
+        internal void TouchBox(RoutingNetwork network,
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+                bottomRight) box)
         {
             // build the tile range.
-            var tileRange = new TileRange(box, (int)_zoom);
+            var tileRange = new TileRange(box, (int) _zoom);
 
-            Parallel.ForEach(tileRange, (tile) =>
-            {
-                if (_loadedTiles.Contains(tile.LocalId)) return;
+            Parallel.ForEach(tileRange, (tile) => {
+                if (_loadedTiles.Contains(tile.LocalId)) {
+                    return;
+                }
 
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
 
                 using var stream = TileParser.DownloadFunc(url);
 
                 var parse = stream?.Parse(tile);
-                if (parse == null)
-                {
+                if (parse == null) {
                     return;
                 }
 
-                lock (_loadedTiles)
-                {
+                lock (_loadedTiles) {
                     // add the data from the tile.
-                    using (var routerDbInstanceWriter = network.GetWriter())
-                    {
+                    using (var routerDbInstanceWriter = network.GetWriter()) {
                         routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
                     }
 
@@ -127,20 +126,18 @@ namespace Itinero.IO.Osm.Tiles
             // write version #.
             stream.WriteWithSize($"{nameof(DataProvider)}");
             stream.WriteVarInt32(1);
-            
+
             // write details.
             stream.WriteWithSize(_baseUrl);
             stream.WriteVarUInt32(_zoom);
-            
+
             // write global id map.
-            lock (_loadedTiles)
-            {
+            lock (_loadedTiles) {
                 _idMap.WriteTo(stream);
-                
+
                 // write loaded tiles.
                 stream.WriteVarInt64(_loadedTiles.Count);
-                foreach (var tileId in _loadedTiles)
-                {
+                foreach (var tileId in _loadedTiles) {
                     stream.WriteVarUInt32(tileId);
                 }
             }
@@ -151,21 +148,25 @@ namespace Itinero.IO.Osm.Tiles
             // read & verify header.
             var header = stream.ReadWithSizeString();
             var version = stream.ReadVarInt32();
-            if (header != nameof(DataProvider)) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Header invalid.");
-            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Version # invalid.");
+            if (header != nameof(DataProvider)) {
+                throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Header invalid.");
+            }
+
+            if (version != 1) {
+                throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Version # invalid.");
+            }
 
             // read details.
             var baseUrl = stream.ReadWithSizeString();
             var zoom = stream.ReadVarUInt32();
-            
+
             // write global id map.
             var idMap = GlobalIdMap.ReadFrom(stream);
-            
+
             // read loaded tiles.
             var loadedTileCount = stream.ReadVarInt64();
             var loadedTiles = new HashSet<uint>();
-            for (var t = 0; t < loadedTileCount; t++)
-            {
+            for (var t = 0; t < loadedTileCount; t++) {
                 loadedTiles.Add(stream.ReadVarUInt32());
             }
 

@@ -6,7 +6,7 @@ namespace Itinero.Routing.DataStructures
     internal sealed class PathTree
     {
         // TODO: this entire path tree idea can be faster by storing raw structs.
-        
+
         /// <summary>
         /// Creates a new path tree.
         /// </summary>
@@ -26,8 +26,7 @@ namespace Itinero.Routing.DataStructures
         public uint Add(uint data0, uint data1)
         {
             var id = _pointer;
-            if (_data.Length <= _pointer + 2)
-            {
+            if (_data.Length <= _pointer + 2) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -44,8 +43,7 @@ namespace Itinero.Routing.DataStructures
         public uint Add(uint data0, uint data1, uint data2)
         {
             var id = _pointer;
-            if (_data.Length <= _pointer + 3)
-            {
+            if (_data.Length <= _pointer + 3) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -63,8 +61,7 @@ namespace Itinero.Routing.DataStructures
         public uint Add(uint data0, uint data1, uint data2, uint data3)
         {
             var id = _pointer;
-            if (_data.Length <= _pointer + 4)
-            {
+            if (_data.Length <= _pointer + 4) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -83,8 +80,7 @@ namespace Itinero.Routing.DataStructures
         public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4)
         {
             var id = _pointer;
-            if (_data.Length <= _pointer + 5)
-            {
+            if (_data.Length <= _pointer + 5) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -104,8 +100,7 @@ namespace Itinero.Routing.DataStructures
         public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4, uint data5)
         {
             var id = _pointer;
-            if (_data.Length <= _pointer + 6)
-            {
+            if (_data.Length <= _pointer + 6) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -126,8 +121,7 @@ namespace Itinero.Routing.DataStructures
         public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4, uint data5, uint data6)
         {
             var id = _pointer;
-            if (_data.Length <= _pointer + 7)
-            {
+            if (_data.Length <= _pointer + 7) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 

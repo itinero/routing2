@@ -8,16 +8,14 @@ namespace Itinero.Tests.Functional
     {
         public static void AddRange(this FeatureCollection featureCollection, IEnumerable<Feature> features)
         {
-            foreach (var feature in features)
-            {
+            foreach (var feature in features) {
                 featureCollection.Add(feature);
             }
         }
 
         public static string ToGeoJson(this FeatureCollection featureCollection)
         {
-            return (new GeoJsonWriter()).Write(featureCollection);
+            return new GeoJsonWriter().Write(featureCollection);
         }
     }
-    
 }

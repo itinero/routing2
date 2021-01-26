@@ -11,22 +11,23 @@ namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
         /// <param name="property">The property to map.</param>
         /// <param name="reverseMappings">The reverse mappings.</param>
         /// <returns>True if there was a mapping for this tag.</returns>
-        public static (string key, string value)? Map(this JProperty property, Dictionary<string, TagMapperConfig> reverseMappings)
+        public static (string key, string value)? Map(this JProperty property,
+            Dictionary<string, TagMapperConfig> reverseMappings)
         {
-            if (!reverseMappings.TryGetValue(property.Name, out var mapperConfig)) return null;
+            if (!reverseMappings.TryGetValue(property.Name, out var mapperConfig)) {
+                return null;
+            }
 
-            if (property.Value == null)
-            {
+            if (property.Value == null) {
                 return (mapperConfig.OsmKey, null);
             }
 
             var valueString = property.Value.ToInvariantString();
-            if (mapperConfig.ReverseMapping == null)
-            {
+            if (mapperConfig.ReverseMapping == null) {
                 return (mapperConfig.OsmKey, valueString);
             }
-            if (mapperConfig.ReverseMapping.TryGetValue(valueString, out var reverseMapped))
-            {
+
+            if (mapperConfig.ReverseMapping.TryGetValue(valueString, out var reverseMapped)) {
                 return (mapperConfig.OsmKey, reverseMapped);
             }
 

@@ -15,7 +15,7 @@ namespace Itinero.Tests.Indexes
 
             Assert.Throws<ArgumentOutOfRangeException>(() => attributeSetIndex.GetById(100));
         }
-        
+
         [Fact]
         public void AttributeSetIndex_Get_Empty_ShouldReturn0()
         {
@@ -24,7 +24,7 @@ namespace Itinero.Tests.Indexes
             var attributeSetId = attributeSetIndex.Get(new (string key, string value)[0]);
             Assert.Equal(0U, attributeSetId);
         }
-        
+
         [Fact]
         public void AttributeSetIndex_Get_First_ShouldAdd()
         {
@@ -37,7 +37,7 @@ namespace Itinero.Tests.Indexes
             Assert.Single(edgeTypeAttributes);
             Assert.Equal(("highway", "residential"), edgeTypeAttributes[0]);
         }
-        
+
         [Fact]
         public void AttributeSetIndex_Get_Second_ShouldAdd()
         {
@@ -51,7 +51,7 @@ namespace Itinero.Tests.Indexes
             Assert.Single(edgeTypeAttributes);
             Assert.Equal(("highway", "primary"), edgeTypeAttributes[0]);
         }
-        
+
         [Fact]
         public void AttributeSetIndex_Get_SecondIdentical_ShouldGet()
         {
@@ -65,14 +65,15 @@ namespace Itinero.Tests.Indexes
             Assert.Single(edgeTypeAttributes);
             Assert.Equal(("highway", "residential"), edgeTypeAttributes[0]);
         }
-        
+
         [Fact]
         public void AttributeSetIndex_Get_SecondIdentical_OrderShouldNotMatter_ShouldGet()
         {
             var attributeSetIndex = new AttributeSetIndex();
 
             attributeSetIndex.Get(new (string key, string value)[] {("highway", "residential"), ("maxspeed", "50")});
-            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] {("maxspeed", "50"), ("highway", "residential")});
+            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[]
+                {("maxspeed", "50"), ("highway", "residential")});
             Assert.Equal(1U, attributeSetId);
 
             var edgeTypeAttributes = attributeSetIndex.GetById(attributeSetId).ToArray();
@@ -85,7 +86,7 @@ namespace Itinero.Tests.Indexes
         public void AttributeSetIndex_Serialize_Empty_ShouldDeserializeEmpty()
         {
             var expected = new AttributeSetIndex();
-            
+
             var stream = new MemoryStream();
             expected.WriteTo(stream);
             stream.Seek(0, SeekOrigin.Begin);
@@ -99,7 +100,7 @@ namespace Itinero.Tests.Indexes
         {
             var expected = new AttributeSetIndex();
             var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
-            
+
             var stream = new MemoryStream();
             expected.WriteTo(stream);
             stream.Seek(0, SeekOrigin.Begin);
@@ -116,7 +117,7 @@ namespace Itinero.Tests.Indexes
             var expected = new AttributeSetIndex();
             var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
             var type2 = expected.Get(new (string key, string value)[] {("highway", "primary"), ("maxspeed", "50")});
-            
+
             var stream = new MemoryStream();
             expected.WriteTo(stream);
             stream.Seek(0, SeekOrigin.Begin);

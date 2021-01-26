@@ -4,7 +4,7 @@ using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Enumerators.Edges
 {
-    public abstract class EdgeEnumerator<T> : 
+    public abstract class EdgeEnumerator<T> :
         IEdgeEnumerator<T> where T : IEdgeEnumerable
     {
         private readonly NetworkTileEnumerator _tileEnumerator;
@@ -15,22 +15,19 @@ namespace Itinero.Network.Enumerators.Edges
 
             _tileEnumerator = new NetworkTileEnumerator();
         }
-        
+
         private (double longitude, double latitude, float? e) GetVertex(VertexId vertex)
         {
             var tile = _tileEnumerator.Tile;
-            if (tile == null || tile.TileId != vertex.TileId)
-            {
+            if (tile == null || tile.TileId != vertex.TileId) {
                 tile = Network.GetTileForRead(vertex.TileId);
             }
 
-            if (tile == null)
-            {
+            if (tile == null) {
                 throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
             }
 
-            if (!tile.TryGetVertex(vertex, out var longitude, out var latitude, out var e))
-            {
+            if (!tile.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) {
                 throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
             }
 
@@ -46,12 +43,17 @@ namespace Itinero.Network.Enumerators.Edges
         {
             _fromLocation = null;
             _toLocation = null;
-            
-            if (_tileEnumerator.TileId == vertex.TileId) return _tileEnumerator.MoveTo(vertex);
+
+            if (_tileEnumerator.TileId == vertex.TileId) {
+                return _tileEnumerator.MoveTo(vertex);
+            }
 
             // move to the tile.
             var tile = Network.GetTileForRead(vertex.TileId);
-            if (tile == null) return false;
+            if (tile == null) {
+                return false;
+            }
+
             _tileEnumerator.MoveTo(tile);
 
             return _tileEnumerator.MoveTo(vertex);
@@ -66,12 +68,17 @@ namespace Itinero.Network.Enumerators.Edges
         {
             _fromLocation = null;
             _toLocation = null;
-            
-            if (_tileEnumerator.TileId == edgeId.TileId) return _tileEnumerator.MoveTo(edgeId, forward);
+
+            if (_tileEnumerator.TileId == edgeId.TileId) {
+                return _tileEnumerator.MoveTo(edgeId, forward);
+            }
 
             // move to the tile.
             var tile = Network.GetTileForRead(edgeId.TileId);
-            if (tile == null) return false;
+            if (tile == null) {
+                return false;
+            }
+
             _tileEnumerator.MoveTo(tile);
 
             return _tileEnumerator.MoveTo(edgeId, forward);
@@ -84,7 +91,7 @@ namespace Itinero.Network.Enumerators.Edges
         {
             _fromLocation = null;
             _toLocation = null;
-            
+
             _tileEnumerator.Reset();
         }
 
@@ -96,7 +103,7 @@ namespace Itinero.Network.Enumerators.Edges
         {
             _fromLocation = null;
             _toLocation = null;
-            
+
             return _tileEnumerator.MoveNext();
         }
 
@@ -109,11 +116,9 @@ namespace Itinero.Network.Enumerators.Edges
 
         private (double longitude, double latitude, float? e)? _fromLocation;
 
-        public (double longitude, double latitude, float? e) FromLocation
-        {
-            get
-            {
-                _fromLocation ??= this.GetVertex(this.From);
+        public (double longitude, double latitude, float? e) FromLocation {
+            get {
+                _fromLocation ??= GetVertex(From);
 
                 return _fromLocation.Value;
             }
@@ -126,11 +131,9 @@ namespace Itinero.Network.Enumerators.Edges
 
         private (double longitude, double latitude, float? e)? _toLocation;
 
-        public (double longitude, double latitude, float? e) ToLocation
-        {
-            get
-            {
-                _toLocation ??= this.GetVertex(this.To);
+        public (double longitude, double latitude, float? e) ToLocation {
+            get {
+                _toLocation ??= GetVertex(To);
 
                 return _toLocation.Value;
             }
@@ -183,15 +186,19 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         /// <param name="fromOrder">The order of the source edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder) =>
-            _tileEnumerator.GetTurnCostTo(fromOrder);
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        {
+            return _tileEnumerator.GetTurnCostTo(fromOrder);
+        }
 
         /// <summary>
         /// Gets the turn cost from the current edge given the to order.
         /// </summary>
         /// <param name="toOrder">The order of the target edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder) =>
-            _tileEnumerator.GetTurnCostFrom(toOrder);
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        {
+            return _tileEnumerator.GetTurnCostFrom(toOrder);
+        }
     }
 }

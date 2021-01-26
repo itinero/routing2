@@ -6,8 +6,10 @@ using Itinero.Instructions.ToText;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class RealRouteTests {
+namespace Itinero.Tests.Instructions
+{
+    public class RealRouteTests
+    {
         // here, a few real (but still short) routes are tested against a full generator, generated from JSON
 
 
@@ -39,7 +41,8 @@ namespace Itinero.Tests.Instructions {
         );
 
         [Fact]
-        public void GenerateInstructions_SimpleRoute_TurnRight() {
+        public void GenerateInstructions_SimpleRoute_TurnRight()
+        {
             var route = RouteScaffolding.GenerateRoute(
                 (RouteScaffolding.P(
                         (3.2200763, 51.215923, null)
@@ -66,7 +69,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateInstructions_Roundabout_TurnRight() {
+        public void GenerateInstructions_Roundabout_TurnRight()
+        {
             var route = RouteScaffolding.GenerateRoute(
                 (RouteScaffolding.P(
                         (3.2200763, 51.215923, null)

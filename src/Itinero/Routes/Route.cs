@@ -15,7 +15,7 @@ namespace Itinero.Routes
         /// <summary>
         /// Gets or sets the shape.
         /// </summary>
-        public List<(double longitude, double latitude, float? e)> Shape { get; set; } = new List<(double longitude, double latitude, float? e)>();
+        public List<(double longitude, double latitude, float? e)> Shape { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the attributes.
@@ -25,12 +25,12 @@ namespace Itinero.Routes
         /// <summary>
         /// Gets or sets the stops.
         /// </summary>
-        public List<Stop> Stops { get; set; } = new List<Stop>();
+        public List<Stop> Stops { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the meta data.
         /// </summary>
-        public List<Meta> ShapeMeta { get; set; } = new List<Meta>();
+        public List<Meta> ShapeMeta { get; set; } = new();
 
         /// <summary>
         /// Represents a stop.
@@ -50,7 +50,7 @@ namespace Itinero.Routes
             /// <summary>
             /// Gets or sets the attributes.
             /// </summary>
-            public IEnumerable<(string key, string value)>  Attributes { get; set; }
+            public IEnumerable<(string key, string value)> Attributes { get; set; }
 
             /// <summary>
             /// Creates a clone of this object.
@@ -58,17 +58,16 @@ namespace Itinero.Routes
             public Stop Clone()
             {
                 IEnumerable<(string key, string value)> attributes = null;
-                if (this.Attributes != null)
-                {
-                    attributes = new List<(string key, string value)>(this.Attributes);
+                if (Attributes != null) {
+                    attributes = new List<(string key, string value)>(Attributes);
                 }
-                return new Stop()
-                {
+
+                return new Stop {
                     Attributes = attributes,
-                    Shape = this.Shape,
-                    Coordinate = this.Coordinate,
-                    Distance = this.Distance,
-                    Time = this.Time
+                    Shape = Shape,
+                    Coordinate = Coordinate,
+                    Distance = Distance,
+                    Time = Time
                 };
             }
 
@@ -87,7 +86,7 @@ namespace Itinero.Routes
             /// </summary>
             public override string ToString()
             {
-                return $"{this.Attributes}@{this.Coordinate} ({this.Distance}m {this.Time}s)";
+                return $"{Attributes}@{Coordinate} ({Distance}m {Time}s)";
             }
         }
 
@@ -137,17 +136,16 @@ namespace Itinero.Routes
             public Meta Clone()
             {
                 IEnumerable<(string key, string value)> attributes = null;
-                if (this.Attributes != null)
-                {
-                    attributes = new List<(string key, string value)>(this.Attributes);
+                if (Attributes != null) {
+                    attributes = new List<(string key, string value)>(Attributes);
                 }
-                return new Meta()
-                {
+
+                return new Meta {
                     Attributes = attributes,
-                    Shape = this.Shape,
-                    Distance = this.Distance,
-                    Time = this.Time,
-                    Profile = this.Profile
+                    Shape = Shape,
+                    Distance = Distance,
+                    Time = Time,
+                    Profile = Profile
                 };
             }
 
@@ -203,15 +201,14 @@ namespace Itinero.Routes
             public Branch Clone()
             {
                 IEnumerable<(string key, string value)> attributes = null;
-                if (this.Attributes != null)
-                {
-                    attributes = new List<(string key, string value)>(this.Attributes);
+                if (Attributes != null) {
+                    attributes = new List<(string key, string value)>(Attributes);
                 }
-                return new Branch()
-                {
+
+                return new Branch {
                     Attributes = attributes,
-                    Shape = this.Shape,
-                    Coordinate = this.Coordinate
+                    Shape = Shape,
+                    Coordinate = Coordinate
                 };
             }
         }
@@ -291,20 +288,17 @@ namespace Itinero.Routes
         /// </summary>
         public bool MoveNext()
         {
-            if (_current.Route == null)
-            {
-                this.Reset();
+            if (_current.Route == null) {
+                Reset();
             }
+
             return _current.MoveNext();
         }
 
         /// <summary>
         /// Disposes native resources associated with this enumerator.
         /// </summary>
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 
     /// <summary>
@@ -315,14 +309,14 @@ namespace Itinero.Routes
         /// <summary>
         /// Creates a new route position.
         /// </summary>
-        public RoutePosition(Route route, int shape, int stopIndex, 
+        public RoutePosition(Route route, int shape, int stopIndex,
             int metaIndex, int branchIndex)
         {
-            this.Route = route;
-            this.Shape = shape;
-            this.StopIndex = stopIndex;
-            this.MetaIndex = metaIndex;
-            this.BranchIndex = branchIndex;
+            Route = route;
+            Shape = shape;
+            StopIndex = stopIndex;
+            MetaIndex = metaIndex;
+            BranchIndex = branchIndex;
         }
 
         /// <summary>
@@ -355,60 +349,48 @@ namespace Itinero.Routes
         /// </summary>
         public bool MoveNext()
         {
-            this.Shape++;
-            if (this.Route.Shape == null ||
-                this.Shape >= this.Route.Shape.Count)
-            {
+            Shape++;
+            if (Route.Shape == null ||
+                Shape >= Route.Shape.Count) {
                 return false;
             }
-            
-            if (this.Route.Stops != null)
-            {
-                if (this.StopIndex == -1)
-                {
-                    this.StopIndex = 0;
+
+            if (Route.Stops != null) {
+                if (StopIndex == -1) {
+                    StopIndex = 0;
                 }
-                else
-                {
-                    while (this.StopIndex < this.Route.Stops.Count &&
-                        this.Route.Stops[this.StopIndex].Shape < this.Shape)
-                    {
-                        this.StopIndex++;
+                else {
+                    while (StopIndex < Route.Stops.Count &&
+                           Route.Stops[StopIndex].Shape < Shape) {
+                        StopIndex++;
                     }
                 }
             }
 
-            if (this.Route.ShapeMeta != null)
-            {
-                if (this.MetaIndex == -1)
-                {
-                    this.MetaIndex = 0;
+            if (Route.ShapeMeta != null) {
+                if (MetaIndex == -1) {
+                    MetaIndex = 0;
                 }
-                else
-                {
-                    while (this.MetaIndex < this.Route.ShapeMeta.Count &&
-                        this.Route.ShapeMeta[this.MetaIndex].Shape < this.Shape)
-                    {
-                        this.MetaIndex++;
+                else {
+                    while (MetaIndex < Route.ShapeMeta.Count &&
+                           Route.ShapeMeta[MetaIndex].Shape < Shape) {
+                        MetaIndex++;
                     }
                 }
             }
 
-            if (this.Route.Branches != null)
-            {
-                if (this.BranchIndex == -1)
-                {
-                    this.BranchIndex = 0;
+            if (Route.Branches != null) {
+                if (BranchIndex == -1) {
+                    BranchIndex = 0;
                 }
-                else
-                {
-                    while (this.BranchIndex < this.Route.Branches.Length &&
-                        this.Route.Branches[this.BranchIndex].Shape < this.Shape)
-                    {
-                        this.BranchIndex++;
+                else {
+                    while (BranchIndex < Route.Branches.Length &&
+                           Route.Branches[BranchIndex].Shape < Shape) {
+                        BranchIndex++;
                     }
                 }
             }
+
             return true;
         }
 
@@ -417,37 +399,34 @@ namespace Itinero.Routes
         /// </summary>
         public bool MovePrevious()
         {
-            this.Shape--;
-            if (this.Route.Shape == null ||
-                this.Shape < 0 ||
-                this.Shape >= this.Route.Shape.Count)
-            {
+            Shape--;
+            if (Route.Shape == null ||
+                Shape < 0 ||
+                Shape >= Route.Shape.Count) {
                 return false;
             }
 
-            while (this.Route.Stops != null &&
-                this.StopIndex > 0 &&
-                this.StopIndex < this.Route.Stops.Count &&
-                this.Route.Stops[this.StopIndex].Shape > this.Shape)
-            {
-                this.StopIndex--;
+            while (Route.Stops != null &&
+                   StopIndex > 0 &&
+                   StopIndex < Route.Stops.Count &&
+                   Route.Stops[StopIndex].Shape > Shape) {
+                StopIndex--;
             }
 
-            while (this.Route.ShapeMeta != null &&
-                this.MetaIndex > 0 &&
-                this.MetaIndex < this.Route.ShapeMeta.Count &&
-                this.Route.ShapeMeta[this.MetaIndex].Shape > this.Shape)
-            {
-                this.MetaIndex--;
+            while (Route.ShapeMeta != null &&
+                   MetaIndex > 0 &&
+                   MetaIndex < Route.ShapeMeta.Count &&
+                   Route.ShapeMeta[MetaIndex].Shape > Shape) {
+                MetaIndex--;
             }
 
-            while (this.Route.Branches != null &&
-                this.BranchIndex > 0 &&
-                this.BranchIndex < this.Route.Branches.Length &&
-                this.Route.Branches[this.BranchIndex].Shape > this.Shape)
-            {
-                this.BranchIndex--;
+            while (Route.Branches != null &&
+                   BranchIndex > 0 &&
+                   BranchIndex < Route.Branches.Length &&
+                   Route.Branches[BranchIndex].Shape > Shape) {
+                BranchIndex--;
             }
+
             return true;
         }
     }
@@ -463,8 +442,8 @@ namespace Itinero.Routes
         public static bool HasStops(this RoutePosition position)
         {
             return position.Route.Stops != null &&
-                position.Route.Stops.Count > position.StopIndex &&
-                position.Route.Stops[position.StopIndex].Shape == position.Shape;
+                   position.Route.Stops.Count > position.StopIndex &&
+                   position.Route.Stops[position.StopIndex].Shape == position.Shape;
         }
 
         /// <summary>
@@ -481,8 +460,8 @@ namespace Itinero.Routes
         public static bool HasBranches(this RoutePosition position)
         {
             return position.Route.Branches != null &&
-                position.Route.Branches.Length > position.BranchIndex &&
-                position.Route.Branches[position.BranchIndex].Shape == position.Shape;
+                   position.Route.Branches.Length > position.BranchIndex &&
+                   position.Route.Branches[position.BranchIndex].Shape == position.Shape;
         }
 
         /// <summary>
@@ -493,16 +472,15 @@ namespace Itinero.Routes
             var branches = new List<Route.Branch>();
             if (position.Route.Branches != null &&
                 position.Route.Branches.Length > position.BranchIndex &&
-                position.Route.Branches[position.BranchIndex].Shape == position.Shape)
-            {
+                position.Route.Branches[position.BranchIndex].Shape == position.Shape) {
                 var branchIndex = position.BranchIndex;
-                while (position.Route.Branches.Length > branchIndex && 
-                    position.Route.Branches[branchIndex].Shape == position.Shape)
-                {
+                while (position.Route.Branches.Length > branchIndex &&
+                       position.Route.Branches[branchIndex].Shape == position.Shape) {
                     branches.Add(position.Route.Branches[branchIndex]);
                     branchIndex++;
                 }
             }
+
             return branches;
         }
 
@@ -512,8 +490,8 @@ namespace Itinero.Routes
         public static bool HasCurrentMeta(this RoutePosition position)
         {
             return position.Route.ShapeMeta != null &&
-                position.Route.ShapeMeta.Count > position.MetaIndex &&
-                position.Route.ShapeMeta[position.MetaIndex].Shape == position.Shape;
+                   position.Route.ShapeMeta.Count > position.MetaIndex &&
+                   position.Route.ShapeMeta[position.MetaIndex].Shape == position.Shape;
         }
 
         /// <summary>
@@ -521,10 +499,10 @@ namespace Itinero.Routes
         /// </summary>
         public static Route.Meta CurrentMeta(this RoutePosition position)
         {
-            if (position.HasCurrentMeta())
-            {
+            if (position.HasCurrentMeta()) {
                 return position.Route.ShapeMeta[position.MetaIndex];
             }
+
             return null;
         }
 
@@ -534,10 +512,10 @@ namespace Itinero.Routes
         public static Route.Meta Meta(this RoutePosition position)
         {
             if (position.Route.ShapeMeta != null &&
-                position.Route.ShapeMeta.Count > position.MetaIndex)
-            {
+                position.Route.ShapeMeta.Count > position.MetaIndex) {
                 return position.Route.ShapeMeta[position.MetaIndex];
             }
+
             return null;
         }
 
@@ -595,14 +573,14 @@ namespace Itinero.Routes
         public static string GetMetaAttribute(this RoutePosition position, string key)
         {
             var meta = position.Meta();
-            if (meta?.Attributes == null)
-            {
+            if (meta?.Attributes == null) {
                 return string.Empty;
             }
-            if (!meta.Attributes.TryGetValue(key, out var value))
-            {
+
+            if (!meta.Attributes.TryGetValue(key, out var value)) {
                 return string.Empty;
             }
+
             return value;
         }
 
@@ -612,10 +590,10 @@ namespace Itinero.Routes
         public static bool ContainsMetaAttribute(this RoutePosition position, string key, string value)
         {
             var meta = position.Meta();
-            if (meta?.Attributes == null)
-            {
+            if (meta?.Attributes == null) {
                 return false;
             }
+
             return meta.Attributes.Contains((key, value));
         }
 
@@ -624,10 +602,10 @@ namespace Itinero.Routes
         /// </summary>
         public static RoutePosition? Next(this RoutePosition position)
         {
-            if(position.MoveNext())
-            {
+            if (position.MoveNext()) {
                 return position;
             }
+
             return null;
         }
 
@@ -636,10 +614,10 @@ namespace Itinero.Routes
         /// </summary>
         public static RoutePosition? Previous(this RoutePosition position)
         {
-            if (position.MovePrevious())
-            {
+            if (position.MovePrevious()) {
                 return position;
             }
+
             return null;
         }
 
@@ -649,14 +627,14 @@ namespace Itinero.Routes
         public static RoutePosition? GetNextUntil(this RoutePosition position, Func<RoutePosition, bool> stopHere)
         {
             var next = position.Next();
-            while (next != null)
-            {
-                if (stopHere(next.Value))
-                {
+            while (next != null) {
+                if (stopHere(next.Value)) {
                     return next;
                 }
+
                 next = position.Next();
             }
+
             return null;
         }
 
@@ -666,15 +644,14 @@ namespace Itinero.Routes
         public static RoutePosition? GetPreviousUntil(this RoutePosition position, Func<RoutePosition, bool> stopHere)
         {
             var next = position.Previous();
-            while (next != null)
-            {
-                if (stopHere(next.Value))
-                {
+            while (next != null) {
+                if (stopHere(next.Value)) {
                     return next;
                 }
 
                 next = position.Previous();
             }
+
             return null;
         }
     }

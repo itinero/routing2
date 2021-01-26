@@ -11,7 +11,7 @@ namespace Itinero.IO.Json.GeoJson
     /// Contains route extensions 
     /// </summary>
     public static class SnapPointExtensions
-    {        
+    {
         /// <summary>
         /// Returns geojson for the given snap point.
         /// </summary>
@@ -21,14 +21,13 @@ namespace Itinero.IO.Json.GeoJson
         public static string ToGeoJson(this SnapPoint snapPoint, RoutingNetwork routerDb)
         {
             using var stream = new MemoryStream();
-            
-            using (var jsonWriter = new Utf8JsonWriter(stream))
-            {
+
+            using (var jsonWriter = new Utf8JsonWriter(stream)) {
                 jsonWriter.WriteFeatureCollectionStart();
-                WriteFeatures(jsonWriter, snapPoint, routerDb);  
+                WriteFeatures(jsonWriter, snapPoint, routerDb);
                 jsonWriter.WriteFeatureCollectionEnd();
             }
-                
+
             return Encoding.UTF8.GetString(stream.ToArray());
         }
 

@@ -10,19 +10,19 @@ namespace Itinero.Profiles.EdgeTypesMap
         public ProfilesEdgeTypeMap(IEnumerable<Profile> profiles)
         {
             var sorted = profiles.ToArray();
-            Array.Sort(sorted, (x, y) => 
+            Array.Sort(sorted, (x, y) =>
                 string.Compare(x.Name, y.Name, StringComparison.Ordinal));
 
             // build a hash and take it as the id.
             var hash = 31;
-            foreach (var t in profiles)
-            {
+            foreach (var t in profiles) {
                 hash ^= t.GetHashCode();
             }
-            this.Id = hash;
-            
+
+            Id = hash;
+
             // create the mapping function.
-            this.Mapping = a => sorted.GetEdgeProfileFor(a);
+            Mapping = a => sorted.GetEdgeProfileFor(a);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
         }
-        
+
         /// <summary>
         /// Writes a feature start.
         /// </summary>
@@ -54,7 +54,8 @@ namespace Itinero.IO.Json.GeoJson
         /// </summary>
         /// <param name="jsonWriter">The json writer.</param>
         /// <param name="location">The location.</param>
-        public static void WritePoint(this Utf8JsonWriter jsonWriter, (double longitude, double latitude, float? e) location)
+        public static void WritePoint(this Utf8JsonWriter jsonWriter,
+            (double longitude, double latitude, float? e) location)
         {
             jsonWriter.WriteStartObject();
             jsonWriter.WriteString("type", "Point");
@@ -63,10 +64,10 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WriteStartArray();
             jsonWriter.WriteNumberValue(location.longitude);
             jsonWriter.WriteNumberValue(location.latitude);
-            if (location.e != null)
-            {
+            if (location.e != null) {
                 jsonWriter.WriteNumberValue(location.e.Value);
             }
+
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
         }
@@ -84,15 +85,14 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WritePropertyName("coordinates");
 
             jsonWriter.WriteStartArray();
-            foreach (var c in coordinates)
-            {
+            foreach (var c in coordinates) {
                 jsonWriter.WriteStartArray();
                 jsonWriter.WriteNumberValue(c.longitude);
                 jsonWriter.WriteNumberValue(c.latitude);
-//                    if (route.Shape[i].Elevation.HasValue)
-//                    {
-//                        jsonWriter.WriteArrayValue(route.Shape[i].Elevation.Value.ToInvariantString());
-//                    }
+                //                    if (route.Shape[i].Elevation.HasValue)
+                //                    {
+                //                        jsonWriter.WriteArrayValue(route.Shape[i].Elevation.Value.ToInvariantString());
+                //                    }
                 jsonWriter.WriteEndArray();
             }
 
@@ -110,10 +110,10 @@ namespace Itinero.IO.Json.GeoJson
         {
             jsonWriter.WritePropertyName("properties");
             jsonWriter.WriteStartObject();
-            foreach (var a in attributes)
-            {
+            foreach (var a in attributes) {
                 jsonWriter.WriteString(a.key, a.value);
             }
+
             jsonWriter.WriteEndObject();
         }
     }

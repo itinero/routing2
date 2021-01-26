@@ -19,31 +19,39 @@ namespace Itinero.Routing
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The paths.</returns>
         public static IReadOnlyList<Result<Path>> Paths(this IRouterOneToMany routerOneToMany)
-        {            
+        {
             var source = routerOneToMany.Source;
             var targets = routerOneToMany.Targets;
 
             if (source.direction.HasValue ||
-                !targets.TryToUndirected(out var targetsUndirected))
-            {
+                !targets.TryToUndirected(out var targetsUndirected)) {
                 var paths = routerOneToMany.Calculate(
-                    new (SnapPoint snapPoint, bool? direction)[]{ source }, targets);
-                
-                if (paths == null) throw new Exception("Could not calculate routes.") ;
-                if (paths.Count < 1)throw new Exception("Could not calculate routes.") ;
+                    new (SnapPoint snapPoint, bool? direction)[] {source}, targets);
+
+                if (paths == null) {
+                    throw new Exception("Could not calculate routes.");
+                }
+
+                if (paths.Count < 1) {
+                    throw new Exception("Could not calculate routes.");
+                }
 
                 return paths[0];
             }
-            else
-            {
-                var paths = routerOneToMany.Calculate(new []{ source.sp }, targetsUndirected);
-                if (paths == null) throw new Exception("Could not calculate routes.") ;
-                if (paths.Count < 1)throw new Exception("Could not calculate routes.") ;
+            else {
+                var paths = routerOneToMany.Calculate(new[] {source.sp}, targetsUndirected);
+                if (paths == null) {
+                    throw new Exception("Could not calculate routes.");
+                }
+
+                if (paths.Count < 1) {
+                    throw new Exception("Could not calculate routes.");
+                }
 
                 return paths[0];
             }
         }
-        
+
         /// <summary>
         /// Calculates the routes.
         /// </summary>
@@ -54,7 +62,7 @@ namespace Itinero.Routing
             return routerOneToMany.Paths().Select(x => RouteBuilder.Default.Build(routerOneToMany.Network,
                 routerOneToMany.Settings.Profile, x)).ToArray();
         }
-        
+
         /// <summary>
         /// Calculates the weights.
         /// </summary>
@@ -63,7 +71,7 @@ namespace Itinero.Routing
         public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany)
         {
             return null;
-            
+
             // var profileHandler = routerOneToMany.Router.Network.GetCostFunctionFor(
             //     routerOneToMany.Router.Settings.Profile);
             // return routerOneToMany.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();

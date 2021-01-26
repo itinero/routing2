@@ -18,12 +18,14 @@ namespace Itinero.Network.Attributes
         /// <param name="key">The key.</param>
         /// <param name="value">The value, if any.</param>
         /// <returns>True if the key was found, false otherwise.</returns>
-        public static bool TryGetValue(this IEnumerable<(string key, string value)> attributes, string key, out string value)
+        public static bool TryGetValue(this IEnumerable<(string key, string value)> attributes, string key,
+            out string value)
         {
-            foreach (var (k, v) in attributes)
-            {
-                if (key != k) continue;
-                
+            foreach (var (k, v) in attributes) {
+                if (key != k) {
+                    continue;
+                }
+
                 value = v;
                 return true;
             }
@@ -44,27 +46,26 @@ namespace Itinero.Network.Attributes
         {
             var attributesCount = 0;
             var otherCount = 0;
-            foreach (var a in attributes)
-            {
-                if (!exclude.Contains(a.key))
-                {
+            foreach (var a in attributes) {
+                if (!exclude.Contains(a.key)) {
                     attributesCount++;
-                    if (!other.Contains(a))
-                    {
+                    if (!other.Contains(a)) {
                         return false;
                     }
                 }
             }
 
-            foreach (var a in other)
-            {
-                if (exclude.Contains(a.key)) continue;
+            foreach (var a in other) {
+                if (exclude.Contains(a.key)) {
+                    continue;
+                }
+
                 otherCount++;
-                if (!attributes.Contains(a))
-                {
+                if (!attributes.Contains(a)) {
                     return false;
                 }
             }
+
             return attributesCount == otherCount;
         }
 
@@ -76,10 +77,11 @@ namespace Itinero.Network.Attributes
         /// <returns>True if the key was found.</returns>
         public static bool RemoveKey(this List<(string key, string value)> attributes, string key)
         {
-            for (var i = 0; i < attributes.Count; i++)
-            {
+            for (var i = 0; i < attributes.Count; i++) {
                 var a = attributes[i];
-                if (a.key != key) continue;
+                if (a.key != key) {
+                    continue;
+                }
 
                 attributes.RemoveAt(i);
                 return true;
@@ -96,10 +98,11 @@ namespace Itinero.Network.Attributes
         public static void AddOrReplace(this List<(string key, string value)> attributes,
             IEnumerable<(string key, string value)> other)
         {
-            if (attributes == null) throw new ArgumentNullException(nameof(attributes));
+            if (attributes == null) {
+                throw new ArgumentNullException(nameof(attributes));
+            }
 
-            foreach (var a in other)
-            {
+            foreach (var a in other) {
                 attributes.AddOrReplace(a.key, a.value);
             }
         }
@@ -114,15 +117,16 @@ namespace Itinero.Network.Attributes
         public static bool AddOrReplace(this List<(string key, string value)> attributes,
             string key, string value)
         {
-            for (var i = 0; i < attributes.Count; i++)
-            {
+            for (var i = 0; i < attributes.Count; i++) {
                 var a = attributes[i];
-                if (a.key != key) continue;
+                if (a.key != key) {
+                    continue;
+                }
 
                 attributes[i] = (key, value);
                 return true;
             }
-            
+
             attributes.Add((key, value));
             return false;
         }
@@ -135,16 +139,16 @@ namespace Itinero.Network.Attributes
         internal static long WriteAttributesTo(this IEnumerable<(string key, string value)> attributes, Stream stream)
         {
             var pos = stream.Position;
-            foreach (var (key, value) in attributes)
-            {
+            foreach (var (key, value) in attributes) {
                 var bytes = System.Text.Encoding.Unicode.GetBytes(key);
                 stream.WriteVarInt32(bytes.Length + 1); // 0 is null, end of the attribute set.
                 stream.Write(bytes, 0, bytes.Length);
-                
+
                 bytes = System.Text.Encoding.Unicode.GetBytes(value);
                 stream.WriteVarInt32(bytes.Length);
                 stream.Write(bytes, 0, bytes.Length);
             }
+
             stream.WriteVarInt32(0);
 
             return stream.Position - pos;
@@ -158,21 +162,20 @@ namespace Itinero.Network.Attributes
         internal static IEnumerable<(string key, string value)> ReadAttributesFrom(this Stream stream)
         {
             var attributes = new List<(string key, string value)>();
-            
+
             var keySize = stream.ReadVarInt32();
-            while (keySize > 0)
-            {
+            while (keySize > 0) {
                 var bytes = new byte[keySize - 1];
                 stream.Read(bytes, 0, bytes.Length);
                 var key = System.Text.Encoding.Unicode.GetString(bytes);
-                
+
                 var valueSize = stream.ReadVarInt32();
                 bytes = new byte[valueSize];
                 stream.Read(bytes, 0, bytes.Length);
                 var value = System.Text.Encoding.Unicode.GetString(bytes);
-                
+
                 attributes.Add((key, value));
-                
+
                 keySize = stream.ReadVarInt32();
             }
 

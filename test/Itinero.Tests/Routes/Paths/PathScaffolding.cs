@@ -12,10 +12,9 @@ namespace Itinero.Tests.Routes.Paths
             var path = new Path(network);
 
             var edgeEnumerator = network.GetEdgeEnumerator();
-            foreach (var e in edges)
-            {
+            foreach (var e in edges) {
                 edgeEnumerator.MoveToEdge(e.edge, e.direction);
-                
+
                 path.Append(e.edge, edgeEnumerator.From);
             }
 

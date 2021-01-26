@@ -23,7 +23,7 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, SnapPoint snapPoint)
         {
-            return router.From((snapPoint, (bool?)null));
+            return router.From((snapPoint, (bool?) null));
         }
 
         /// <summary>
@@ -34,8 +34,7 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, (SnapPoint snapPoint, bool? direction) directedSnapPoint)
         {
-            return new Router(router.Network, router.Settings)
-            {
+            return new Router(router.Network, router.Settings) {
                 Source = directedSnapPoint
             };
         }
@@ -46,11 +45,12 @@ namespace Itinero.Routing
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoint">The point to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IHasSource From(this IRouter router, (SnapPoint snapPoint, DirectionEnum? direction) directedSnapPoint)
+        public static IHasSource From(this IRouter router,
+            (SnapPoint snapPoint, DirectionEnum? direction) directedSnapPoint)
         {
             return router.From(directedSnapPoint.ToDirected(router.Network));
         }
-        
+
         /// <summary>
         /// Configures the router to route from the given point.
         /// </summary>
@@ -68,7 +68,8 @@ namespace Itinero.Routing
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoints">The points to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IHasSources From(this IRouter router, IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
+        public static IHasSources From(this IRouter router,
+            IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
         {
             return router.From(directedSnapPoints.ToDirected(router.Network));
         }
@@ -79,20 +80,20 @@ namespace Itinero.Routing
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoints">The points to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IHasSources From(this IRouter router, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> directedSnapPoints)
+        public static IHasSources From(this IRouter router,
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> directedSnapPoints)
         {
-            return new Router(router.Network, router.Settings)
-            {
+            return new Router(router.Network, router.Settings) {
                 Sources = directedSnapPoints
             };
         }
-        
+
         internal static IReadOnlyList<IReadOnlyList<Result<Path>>> Calculate(this IRouter manyToManyRouter,
             IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
         {
             var settings = manyToManyRouter.Settings;
             var routerDb = manyToManyRouter.Network;
-            
+
             var profile = settings.Profile;
             var costFunction = routerDb.GetCostFunctionFor(profile);
 
@@ -100,44 +101,43 @@ namespace Itinero.Routing
 
             bool checkMaxDistance(VertexId v)
             {
-                if (maxBox == null) return false;
+                if (maxBox == null) {
+                    return false;
+                }
 
-                if (routerDb == null) throw new Exception("Router cannot be null here.");
+                if (routerDb == null) {
+                    throw new Exception("Router cannot be null here.");
+                }
+
                 var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
+                if (!maxBox.Value.Overlaps(vertex)) {
                     return true;
                 }
 
                 return false;
             }
-            
+
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
-            for (var s = 0; s < sources.Count; s++)
-            {
+            for (var s = 0; s < sources.Count; s++) {
                 var source = sources[s];
                 var paths = Dijkstra.Default.Run(routerDb, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    settled: (v) =>
-                    {
+                    (v) => {
                         routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, v);
                         return checkMaxDistance(v);
                     });
-            
+
                 var sourceResults = new Result<Path>[paths.Length];
-                for (var r = 0; r < sourceResults.Length; r++)
-                {
+                for (var r = 0; r < sourceResults.Length; r++) {
                     var path = paths[r];
-                    if (path == null)
-                    {
+                    if (path == null) {
                         sourceResults[r] = new Result<Path>($"Path not found!");
                     }
-                    else
-                    {
+                    else {
                         sourceResults[r] = path;
                     }
                 }
-            
+
                 results[s] = sourceResults;
             }
 
@@ -145,11 +145,12 @@ namespace Itinero.Routing
         }
 
         internal static IReadOnlyList<IReadOnlyList<Result<Path>>> Calculate(this IRouter manyToManyRouter,
-            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources,
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
         {
             var settings = manyToManyRouter.Settings;
             var routerDb = manyToManyRouter.Network;
-            
+
             var profile = settings.Profile;
             var costFunction = routerDb.GetCostFunctionFor(profile);
 
@@ -157,12 +158,16 @@ namespace Itinero.Routing
 
             bool checkMaxDistance(VertexId v)
             {
-                if (maxBox == null) return false;
+                if (maxBox == null) {
+                    return false;
+                }
 
-                if (routerDb == null) throw new Exception("Router cannot be null here.");
+                if (routerDb == null) {
+                    throw new Exception("Router cannot be null here.");
+                }
+
                 var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex))
-                {
+                if (!maxBox.Value.Overlaps(vertex)) {
                     return true;
                 }
 
@@ -170,31 +175,26 @@ namespace Itinero.Routing
             }
 
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
-            for (var s = 0; s < sources.Count; s++)
-            {
+            for (var s = 0; s < sources.Count; s++) {
                 var source = sources[s];
                 var paths = Flavours.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    settled: e =>
-                    {
+                    e => {
                         routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                         return checkMaxDistance(e.vertexId);
                     });
-            
+
                 var sourceResults = new Result<Path>[paths.Length];
-                for (var r = 0; r < sourceResults.Length; r++)
-                {
+                for (var r = 0; r < sourceResults.Length; r++) {
                     var path = paths[r];
-                    if (path == null)
-                    {
+                    if (path == null) {
                         sourceResults[r] = new Result<Path>($"Routes not found!");
                     }
-                    else
-                    {
+                    else {
                         sourceResults[r] = path;
                     }
                 }
-            
+
                 results[s] = sourceResults;
             }
 

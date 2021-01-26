@@ -4,10 +4,13 @@ using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class InstructionToTextTest {
+namespace Itinero.Tests.Instructions
+{
+    public class InstructionToTextTest
+    {
         [Fact]
-        public void SimpleInstructionToText_BaseInstruction_GeneratesText() {
+        public void SimpleInstructionToText_BaseInstruction_GeneratesText()
+        {
             var basicTurnInstruction = new SubstituteText(
                 new[] {
                     ("Turn ", false),
@@ -21,7 +24,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void SubstituteText_WithExtensions_ExtensionGenerated() {
+        public void SubstituteText_WithExtensions_ExtensionGenerated()
+        {
             var extensions = new Dictionary<string, IInstructionToText> {
                 {
                     "direction", new ConditionalToText(
@@ -46,7 +50,7 @@ namespace Itinero.Tests.Instructions {
             );
             var left = compound.ToText(new BaseInstruction(null, 0, 90));
             Assert.Equal("Turn left", left);
-            
+
             var right = compound.ToText(new BaseInstruction(null, 0, -90));
             Assert.Equal("Turn right", right);
             var straight = compound.ToText(new BaseInstruction(null, 0, 0));

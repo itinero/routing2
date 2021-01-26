@@ -7,8 +7,5 @@ namespace Itinero.Routes.Builders
     /// <summary>
     /// Contains extension methods for the route builders.
     /// </summary>
-    public static class IRouteBuilderExtensions
-    {
-        
-    }
+    public static class IRouteBuilderExtensions { }
 }

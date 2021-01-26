@@ -8,7 +8,9 @@ namespace Itinero.IO.Osm
     {
         public static OsmGeo ToSimple(this ICompleteOsmGeo iCompleteOsmGeo)
         {
-            if (!(iCompleteOsmGeo is CompleteOsmGeo completeOsmGeo)) throw new ArgumentOutOfRangeException(nameof(iCompleteOsmGeo));
+            if (!(iCompleteOsmGeo is CompleteOsmGeo completeOsmGeo)) {
+                throw new ArgumentOutOfRangeException(nameof(iCompleteOsmGeo));
+            }
 
             return completeOsmGeo.ToSimple();
         }

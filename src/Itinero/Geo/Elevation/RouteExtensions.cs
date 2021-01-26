@@ -17,11 +17,10 @@ namespace Itinero.Geo.Elevation
         /// </remarks>
         public static void AddElevation(this Route route, IElevationHandler? elevationHandler = null)
         {
-            for (var s = 0; s < route.Shape.Count; s++)
-            {
+            for (var s = 0; s < route.Shape.Count; s++) {
                 route.Shape[s] = route.Shape[s].AddElevation(elevationHandler: elevationHandler);
             }
-            
+
             // TODO: add branches when implemented.
         }
     }

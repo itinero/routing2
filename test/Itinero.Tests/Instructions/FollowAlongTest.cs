@@ -4,8 +4,10 @@ using Itinero.Instructions.Generators;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class FollowAlongTest {
+namespace Itinero.Tests.Instructions
+{
+    public class FollowAlongTest
+    {
         private static readonly (double, double, float?)[] KlaverstraatGeom = RouteScaffolding.P(
             (3.2202011346817017, 51.215701453744565, null),
             (3.220316469669342, 51.21548471911082, null),
@@ -28,7 +30,8 @@ namespace Itinero.Tests.Instructions {
                 }));
 
         [Fact]
-        public void GenerateFollowAlong_SimpleExample_GetFollowAlong() {
+        public void GenerateFollowAlong_SimpleExample_GetFollowAlong()
+        {
             var followAlong = new FollowAlongGenerator().Generate(new IndexedRoute(Klaverstraat), 1);
             Assert.NotNull(followAlong);
             Assert.Equal("followalong", followAlong.Type);
