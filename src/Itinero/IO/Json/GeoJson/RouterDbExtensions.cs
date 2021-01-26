@@ -7,14 +7,17 @@ using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search;
 
-namespace Itinero.IO.Json.GeoJson {
+namespace Itinero.IO.Json.GeoJson
+{
     /// <summary>
     /// Contains router db geojson extensions.
     /// </summary>
-    public static class RouterDbExtensions {
+    public static class RouterDbExtensions
+    {
         public static string ToGeoJson(this RoutingNetwork routerDb,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box) {
+                bottomRight) box)
+        {
             using var stream = new MemoryStream();
             using (var jsonWriter = new Utf8JsonWriter(stream)) {
                 jsonWriter.WriteFeatureCollectionStart();
@@ -33,7 +36,8 @@ namespace Itinero.IO.Json.GeoJson {
         /// <param name="jsonWriter">The json writer.</param>
         public static void WriteFeatures(this Utf8JsonWriter jsonWriter, RoutingNetwork routerDb,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box) {
+                bottomRight) box)
+        {
             var vertices = new HashSet<VertexId>();
             var edges = new HashSet<EdgeId>();
 
@@ -66,7 +70,8 @@ namespace Itinero.IO.Json.GeoJson {
         /// <param name="routerDb">The router db.</param>
         /// <param name="vertexId">The vertex id.</param>
         public static void WriteVertexFeature(this Utf8JsonWriter jsonWriter, VertexId vertexId,
-            RoutingNetwork routerDb) {
+            RoutingNetwork routerDb)
+        {
             jsonWriter.WriteFeatureStart();
             jsonWriter.WriteProperties(new (string key, string value)[] {
                 ("tile_id", vertexId.TileId.ToString()),
@@ -83,7 +88,8 @@ namespace Itinero.IO.Json.GeoJson {
         /// <param name="jsonWriter">The json writer.</param>
         /// <param name="enumerator">The enumerator.</param>
         public static void WriteEdgeFeature(this Utf8JsonWriter jsonWriter,
-            IEdgeEnumerator<RoutingNetwork> enumerator) {
+            IEdgeEnumerator<RoutingNetwork> enumerator)
+        {
             jsonWriter.WriteFeatureStart();
             var attributes = enumerator.Attributes.ToList();
             attributes.AddRange(new (string key, string value)[] {

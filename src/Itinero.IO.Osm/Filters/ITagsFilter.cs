@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using OsmSharp;
 
-namespace Itinero.IO.Osm.Filters {
+namespace Itinero.IO.Osm.Filters
+{
     /// <summary>
     /// Abstract representation of a tags filter.
     /// </summary>
-    public interface ITagsFilter {
+    public interface ITagsFilter
+    {
         /// <summary>
         /// Filters OSM tags to keep from the given OSM object.
         /// </summary>

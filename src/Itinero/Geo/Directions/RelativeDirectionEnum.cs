@@ -1,8 +1,10 @@
-namespace Itinero.Geo.Directions {
+namespace Itinero.Geo.Directions
+{
     /// <summary>
     /// Relative direction enumeration.
     /// </summary>
-    public enum RelativeDirectionEnum {
+    public enum RelativeDirectionEnum
+    {
         /// <summary>
         /// Left
         /// </summary>

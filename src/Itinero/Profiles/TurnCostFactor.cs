@@ -1,4 +1,5 @@
-namespace Itinero.Profiles {
+namespace Itinero.Profiles
+{
     /// <summary>
     /// A turn cost factor used to customize turn cost handling per profile.
     /// </summary>
@@ -7,12 +8,14 @@ namespace Itinero.Profiles {
     /// - 0: the turn costs are ignored.
     /// - uint.maxvalue: the turn costs are binary, like in turn restrictions.
     /// </remarks>
-    public readonly struct TurnCostFactor {
+    public readonly struct TurnCostFactor
+    {
         /// <summary>
         /// Creates a new turn cost factor.
         /// </summary>
         /// <param name="factor">The factor.</param>
-        public TurnCostFactor(uint factor = 0) {
+        public TurnCostFactor(uint factor = 0)
+        {
             Factor = factor;
         }
 

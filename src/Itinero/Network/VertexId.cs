@@ -1,17 +1,20 @@
 ﻿using System;
 
-namespace Itinero.Network {
+namespace Itinero.Network
+{
     // TODO: the internal graph structure bleeds out via the tiled ids.
     /// <summary>
     /// Represents a vertex ID composed of a tile ID and a vertex ID.
     /// </summary>
-    public readonly struct VertexId : IEquatable<VertexId> {
+    public readonly struct VertexId : IEquatable<VertexId>
+    {
         /// <summary>
         /// Creates a new vertex id.
         /// </summary>
         /// <param name="tileId">The tile id.</param>
         /// <param name="localId">The local id.</param>
-        public VertexId(uint tileId, uint localId) {
+        public VertexId(uint tileId, uint localId)
+        {
             TileId = tileId;
             LocalId = localId;
         }
@@ -35,7 +38,8 @@ namespace Itinero.Network {
         /// Returns true if this vertex id is empty.
         /// </summary>
         /// <returns></returns>
-        public bool IsEmpty() {
+        public bool IsEmpty()
+        {
             return TileId == uint.MaxValue;
         }
 
@@ -43,7 +47,8 @@ namespace Itinero.Network {
         /// Returns a human readable description.
         /// </summary>
         /// <returns></returns>
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"{LocalId} @ {TileId}";
         }
 
@@ -51,20 +56,24 @@ namespace Itinero.Network {
         /// Returns true if the two vertices represent the same id.
         /// </summary>
         /// <returns></returns>
-        public static bool operator ==(VertexId vertex1, VertexId vertex2) {
+        public static bool operator ==(VertexId vertex1, VertexId vertex2)
+        {
             return vertex1.LocalId == vertex2.LocalId &&
                    vertex1.TileId == vertex2.TileId;
         }
 
-        public static bool operator !=(VertexId vertex1, VertexId vertex2) {
+        public static bool operator !=(VertexId vertex1, VertexId vertex2)
+        {
             return !(vertex1 == vertex2);
         }
 
-        public bool Equals(VertexId other) {
+        public bool Equals(VertexId other)
+        {
             return LocalId == other.LocalId && TileId == other.TileId;
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object obj)
+        {
             if (ReferenceEquals(null, obj)) {
                 return false;
             }
@@ -72,7 +81,8 @@ namespace Itinero.Network {
             return obj is VertexId other && Equals(other);
         }
 
-        public override int GetHashCode() {
+        public override int GetHashCode()
+        {
             unchecked {
                 return ((int) TileId * 397) ^ (int) LocalId;
             }
@@ -82,7 +92,8 @@ namespace Itinero.Network {
         /// Encodes the info in this vertex into one 64bit unsigned integer.
         /// </summary>
         /// <returns>An encoded version of this vertex.</returns>
-        internal ulong Encode() {
+        internal ulong Encode()
+        {
             return ((ulong) TileId << 32) + LocalId;
         }
 
@@ -93,7 +104,8 @@ namespace Itinero.Network {
         /// <param name="tileId">The tile id.</param>
         /// <param name="localId">The local id.</param>
         /// <returns>The decoded version of the vertex.</returns>
-        internal static void Decode(ulong encoded, out uint tileId, out uint localId) {
+        internal static void Decode(ulong encoded, out uint tileId, out uint localId)
+        {
             tileId = (uint) (encoded >> 32);
             var tileOffset = (ulong) tileId << 32;
             localId = (uint) (encoded - tileOffset);
@@ -104,7 +116,8 @@ namespace Itinero.Network {
         /// </summary>
         /// <param name="encoded">The encoded version a vertex.</param>
         /// <returns>The decoded version of the vertex.</returns>
-        internal static VertexId Decode(ulong encoded) {
+        internal static VertexId Decode(ulong encoded)
+        {
             Decode(encoded, out var tileId, out var localId);
             return new VertexId(tileId, localId);
         }

@@ -5,10 +5,13 @@ using Itinero.Tests.Profiles;
 using Itinero.Tests.Routes.Paths;
 using Xunit;
 
-namespace Itinero.Tests.Routes.Builders {
-    public class RouteBuilderWithMetaTests {
+namespace Itinero.Tests.Routes.Builders
+{
+    public class RouteBuilderWithMetaTests
+    {
         [Fact]
-        public void RouteBuilder_OneEdgeWithMeta_MetaIsContained() {
+        public void RouteBuilder_OneEdgeWithMeta_MetaIsContained()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude)[] {
                     (4.801073670387268, 51.268064181900094),
@@ -35,7 +38,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_TwoEdges_TwoMetas() {
+        public void RouteBuilder_Build_TwoEdges_TwoMetas()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude)[] {
                     (4.801073670387268, 51.268064181900094),
@@ -85,7 +89,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_TwoEdges_BackwardBackward_ShouldBuildTwoEdgeRoute() {
+        public void RouteBuilder_Build_TwoEdges_BackwardBackward_ShouldBuildTwoEdgeRoute()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude)[] {
                     (4.801073670387268, 51.268064181900094),

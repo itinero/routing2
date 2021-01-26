@@ -3,10 +3,13 @@ using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
 using Xunit;
 
-namespace Itinero.Tests.IO.Osm.Tiles {
-    public class GlobalIdMapTests {
+namespace Itinero.Tests.IO.Osm.Tiles
+{
+    public class GlobalIdMapTests
+    {
         [Fact]
-        public void GlobalIdMap_ReadWriteShouldCopy() {
+        public void GlobalIdMap_ReadWriteShouldCopy()
+        {
             var globalId = new GlobalIdMap();
             globalId.Set(808034, new VertexId(80912, 184));
             globalId.Set(808035, new VertexId(80915, 1823));

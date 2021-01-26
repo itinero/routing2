@@ -7,11 +7,13 @@ using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search;
 using Itinero.Profiles;
 
-namespace Itinero.Snapping {
+namespace Itinero.Snapping
+{
     /// <summary>
     /// Extension methods related to snapping and snap points.
     /// </summary>
-    public static class SnapPointExtensions {
+    public static class SnapPointExtensions
+    {
         /// <summary>
         /// Returns the location on the given edge using the given offset.
         /// </summary>
@@ -19,7 +21,8 @@ namespace Itinero.Snapping {
         /// <param name="snapPoint">The snap point.</param>
         /// <returns>The location on the network.</returns>
         public static (double longitude, double latitude, float? e) LocationOnNetwork(this SnapPoint snapPoint,
-            RoutingNetwork routerDb) {
+            RoutingNetwork routerDb)
+        {
             var enumerator = routerDb.GetEdgeEnumerator();
             enumerator.MoveToEdge(snapPoint.EdgeId);
 
@@ -38,7 +41,8 @@ namespace Itinero.Snapping {
         /// <returns>The direction on the edge at the location of the snap point that best matches the given direction.
         /// Returns null if the difference is too big relative to the tolerance or the edge is too small to properly calculate an angle.</returns>
         public static bool? Direction(this SnapPoint snapPoint, RoutingNetwork routerDb, DirectionEnum direction,
-            double distance = 10, double tolerance = 90) {
+            double distance = 10, double tolerance = 90)
+        {
             return snapPoint.DirectionFromAngle(routerDb, (double) direction, out _, distance, tolerance);
         }
 
@@ -55,7 +59,8 @@ namespace Itinero.Snapping {
         /// <returns>The direction on the edge at the location of the snap point that best matches the given direction.
         /// Returns null if the difference is too big relative to the tolerance or the edge is too small to properly calculate an angle.</returns>
         public static bool? Direction(this SnapPoint snapPoint, RoutingNetwork routerDb, DirectionEnum direction,
-            out double difference, double distance = 10, double tolerance = 90) {
+            out double difference, double distance = 10, double tolerance = 90)
+        {
             return snapPoint.DirectionFromAngle(routerDb, (double) direction, out difference, distance, tolerance);
         }
 
@@ -73,7 +78,8 @@ namespace Itinero.Snapping {
         /// Returns null if the difference is too big relative to the tolerance or the edge is too small to properly calculate an angle.</returns>
         public static bool? DirectionFromAngle(this SnapPoint snapPoint, RoutingNetwork routerDb,
             double degreesMeridian, out double difference, double distance = 10,
-            double tolerance = 90) {
+            double tolerance = 90)
+        {
             if (tolerance <= 0 || tolerance > 90) {
                 throw new ArgumentOutOfRangeException(nameof(tolerance), "The tolerance has to be in range of ]0,90]");
             }
@@ -112,7 +118,8 @@ namespace Itinero.Snapping {
         /// <param name="routerDb">The router db.</param>
         /// <param name="distance">The distance to average the edge angle over in the range of ]0,∞[.</param>
         /// <returns>The angle in degrees with the meridian clockwise.</returns>
-        public static double? Angle(this SnapPoint snapPoint, RoutingNetwork routerDb, double distance = 10) {
+        public static double? Angle(this SnapPoint snapPoint, RoutingNetwork routerDb, double distance = 10)
+        {
             if (distance <= 0) {
                 throw new ArgumentOutOfRangeException(nameof(distance), "The distance has to be in the range ]0,∞[");
             }

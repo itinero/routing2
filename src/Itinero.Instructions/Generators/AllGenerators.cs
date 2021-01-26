@@ -5,8 +5,10 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Instructions.Generators {
-    internal static class AllGenerators {
+namespace Itinero.Instructions.Generators
+{
+    internal static class AllGenerators
+    {
         private static List<IInstructionGenerator> Generators = new List<IInstructionGenerator> {
             new BaseInstructionGenerator(),
             new EndInstructionGenerator(),
@@ -19,7 +21,8 @@ namespace Itinero.Instructions.Generators {
 
         public static Dictionary<string, IInstructionGenerator> AllGeneratorsDict = GetDict();
 
-        private static Dictionary<string, IInstructionGenerator> GetDict() {
+        private static Dictionary<string, IInstructionGenerator> GetDict()
+        {
             var dict = new Dictionary<string, IInstructionGenerator>();
 
             foreach (var generator in Generators) {

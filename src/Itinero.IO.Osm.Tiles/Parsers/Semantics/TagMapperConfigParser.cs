@@ -4,9 +4,12 @@ using System.IO;
 using Itinero.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace Itinero.IO.Osm.Tiles.Parsers.Semantics {
-    public static class TagMapperConfigParser {
-        public static Dictionary<string, TagMapperConfig> Parse(Stream stream) {
+namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
+{
+    public static class TagMapperConfigParser
+    {
+        public static Dictionary<string, TagMapperConfig> Parse(Stream stream)
+        {
             var mappings = new Dictionary<string, TagMapperConfig>();
 
             using (var textReader = new StreamReader(stream)) {

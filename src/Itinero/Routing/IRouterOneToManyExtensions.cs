@@ -6,17 +6,20 @@ using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
 using Itinero.Snapping;
 
-namespace Itinero.Routing {
+namespace Itinero.Routing
+{
     /// <summary>
     /// Contains extensions methods for the one to many router.
     /// </summary>
-    public static class IRouterOneToManyExtensions {
+    public static class IRouterOneToManyExtensions
+    {
         /// <summary>
         /// Calculates the paths.
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<Result<Path>> Paths(this IRouterOneToMany routerOneToMany) {
+        public static IReadOnlyList<Result<Path>> Paths(this IRouterOneToMany routerOneToMany)
+        {
             var source = routerOneToMany.Source;
             var targets = routerOneToMany.Targets;
 
@@ -54,7 +57,8 @@ namespace Itinero.Routing {
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The routes.</returns>
-        public static IReadOnlyList<Result<Route>> Calculate(this IRouterOneToMany routerOneToMany) {
+        public static IReadOnlyList<Result<Route>> Calculate(this IRouterOneToMany routerOneToMany)
+        {
             return routerOneToMany.Paths().Select(x => RouteBuilder.Default.Build(routerOneToMany.Network,
                 routerOneToMany.Settings.Profile, x)).ToArray();
         }
@@ -64,7 +68,8 @@ namespace Itinero.Routing {
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The weights.</returns>
-        public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany) {
+        public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany)
+        {
             return null;
 
             // var profileHandler = routerOneToMany.Router.Network.GetCostFunctionFor(

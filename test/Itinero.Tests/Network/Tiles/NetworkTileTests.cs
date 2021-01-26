@@ -3,10 +3,13 @@ using Itinero.Network;
 using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Network.Tiles {
-    public class NetworkTileTests {
+namespace Itinero.Tests.Network.Tiles
+{
+    public class NetworkTileTests
+    {
         [Fact]
-        public void NetworkTile_AddVertex_TileEmpty_ShouldReturn0() {
+        public void NetworkTile_AddVertex_TileEmpty_ShouldReturn0()
+        {
             // when adding a vertex to a tile the graph should always generate an id in the same tile.
 
             var networkTile = new NetworkTile(14,
@@ -18,7 +21,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddVertex_OneVertex_ShouldReturn1() {
+        public void NetworkTile_AddVertex_OneVertex_ShouldReturn1()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
@@ -34,7 +38,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_TryGetVertex0_Vertex0DoesNotExists_ShouldReturnFalse() {
+        public void NetworkTile_TryGetVertex0_Vertex0DoesNotExists_ShouldReturnFalse()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
 
@@ -43,7 +48,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge0_VerticesExist_ShouldReturn0() {
+        public void NetworkTile_AddEdge0_VerticesExist_ShouldReturn0()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -54,7 +60,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge1_VerticesExist_ShouldReturn9() {
+        public void NetworkTile_AddEdge1_VerticesExist_ShouldReturn9()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -68,7 +75,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge_OverTileBoundary_ShouldStoreVertex() {
+        public void NetworkTile_AddEdge_OverTileBoundary_ShouldStoreVertex()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -88,7 +96,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge_ShouldAddEdge() {
+        public void NetworkTile_AddEdge_ShouldAddEdge()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -104,7 +113,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_CloneForEdgeTypeMap_MapEmpty_OneEdge_ShouldNotAffectEdge() {
+        public void NetworkTile_CloneForEdgeTypeMap_MapEmpty_OneEdge_ShouldNotAffectEdge()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -130,7 +140,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_CloneForEdgeTypeMap_MapEmpty_TwoEdges_ShouldNotAffectEdges() {
+        public void NetworkTile_CloneForEdgeTypeMap_MapEmpty_TwoEdges_ShouldNotAffectEdges()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -164,7 +175,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_CloneForEdgeTypeMap_OneEdge_ShouldNotAffectEdge() {
+        public void NetworkTile_CloneForEdgeTypeMap_OneEdge_ShouldNotAffectEdge()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -190,7 +202,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_CloneForEdgeTypeMap_TwoEdges_ShouldNotAffectEdges() {
+        public void NetworkTile_CloneForEdgeTypeMap_TwoEdges_ShouldNotAffectEdges()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -225,7 +238,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_CloneForEdgeTypeMap_ThreeEdges_ShouldNotAffectEdges() {
+        public void NetworkTile_CloneForEdgeTypeMap_ThreeEdges_ShouldNotAffectEdges()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);

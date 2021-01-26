@@ -3,10 +3,13 @@ using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Network.Tiles {
-    public class NetworkTile_SerializationTests {
+namespace Itinero.Tests.Network.Tiles
+{
+    public class NetworkTile_SerializationTests
+    {
         [Fact]
-        public void NetworkTile_Serialize_Deserialize_OneVertex() {
+        public void NetworkTile_Serialize_Deserialize_OneVertex()
+        {
             var expectedTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
@@ -24,7 +27,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_Serialize_Deserialize_OneVertex_Elevation() {
+        public void NetworkTile_Serialize_Deserialize_OneVertex_Elevation()
+        {
             var expectedTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
@@ -44,7 +48,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_Serialize_Deserialize_OneEdge() {
+        public void NetworkTile_Serialize_Deserialize_OneEdge()
+        {
             var expected = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728);
@@ -73,7 +78,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_Serialize_Deserialize_OneEdge_Shape() {
+        public void NetworkTile_Serialize_Deserialize_OneEdge_Shape()
+        {
             var expected = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728);
@@ -127,7 +133,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_Serialize_Deserialize_OneEdge_Shape_Elevation() {
+        public void NetworkTile_Serialize_Deserialize_OneEdge_Shape_Elevation()
+        {
             var expected = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728, 100);
@@ -192,7 +199,8 @@ namespace Itinero.Tests.Network.Tiles {
 
 
         [Fact]
-        public void NetworkTile_Serialize_Deserialize_OneEdge_Attributes() {
+        public void NetworkTile_Serialize_Deserialize_OneEdge_Attributes()
+        {
             var expected = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = expected.AddVertex(4.86638, 51.269728);

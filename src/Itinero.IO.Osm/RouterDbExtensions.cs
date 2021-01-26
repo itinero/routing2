@@ -1,11 +1,13 @@
 using System;
 using OsmSharp.Streams;
 
-namespace Itinero.IO.Osm {
+namespace Itinero.IO.Osm
+{
     /// <summary>
     /// Contains extensions method for the router db.
     /// </summary>
-    public static class RouterDbExtensions {
+    public static class RouterDbExtensions
+    {
         /// <summary>
         /// Loads the given OSM data into the router db.
         /// </summary>
@@ -13,7 +15,8 @@ namespace Itinero.IO.Osm {
         /// <param name="data">The data.</param>
         /// <param name="configure">The configure function.</param>
         public static void UseOsmData(this RouterDb routerDb, OsmStreamSource data,
-            Action<DataProviderSettings>? configure = null) {
+            Action<DataProviderSettings>? configure = null)
+        {
             // get writer.
             if (routerDb.HasMutableNetwork) {
                 throw new InvalidOperationException(

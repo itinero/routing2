@@ -6,10 +6,13 @@ using Itinero.Network.Mutation;
 using Itinero.Snapping;
 using Xunit;
 
-namespace Itinero.Tests.Snapping {
-    public class SnapPointExtensionsTests {
+namespace Itinero.Tests.Snapping
+{
+    public class SnapPointExtensionsTests
+    {
         [Fact]
-        public void SnapPointExtensions_LocationOnNetwork_Offset0_ShouldReturnVertex1() {
+        public void SnapPointExtensions_LocationOnNetwork_Offset0_ShouldReturnVertex1()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.1074142456054688, 51.31012070202407, null),
@@ -26,7 +29,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void SnapPointExtensions_LocationOnNetwork_OffsetMax_ShouldReturnVertex2() {
+        public void SnapPointExtensions_LocationOnNetwork_OffsetMax_ShouldReturnVertex2()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.1074142456054688, 51.31012070202407, null),
@@ -43,7 +47,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void SnapPointExtensions_LocationOnNetwork_OffsetHalf_ShouldReturnMiddle() {
+        public void SnapPointExtensions_LocationOnNetwork_OffsetHalf_ShouldReturnMiddle()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.1074142456054688, 51.31012070202407, null),
@@ -61,7 +66,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_Empty_ShouldFail() {
+        public void Snap_Empty_ShouldFail()
+        {
             var routerDb = new RouterDb();
 
             var result = routerDb.Latest.Snap().To(new VertexId(0, 1));
@@ -69,7 +75,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneVertex_ShouldFail() {
+        public void Snap_OneVertex_ShouldFail()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.146638870239258, 51.31060357805506, null)
@@ -81,7 +88,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneEdge_Vertex1_ShouldReturnOffset0() {
+        public void Snap_OneEdge_Vertex1_ShouldReturnOffset0()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.1074142456054688, 51.31012070202407, null),
@@ -98,7 +106,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneEdge_Vertex2_ShouldReturnOffsetMax() {
+        public void Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.1074142456054688, 51.31012070202407, null),
@@ -115,7 +124,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneEdge_Middle_ShouldReturnMiddle() {
+        public void Snap_OneEdge_Middle_ShouldReturnMiddle()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (3.1074142456054688, 51.31012070202407, null),
@@ -135,7 +145,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneEdgeWithShape_Vertex1_ShouldReturnOffset0() {
+        public void Snap_OneEdgeWithShape_Vertex1_ShouldReturnOffset0()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, null),
@@ -156,7 +167,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneEdgeWithShape_Vertex2_ShouldReturnOffsetMax() {
+        public void Snap_OneEdgeWithShape_Vertex2_ShouldReturnOffsetMax()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, null),
@@ -177,7 +189,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_OneEdgeWithShape_Middle_ShouldReturnMiddle() {
+        public void Snap_OneEdgeWithShape_Middle_ShouldReturnMiddle()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, null),
@@ -199,7 +212,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_TwoEdgeWithShapes_VertexLocation0_ShouldReturnVertex0() {
+        public void Snap_TwoEdgeWithShapes_VertexLocation0_ShouldReturnVertex0()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, null),
@@ -227,7 +241,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_TwoEdgeWithShapes_VertexLocation1_ShouldReturnVertex1() {
+        public void Snap_TwoEdgeWithShapes_VertexLocation1_ShouldReturnVertex1()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, null),
@@ -254,7 +269,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_TwoEdgeWithShapes_VertexLocation2_ShouldReturnVertex2() {
+        public void Snap_TwoEdgeWithShapes_VertexLocation2_ShouldReturnVertex2()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, null),
@@ -282,7 +298,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_Direction_0Degrees_PerfectForward_ShouldReturnForward() {
+        public void Snap_Direction_0Degrees_PerfectForward_ShouldReturnForward()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, (float?) null),
@@ -300,7 +317,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_Direction_0Degrees_45OffsetForward_ShouldReturnForward() {
+        public void Snap_Direction_0Degrees_45OffsetForward_ShouldReturnForward()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, (float?) null),
@@ -324,7 +342,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_Direction_0Degrees_180OffsetForward_ShouldReturnBackward() {
+        public void Snap_Direction_0Degrees_180OffsetForward_ShouldReturnBackward()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, (float?) null),
@@ -342,7 +361,8 @@ namespace Itinero.Tests.Snapping {
         }
 
         [Fact]
-        public void Snap_Direction_180Degrees_PerfectForward_ShouldReturnForward() {
+        public void Snap_Direction_180Degrees_PerfectForward_ShouldReturnForward()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.800467491149902, 51.26896368721961, (float?) null),

@@ -13,16 +13,19 @@ using Itinero.Profiles;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero {
+namespace Itinero
+{
     /// <summary>
     /// Represents a router db.
     /// </summary>
-    public sealed partial class RouterDb : IRouterDbMutable {
+    public sealed partial class RouterDb : IRouterDbMutable
+    {
         /// <summary>
         /// Creates a new router db.
         /// </summary>
         /// <param name="configuration">The configuration.</param>
-        public RouterDb(RouterDbConfiguration? configuration = null) {
+        public RouterDb(RouterDbConfiguration? configuration = null)
+        {
             configuration ??= RouterDbConfiguration.Default;
 
             Latest = new RoutingNetwork(this, configuration.Zoom);
@@ -34,7 +37,8 @@ namespace Itinero {
             ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
-        private RouterDb(Stream stream) {
+        private RouterDb(Stream stream)
+        {
             // check version #.
             var version = stream.ReadVarInt32();
             if (version != 1) {

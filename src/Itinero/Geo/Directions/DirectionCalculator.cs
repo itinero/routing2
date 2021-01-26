@@ -1,13 +1,16 @@
 using System;
 
-namespace Itinero.Geo.Directions {
-    internal static class DirectionCalculator {
+namespace Itinero.Geo.Directions
+{
+    internal static class DirectionCalculator
+    {
         /// <summary>
         /// Calculates the angle in radians at coordinate2.
         /// </summary>
         public static double Angle((double longitude, double latitude, float? e) coordinate1,
             (double longitude, double latitude, float? e) coordinate2,
-            (double longitude, double latitude, float? e) coordinate3) {
+            (double longitude, double latitude, float? e) coordinate3)
+        {
             var v11 = coordinate1.latitude - coordinate2.latitude;
             var v10 = coordinate1.longitude - coordinate2.longitude;
 
@@ -72,7 +75,8 @@ namespace Itinero.Geo.Directions {
 
         public static RelativeDirection Calculate((double longitude, double latitude, float? e) coordinate1,
             (double longitude, double latitude, float? e) coordinate2,
-            (double longitude, double latitude, float? e) coordinate3) {
+            (double longitude, double latitude, float? e) coordinate3)
+        {
             var direction = new RelativeDirection();
 
             const double margin = 65.0;
@@ -117,7 +121,8 @@ namespace Itinero.Geo.Directions {
         /// Calculates the direction of a segment.
         /// </summary>
         public static DirectionEnum Calculate((double longitude, double latitude, float? e) coordinate1,
-            (double longitude, double latitude, float? e) coordinate2) {
+            (double longitude, double latitude, float? e) coordinate2)
+        {
             var angle = (double) Angle((coordinate1.latitude + 0.01f, coordinate1.longitude, null),
                 coordinate1, coordinate2);
 
@@ -152,11 +157,13 @@ namespace Itinero.Geo.Directions {
             return DirectionEnum.North;
         }
 
-        internal static double ToDegrees(this double radians) {
+        internal static double ToDegrees(this double radians)
+        {
             return radians / Math.PI * 180d;
         }
 
-        internal static double NormalizeDegrees(this double degrees) {
+        internal static double NormalizeDegrees(this double degrees)
+        {
             if (degrees >= 360) {
                 var count = Math.Floor(degrees / 360.0);
                 degrees -= 360.0 * count;

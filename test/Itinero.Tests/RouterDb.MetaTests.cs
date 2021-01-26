@@ -2,10 +2,13 @@ using System.IO;
 using System.Linq;
 using Xunit;
 
-namespace Itinero.Tests {
-    public class RouterDb_MetaTests {
+namespace Itinero.Tests
+{
+    public class RouterDb_MetaTests
+    {
         [Fact]
-        public void RouterDb_Meta_Add1_ShouldAdd1() {
+        public void RouterDb_Meta_Add1_ShouldAdd1()
+        {
             var routerDb = new RouterDb();
 
             routerDb.Meta.Add(("source", "OpenStreetMap"));
@@ -15,7 +18,8 @@ namespace Itinero.Tests {
         }
 
         [Fact]
-        public void RouterDb_Meta_WriteRead_1Attribute_ShouldHaveMetaAfter() {
+        public void RouterDb_Meta_WriteRead_1Attribute_ShouldHaveMetaAfter()
+        {
             var routerDb = new RouterDb();
 
             routerDb.Meta.Add(("source", "OpenStreetMap"));

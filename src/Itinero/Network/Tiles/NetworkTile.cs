@@ -6,8 +6,10 @@ using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.Tiles {
-    internal partial class NetworkTile {
+namespace Itinero.Network.Tiles
+{
+    internal partial class NetworkTile
+    {
         private const int DefaultSizeIncrease = 16;
 
         private readonly uint _tileId;
@@ -35,7 +37,8 @@ namespace Itinero.Network.Tiles {
         /// <param name="zoom">The zoom level.</param>
         /// <param name="tileId">The tile id.</param>
         /// <param name="edgeTypeMapId">The edge type index id.</param>
-        public NetworkTile(int zoom, uint tileId, int edgeTypeMapId = 0) {
+        public NetworkTile(int zoom, uint tileId, int edgeTypeMapId = 0)
+        {
             _zoom = zoom;
             _tileId = tileId;
             _edgeTypeMapId = 0;
@@ -57,7 +60,8 @@ namespace Itinero.Network.Tiles {
             ArrayBase<byte> attributes,
             ArrayBase<string> strings, ArrayBase<byte> turnCosts, uint nextVertexId, uint nextEdgeId,
             uint nextAttributePointer,
-            uint nextShapePointer, uint nextStringId) {
+            uint nextShapePointer, uint nextStringId)
+        {
             _zoom = zoom;
             _tileId = tileId;
             _edgeTypeMapId = edgeTypeMapId;
@@ -83,7 +87,8 @@ namespace Itinero.Network.Tiles {
         /// Clones this graph tile.
         /// </summary>
         /// <returns>The copy of this tile.</returns>
-        public NetworkTile Clone() {
+        public NetworkTile Clone()
+        {
             return new(_zoom, _tileId, _edgeTypeMapId, _nextCrossTileId, _pointers.Clone(), _edges.Clone(),
                 _crossEdgePointers.Clone(),
                 _coordinates.Clone(), _shapes.Clone(), _attributes.Clone(), _strings.Clone(), _turnCosts.Clone(),
@@ -113,7 +118,8 @@ namespace Itinero.Network.Tiles {
         /// <param name="latitude">The latitude.</param>
         /// <param name="e">The elevation in meters.</param>
         /// <returns>The ID of the new vertex.</returns>
-        public VertexId AddVertex(double longitude, double latitude, float? e = null) {
+        public VertexId AddVertex(double longitude, double latitude, float? e = null)
+        {
             // set coordinate.
             SetCoordinate(_nextVertexId, longitude, latitude, e);
 
@@ -135,7 +141,8 @@ namespace Itinero.Network.Tiles {
         /// <param name="latitude">The latitude.</param>
         /// <param name="elevation">The elevation.</param>
         /// <returns>True if the vertex exists.</returns>
-        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? elevation) {
+        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? elevation)
+        {
             longitude = default;
             latitude = default;
             elevation = null;
@@ -161,7 +168,8 @@ namespace Itinero.Network.Tiles {
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
             IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeTypeId = null,
-            uint? length = null) {
+            uint? length = null)
+        {
             if (vertex2.TileId != _tileId) {
                 // this edge crosses tiles boundaries, it need special treatment and a stable id.
                 // because the edge originates in this tile, this tile is responsible for generating the id.
@@ -266,7 +274,8 @@ namespace Itinero.Network.Tiles {
         }
 
         internal NetworkTile CloneForEdgeTypeMap(
-            (int id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap) {
+            (int id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
+        {
             var edges = new MemoryArray<byte>(_edges.Length);
             var pointers = new MemoryArray<uint>(_pointers.Length);
             var crossEdgePointers = new MemoryArray<uint>(_crossEdgePointers.Length);
@@ -336,11 +345,13 @@ namespace Itinero.Network.Tiles {
                 _nextAttributePointer, _nextShapePointer, _nextStringId);
         }
 
-        internal uint VertexEdgePointer(uint vertex) {
+        internal uint VertexEdgePointer(uint vertex)
+        {
             return _pointers[vertex];
         }
 
-        internal static uint EncodeVertex(ArrayBase<byte> edges, uint localTileId, uint location, VertexId vertexId) {
+        internal static uint EncodeVertex(ArrayBase<byte> edges, uint localTileId, uint location, VertexId vertexId)
+        {
             if (vertexId.TileId == localTileId) { // same tile, only store local id.
                 if (edges.Length <= location + 5) {
                     edges.Resize(edges.Length + DefaultSizeIncrease);
@@ -358,7 +369,8 @@ namespace Itinero.Network.Tiles {
             return (uint) edges.SetDynamicUInt64(location, encodedId);
         }
 
-        internal uint DecodeVertex(uint location, out uint localId, out uint tileId) {
+        internal uint DecodeVertex(uint location, out uint localId, out uint tileId)
+        {
             var size = (uint) _edges.GetDynamicUInt64(location, out var encodedId);
             if (encodedId < uint.MaxValue) {
                 localId = (uint) encodedId;
@@ -370,17 +382,20 @@ namespace Itinero.Network.Tiles {
             return size;
         }
 
-        internal uint DecodeEdgeCrossId(uint location, out uint edgeCrossId) {
+        internal uint DecodeEdgeCrossId(uint location, out uint edgeCrossId)
+        {
             var s = _edges.GetDynamicUInt32(location, out var c);
             edgeCrossId = EdgeId.MinCrossId + c;
             return (uint) s;
         }
 
-        internal uint GetEdgeCrossPointer(uint edgeCrossId) {
+        internal uint GetEdgeCrossPointer(uint edgeCrossId)
+        {
             return _crossEdgePointers[edgeCrossId];
         }
 
-        internal static uint EncodePointer(ArrayBase<byte> edges, uint location, uint? pointer) {
+        internal static uint EncodePointer(ArrayBase<byte> edges, uint location, uint? pointer)
+        {
             // TODO: save the diff instead of the full pointer.
             if (edges.Length <= location + 5) {
                 edges.Resize(edges.Length + DefaultSizeIncrease);
@@ -390,13 +405,15 @@ namespace Itinero.Network.Tiles {
                 pointer.EncodeAsNullableData());
         }
 
-        internal uint DecodePointer(uint location, out uint? pointer) {
+        internal uint DecodePointer(uint location, out uint? pointer)
+        {
             var size = _edges.GetDynamicUInt32(location, out var data);
             pointer = data.DecodeNullableData();
             return (uint) size;
         }
 
-        internal static uint SetDynamicUIn32Nullable(ArrayBase<byte> edges, uint pointer, uint? data) {
+        internal static uint SetDynamicUIn32Nullable(ArrayBase<byte> edges, uint pointer, uint? data)
+        {
             while (edges.Length <= pointer + 5) {
                 edges.Resize(edges.Length + DefaultSizeIncrease);
             }
@@ -404,15 +421,18 @@ namespace Itinero.Network.Tiles {
             return (uint) edges.SetDynamicUInt32Nullable(pointer, data);
         }
 
-        internal void GetTailHeadOrder(uint location, ref byte? tail, ref byte? head) {
+        internal void GetTailHeadOrder(uint location, ref byte? tail, ref byte? head)
+        {
             _edges.GetTailHeadOrder(location, ref tail, ref head);
         }
 
-        internal uint DecodeEdgePointerId(uint location, out uint? edgeProfileId) {
+        internal uint DecodeEdgePointerId(uint location, out uint? edgeProfileId)
+        {
             return (uint) _edges.GetDynamicUInt32Nullable(location, out edgeProfileId);
         }
 
-        private void WriteEdgesAndVerticesTo(Stream stream) {
+        private void WriteEdgesAndVerticesTo(Stream stream)
+        {
             // write vertex pointers.
             stream.WriteVarUInt32(_nextVertexId);
             for (var i = 0; i < _nextVertexId; i++) {
@@ -432,7 +452,8 @@ namespace Itinero.Network.Tiles {
             }
         }
 
-        private void ReadEdgesAndVerticesFrom(Stream stream) {
+        private void ReadEdgesAndVerticesFrom(Stream stream)
+        {
             // read vertex pointers.
             _nextVertexId = stream.ReadVarUInt32();
             _pointers.Resize(_nextVertexId);

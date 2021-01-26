@@ -3,17 +3,20 @@ using System.Text;
 using System.Text.Json;
 using Itinero.Routes;
 
-namespace Itinero.IO.Json.GeoJson {
+namespace Itinero.IO.Json.GeoJson
+{
     /// <summary>
     /// Contains route geojson extensions 
     /// </summary>
-    public static class RouteExtensions {
+    public static class RouteExtensions
+    {
         /// <summary>
         /// Returns geojson for the given route.
         /// </summary>
         /// <param name="route">The route.</param>
         /// <returns>A geojson string.</returns>
-        public static string ToGeoJson(this Route route) {
+        public static string ToGeoJson(this Route route)
+        {
             using (var stream = new MemoryStream()) {
                 using (var jsonWriter = new Utf8JsonWriter(stream)) {
                     jsonWriter.WriteFeatureCollectionStart();
@@ -30,7 +33,8 @@ namespace Itinero.IO.Json.GeoJson {
         /// </summary>
         /// <param name="route">The route.</param>
         /// <param name="jsonWriter">The json writer.</param>
-        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, Route route) {
+        public static void WriteFeatures(this Utf8JsonWriter jsonWriter, Route route)
+        {
             if (route.Shape != null) {
                 jsonWriter.WriteFeatureStart();
 

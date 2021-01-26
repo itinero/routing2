@@ -4,10 +4,13 @@ using Itinero.Network;
 using Itinero.Tests.Indexes;
 using Xunit;
 
-namespace Itinero.Tests.Network {
-    public class NetworkTests {
+namespace Itinero.Tests.Network
+{
+    public class NetworkTests
+    {
         [Fact]
-        public void RoutingNetwork_SetEdgeTypeMap_AddEdge_NewType_ShouldAdd() {
+        public void RoutingNetwork_SetEdgeTypeMap_AddEdge_NewType_ShouldAdd()
+        {
             var routerDb = new RouterDb();
             var network = new RoutingNetwork(routerDb);
 
@@ -30,7 +33,8 @@ namespace Itinero.Tests.Network {
         }
 
         [Fact]
-        public void RoutingNetwork_EdgeType_AddEdge_ExistingType_ShouldGet() {
+        public void RoutingNetwork_EdgeType_AddEdge_ExistingType_ShouldGet()
+        {
             var routerDb = new RouterDb();
             var network = new RoutingNetwork(routerDb);
 
@@ -56,7 +60,8 @@ namespace Itinero.Tests.Network {
         }
 
         [Fact]
-        public void RoutingNetwork_EdgeType_AddEdge_SecondType_ShouldAdd() {
+        public void RoutingNetwork_EdgeType_AddEdge_SecondType_ShouldAdd()
+        {
             var routerDb = new RouterDb();
             var network = new RoutingNetwork(routerDb);
 
@@ -82,7 +87,8 @@ namespace Itinero.Tests.Network {
         }
 
         [Fact]
-        public void RoutingNetwork_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId() {
+        public void RoutingNetwork_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId()
+        {
             var routerDb = new RouterDb();
             var network = new RoutingNetwork(routerDb);
 

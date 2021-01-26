@@ -1,10 +1,13 @@
 using System.IO;
 
-namespace Itinero.IO.Osm.Tiles {
-    internal static class StreamExtensions {
+namespace Itinero.IO.Osm.Tiles
+{
+    internal static class StreamExtensions
+    {
         private const byte Mask = 128 - 1;
 
-        public static void WriteVarUInt32Nullable(this Stream stream, uint? value) {
+        public static void WriteVarUInt32Nullable(this Stream stream, uint? value)
+        {
             if (value == null) {
                 stream.WriteVarUInt32(0);
             }
@@ -13,7 +16,8 @@ namespace Itinero.IO.Osm.Tiles {
             }
         }
 
-        public static void WriteVarUInt32(this Stream stream, uint value) {
+        public static void WriteVarUInt32(this Stream stream, uint value)
+        {
             var d0 = (byte) (value & Mask);
             value >>= 7;
             if (value == 0) {
@@ -62,7 +66,8 @@ namespace Itinero.IO.Osm.Tiles {
         }
 
 
-        public static void WriteVarUInt64Nullable(this Stream stream, ulong? value) {
+        public static void WriteVarUInt64Nullable(this Stream stream, ulong? value)
+        {
             if (value == null) {
                 stream.WriteVarUInt64(0);
             }
@@ -71,7 +76,8 @@ namespace Itinero.IO.Osm.Tiles {
             }
         }
 
-        public static void WriteVarUInt64(this Stream stream, ulong value) {
+        public static void WriteVarUInt64(this Stream stream, ulong value)
+        {
             var d0 = (byte) (value & Mask);
             value >>= 7;
             if (value == 0) {
@@ -194,7 +200,8 @@ namespace Itinero.IO.Osm.Tiles {
             return;
         }
 
-        public static uint? ReadVarUInt32Nullable(this Stream stream) {
+        public static uint? ReadVarUInt32Nullable(this Stream stream)
+        {
             var value = stream.ReadVarUInt32();
             if (value == 0) {
                 return null;
@@ -203,7 +210,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value - 1;
         }
 
-        public static uint ReadVarUInt32(this Stream stream) {
+        public static uint ReadVarUInt32(this Stream stream)
+        {
             var value = 0U;
             var d = stream.ReadByte();
             if (d < 128) {
@@ -241,7 +249,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        public static ulong? ReadVarUInt64Nullable(this Stream stream) {
+        public static ulong? ReadVarUInt64Nullable(this Stream stream)
+        {
             var value = stream.ReadVarUInt64();
             if (value == 0) {
                 return null;
@@ -250,7 +259,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value - 1;
         }
 
-        public static ulong ReadVarUInt64(this Stream stream) {
+        public static ulong ReadVarUInt64(this Stream stream)
+        {
             var value = 0UL;
             var d = stream.ReadByte();
             if (d < 128) {
@@ -337,7 +347,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        private static ulong ToUnsigned(long value) {
+        private static ulong ToUnsigned(long value)
+        {
             var unsigned = (ulong) value;
             if (value < 0) {
                 unsigned = (ulong) -value;
@@ -351,7 +362,8 @@ namespace Itinero.IO.Osm.Tiles {
             return unsigned;
         }
 
-        private static ulong? ToUnsigned(long? valueNullable) {
+        private static ulong? ToUnsigned(long? valueNullable)
+        {
             if (valueNullable == null) {
                 return null;
             }
@@ -370,7 +382,8 @@ namespace Itinero.IO.Osm.Tiles {
             return unsigned;
         }
 
-        private static uint ToUnsigned(int value) {
+        private static uint ToUnsigned(int value)
+        {
             var unsigned = (uint) value;
             if (value < 0) {
                 unsigned = (uint) -value;
@@ -384,7 +397,8 @@ namespace Itinero.IO.Osm.Tiles {
             return unsigned;
         }
 
-        private static uint? ToUnsigned(int? valueNullable) {
+        private static uint? ToUnsigned(int? valueNullable)
+        {
             if (valueNullable == null) {
                 return null;
             }
@@ -403,7 +417,8 @@ namespace Itinero.IO.Osm.Tiles {
             return unsigned;
         }
 
-        private static long FromUnsigned(ulong unsigned) {
+        private static long FromUnsigned(ulong unsigned)
+        {
             var sign = unsigned & (uint) 1;
 
             var value = (long) (unsigned >> 1);
@@ -414,7 +429,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        private static long? FromUnsigned(ulong? unsignedNullable) {
+        private static long? FromUnsigned(ulong? unsignedNullable)
+        {
             if (unsignedNullable == null) {
                 return null;
             }
@@ -430,7 +446,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        private static int FromUnsigned(uint unsigned) {
+        private static int FromUnsigned(uint unsigned)
+        {
             var sign = unsigned & (uint) 1;
 
             var value = (int) (unsigned >> 1);
@@ -441,7 +458,8 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        private static int? FromUnsigned(uint? unsignedNullable) {
+        private static int? FromUnsigned(uint? unsignedNullable)
+        {
             if (unsignedNullable == null) {
                 return null;
             }
@@ -457,46 +475,56 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        public static void WriteVarInt32Nullable(this Stream data, int? value) {
+        public static void WriteVarInt32Nullable(this Stream data, int? value)
+        {
             data.WriteVarUInt32Nullable(ToUnsigned(value));
         }
 
-        public static void WriteVarInt32(this Stream data, int value) {
+        public static void WriteVarInt32(this Stream data, int value)
+        {
             data.WriteVarUInt32(ToUnsigned(value));
         }
 
-        public static int? ReadVarInt32Nullable(this Stream data) {
+        public static int? ReadVarInt32Nullable(this Stream data)
+        {
             return FromUnsigned(data.ReadVarUInt32Nullable());
         }
 
-        public static int ReadVarInt32(this Stream data) {
+        public static int ReadVarInt32(this Stream data)
+        {
             return FromUnsigned(data.ReadVarUInt32());
         }
 
-        public static void WriteVarInt64Nullable(this Stream data, long? value) {
+        public static void WriteVarInt64Nullable(this Stream data, long? value)
+        {
             data.WriteVarUInt64Nullable(ToUnsigned(value));
         }
 
-        public static void WriteVarInt64(this Stream data, long value) {
+        public static void WriteVarInt64(this Stream data, long value)
+        {
             data.WriteVarUInt64(ToUnsigned(value));
         }
 
-        public static long? ReadVarInt64Nullable(this Stream data) {
+        public static long? ReadVarInt64Nullable(this Stream data)
+        {
             return FromUnsigned(data.ReadVarUInt64Nullable());
         }
 
-        public static long ReadVarInt64(this Stream data) {
+        public static long ReadVarInt64(this Stream data)
+        {
             return FromUnsigned(data.ReadVarUInt64());
         }
 
-        public static void WriteInt64(this Stream stream, long value) {
+        public static void WriteInt64(this Stream stream, long value)
+        {
             for (var b = 0; b < 8; b++) {
                 stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
 
-        public static long ReadInt64(this Stream stream) {
+        public static long ReadInt64(this Stream stream)
+        {
             var value = 0L;
             for (var b = 0; b < 8; b++) {
                 value += (long) stream.ReadByte() << (b * 8);
@@ -505,14 +533,16 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        public static void WriteUInt32(this Stream stream, uint value) {
+        public static void WriteUInt32(this Stream stream, uint value)
+        {
             for (var b = 0; b < 4; b++) {
                 stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
 
-        public static uint ReadUInt32(this Stream stream) {
+        public static uint ReadUInt32(this Stream stream)
+        {
             var value = 0U;
             for (var b = 0; b < 4; b++) {
                 value += (uint) stream.ReadByte() << (b * 8);
@@ -521,14 +551,16 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        public static void WriteUInt64(this Stream stream, ulong value) {
+        public static void WriteUInt64(this Stream stream, ulong value)
+        {
             for (var b = 0; b < 8; b++) {
                 stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
 
-        public static ulong ReadUInt64(this Stream stream) {
+        public static ulong ReadUInt64(this Stream stream)
+        {
             var value = 0UL;
             for (var b = 0; b < 8; b++) {
                 value += (ulong) stream.ReadByte() << (b * 8);
@@ -537,14 +569,16 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        public static void WriteInt32(this Stream stream, int value) {
+        public static void WriteInt32(this Stream stream, int value)
+        {
             for (var b = 0; b < 4; b++) {
                 stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
 
-        public static int ReadInt32(this Stream stream) {
+        public static int ReadInt32(this Stream stream)
+        {
             var value = 0;
             for (var b = 0; b < 4; b++) {
                 value += stream.ReadByte() << (b * 8);
@@ -553,18 +587,21 @@ namespace Itinero.IO.Osm.Tiles {
             return value;
         }
 
-        internal static long WriteWithSize(this Stream stream, string value) {
+        internal static long WriteWithSize(this Stream stream, string value)
+        {
             var bytes = System.Text.Encoding.Unicode.GetBytes(value);
             return stream.WriteWithSize(bytes);
         }
 
-        internal static long WriteWithSize(this Stream stream, byte[] value) {
+        internal static long WriteWithSize(this Stream stream, byte[] value)
+        {
             stream.Write(System.BitConverter.GetBytes((long) value.Length), 0, 8);
             stream.Write(value, 0, value.Length);
             return value.Length + 8;
         }
 
-        internal static string ReadWithSizeString(this Stream stream) {
+        internal static string ReadWithSizeString(this Stream stream)
+        {
             var size = stream.ReadInt64();
             var data = new byte[size];
             stream.Read(data, 0, (int) size);

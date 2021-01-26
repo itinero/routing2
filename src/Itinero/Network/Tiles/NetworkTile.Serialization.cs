@@ -1,9 +1,12 @@
 using System.IO;
 using Itinero.IO;
 
-namespace Itinero.Network.Tiles {
-    internal partial class NetworkTile {
-        public void WriteTo(Stream stream) {
+namespace Itinero.Network.Tiles
+{
+    internal partial class NetworkTile
+    {
+        public void WriteTo(Stream stream)
+        {
             var version = 1;
             stream.WriteVarInt32(version);
 
@@ -21,7 +24,8 @@ namespace Itinero.Network.Tiles {
             WriteGeoTo(stream);
         }
 
-        public static NetworkTile ReadFrom(Stream stream) {
+        public static NetworkTile ReadFrom(Stream stream)
+        {
             var version = stream.ReadVarInt32();
             if (version != 1) {
                 throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");

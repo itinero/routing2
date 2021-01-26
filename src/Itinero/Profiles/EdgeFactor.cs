@@ -1,8 +1,10 @@
-namespace Itinero.Profiles {
+namespace Itinero.Profiles
+{
     /// <summary>
     /// A factor returned by a vehicle profile to influence routing augmented with estimated speed. 
     /// </summary>
-    public readonly struct EdgeFactor {
+    public readonly struct EdgeFactor
+    {
         /// <summary>
         /// Creates a new edge factor.
         /// </summary>
@@ -12,7 +14,8 @@ namespace Itinero.Profiles {
         /// <param name="backwardSpeed">The backward speed in ms/s multiplied by 100.</param>
         /// <param name="canStop">The can stop.</param>
         public EdgeFactor(uint forwardFactor, uint backwardFactor,
-            ushort forwardSpeed, ushort backwardSpeed, bool canStop = true) {
+            ushort forwardSpeed, ushort backwardSpeed, bool canStop = true)
+        {
             ForwardFactor = forwardFactor;
             BackwardFactor = backwardFactor;
             ForwardSpeed = forwardSpeed;
@@ -66,7 +69,8 @@ namespace Itinero.Profiles {
         public EdgeFactor Reverse => new(BackwardFactor, ForwardFactor, BackwardSpeed, ForwardSpeed, CanStop);
 
         /// <inheritdoc/>
-        public override string ToString() {
+        public override string ToString()
+        {
             var forwardSpeed = ForwardSpeed / 100.0 * 3.6;
             if (ForwardFactor == BackwardFactor &&
                 ForwardSpeed == BackwardSpeed) {

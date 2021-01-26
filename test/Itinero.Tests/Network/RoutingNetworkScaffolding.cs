@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using Itinero.Network;
 
-namespace Itinero.Tests.Network {
-    public static class RoutingNetworkScaffolding {
+namespace Itinero.Tests.Network
+{
+    public static class RoutingNetworkScaffolding
+    {
         public static (VertexId[] vertices, EdgeId[] edges) Write(this RoutingNetwork network,
             (double longitude, double latitude, float? e)[] vertices,
-            (int from, int to)[]? edges = null) {
+            (int from, int to)[]? edges = null)
+        {
             var fullEdges =
                 new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
                     IEnumerable<(string key, string attribute)>? attributes)[edges?.Length ?? 0];
@@ -21,7 +24,8 @@ namespace Itinero.Tests.Network {
 
         public static (VertexId[] vertices, EdgeId[] edges) Write(this RoutingNetwork network,
             (double longitude, double latitude, float? e)[] vertices,
-            (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[]? edges) {
+            (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[]? edges)
+        {
             var fullEdges =
                 new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
                     IEnumerable<(string key, string attribute)>? attributes)[edges?.Length ?? 0];
@@ -38,7 +42,8 @@ namespace Itinero.Tests.Network {
         public static (VertexId[] vertices, EdgeId[] edges) Write(this RoutingNetwork network,
             (double longitude, double latitude, float? e)[] vertices,
             (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
-                IEnumerable<(string key, string attribute)>? attributes)[]? edges) {
+                IEnumerable<(string key, string attribute)>? attributes)[]? edges)
+        {
             edges ??=
                 new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
                     IEnumerable<(string key, string attribute)>? attributes)[0];

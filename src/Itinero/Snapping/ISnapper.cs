@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Profiles;
 
-namespace Itinero.Snapping {
+namespace Itinero.Snapping
+{
     /// <summary>
     /// Abstract representation of a snapper.
     /// </summary>
-    public interface ISnapper : ILocationsSnapper {
+    public interface ISnapper : ILocationsSnapper
+    {
         /// <summary>
         /// Use the given settings for snapping.
         /// </summary>

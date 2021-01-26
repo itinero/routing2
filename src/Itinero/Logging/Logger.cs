@@ -18,31 +18,36 @@
 
 using System.Collections.Generic;
 
-namespace Itinero.Logging {
+namespace Itinero.Logging
+{
     /// <summary>
     /// A logger.
     /// </summary>
-    public class Logger {
+    public class Logger
+    {
         private readonly string _name;
 
         /// <summary>
         /// Creates a new logger.
         /// </summary>
-        public Logger(string name) {
+        public Logger(string name)
+        {
             _name = name;
         }
 
         /// <summary>
         /// Creates a new logger.
         /// </summary>
-        internal static Logger Create(string name) {
+        internal static Logger Create(string name)
+        {
             return new(name);
         }
 
         /// <summary>
         /// Logs a message.
         /// </summary>
-        public void Log(TraceEventType type, string message, params object[] args) {
+        public void Log(TraceEventType type, string message, params object[] args)
+        {
             if (LogAction == null) {
                 LogAction = (o, level, localmessage, parameters) => {
                     System.Diagnostics.Debug.WriteLine($"[{o}] {level} - {localmessage}");
@@ -55,7 +60,8 @@ namespace Itinero.Logging {
         /// <summary>
         /// Logs a message.
         /// </summary>
-        public static void Log(string name, TraceEventType type, string message, params object[] args) {
+        public static void Log(string name, TraceEventType type, string message, params object[] args)
+        {
             if (LogAction == null) {
                 LogAction = (o, level, localmessage, parameters) => {
                     System.Diagnostics.Debug.WriteLine($"[{o}] {level} - {localmessage}");

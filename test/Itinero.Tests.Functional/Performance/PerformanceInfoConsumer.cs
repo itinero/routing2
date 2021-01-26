@@ -5,13 +5,15 @@ using System.Linq;
 using System.Threading;
 using Serilog;
 
-namespace Itinero.Tests.Functional.Performance {
+namespace Itinero.Tests.Functional.Performance
+{
     /// <summary>
     /// A class that consumes performance information.
     /// </summary>
-    public class PerformanceInfoConsumer {
+    public class PerformanceInfoConsumer
+    {
         private readonly string _name; // Holds the name of this consumer.
-        private readonly System.Threading.Timer _memoryUsageTimer; // Holds the memory usage timer.
+        private readonly Timer _memoryUsageTimer; // Holds the memory usage timer.
         private readonly List<double> _memoryUsageLog = new(); // Holds the memory usage log.
         private long _memoryUsageLoggingDuration; // Holds the time spent on logging memory usage.
         private readonly int _iterations;
@@ -19,7 +21,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Creates the a new performance info consumer.
         /// </summary>
-        public PerformanceInfoConsumer(string name, int iterations = 1) {
+        public PerformanceInfoConsumer(string name, int iterations = 1)
+        {
             _name = name;
             _iterations = iterations;
         }
@@ -27,7 +30,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Creates the a new performance info consumer.
         /// </summary>
-        public PerformanceInfoConsumer(string name, int memUseLoggingInterval, int iterations = 1) {
+        public PerformanceInfoConsumer(string name, int memUseLoggingInterval, int iterations = 1)
+        {
             _name = name;
             _memoryUsageTimer =
                 new Timer(LogMemoryUsage, null, memUseLoggingInterval, memUseLoggingInterval);
@@ -37,7 +41,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Called when it's time to log memory usage.
         /// </summary>
-        private void LogMemoryUsage(object state) {
+        private void LogMemoryUsage(object state)
+        {
             var ticksBefore = DateTime.Now.Ticks;
             lock (_memoryUsageLog) {
                 GC.Collect();
@@ -53,7 +58,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// Creates a new performance consumer.
         /// </summary>
         /// <param name="key"></param>
-        public static PerformanceInfoConsumer Create(string key) {
+        public static PerformanceInfoConsumer Create(string key)
+        {
             return new(key);
         }
 
@@ -70,7 +76,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Reports the start of the process/time period to measure.
         /// </summary>
-        public void Start() {
+        public void Start()
+        {
             GC.Collect();
 
             var p = Process.GetCurrentProcess();
@@ -84,14 +91,16 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Reports a message in the middle of progress.
         /// </summary>
-        public void Report(string message) {
+        public void Report(string message)
+        {
             Log.Information(_name + ":" + message);
         }
 
         /// <summary>
         /// Reports a message in the middle of progress.
         /// </summary>
-        public void Report(string message, params object[] args) {
+        public void Report(string message, params object[] args)
+        {
             Log.Information(_name + ":" + message, args);
         }
 
@@ -100,7 +109,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Reports a message about progress.
         /// </summary>
-        public void Report(string message, long i, long max) {
+        public void Report(string message, long i, long max)
+        {
             var currentPercentage = (int) Math.Round(i / (double) max * 10, 0);
             if (_previousPercentage == currentPercentage) {
                 return;
@@ -113,10 +123,11 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Reports the end of the process/time period to measure.
         /// </summary>
-        public void Stop(string message) {
+        public void Stop(string message)
+        {
             if (_memoryUsageTimer != null) {
                 // only dispose and stop when there IS a timer.
-                _memoryUsageTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _memoryUsageTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 _memoryUsageTimer.Dispose();
             }
 
@@ -159,11 +170,13 @@ namespace Itinero.Tests.Functional.Performance {
     /// <summary>
     /// Extension methods for the performance info class.
     /// </summary>
-    public static class PerformanceInfoConsumerExtensions {
+    public static class PerformanceInfoConsumerExtensions
+    {
         /// <summary>
         /// Tests performance for the given action.
         /// </summary>
-        public static void TestPerf(this Action action, string name) {
+        public static void TestPerf(this Action action, string name)
+        {
             var info = new PerformanceInfoConsumer(name);
             info.Start();
             action();
@@ -173,7 +186,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Tests performance for the given action.
         /// </summary>
-        public static void TestPerf(this Action action, string name, int count) {
+        public static void TestPerf(this Action action, string name, int count)
+        {
             var info = new PerformanceInfoConsumer(name + " x " + count.ToString(), 10000, count);
             info.Start();
             var message = string.Empty;
@@ -188,7 +202,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Tests performance for the given action.
         /// </summary>
-        public static void TestPerf(this Func<string> action, string name) {
+        public static void TestPerf(this Func<string> action, string name)
+        {
             var info = new PerformanceInfoConsumer(name);
             info.Start();
             var message = action();
@@ -198,7 +213,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Tests performance for the given action.
         /// </summary>
-        public static void TestPerf(this Func<string> action, string name, int count) {
+        public static void TestPerf(this Func<string> action, string name, int count)
+        {
             var info = new PerformanceInfoConsumer(name + " x " + count.ToString(), 10000);
             info.Start();
             var message = string.Empty;
@@ -213,7 +229,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Tests performance for the given function.
         /// </summary>
-        public static T TestPerf<T>(this Func<PerformanceTestResult<T>> func, string name) {
+        public static T TestPerf<T>(this Func<PerformanceTestResult<T>> func, string name)
+        {
             var info = new PerformanceInfoConsumer(name);
             info.Start();
             var res = func();
@@ -224,7 +241,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// <summary>
         /// Tests performance for the given function.
         /// </summary>
-        public static T TestPerf<T>(this Func<PerformanceTestResult<T>> func, string name, int count) {
+        public static T TestPerf<T>(this Func<PerformanceTestResult<T>> func, string name, int count)
+        {
             var info = new PerformanceInfoConsumer(name + " x " + count, 10000);
             info.Start();
             PerformanceTestResult<T> res = null;
@@ -245,7 +263,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// Tests performance for the given function.
         /// </summary>
         public static TResult TestPerf<T, TResult>(this Func<T, PerformanceTestResult<TResult>> func, string name,
-            T a) {
+            T a)
+        {
             var info = new PerformanceInfoConsumer(name);
             info.Start();
             var res = func(a);
@@ -257,7 +276,8 @@ namespace Itinero.Tests.Functional.Performance {
         /// Tests performance for the given function.
         /// </summary>
         public static TResult TestPerf<T, TResult>(this Func<T, PerformanceTestResult<TResult>> func, string name, T a,
-            int count) {
+            int count)
+        {
             var info = new PerformanceInfoConsumer(name, count);
             info.Start();
             var res = func(a);
@@ -276,12 +296,14 @@ namespace Itinero.Tests.Functional.Performance {
     /// An object containing feedback from a tested function.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class PerformanceTestResult<T> {
+    public class PerformanceTestResult<T>
+    {
         /// <summary>
         /// Creates a new peformance test result.
         /// </summary>
         /// <param name="result"></param>
-        public PerformanceTestResult(T result) {
+        public PerformanceTestResult(T result)
+        {
             Result = result;
         }
 

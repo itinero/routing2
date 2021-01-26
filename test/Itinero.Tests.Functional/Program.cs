@@ -16,9 +16,12 @@ using SRTM;
 using SRTM.Sources;
 using TraceEventType = Itinero.Logging.TraceEventType;
 
-namespace Itinero.Tests.Functional {
-    internal class Program {
-        private static void Main(string[] args) {
+namespace Itinero.Tests.Functional
+{
+    internal class Program
+    {
+        private static void Main(string[] args)
+        {
             EnableLogging();
 
             // make sure the results folder exists.
@@ -103,7 +106,8 @@ namespace Itinero.Tests.Functional {
             routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
 
             void TestInstructions(string name, (double lon, double lat, float? e) from,
-                (double lon, double lat, float? e) to) {
+                (double lon, double lat, float? e) to)
+            {
                 var latest = routerDb.Latest;
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
                     .To(latest.Snap().To(to)).Calculate().Value;
@@ -516,7 +520,8 @@ namespace Itinero.Tests.Functional {
             // }
         }
 
-        private static void EnableLogging() {
+        private static void EnableLogging()
+        {
             var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()

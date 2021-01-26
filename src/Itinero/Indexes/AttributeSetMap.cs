@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Itinero.Indexes {
-    internal class AttributeSetMap {
-        protected AttributeSetMap() {
+namespace Itinero.Indexes
+{
+    internal class AttributeSetMap
+    {
+        protected AttributeSetMap()
+        {
             Id = 0;
             Mapping = a => Enumerable.Empty<(string key, string value)>();
         }

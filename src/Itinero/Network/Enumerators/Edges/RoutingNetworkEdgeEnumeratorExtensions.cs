@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo;
 
-namespace Itinero.Network.Enumerators.Edges {
-    public static class RoutingNetworkEdgeEnumeratorExtensions {
+namespace Itinero.Network.Enumerators.Edges
+{
+    public static class RoutingNetworkEdgeEnumeratorExtensions
+    {
         /// <summary>
         /// Gets the complete shape, including start end end vertices.
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The complete shape.</returns>
         public static IEnumerable<(double longitude, double latitude, float? e)> GetCompleteShape(
-            this RoutingNetworkEdgeEnumerator enumerator) {
+            this RoutingNetworkEdgeEnumerator enumerator)
+        {
             return enumerator.GetCompleteShape<RoutingNetworkEdgeEnumerator, RoutingNetwork>();
         }
 
@@ -20,7 +23,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The length in meters.</returns>
-        internal static double EdgeLength(this RoutingNetworkEdgeEnumerator enumerator) {
+        internal static double EdgeLength(this RoutingNetworkEdgeEnumerator enumerator)
+        {
             return enumerator.EdgeLength<RoutingNetworkEdgeEnumerator, RoutingNetwork>();
         }
 
@@ -34,7 +38,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
         internal static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween(
             this RoutingNetworkEdgeEnumerator enumerator,
-            ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true) {
+            ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
+        {
             return enumerator.GetShapeBetween<RoutingNetworkEdgeEnumerator, RoutingNetwork>(offset1, offset2,
                 includeVertices);
         }
@@ -46,7 +51,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// <param name="offset">The offset.</param>
         /// <returns>The location on the network.</returns>
         internal static (double longitude, double latitude, float? e) LocationOnEdge(
-            this RoutingNetworkEdgeEnumerator enumerator, in ushort offset) {
+            this RoutingNetworkEdgeEnumerator enumerator, in ushort offset)
+        {
             return enumerator.LocationOnEdge<RoutingNetworkEdgeEnumerator, RoutingNetwork>(offset);
         }
     }

@@ -5,8 +5,10 @@ using System.Text.RegularExpressions;
 using Itinero.Instructions.Generators;
 using Newtonsoft.Json.Linq;
 
-namespace Itinero.Instructions.ToText {
-    internal class FromJson {
+namespace Itinero.Instructions.ToText
+{
+    internal class FromJson
+    {
         private static readonly Regex RenderValueRegex =
             new Regex(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
 
@@ -26,7 +28,8 @@ namespace Itinero.Instructions.ToText {
          * Parses the full pipeline
          */
         public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
-            ParseRouteToInstructions(JObject jobj) {
+            ParseRouteToInstructions(JObject jobj)
+        {
             var generator = new LinearInstructionGenerator(jobj["generators"].ToObject<List<string>>());
             var languages = jobj["languages"] as JObject;
             if (languages == null) {
@@ -87,7 +90,8 @@ namespace Itinero.Instructions.ToText {
          */
         public static IInstructionToText ParseInstructionToText(JObject jobj,
             Box<IInstructionToText> wholeToText = null,
-            Dictionary<string, IInstructionToText> extensions = null, string context = "") {
+            Dictionary<string, IInstructionToText> extensions = null, string context = "")
+        {
             extensions ??= new Dictionary<string, IInstructionToText>();
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
             var lowPriority = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
@@ -114,7 +118,8 @@ namespace Itinero.Instructions.ToText {
         }
 
         private static IInstructionToText ParseSubObj(JToken j, string context,
-            Dictionary<string, IInstructionToText> extensions, Box<IInstructionToText> wholeToText) {
+            Dictionary<string, IInstructionToText> extensions, Box<IInstructionToText> wholeToText)
+        {
             if (j.Type == JTokenType.String) {
                 return ParseRenderValue(j.Value<string>(), extensions, wholeToText, context);
             }
@@ -126,7 +131,8 @@ namespace Itinero.Instructions.ToText {
             throw new ArgumentException("Invalid value in ParseSubObj" + j);
         }
 
-        private static bool BothDouble((string a, string b) t, Predicate<(double a, double b)> p) {
+        private static bool BothDouble((string a, string b) t, Predicate<(double a, double b)> p)
+        {
             if (double.TryParse(t.a, out var a) && double.TryParse(t.b, out var b)) {
                 return p.Invoke((a, b));
             }
@@ -137,7 +143,8 @@ namespace Itinero.Instructions.ToText {
         public static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
-            Dictionary<string, IInstructionToText> extensions = null) {
+            Dictionary<string, IInstructionToText> extensions = null)
+        {
             if (condition == "*") {
                 return (_ => { return true; }, true);
             }
@@ -186,7 +193,8 @@ namespace Itinero.Instructions.ToText {
             Dictionary<string, IInstructionToText> extensions = null,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
-            bool crashOnNotFound = true) {
+            bool crashOnNotFound = true)
+        {
             var parts = RenderValueRegex.Match(value).Groups[1].Captures
                     .Select(m => {
                         var v = m.Value;

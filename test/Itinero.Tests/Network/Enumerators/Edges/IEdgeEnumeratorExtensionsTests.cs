@@ -3,10 +3,13 @@ using System.Linq;
 using Itinero.Network.Enumerators.Edges;
 using Xunit;
 
-namespace Itinero.Tests.Network.Enumerators.Edges {
-    public class IEdgeEnumeratorExtensionsTests {
+namespace Itinero.Tests.Network.Enumerators.Edges
+{
+    public class IEdgeEnumeratorExtensionsTests
+    {
         [Fact]
-        public void IEdgeEnumeratorExtensions_GetCompleteShape_NoShape_Forward_ShouldReturnVertices() {
+        public void IEdgeEnumeratorExtensions_GetCompleteShape_NoShape_Forward_ShouldReturnVertices()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -28,7 +31,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void IEdgeEnumeratorExtensions_GetCompleteShape_NoShape_Backward_ShouldReturnVertices() {
+        public void IEdgeEnumeratorExtensions_GetCompleteShape_NoShape_Backward_ShouldReturnVertices()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -50,7 +54,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void IEdgeEnumeratorExtensions_GetCompleteShape_WithShape_Forward_ShouldReturnVerticesAndShape() {
+        public void IEdgeEnumeratorExtensions_GetCompleteShape_WithShape_Forward_ShouldReturnVerticesAndShape()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -77,7 +82,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void IEdgeEnumeratorExtensions_GetCompleteShape_WithShape_Backward_ShouldReturnVerticesAndShape() {
+        public void IEdgeEnumeratorExtensions_GetCompleteShape_WithShape_Backward_ShouldReturnVerticesAndShape()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),

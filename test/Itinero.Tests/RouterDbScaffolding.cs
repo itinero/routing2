@@ -2,12 +2,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network;
 
-namespace Itinero.Tests {
-    internal static class RouterDbScaffolding {
+namespace Itinero.Tests
+{
+    internal static class RouterDbScaffolding
+    {
         public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb(
             (double longitude, double latitude, float? e)[] vertices,
             (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
-                List<(string, string)> attributes)[] edges) {
+                List<(string, string)> attributes)[] edges)
+        {
             var routerDb = new RouterDb();
 
             using var writer = routerDb.GetMutableNetwork();
@@ -27,14 +30,16 @@ namespace Itinero.Tests {
 
         public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb(
             (double longitude, double latitude, float? e)[] vertices,
-            (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] edges) {
+            (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] edges)
+        {
             return BuildRouterDb(vertices,
                 edges.Select(v => (v.from, v.to, v.shape, new List<(string, string)>())).ToArray());
         }
 
         public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb(
             (double longitude, double latitude)[] vertices,
-            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape)[] edges) {
+            (int from, int to, IEnumerable<(double longitude, double latitude)>? shape)[] edges)
+        {
             var edgesWithAttributes = edges.Select(e => (e.from, e.to, e.shape, new List<(string, string)>()));
             return BuildRouterDb(vertices, edgesWithAttributes.ToArray());
         }
@@ -42,7 +47,8 @@ namespace Itinero.Tests {
         public static (RouterDb db, VertexId[] vertices, EdgeId[] edges) BuildRouterDb(
             (double longitude, double latitude)[] vertices,
             (int from, int to, IEnumerable<(double longitude, double latitude)>? shape,
-                List<(string, string)> attributes)[] edges) {
+                List<(string, string)> attributes)[] edges)
+        {
             (double longitude, double latitude, float? e)[] verticesArr =
                 vertices.Select(v => (v.longitude, v.latitude, (float?) 0f)).ToArray();
 

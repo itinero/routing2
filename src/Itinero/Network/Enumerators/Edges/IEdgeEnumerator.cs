@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 
-namespace Itinero.Network.Enumerators.Edges {
-    public interface IEdgeEnumerator<out T> {
+namespace Itinero.Network.Enumerators.Edges
+{
+    public interface IEdgeEnumerator<out T>
+    {
         /// <summary>
         /// Resets this enumerator.
         /// </summary>

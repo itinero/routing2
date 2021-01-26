@@ -7,24 +7,29 @@ using Itinero.Network.Mutation;
 using Itinero.Network.Tiles;
 using Itinero.Network.Writer;
 
-namespace Itinero.Network {
-    public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingNetworkWritable {
+namespace Itinero.Network
+{
+    public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingNetworkWritable
+    {
         private readonly SparseArray<NetworkTile?> _tiles;
 
-        public RoutingNetwork(RouterDb routerDb, int zoom = 14) {
+        public RoutingNetwork(RouterDb routerDb, int zoom = 14)
+        {
             Zoom = zoom;
             RouterDb = routerDb;
 
             _tiles = new SparseArray<NetworkTile?>(0);
         }
 
-        internal RoutingNetwork(RouterDb routerDb, SparseArray<NetworkTile?> tiles, int zoom) {
+        internal RoutingNetwork(RouterDb routerDb, SparseArray<NetworkTile?> tiles, int zoom)
+        {
             Zoom = zoom;
             RouterDb = routerDb;
             _tiles = tiles;
         }
 
-        internal NetworkTile? GetTileForRead(uint localTileId) {
+        internal NetworkTile? GetTileForRead(uint localTileId)
+        {
             if (_tiles.Length <= localTileId) {
                 return null;
             }
@@ -43,14 +48,16 @@ namespace Itinero.Network {
             return tile;
         }
 
-        internal IEnumerator<uint> GetTileEnumerator() {
+        internal IEnumerator<uint> GetTileEnumerator()
+        {
             using var enumerator = _tiles.GetEnumerator();
             while (enumerator.MoveNext()) {
                 yield return (uint) enumerator.Current.i;
             }
         }
 
-        NetworkTile? IEdgeEnumerable.GetTileForRead(uint localTileId) {
+        NetworkTile? IEdgeEnumerable.GetTileForRead(uint localTileId)
+        {
             return GetTileForRead(localTileId);
         }
 
@@ -72,7 +79,8 @@ namespace Itinero.Network {
         /// <param name="latitude">The latitude.</param>
         /// <param name="elevation">The elevation.</param>
         /// <returns>The vertex.</returns>
-        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? elevation) {
+        public bool TryGetVertex(VertexId vertex, out double longitude, out double latitude, out float? elevation)
+        {
             var localTileId = vertex.TileId;
 
             // get tile.
@@ -92,7 +100,8 @@ namespace Itinero.Network {
         /// Gets an edge enumerator.
         /// </summary>
         /// <returns>The enumerator.</returns>
-        internal RoutingNetworkEdgeEnumerator GetEdgeEnumerator() {
+        internal RoutingNetworkEdgeEnumerator GetEdgeEnumerator()
+        {
             return new(this);
         }
 
@@ -100,14 +109,16 @@ namespace Itinero.Network {
         /// Gets a vertex enumerator.
         /// </summary>
         /// <returns>The enumerator.</returns>
-        internal RoutingNetworkVertexEnumerator GetVertexEnumerator() {
+        internal RoutingNetworkVertexEnumerator GetVertexEnumerator()
+        {
             return new(this);
         }
 
         private readonly object _mutatorSync = new();
         private RoutingNetworkMutator? _graphMutator;
 
-        internal RoutingNetworkMutator GetAsMutable() {
+        internal RoutingNetworkMutator GetAsMutable()
+        {
             lock (_mutatorSync) {
                 if (_graphMutator != null) {
                     throw new InvalidOperationException($"Only one mutable graph is allowed at one time.");
@@ -120,7 +131,8 @@ namespace Itinero.Network {
 
         SparseArray<NetworkTile?> IRoutingNetworkMutable.Tiles => _tiles;
 
-        void IRoutingNetworkMutable.ClearMutator() {
+        void IRoutingNetworkMutable.ClearMutator()
+        {
             _graphMutator = null;
         }
 
@@ -136,7 +148,8 @@ namespace Itinero.Network {
         /// Gets a writer.
         /// </summary>
         /// <returns>The writer.</returns>
-        public RoutingNetworkWriter GetWriter() {
+        public RoutingNetworkWriter GetWriter()
+        {
             lock (_writeSync) {
                 if (_writer != null) {
                     throw new InvalidOperationException($"Only one writer is allowed at one time." +
@@ -148,12 +161,14 @@ namespace Itinero.Network {
             }
         }
 
-        void IRoutingNetworkWritable.ClearWriter() {
+        void IRoutingNetworkWritable.ClearWriter()
+        {
             _writer = null;
         }
 
         (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) IRoutingNetworkWritable.
-            GetTileForWrite(uint localTileId) {
+            GetTileForWrite(uint localTileId)
+        {
             // ensure minimum size.
             _tiles.EnsureMinimumSize(localTileId);
 
@@ -179,7 +194,8 @@ namespace Itinero.Network {
             return (tile, edgeTypeMap.func);
         }
 
-        private void CloneTileIfNeededForMutator(NetworkTile tile) {
+        private void CloneTileIfNeededForMutator(NetworkTile tile)
+        {
             // this is weird right?
             //
             // the combination these features make this needed:

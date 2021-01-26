@@ -3,10 +3,13 @@ using Itinero.Network;
 using Itinero.Routes.Paths;
 using Xunit;
 
-namespace Itinero.Tests.Routes.Paths {
-    public class PathTests {
+namespace Itinero.Tests.Routes.Paths
+{
+    public class PathTests
+    {
         [Fact]
-        public void Path_New_Offsets_ShouldIncludeByDefault() {
+        public void Path_New_Offsets_ShouldIncludeByDefault()
+        {
             var routerDb = new RouterDb();
             var path = new Path(routerDb.Latest);
 
@@ -15,7 +18,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Append_OneEdge_ShouldBeOneEdgePath() {
+        public void Path_Append_OneEdge_ShouldBeOneEdgePath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1;
@@ -34,7 +38,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Append_SecondEdge_ShouldBeSecondEdge() {
+        public void Path_Append_SecondEdge_ShouldBeSecondEdge()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1;
             EdgeId edge2;
@@ -59,7 +64,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Enumerate_TwoEdges_ShouldEnumerateEdges() {
+        public void Path_Enumerate_TwoEdges_ShouldEnumerateEdges()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1;
             EdgeId edge2;
@@ -85,7 +91,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Prepend_OneEdge_ShouldBeOneEdgePath() {
+        public void Path_Prepend_OneEdge_ShouldBeOneEdgePath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1;
             VertexId vertex1;
@@ -105,7 +112,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Prepend_SecondEdge_ShouldBeSecondEdge() {
+        public void Path_Prepend_SecondEdge_ShouldBeSecondEdge()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
@@ -128,7 +136,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Trim_NormalOffset_ShouldNotTrim() {
+        public void Path_Trim_NormalOffset_ShouldNotTrim()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
@@ -153,7 +162,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Trim_Offset1Max_ShouldRemoveFirst() {
+        public void Path_Trim_Offset1Max_ShouldRemoveFirst()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
@@ -180,7 +190,8 @@ namespace Itinero.Tests.Routes.Paths {
         }
 
         [Fact]
-        public void Path_Trim_Offset2Is0_ShouldRemoveLast() {
+        public void Path_Trim_Offset2Is0_ShouldRemoveLast()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;

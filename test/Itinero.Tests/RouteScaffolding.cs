@@ -2,15 +2,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Routes;
 
-namespace Itinero.Tests {
-    public class RouteScaffolding {
-        public static (double lon, double lat, float? e)[] P(params (double lon, double lat, float? e)[] parts) {
+namespace Itinero.Tests
+{
+    public class RouteScaffolding
+    {
+        public static (double lon, double lat, float? e)[] P(params (double lon, double lat, float? e)[] parts)
+        {
             return parts;
         }
 
         public static Route GenerateRoute(
             params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[]
-                parts) {
+                parts)
+        {
             return GenerateRoute(new List<Route.Branch>(), parts);
         }
 
@@ -21,7 +25,8 @@ namespace Itinero.Tests {
         public static Route GenerateRoute(
             List<Route.Branch> branches,
             params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[]
-                parts) {
+                parts)
+        {
             var allCoordinates = new List<(double longitude, double latitude, float? e)>();
             var metas = new List<Route.Meta>();
             foreach (var part in parts) {

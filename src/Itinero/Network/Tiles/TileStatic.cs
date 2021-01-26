@@ -1,33 +1,40 @@
 using System;
 using System.Collections.Generic;
 
-namespace Itinero.Network.Tiles {
-    internal static class TileStatic {
+namespace Itinero.Network.Tiles
+{
+    internal static class TileStatic
+    {
         private static void ValidateBox(this ((double longitude, double latitude, float? e) topLeft,
-            (double longitude, double latitude, float? e) bottomRight) box) {
+            (double longitude, double latitude, float? e) bottomRight) box)
+        {
             if (box.topLeft.latitude < box.bottomRight.latitude) {
                 throw new ArgumentOutOfRangeException($"Top is lower than bottom.");
             }
         }
 
-        public static (uint x, uint y) ToTile(int zoom, uint tileId) {
+        public static (uint x, uint y) ToTile(int zoom, uint tileId)
+        {
             var xMax = (ulong) (1 << zoom);
 
             return ((uint) (tileId % xMax), (uint) (tileId / xMax));
         }
 
-        public static uint ToLocalId(uint x, uint y, int zoom) {
+        public static uint ToLocalId(uint x, uint y, int zoom)
+        {
             var xMax = 1 << (int) zoom;
             return (uint) (y * xMax + x);
         }
 
-        public static uint ToLocalId(double longitude, double latitude, int zoom) {
+        public static uint ToLocalId(double longitude, double latitude, int zoom)
+        {
             var (x, y) = WorldToTile(longitude, latitude, zoom);
             return ToLocalId(x, y, zoom);
         }
 
         public static (int x, int y) ToLocalTileCoordinates(int zoom, uint tileId, double longitude, double latitude,
-            int resolution) {
+            int resolution)
+        {
             var tile = ToTile(zoom, tileId);
 
             var n = Math.PI - 2.0 * Math.PI * tile.y / Math.Pow(2.0, zoom);
@@ -45,7 +52,8 @@ namespace Itinero.Network.Tiles {
         }
 
         public static void FromLocalTileCoordinates(int zoom, uint tileId, int x, int y, int resolution,
-            out double longitude, out double latitude) {
+            out double longitude, out double latitude)
+        {
             var tile = ToTile(zoom, tileId);
 
             var n = Math.PI - 2.0 * Math.PI * tile.y / Math.Pow(2.0, zoom);
@@ -63,11 +71,13 @@ namespace Itinero.Network.Tiles {
             latitude = top - y * latStep;
         }
 
-        private static int N(int zoom) {
+        private static int N(int zoom)
+        {
             return (int) Math.Floor(Math.Pow(2, zoom)); // replace by bit shifting?
         }
 
-        public static (uint x, uint y) WorldToTile(double longitude, double latitude, int zoom) {
+        public static (uint x, uint y) WorldToTile(double longitude, double latitude, int zoom)
+        {
             var n = N(zoom);
             var rad = latitude / 180d * Math.PI;
 
@@ -81,7 +91,8 @@ namespace Itinero.Network.Tiles {
 
         public static IEnumerable<(uint x, uint y)> TileRange(
             this ((double longitude, double latitude, float? e) topLeft,
-                (double longitude, double latitude, float? e) bottomRight) box, int zoom) {
+                (double longitude, double latitude, float? e) bottomRight) box, int zoom)
+        {
             box.ValidateBox();
 
             var n = N(zoom);

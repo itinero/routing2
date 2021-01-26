@@ -1,5 +1,7 @@
-namespace Itinero.Instructions.Generators {
-    internal interface IInstructionGenerator {
+namespace Itinero.Instructions.Generators
+{
+    internal interface IInstructionGenerator
+    {
         /// <summary>
         /// An instructionGenerator will attempt to create an instruction for the given route at the given location.
         ///

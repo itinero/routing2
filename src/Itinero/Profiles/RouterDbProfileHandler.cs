@@ -1,5 +1,7 @@
-namespace Itinero.Profiles {
-    public abstract class RouterDbProfileHandler {
+namespace Itinero.Profiles
+{
+    public abstract class RouterDbProfileHandler
+    {
         public abstract uint FactorForward { get; }
 
         public abstract uint FactorBackward { get; }

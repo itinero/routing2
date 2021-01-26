@@ -5,7 +5,8 @@ using System.Linq;
 using Itinero.Data;
 using Itinero.IO;
 
-namespace Itinero.Indexes {
+namespace Itinero.Indexes
+{
     /// <summary>
     /// Maintains an index of distinct sets of attributes.
     /// </summary>
@@ -15,11 +16,13 @@ namespace Itinero.Indexes {
     /// - Can only grow
     /// - 0 represents an empty non-null set.
     /// </remarks>
-    internal class AttributeSetIndex {
+    internal class AttributeSetIndex
+    {
         private readonly List<IReadOnlyList<(string key, string value)>> _edgeProfiles;
         private readonly Dictionary<IReadOnlyList<(string key, string value)>, uint> _edgeProfilesIndex;
 
-        public AttributeSetIndex() {
+        public AttributeSetIndex()
+        {
             _edgeProfiles = new List<IReadOnlyList<(string key, string value)>> {new (string key, string value)[0]};
             _edgeProfilesIndex =
                 new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default) {
@@ -27,7 +30,8 @@ namespace Itinero.Indexes {
                 };
         }
 
-        private AttributeSetIndex(List<IReadOnlyList<(string key, string value)>> edgeProfiles) {
+        private AttributeSetIndex(List<IReadOnlyList<(string key, string value)>> edgeProfiles)
+        {
             _edgeProfiles = edgeProfiles;
             _edgeProfilesIndex =
                 new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default);
@@ -46,7 +50,8 @@ namespace Itinero.Indexes {
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>The attributes in the type.</returns>
-        public IEnumerable<(string key, string value)> GetById(uint id) {
+        public IEnumerable<(string key, string value)> GetById(uint id)
+        {
             if (id > Count) {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -59,7 +64,8 @@ namespace Itinero.Indexes {
         /// </summary>
         /// <param name="attributes">The attributes.</param>
         /// <returns>The id, if any.</returns>
-        public uint Get(IEnumerable<(string key, string value)> attributes) {
+        public uint Get(IEnumerable<(string key, string value)> attributes)
+        {
             var attributeSet = attributes.ToArray();
 
             // sort array.
@@ -78,11 +84,13 @@ namespace Itinero.Indexes {
             return edgeProfileId;
         }
 
-        private class EdgeProfileEqualityComparer : IEqualityComparer<IReadOnlyList<(string key, string value)>> {
+        private class EdgeProfileEqualityComparer : IEqualityComparer<IReadOnlyList<(string key, string value)>>
+        {
             public static readonly EdgeProfileEqualityComparer Default = new();
 
             public bool Equals(IReadOnlyList<(string key, string value)> x,
-                IReadOnlyList<(string key, string value)> y) {
+                IReadOnlyList<(string key, string value)> y)
+            {
                 if (x.Count != y.Count) {
                     return false;
                 }
@@ -99,7 +107,8 @@ namespace Itinero.Indexes {
                 return true;
             }
 
-            public int GetHashCode(IReadOnlyList<(string key, string value)> obj) {
+            public int GetHashCode(IReadOnlyList<(string key, string value)> obj)
+            {
                 var hash = obj.Count.GetHashCode();
 
                 foreach (var pair in obj) {
@@ -110,7 +119,8 @@ namespace Itinero.Indexes {
             }
         }
 
-        internal void WriteTo(Stream stream) {
+        internal void WriteTo(Stream stream)
+        {
             // write version #.
             stream.WriteVarInt32(1);
 
@@ -125,7 +135,8 @@ namespace Itinero.Indexes {
             }
         }
 
-        internal static AttributeSetIndex ReadFrom(Stream stream) {
+        internal static AttributeSetIndex ReadFrom(Stream stream)
+        {
             // get version #.
             var version = stream.ReadVarInt32();
             if (version != 1) {

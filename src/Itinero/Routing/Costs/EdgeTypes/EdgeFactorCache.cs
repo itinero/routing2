@@ -1,14 +1,18 @@
 using Itinero.Profiles;
 
-namespace Itinero.Routing.Costs.EdgeTypes {
-    internal class EdgeFactorCache {
+namespace Itinero.Routing.Costs.EdgeTypes
+{
+    internal class EdgeFactorCache
+    {
         private EdgeFactor?[] _cache;
 
-        public EdgeFactorCache() {
+        public EdgeFactorCache()
+        {
             _cache = new EdgeFactor?[1024];
         }
 
-        public EdgeFactor? Get(uint edgeTypeId) {
+        public EdgeFactor? Get(uint edgeTypeId)
+        {
             if (_cache.Length <= edgeTypeId) {
                 return null;
             }
@@ -16,7 +20,8 @@ namespace Itinero.Routing.Costs.EdgeTypes {
             return _cache[edgeTypeId];
         }
 
-        public void Set(uint edgeTypeId, EdgeFactor factor) {
+        public void Set(uint edgeTypeId, EdgeFactor factor)
+        {
             var cache = _cache;
             if (cache.Length <= edgeTypeId) {
                 var newSize = _cache.Length + 1024;

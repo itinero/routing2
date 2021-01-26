@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using Itinero.Tests.Functional.Performance;
 
-namespace Itinero.Tests.Functional.Tests {
+namespace Itinero.Tests.Functional.Tests
+{
     /// <summary>
     /// Abstract definition of a functional test.
     /// </summary>
     /// <typeparam name="TOut"></typeparam>
     /// <typeparam name="TIn"></typeparam>
-    public abstract class FunctionalTest<TOut, TIn> {
+    public abstract class FunctionalTest<TOut, TIn>
+    {
         /// <summary>
         /// Gets the name of this test.
         /// </summary>
@@ -32,7 +34,8 @@ namespace Itinero.Tests.Functional.Tests {
         /// <param name="name">The test name.</param>
         /// <param name="count">The count.</param>
         /// <returns>The output.</returns>
-        public TOut Run(TIn input = default, string name = null, int count = 1) {
+        public TOut Run(TIn input = default, string name = null, int count = 1)
+        {
             try {
                 return TrackPerformance ? RunPerformance(input, name: name, count: count) : Execute(input);
             }
@@ -50,7 +53,8 @@ namespace Itinero.Tests.Functional.Tests {
         /// <param name="count">The # of times to repeat the test.</param>
         /// <param name="name">The test name.</param>
         /// <returns>The output.</returns>
-        public TOut RunPerformance(TIn input, int count = 1, string name = null) {
+        public TOut RunPerformance(TIn input, int count = 1, string name = null)
+        {
             if (name == null) {
                 name = Name;
             }
@@ -72,25 +76,29 @@ namespace Itinero.Tests.Functional.Tests {
         /// </summary>
         /// <param name="value">The value to verify.</param>
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
-        protected void True(bool value) {
+        protected void True(bool value)
+        {
             if (!value) {
                 throw new Exception("Assertion failed, expected true");
             }
         }
 
-        public void NotNull(object o) {
+        public void NotNull(object o)
+        {
             if (o == null) {
                 throw new ArgumentNullException(nameof(o));
             }
         }
 
-        public void NotNull(object o, string message) {
+        public void NotNull(object o, string message)
+        {
             if (o == null) {
                 throw new ArgumentException("Null detected: " + message);
             }
         }
 
-        public void AssertContains(object o, IEnumerable xs) {
+        public void AssertContains(object o, IEnumerable xs)
+        {
             foreach (var x in xs) {
                 if (x.Equals(o)) {
                     return;
@@ -104,7 +112,8 @@ namespace Itinero.Tests.Functional.Tests {
         /// Write a log event with the Informational level.
         /// </summary>
         /// <param name="message">The log message.</param>
-        protected void Information(string message) {
+        protected void Information(string message)
+        {
             if (!Log) {
                 return;
             }

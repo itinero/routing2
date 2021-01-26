@@ -5,10 +5,13 @@ using Itinero.Network;
 using Itinero.Network.Search;
 using Itinero.Profiles;
 
-namespace Itinero.Snapping {
-    internal class Snapper : ISnapper {
+namespace Itinero.Snapping
+{
+    internal class Snapper : ISnapper
+    {
         public Snapper(RoutingNetwork routingNetwork,
-            SnapperSettings? settings = null) {
+            SnapperSettings? settings = null)
+        {
             RoutingNetwork = routingNetwork;
             Settings = settings ?? new SnapperSettings();
         }
@@ -18,7 +21,8 @@ namespace Itinero.Snapping {
         internal SnapperSettings Settings { get; }
 
         /// <inheritdoc/>
-        public ILocationsSnapper Using(Action<SnapperSettings> settings) {
+        public ILocationsSnapper Using(Action<SnapperSettings> settings)
+        {
             var s = new SnapperSettings();
             settings?.Invoke(s);
 
@@ -26,7 +30,8 @@ namespace Itinero.Snapping {
         }
 
         /// <inheritdoc/>
-        public ILocationsSnapper Using(Profile profile, Action<SnapperSettings>? settings = null) {
+        public ILocationsSnapper Using(Profile profile, Action<SnapperSettings>? settings = null)
+        {
             var s = new SnapperSettings();
             settings?.Invoke(s);
 
@@ -38,7 +43,8 @@ namespace Itinero.Snapping {
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices) {
+        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
+        {
             var enumerator = RoutingNetwork.GetEdgeEnumerator();
 
             foreach (var (vertexId, edgeId) in vertices) {
@@ -79,7 +85,8 @@ namespace Itinero.Snapping {
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations) {
+        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations)
+        {
             foreach (var location in locations) {
                 // calculate search box.
                 var box = location.BoxAround(Settings.MaxOffsetInMeter);

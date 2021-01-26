@@ -4,10 +4,13 @@ using Itinero.Network;
 using Itinero.Network.Serialization;
 using Xunit;
 
-namespace Itinero.Tests.Network.Serialization {
-    public class RoutingNetworkSerializerTests {
+namespace Itinero.Tests.Network.Serialization
+{
+    public class RoutingNetworkSerializerTests
+    {
         [Fact]
-        public void RoutingNetworkSerializer_Serialize_Empty_ShouldDeserialize_Empty() {
+        public void RoutingNetworkSerializer_Serialize_Empty_ShouldDeserialize_Empty()
+        {
             var expected = new RoutingNetwork(new RouterDb());
 
             var stream = new MemoryStream();
@@ -19,7 +22,8 @@ namespace Itinero.Tests.Network.Serialization {
         }
 
         [Fact]
-        public void RoutingNetworkSerializer_Serialize_OneVertex_ShouldDeserialize_OneVertex() {
+        public void RoutingNetworkSerializer_Serialize_OneVertex_ShouldDeserialize_OneVertex()
+        {
             var expected = new RoutingNetwork(new RouterDb());
             VertexId vertex;
             using (var writer = expected.GetWriter()) {
@@ -37,7 +41,8 @@ namespace Itinero.Tests.Network.Serialization {
         }
 
         [Fact]
-        public void RoutingNetworkSerializer_Serialize_OneEdge_ShouldDeserialize_OneEdge() {
+        public void RoutingNetworkSerializer_Serialize_OneEdge_ShouldDeserialize_OneEdge()
+        {
             var expected = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;

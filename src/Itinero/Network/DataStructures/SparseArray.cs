@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Itinero.Network.DataStructures {
-    internal sealed class SparseArray<T> : IEnumerable<(long i, T value)> {
+namespace Itinero.Network.DataStructures
+{
+    internal sealed class SparseArray<T> : IEnumerable<(long i, T value)>
+    {
         private T[][] _blocks;
         private readonly int _blockSize; // Holds the maximum array size, always needs to be a power of 2.
         private readonly int _arrayPow;
@@ -11,7 +13,8 @@ namespace Itinero.Network.DataStructures {
         private readonly T _default;
 
         public SparseArray(long size, int blockSize = 1 << 16,
-            T emptyDefault = default) {
+            T emptyDefault = default)
+        {
             if (size < 0) {
                 throw new ArgumentOutOfRangeException(nameof(size), "Size needs to be bigger than or equal to zero.");
             }
@@ -34,7 +37,8 @@ namespace Itinero.Network.DataStructures {
             _blocks = new T[blockCount][];
         }
 
-        private SparseArray(T[][] blocks, long size, int blockSize, int arrayPow, T @default) {
+        private SparseArray(T[][] blocks, long size, int blockSize, int arrayPow, T @default)
+        {
             _blocks = blocks;
             _size = size;
             _blockSize = blockSize;
@@ -42,7 +46,8 @@ namespace Itinero.Network.DataStructures {
             _default = @default;
         }
 
-        private static int ExpOf2(int powerOf2) {
+        private static int ExpOf2(int powerOf2)
+        {
             // this can probably be faster but it needs to run once in the constructor,
             // feel free to improve but not crucial.
             if (powerOf2 == 1) {
@@ -102,7 +107,8 @@ namespace Itinero.Network.DataStructures {
         /// </summary>
         /// <param name="size">The size.</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Resize(long size) {
+        public void Resize(long size)
+        {
             if (size < 0) {
                 throw new ArgumentOutOfRangeException(nameof(size),
                     "Cannot resize an array to a size of zero or smaller.");
@@ -125,7 +131,8 @@ namespace Itinero.Network.DataStructures {
         /// Creates a clone.
         /// </summary>
         /// <returns>A copy of this array.</returns>
-        public SparseArray<T> Clone() {
+        public SparseArray<T> Clone()
+        {
             var blocks = new T[_blocks.Length][];
             for (var b = 0; b < blocks.Length; b++) {
                 var block = _blocks[b];
@@ -139,7 +146,8 @@ namespace Itinero.Network.DataStructures {
             return new SparseArray<T>(blocks, _size, _blockSize, _arrayPow, _default);
         }
 
-        public IEnumerator<(long i, T value)> GetEnumerator() {
+        public IEnumerator<(long i, T value)> GetEnumerator()
+        {
             for (var b = 0; b < _blocks.Length; b++) {
                 var block = _blocks[b];
                 if (block == null) {
@@ -152,13 +160,16 @@ namespace Itinero.Network.DataStructures {
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
+        IEnumerator IEnumerable.GetEnumerator()
+        {
             return GetEnumerator();
         }
     }
 
-    internal static class SparseArrayExtensions {
-        internal static void EnsureMinimumSize<T>(this SparseArray<T> array, long i) {
+    internal static class SparseArrayExtensions
+    {
+        internal static void EnsureMinimumSize<T>(this SparseArray<T> array, long i)
+        {
             if (array.Length <= i) {
                 array.Resize(i + 1);
             }

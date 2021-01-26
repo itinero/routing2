@@ -2,10 +2,13 @@ using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Network.Tiles {
-    public class NetworkTile_EnumeratorTests {
+namespace Itinero.Tests.Network.Tiles
+{
+    public class NetworkTile_EnumeratorTests
+    {
         [Fact]
-        public void NetworkTileEnumerator_OneVertex_MoveToVertex_ShouldReturnTrue() {
+        public void NetworkTileEnumerator_OneVertex_MoveToVertex_ShouldReturnTrue()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
@@ -16,7 +19,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTileEnumerator_OneEdge_MoveToVertex1_ShouldReturnOneEdgeForward() {
+        public void NetworkTileEnumerator_OneEdge_MoveToVertex1_ShouldReturnOneEdgeForward()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
@@ -36,7 +40,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTileEnumerator_OneEdge_MoveToVertex2_ShouldReturnOneEdgeBackward() {
+        public void NetworkTileEnumerator_OneEdge_MoveToVertex2_ShouldReturnOneEdgeBackward()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
@@ -56,7 +61,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTileEnumerator_OneEdge_ThreeShapePoint_ShouldReturnThreeShapePoints() {
+        public void NetworkTileEnumerator_OneEdge_ThreeShapePoint_ShouldReturnThreeShapePoints()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
@@ -97,7 +103,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTileEnumerator_OneEdge_MoveToEdgeForward_ShouldMoveTo_EdgeForward() {
+        public void NetworkTileEnumerator_OneEdge_MoveToEdgeForward_ShouldMoveTo_EdgeForward()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
@@ -116,7 +123,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTileEnumerator_OneEdge_MoveToEdgeBackward_ShouldMoveTo_EdgeBackward() {
+        public void NetworkTileEnumerator_OneEdge_MoveToEdgeBackward_ShouldMoveTo_EdgeBackward()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);

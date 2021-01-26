@@ -2,17 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Enumerators.Vertices {
-    internal class TilesVertexEnumerator : IEnumerator<VertexId> {
+namespace Itinero.Network.Enumerators.Vertices
+{
+    internal class TilesVertexEnumerator : IEnumerator<VertexId>
+    {
         private readonly RoutingNetwork _routingNetwork;
         private readonly IEnumerator<(uint x, uint y)> _tiles;
 
-        public TilesVertexEnumerator(RoutingNetwork routingNetwork, IEnumerable<(uint x, uint y)> tiles) {
+        public TilesVertexEnumerator(RoutingNetwork routingNetwork, IEnumerable<(uint x, uint y)> tiles)
+        {
             _routingNetwork = routingNetwork;
             _tiles = tiles.GetEnumerator();
         }
 
-        public void Reset() {
+        public void Reset()
+        {
             _tiles.Reset();
             _currentTile = uint.MaxValue;
         }
@@ -25,7 +29,8 @@ namespace Itinero.Network.Enumerators.Vertices {
         private double _currentLongitude;
         private float? _currentElevation;
 
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             if (_currentTile == uint.MaxValue) {
                 while (_tiles.MoveNext()) {
                     _currentTile = TileStatic.ToLocalId(_tiles.Current.x, _tiles.Current.y, _routingNetwork.Zoom);
@@ -64,7 +69,8 @@ namespace Itinero.Network.Enumerators.Vertices {
         public (double longitude, double latitude, float? e) Location =>
             (_currentLongitude, _currentLatitude, _currentElevation);
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _tiles.Dispose();
         }
     }

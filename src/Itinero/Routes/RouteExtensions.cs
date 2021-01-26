@@ -4,22 +4,26 @@ using System.Linq;
 using Itinero.Geo;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Routes {
+namespace Itinero.Routes
+{
     /// <summary>
     /// Contains extensions for the route object.
     /// </summary>
-    public static class RouteExtensions {
+    public static class RouteExtensions
+    {
         /// <summary>
         /// Concatenates two routes.
         /// </summary>
-        public static Route Concatenate(this Route route1, Route route2) {
+        public static Route Concatenate(this Route route1, Route route2)
+        {
             return route1.Concatenate(route2, true);
         }
 
         /// <summary>
         /// Concatenates two routes.
         /// </summary>
-        public static Route Concatenate(this Route route1, Route route2, bool clone) {
+        public static Route Concatenate(this Route route1, Route route2, bool clone)
+        {
             if (route1 == null) {
                 return route2;
             }
@@ -164,7 +168,8 @@ namespace Itinero.Routes {
         /// </summary>
         /// <param name="routes"></param>
         /// <returns></returns>
-        public static Result<Route> Concatenate(this IEnumerable<Result<Route>> routes) {
+        public static Result<Route> Concatenate(this IEnumerable<Result<Route>> routes)
+        {
             Route route = null;
             var r = 0;
             foreach (var localRoute in routes) {
@@ -217,7 +222,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Distance and time a the given shape index.
         /// </summary>
-        public static void DistanceAndTimeAt(this Route route, int shape, out double distance, out double time) {
+        public static void DistanceAndTimeAt(this Route route, int shape, out double distance, out double time)
+        {
             route.SegmentFor(shape, out var segmentStart, out var segmentEnd);
 
             if (shape == segmentStart) {
@@ -290,7 +296,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Gets the shape meta for the given shape index.
         /// </summary>
-        public static Route.Meta ShapeMetaFor(this Route route, int shape) {
+        public static Route.Meta ShapeMetaFor(this Route route, int shape)
+        {
             foreach (var shapeMeta in route.ShapeMeta) {
                 if (shapeMeta.Shape == shape) {
                     return shapeMeta;
@@ -303,7 +310,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Searches the segment the given shape index exists in.
         /// </summary>
-        public static void SegmentFor(this Route route, int shape, out int segmentStart, out int segmentEnd) {
+        public static void SegmentFor(this Route route, int shape, out int segmentStart, out int segmentEnd)
+        {
             segmentStart = 0;
             segmentEnd = route.Shape.Count - 1;
             if (route.ShapeMeta == null) {

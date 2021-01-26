@@ -2,10 +2,13 @@ using Xunit;
 using System.Linq;
 using Itinero.Network;
 
-namespace Itinero.Tests.Network.Mutation {
-    public class RoutingNetworkMutatorTests {
+namespace Itinero.Tests.Network.Mutation
+{
+    public class RoutingNetworkMutatorTests
+    {
         [Fact]
-        public void RouterNetwork_GetAsMutable_AddEdge_ShouldAddEdge() {
+        public void RouterNetwork_GetAsMutable_AddEdge_ShouldAddEdge()
+        {
             var routerDb = new RouterDb();
             VertexId vertex1;
             VertexId vertex2;
@@ -26,7 +29,8 @@ namespace Itinero.Tests.Network.Mutation {
         }
 
         [Fact]
-        public void RouterDb_GetAsMutable_AddEdgeWithShape_ShouldStoreShape() {
+        public void RouterDb_GetAsMutable_AddEdgeWithShape_ShouldStoreShape()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             using (var mutable = routerDb.GetMutableNetwork()) {
@@ -55,7 +59,8 @@ namespace Itinero.Tests.Network.Mutation {
         }
 
         [Fact]
-        public void RouterDb_GetAsMutable_AddEdgeWithAttributes_ShouldStoreAttributes() {
+        public void RouterDb_GetAsMutable_AddEdgeWithAttributes_ShouldStoreAttributes()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             using (var mutable = routerDb.GetMutableNetwork()) {
@@ -77,7 +82,8 @@ namespace Itinero.Tests.Network.Mutation {
         }
 
         [Fact]
-        public void RouterDb_GetAsMutable_AddTurnCosts_ShouldStoreTurnCosts() {
+        public void RouterDb_GetAsMutable_AddTurnCosts_ShouldStoreTurnCosts()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;

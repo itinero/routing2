@@ -1,11 +1,14 @@
 using System;
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.TurnCosts {
-    internal static class OrderCoder {
+namespace Itinero.Network.TurnCosts
+{
+    internal static class OrderCoder
+    {
         internal const int MAX_ORDER_HEAD_TAIL = 14;
 
-        public static void SetTailHeadOrder(this ArrayBase<byte> data, long i, byte? tail, byte? head) {
+        public static void SetTailHeadOrder(this ArrayBase<byte> data, long i, byte? tail, byte? head)
+        {
             if (tail.HasValue && tail.Value > MAX_ORDER_HEAD_TAIL) {
                 throw new ArgumentOutOfRangeException(nameof(tail),
                     $"Maximum order exceeded.");
@@ -28,7 +31,8 @@ namespace Itinero.Network.TurnCosts {
             data[i] = (byte) d;
         }
 
-        public static void GetTailHeadOrder(this ArrayBase<byte> data, long i, ref byte? tail, ref byte? head) {
+        public static void GetTailHeadOrder(this ArrayBase<byte> data, long i, ref byte? tail, ref byte? head)
+        {
             tail = null;
             head = null;
 

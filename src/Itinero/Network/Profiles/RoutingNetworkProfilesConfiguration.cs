@@ -6,28 +6,35 @@ using Itinero.Profiles;
 using Itinero.Profiles.Serialization;
 using Itinero.Routing.Costs.EdgeTypes;
 
-namespace Itinero.Network.Profiles {
-    internal class RoutingNetworkProfilesConfiguration {
+namespace Itinero.Network.Profiles
+{
+    internal class RoutingNetworkProfilesConfiguration
+    {
         private readonly Dictionary<string, (Profile profile, EdgeFactorCache cache)> _profiles;
 
-        public RoutingNetworkProfilesConfiguration() {
+        public RoutingNetworkProfilesConfiguration()
+        {
             _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>();
         }
 
         private RoutingNetworkProfilesConfiguration(
-            Dictionary<string, (Profile profile, EdgeFactorCache cache)> profiles) {
+            Dictionary<string, (Profile profile, EdgeFactorCache cache)> profiles)
+        {
             _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>(profiles);
         }
 
-        public RoutingNetworkProfilesConfiguration Clone() {
+        public RoutingNetworkProfilesConfiguration Clone()
+        {
             return new(_profiles);
         }
 
-        public bool HasProfile(string name) {
+        public bool HasProfile(string name)
+        {
             return _profiles.ContainsKey(name);
         }
 
-        public bool AddProfile(Profile profile) {
+        public bool AddProfile(Profile profile)
+        {
             if (_profiles.ContainsKey(profile.Name)) {
                 return false;
             }
@@ -36,7 +43,8 @@ namespace Itinero.Network.Profiles {
             return true;
         }
 
-        internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache) {
+        internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache)
+        {
             cache = null;
             if (!_profiles.TryGetValue(profile.Name, out var profileValue)) {
                 return false;
@@ -48,7 +56,8 @@ namespace Itinero.Network.Profiles {
 
         public IEnumerable<Profile> Profiles => _profiles.Values.Select(x => x.profile);
 
-        public void WriteTo(Stream stream, IProfileSerializer profileSerializer) {
+        public void WriteTo(Stream stream, IProfileSerializer profileSerializer)
+        {
             // write version #.
             stream.WriteVarInt32(1);
 
@@ -62,7 +71,8 @@ namespace Itinero.Network.Profiles {
         }
 
         public static RoutingNetworkProfilesConfiguration
-            ReadFrom(Stream stream, IProfileSerializer profileSerializer) {
+            ReadFrom(Stream stream, IProfileSerializer profileSerializer)
+        {
             // verify version #.
             var version = stream.ReadVarInt32();
             if (version != 1) {

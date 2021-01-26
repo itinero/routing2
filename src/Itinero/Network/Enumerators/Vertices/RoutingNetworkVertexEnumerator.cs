@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Enumerators.Vertices {
-    internal class RoutingNetworkVertexEnumerator {
+namespace Itinero.Network.Enumerators.Vertices
+{
+    internal class RoutingNetworkVertexEnumerator
+    {
         private readonly RoutingNetwork _routingNetwork;
         private readonly IEnumerator<uint> _tileEnumerator;
 
-        public RoutingNetworkVertexEnumerator(RoutingNetwork routingNetwork) {
+        public RoutingNetworkVertexEnumerator(RoutingNetwork routingNetwork)
+        {
             _routingNetwork = routingNetwork;
             _tileEnumerator = routingNetwork.GetTileEnumerator();
 
@@ -17,7 +20,8 @@ namespace Itinero.Network.Enumerators.Vertices {
         private uint _tileId = uint.MaxValue;
         private NetworkTile? _tile;
 
-        private void MoveNexTile() {
+        private void MoveNexTile()
+        {
             while (true) {
                 if (!_tileEnumerator.MoveNext()) {
                     return;
@@ -33,7 +37,8 @@ namespace Itinero.Network.Enumerators.Vertices {
             }
         }
 
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             while (true) {
                 // when vertex is empty move to the first tile.
                 if (Current.IsEmpty()) {
@@ -63,7 +68,8 @@ namespace Itinero.Network.Enumerators.Vertices {
 
         public VertexId Current { get; private set; }
 
-        public void Reset() {
+        public void Reset()
+        {
             Current = VertexId.Empty;
             _localId = -1;
             _tileId = uint.MaxValue;

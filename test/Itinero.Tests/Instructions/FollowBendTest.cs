@@ -4,8 +4,10 @@ using Itinero.Instructions.Generators;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class FollowBendTest {
+namespace Itinero.Tests.Instructions
+{
+    public class FollowBendTest
+    {
         private static readonly (double lon, double lat, float? e)[] RabattestraatGeom = RouteScaffolding.P(
             (3.2872939109802246, 51.25332724127623, null),
             (3.287535309791565, 51.253407820538555, null),
@@ -30,7 +32,7 @@ namespace Itinero.Tests.Instructions {
                 ("name", "Rabauestraat")
             }));
 
-        private static Route RabattestraatWithOuterBranch = RouteScaffolding.GenerateRoute(
+        private static readonly Route RabattestraatWithOuterBranch = RouteScaffolding.GenerateRoute(
             new List<Route.Branch> {
                 new() {
                     Shape = 2,
@@ -43,7 +45,7 @@ namespace Itinero.Tests.Instructions {
             }));
 
 
-        private static Route RabattestraatWithInnerBranch = RouteScaffolding.GenerateRoute(
+        private static readonly Route RabattestraatWithInnerBranch = RouteScaffolding.GenerateRoute(
             new List<Route.Branch> {
                 new() {
                     Shape = 4,
@@ -56,7 +58,8 @@ namespace Itinero.Tests.Instructions {
             }));
 
         [Fact]
-        public void GenerateBend_LeftBend_GetsBend() {
+        public void GenerateBend_LeftBend_GetsBend()
+        {
             var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
                 new IndexedRoute(Rabattestraat), 8
             );
@@ -67,7 +70,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateBend_RightBend_GetsBend() {
+        public void GenerateBend_RightBend_GetsBend()
+        {
             var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
                 new IndexedRoute(Rabattestraat), 1
             );
@@ -78,7 +82,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateBend_RightBendWithOuter_GetsBend() {
+        public void GenerateBend_RightBendWithOuter_GetsBend()
+        {
             var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
                 new IndexedRoute(RabattestraatWithOuterBranch), 1
             );
@@ -89,7 +94,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateBend_RightBendWithInner_GetsBend() {
+        public void GenerateBend_RightBendWithInner_GetsBend()
+        {
             var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
                 new IndexedRoute(RabattestraatWithInnerBranch), 1
             );

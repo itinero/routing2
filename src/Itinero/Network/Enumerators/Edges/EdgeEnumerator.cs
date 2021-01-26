@@ -2,18 +2,22 @@ using System;
 using System.Collections.Generic;
 using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Enumerators.Edges {
+namespace Itinero.Network.Enumerators.Edges
+{
     public abstract class EdgeEnumerator<T> :
-        IEdgeEnumerator<T> where T : IEdgeEnumerable {
+        IEdgeEnumerator<T> where T : IEdgeEnumerable
+    {
         private readonly NetworkTileEnumerator _tileEnumerator;
 
-        internal EdgeEnumerator(T graph) {
+        internal EdgeEnumerator(T graph)
+        {
             Network = graph;
 
             _tileEnumerator = new NetworkTileEnumerator();
         }
 
-        private (double longitude, double latitude, float? e) GetVertex(VertexId vertex) {
+        private (double longitude, double latitude, float? e) GetVertex(VertexId vertex)
+        {
             var tile = _tileEnumerator.Tile;
             if (tile == null || tile.TileId != vertex.TileId) {
                 tile = Network.GetTileForRead(vertex.TileId);
@@ -35,7 +39,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// </summary>
         /// <param name="vertex">The vertex.</param>
         /// <returns>True if the vertex exists.</returns>
-        public bool MoveTo(VertexId vertex) {
+        public bool MoveTo(VertexId vertex)
+        {
             _fromLocation = null;
             _toLocation = null;
 
@@ -59,7 +64,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// </summary>
         /// <param name="edgeId">The edge id.</param>
         /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
-        public bool MoveToEdge(EdgeId edgeId, bool forward = true) {
+        public bool MoveToEdge(EdgeId edgeId, bool forward = true)
+        {
             _fromLocation = null;
             _toLocation = null;
 
@@ -81,7 +87,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// <summary>
         /// Resets this enumerator.
         /// </summary>
-        public void Reset() {
+        public void Reset()
+        {
             _fromLocation = null;
             _toLocation = null;
 
@@ -92,7 +99,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// Moves this enumerator to the next edge.
         /// </summary>
         /// <returns>True if there is data available.</returns>
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             _fromLocation = null;
             _toLocation = null;
 
@@ -178,7 +186,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// </summary>
         /// <param name="fromOrder">The order of the source edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder) {
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        {
             return _tileEnumerator.GetTurnCostTo(fromOrder);
         }
 
@@ -187,7 +196,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// </summary>
         /// <param name="toOrder">The order of the target edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder) {
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        {
             return _tileEnumerator.GetTurnCostFrom(toOrder);
         }
     }

@@ -7,12 +7,15 @@ using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search;
 using Itinero.Profiles;
 
-namespace Itinero.Snapping {
-    internal class LocationsSnapper : ILocationsSnapper {
+namespace Itinero.Snapping
+{
+    internal class LocationsSnapper : ILocationsSnapper
+    {
         private readonly Snapper _snapper;
         private readonly IEnumerable<Profile> _profiles;
 
-        public LocationsSnapper(Snapper snapper, IEnumerable<Profile> profiles) {
+        public LocationsSnapper(Snapper snapper, IEnumerable<Profile> profiles)
+        {
             _snapper = snapper;
             _profiles = profiles;
         }
@@ -32,7 +35,8 @@ namespace Itinero.Snapping {
         /// </summary>
         public double MaxOffsetInMeter { get; set; } = 1000;
 
-        internal Func<IEdgeEnumerator<RoutingNetwork>, bool> AcceptableFunc() {
+        internal Func<IEdgeEnumerator<RoutingNetwork>, bool> AcceptableFunc()
+        {
             var costFunctions = _profiles.Select(_snapper.RoutingNetwork.GetCostFunctionFor).ToArray();
 
             var hasProfiles = costFunctions.Length > 0;
@@ -62,7 +66,8 @@ namespace Itinero.Snapping {
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations) {
+        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations)
+        {
             var acceptableFunc = AcceptableFunc();
 
             foreach (var location in locations) {

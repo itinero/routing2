@@ -4,10 +4,13 @@ using Itinero.Tests.Profiles;
 using Itinero.Tests.Routes.Paths;
 using Xunit;
 
-namespace Itinero.Tests.Routes.Builders {
-    public class RouteBuilderTests {
+namespace Itinero.Tests.Routes.Builders
+{
+    public class RouteBuilderTests
+    {
         [Fact]
-        public void RouteBuilder_Build_OneEdge_Forward_ShouldBuildOneEdgeRoute() {
+        public void RouteBuilder_Build_OneEdge_Forward_ShouldBuildOneEdgeRoute()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -29,7 +32,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_OneEdge_Backward_ShouldBuildOneEdgeRoute() {
+        public void RouteBuilder_Build_OneEdge_Backward_ShouldBuildOneEdgeRoute()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -51,7 +55,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_OneEdge_WithShape_Forward_ShouldBuildOneEdgeRoute_WithShape() {
+        public void RouteBuilder_Build_OneEdge_WithShape_Forward_ShouldBuildOneEdgeRoute_WithShape()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -78,7 +83,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_OneEdge_WithShape_Backward_ShouldBuildOneEdgeRoute_WithShape() {
+        public void RouteBuilder_Build_OneEdge_WithShape_Backward_ShouldBuildOneEdgeRoute_WithShape()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -112,7 +118,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_TwoEdges_ForwardForward_ShouldBuildTwoEdgeRoute() {
+        public void RouteBuilder_Build_TwoEdges_ForwardForward_ShouldBuildTwoEdgeRoute()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -150,7 +157,8 @@ namespace Itinero.Tests.Routes.Builders {
         }
 
         [Fact]
-        public void RouteBuilder_Build_TwoEdges_BackwardBackward_ShouldBuildTwoEdgeRoute() {
+        public void RouteBuilder_Build_TwoEdges_BackwardBackward_ShouldBuildTwoEdgeRoute()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),

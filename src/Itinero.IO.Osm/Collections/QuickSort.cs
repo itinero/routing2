@@ -1,12 +1,16 @@
 using System;
 
-namespace Itinero.IO.Osm.Collections {
-    internal static class QuickSort {
-        public static void Sort(Func<long, long> value, Action<long, long> swap, long left, long right) {
+namespace Itinero.IO.Osm.Collections
+{
+    internal static class QuickSort
+    {
+        public static void Sort(Func<long, long> value, Action<long, long> swap, long left, long right)
+        {
             Sort((i1, i2) => value(i1).CompareTo(value(i2)), swap, left, right);
         }
 
-        public static void Sort(Func<long, long, int> compare, Action<long, long> swap, long left, long right) {
+        public static void Sort(Func<long, long, int> compare, Action<long, long> swap, long left, long right)
+        {
             if (left >= right) {
                 return;
             }
@@ -26,7 +30,8 @@ namespace Itinero.IO.Osm.Collections {
             }
         }
 
-        public static bool IsSorted(Func<long, long> value, long left, long right) {
+        public static bool IsSorted(Func<long, long> value, long left, long right)
+        {
             var previous = value(left);
             for (var i = left + 1; i <= right; i++) {
                 var val = value(i);
@@ -40,9 +45,11 @@ namespace Itinero.IO.Osm.Collections {
             return true;
         }
 
-        private struct Pair {
+        private struct Pair
+        {
             public Pair(long left, long right)
-                : this() {
+                : this()
+            {
                 Left = left;
                 Right = right;
             }
@@ -51,7 +58,8 @@ namespace Itinero.IO.Osm.Collections {
             public long Right { get; set; }
         }
 
-        private static long Partition(Func<long, long, int> compare, Action<long, long> swap, long left, long right) {
+        private static long Partition(Func<long, long, int> compare, Action<long, long> swap, long left, long right)
+        {
             // get the pivot value.
             if (left > right) {
                 throw new ArgumentException("left should be smaller than or equal to right.");
@@ -113,14 +121,16 @@ namespace Itinero.IO.Osm.Collections {
         }
 
         public static void ThreewayPartition(Func<long, long> value, Action<long, long> swap, long left, long right,
-            out long highestLowest, out long lowestHighest) {
+            out long highestLowest, out long lowestHighest)
+        {
             ThreewayPartition(value, swap, left, right, left, out highestLowest,
                 out lowestHighest); // default, the left a pivot.
         }
 
         public static void ThreewayPartition(Func<long, long> value, Action<long, long> swap, long left, long right,
             long pivot,
-            out long highestLowest, out long lowestHighest) {
+            out long highestLowest, out long lowestHighest)
+        {
             if (left > right) {
                 throw new ArgumentException("left should be smaller than or equal to right.");
             }

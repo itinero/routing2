@@ -3,10 +3,13 @@ using System.Linq;
 using Itinero.Network;
 using Xunit;
 
-namespace Itinero.Tests.Network.Enumerators.Edges {
-    public class RoutingNetworkEdgeEnumeratorTests {
+namespace Itinero.Tests.Network.Enumerators.Edges
+{
+    public class RoutingNetworkEdgeEnumeratorTests
+    {
         [Fact]
-        public void RoutingNetworkEdgeEnumerator_NoEdges_ShouldEnumerateNoEdges() {
+        public void RoutingNetworkEdgeEnumerator_NoEdges_ShouldEnumerateNoEdges()
+        {
             var network = new RoutingNetwork(new RouterDb());
 
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
@@ -19,7 +22,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void RoutingNetworkEdgeEnumerator_OneEdge_ShouldEnumerateOneEdge() {
+        public void RoutingNetworkEdgeEnumerator_OneEdge_ShouldEnumerateOneEdge()
+        {
             var network = new RoutingNetwork(new RouterDb());
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
                 (4.792613983154297, 51.26535213392538, (float?) null),
@@ -37,7 +41,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void RoutingEdgeNetworkEnumerator_OneEdge_WithShape_ShouldEnumerateShapeForward() {
+        public void RoutingEdgeNetworkEnumerator_OneEdge_WithShape_ShouldEnumerateShapeForward()
+        {
             var network = new RoutingNetwork(new RouterDb());
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
@@ -62,7 +67,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void RoutingEdgeNetworkEnumerator_OneEdge_WithShape_ShouldEnumerateShapeBackward() {
+        public void RoutingEdgeNetworkEnumerator_OneEdge_WithShape_ShouldEnumerateShapeBackward()
+        {
             var network = new RoutingNetwork(new RouterDb());
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
@@ -87,7 +93,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges {
         }
 
         [Fact]
-        public void RoutingEdgeNetworkEnumerator_TwoEdges_WithShape_ShouldEnumerateShapes() {
+        public void RoutingEdgeNetworkEnumerator_TwoEdges_WithShape_ShouldEnumerateShapes()
+        {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),

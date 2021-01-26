@@ -9,8 +9,10 @@ using Itinero.Network.Writer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Itinero.IO.Osm.Tiles.Parsers {
-    internal static class TileParser {
+namespace Itinero.IO.Osm.Tiles.Parsers
+{
+    internal static class TileParser
+    {
         /// <summary>
         /// The base url to fetch the tiles from.
         /// </summary>
@@ -25,7 +27,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers {
             () => TagMapperConfigParser.Parse(
                 Extensions.LoadEmbeddedResourceStream("Itinero.IO.Osm.Tiles.ontology.mapping_config.json")));
 
-        internal static JObject? Parse(this Stream stream, Tile tile) {
+        internal static JObject? Parse(this Stream stream, Tile tile)
+        {
             try {
                 using var textReader = new StreamReader(stream);
                 using var jsonReader = new JsonTextReader(textReader);
@@ -40,7 +43,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers {
         }
 
         internal static bool AddOsmTile(this RoutingNetworkWriter networkWriter, GlobalIdMap globalIdMap, Tile tile,
-            JObject jsonObject) {
+            JObject jsonObject)
+        {
             var nodeLocations =
                 new Dictionary<long, ((double longitude, double latitude, float? e) location, bool inTile)>();
             var waysData =
@@ -274,7 +278,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers {
         /// <param name="reverseMappings">The reverse mappings.</param>
         /// <returns>The tags.</returns>
         private static List<(string key, string value)> GetTags(JToken osmGeo,
-            Dictionary<string, TagMapperConfig> reverseMappings) {
+            Dictionary<string, TagMapperConfig> reverseMappings)
+        {
             var attributes = new List<(string key, string value)>();
 
             // interpret all tags with defined semantics.

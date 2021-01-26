@@ -5,10 +5,13 @@ using Itinero.Instructions.Generators;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class IntersectionInstructionTest {
+namespace Itinero.Tests.Instructions
+{
+    public class IntersectionInstructionTest
+    {
         [Fact]
-        public void GenerateCrossroad_SimpleCrossroad_GetCrossroadInstruction() {
+        public void GenerateCrossroad_SimpleCrossroad_GetCrossroadInstruction()
+        {
             var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
@@ -50,7 +53,8 @@ namespace Itinero.Tests.Instructions {
 
 
         [Fact]
-        public void GenerateCrossroad_KeepLeft_GetCrossroadInstruction() {
+        public void GenerateCrossroad_KeepLeft_GetCrossroadInstruction()
+        {
             var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
@@ -87,7 +91,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateCrossroad_SimpleLeft_GetCrossroadInstruction() {
+        public void GenerateCrossroad_SimpleLeft_GetCrossroadInstruction()
+        {
             var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
@@ -102,11 +107,11 @@ namespace Itinero.Tests.Instructions {
             };
 
             route.ShapeMeta = new List<Route.Meta> {
-                new Route.Meta {
+                new() {
                     Shape = 1,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
-                new Route.Meta {
+                new() {
                     Shape = 3,
                     Attributes = new[] {("name", "Groenestraat"), ("highway", "residential")}
                 }
@@ -134,7 +139,8 @@ namespace Itinero.Tests.Instructions {
 
 
         [Fact]
-        public void GenerateCrossroad_SimpleRight_GetCrossroadInstruction() {
+        public void GenerateCrossroad_SimpleRight_GetCrossroadInstruction()
+        {
             var gen = new IntersectionInstruction.IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the north-east
@@ -149,11 +155,11 @@ namespace Itinero.Tests.Instructions {
             };
 
             route.ShapeMeta = new List<Route.Meta> {
-                new Route.Meta {
+                new() {
                     Shape = 1,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
-                new Route.Meta {
+                new() {
                     Shape = 3,
                     Attributes = new[] {("name", "Groenestraat"), ("highway", "residential")}
                 }

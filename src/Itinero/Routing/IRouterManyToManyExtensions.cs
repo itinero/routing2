@@ -5,17 +5,20 @@ using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
 
-namespace Itinero.Routing {
+namespace Itinero.Routing
+{
     /// <summary>
     /// Many to many extensions.
     /// </summary>
-    public static class IRouterManyToManyExtensions {
+    public static class IRouterManyToManyExtensions
+    {
         /// <summary>
         /// Calculates the paths.
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToMany manyToManyRouter) {
+        public static IReadOnlyList<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToMany manyToManyRouter)
+        {
             var sources = manyToManyRouter.Sources;
             var targets = manyToManyRouter.Targets;
 
@@ -33,7 +36,8 @@ namespace Itinero.Routing {
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToMany manyToManyRouter) {
+        public static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToMany manyToManyRouter)
+        {
             var paths = manyToManyRouter.Paths();
             return paths.Select(x => {
                 return x.Select(y =>
@@ -49,7 +53,8 @@ namespace Itinero.Routing {
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public static Result<IReadOnlyList<IReadOnlyList<double?>>> Calculate(
-            this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter) {
+            this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter)
+        {
             return null;
 
             // var profileHandler = manyToManyWeightRouter.Router.Network.GetCostFunctionFor(

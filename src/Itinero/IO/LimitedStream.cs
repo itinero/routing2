@@ -1,6 +1,7 @@
 using System.IO;
 
-namespace Itinero.IO {
+namespace Itinero.IO
+{
     // /// <summary>
     // /// Wraps a stream to prevent some fixed data from being overwritten.
     // /// </summary>

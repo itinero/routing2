@@ -5,8 +5,10 @@ using Itinero.IO;
 using Itinero.Network.Storage;
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.Tiles {
-    internal partial class NetworkTile {
+namespace Itinero.Network.Tiles
+{
+    internal partial class NetworkTile
+    {
         /// <summary>
         /// Stores the attributes, starting with the number of attributes and then alternating key-value pairs.
         /// </summary>
@@ -21,7 +23,8 @@ namespace Itinero.Network.Tiles {
 
         private uint _nextStringId = 0;
 
-        private uint SetAttributes(IEnumerable<(string key, string value)> attributes) {
+        private uint SetAttributes(IEnumerable<(string key, string value)> attributes)
+        {
             var start = _nextAttributePointer;
 
             long cPos = start;
@@ -57,7 +60,8 @@ namespace Itinero.Network.Tiles {
             return start;
         }
 
-        internal IEnumerable<(string key, string value)> GetAttributes(uint? pointer) {
+        internal IEnumerable<(string key, string value)> GetAttributes(uint? pointer)
+        {
             if (pointer == null) {
                 yield break;
             }
@@ -78,7 +82,8 @@ namespace Itinero.Network.Tiles {
             } while (count == 255);
         }
 
-        private uint AddOrGetString(string s) {
+        private uint AddOrGetString(string s)
+        {
             for (uint i = 0; i < _nextStringId; i++) {
                 var existing = _strings[i];
                 if (existing == s) {
@@ -97,7 +102,8 @@ namespace Itinero.Network.Tiles {
             return id;
         }
 
-        private void WriteAttributesTo(Stream stream) {
+        private void WriteAttributesTo(Stream stream)
+        {
             stream.WriteVarUInt32(_nextAttributePointer);
             for (var i = 0; i < _nextAttributePointer; i++) {
                 stream.WriteByte(_attributes[i]);
@@ -109,7 +115,8 @@ namespace Itinero.Network.Tiles {
             }
         }
 
-        private void ReadAttributesFrom(Stream stream) {
+        private void ReadAttributesFrom(Stream stream)
+        {
             _nextAttributePointer = stream.ReadVarUInt32();
             _attributes.Resize(_nextAttributePointer);
             for (var i = 0; i < _nextAttributePointer; i++) {

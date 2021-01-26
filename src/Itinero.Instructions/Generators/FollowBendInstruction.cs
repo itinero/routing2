@@ -1,7 +1,8 @@
 using System;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Generators {
+namespace Itinero.Instructions.Generators
+{
     /**
      * A bend in the road is there if:
      * - Within the first 100m, the road turns at least 25°
@@ -10,13 +11,16 @@ namespace Itinero.Instructions.Generators {
      * * OR the branches on the turn-to side are all service roads or tracks and the current one isn't that too
      * - There are no major bends in the other direction (thus: every individual bend is at least 0°)
      */
-    internal class FollowBendInstruction : BaseInstruction {
+    internal class FollowBendInstruction : BaseInstruction
+    {
         public FollowBendInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
             route, shapeIndex, shapeIndexEnd, turnDegrees) { }
     }
 
-    internal class FollowBendGenerator : IInstructionGenerator {
-        private static bool DoesFollowBend(IndexedRoute route, int shapeI, double dAngle, int angleSign) {
+    internal class FollowBendGenerator : IInstructionGenerator
+    {
+        private static bool DoesFollowBend(IndexedRoute route, int shapeI, double dAngle, int angleSign)
+        {
             // We aren't allowed to have branches on the inner side, to avoid confusing situations
 
             if (shapeI >= route.Branches.Count) {
@@ -54,7 +58,8 @@ namespace Itinero.Instructions.Generators {
         }
 
 
-        public BaseInstruction Generate(IndexedRoute route, int offset) {
+        public BaseInstruction Generate(IndexedRoute route, int offset)
+        {
             if (offset == 0 || offset == route.Last) {
                 // We never have a bend at first or as last...
                 return null;

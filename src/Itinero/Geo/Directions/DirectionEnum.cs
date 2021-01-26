@@ -1,8 +1,10 @@
-namespace Itinero.Geo.Directions {
+namespace Itinero.Geo.Directions
+{
     /// <summary>
     /// Direction types.
     /// </summary>
-    public enum DirectionEnum {
+    public enum DirectionEnum
+    {
         /// <summary>
         /// North.
         /// </summary>

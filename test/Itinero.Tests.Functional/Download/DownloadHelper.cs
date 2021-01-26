@@ -7,14 +7,17 @@ using System.Net.Http.Headers;
 using System.Web;
 using Itinero.Logging;
 
-namespace Itinero.Tests.Functional.Download {
-    internal static class DownloadHelper {
+namespace Itinero.Tests.Functional.Download
+{
+    internal static class DownloadHelper
+    {
         /// <summary>
         /// Gets a stream for the content at the given url.
         /// </summary>
         /// <param name="url">The url.</param>
         /// <returns>An open stream for the content at the given url.</returns>
-        public static Stream? Download(string url) {
+        public static Stream? Download(string url)
+        {
             var fileName = HttpUtility.UrlEncode(url) + ".tile.zip";
             fileName = Path.Combine(".", "cache", fileName);
 

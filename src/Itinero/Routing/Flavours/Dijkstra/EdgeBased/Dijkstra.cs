@@ -12,11 +12,13 @@ using Itinero.Snapping;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased {
+namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
+{
     /// <summary>
     /// An edge-based dijkstra implementation.
     /// </summary>
-    internal class Dijkstra {
+    internal class Dijkstra
+    {
         private readonly PathTree _tree = new();
         private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new();
         private readonly BinaryHeap<uint> _heap = new();
@@ -25,7 +27,8 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased {
             (SnapPoint sp, bool? direction) target,
             DijkstraWeightFunc getDijkstraWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null) {
+            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
+        {
             var paths = Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
             if (paths == null) {
                 return null;
@@ -42,8 +45,10 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased {
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
             DijkstraWeightFunc getDijkstraWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null) {
-            double GetWorst((uint pointer, double cost)[] targets) {
+            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
+        {
+            double GetWorst((uint pointer, double cost)[] targets)
+            {
                 var worst = 0d;
                 for (var i = 0; i < targets.Length; i++) {
                     if (!(targets[i].cost > worst)) {

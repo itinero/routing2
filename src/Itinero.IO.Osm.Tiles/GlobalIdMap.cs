@@ -8,11 +8,13 @@ using Itinero.Network;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.IO.Osm.Tiles {
+namespace Itinero.IO.Osm.Tiles
+{
     /// <summary>
     /// A data structure to keep mappings between global vertex ids and vertices.
     /// </summary>
-    internal class GlobalIdMap : IEnumerable<(long globalId, VertexId vertex)> {
+    internal class GlobalIdMap : IEnumerable<(long globalId, VertexId vertex)>
+    {
         private readonly Dictionary<long, VertexId> _vertexPerId = new();
 
         /// <summary>
@@ -20,7 +22,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// </summary>
         /// <param name="globalVertexId">The global vertex id.</param>
         /// <param name="vertex">The local vertex.</param>
-        public void Set(long globalVertexId, VertexId vertex) {
+        public void Set(long globalVertexId, VertexId vertex)
+        {
             _vertexPerId[globalVertexId] = vertex;
         }
 
@@ -30,22 +33,26 @@ namespace Itinero.IO.Osm.Tiles {
         /// <param name="globalVertexId">The global vertex id.</param>
         /// <param name="vertex">The vertex associated with the given global vertex, if any.</param>
         /// <returns>True if a mapping exists, false otherwise.</returns>
-        public bool TryGet(long globalVertexId, out VertexId vertex) {
+        public bool TryGet(long globalVertexId, out VertexId vertex)
+        {
             return _vertexPerId.TryGetValue(globalVertexId, out vertex);
         }
 
         /// <inheritdoc/>
-        public IEnumerator<(long globalId, VertexId vertex)> GetEnumerator() {
+        public IEnumerator<(long globalId, VertexId vertex)> GetEnumerator()
+        {
             foreach (var pair in _vertexPerId) {
                 yield return (pair.Key, pair.Value);
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
+        IEnumerator IEnumerable.GetEnumerator()
+        {
             return GetEnumerator();
         }
 
-        internal long WriteTo(Stream stream) {
+        internal long WriteTo(Stream stream)
+        {
             var p = stream.Position;
 
             // write header and version.
@@ -63,7 +70,8 @@ namespace Itinero.IO.Osm.Tiles {
             return stream.Position - p;
         }
 
-        internal static GlobalIdMap ReadFrom(Stream stream) {
+        internal static GlobalIdMap ReadFrom(Stream stream)
+        {
             // read & verify header.
             var header = stream.ReadWithSizeString();
             var version = stream.ReadByte();

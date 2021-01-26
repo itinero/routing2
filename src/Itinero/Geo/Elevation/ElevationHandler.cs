@@ -1,15 +1,18 @@
-﻿namespace Itinero.Geo.Elevation {
+﻿namespace Itinero.Geo.Elevation
+{
     /// <summary>
     /// The default elevation handler.
     /// </summary>
-    public class ElevationHandler : IElevationHandler {
+    public class ElevationHandler : IElevationHandler
+    {
         private readonly GetElevationDelegate _getElevation;
 
         /// <summary>
         /// Creates a new elevation handler.
         /// </summary>
         /// <param name="getElevation">The function to get elevation from.</param>
-        public ElevationHandler(GetElevationDelegate getElevation) {
+        public ElevationHandler(GetElevationDelegate getElevation)
+        {
             _getElevation = getElevation;
         }
 
@@ -21,7 +24,8 @@
         /// <summary>
         /// Add elevation to the given coordinate.
         /// </summary>
-        public float? Elevation(double longitude, double latitude) {
+        public float? Elevation(double longitude, double latitude)
+        {
             return _getElevation?.Invoke(longitude, latitude);
         }
 

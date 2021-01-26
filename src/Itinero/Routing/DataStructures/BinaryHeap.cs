@@ -1,11 +1,13 @@
 using System;
 
-namespace Itinero.Routing.DataStructures {
+namespace Itinero.Routing.DataStructures
+{
     /// <summary>
     /// Implements a priority queue in the form of a binary heap.
     /// </summary>
     internal class BinaryHeap<T>
-        where T : struct {
+        where T : struct
+    {
         private T[] _heap; // The objects per priority.
         private double[] _priorities; // Holds the priorities of this heap.
         private int _count; // The current count of elements.
@@ -20,7 +22,8 @@ namespace Itinero.Routing.DataStructures {
         /// <summary>
         /// Creates a new binary heap.
         /// </summary>
-        public BinaryHeap(uint initialSize) {
+        public BinaryHeap(uint initialSize)
+        {
             _heap = new T[initialSize];
             _priorities = new double[initialSize];
 
@@ -36,7 +39,8 @@ namespace Itinero.Routing.DataStructures {
         /// <summary>
         /// Enqueues a given item.
         /// </summary>
-        public void Push(T item, double priority) {
+        public void Push(T item, double priority)
+        {
             _count++; // another item was added!
 
             // increase size if needed.
@@ -77,21 +81,24 @@ namespace Itinero.Routing.DataStructures {
         /// <summary>
         /// Returns the smallest weight in the queue.
         /// </summary>
-        public double PeekWeight() {
+        public double PeekWeight()
+        {
             return _priorities[1];
         }
 
         /// <summary>
         /// Returns the object with the smallest weight.
         /// </summary>
-        public T Peek() {
+        public T Peek()
+        {
             return _heap[1];
         }
 
         /// <summary>
         /// Returns the object with the smallest weight and removes it.
         /// </summary>
-        public T Pop(out double priority) {
+        public T Pop(out double priority)
+        {
             priority = 0;
             if (_count <= 0) {
                 return default;
@@ -155,7 +162,8 @@ namespace Itinero.Routing.DataStructures {
         /// <summary>
         /// Clears this priority queue.
         /// </summary>
-        public void Clear() {
+        public void Clear()
+        {
             _count = 0;
             _latestIndex = 1;
         }

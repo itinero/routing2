@@ -3,10 +3,13 @@ using Itinero.Network.Restrictions;
 using Xunit;
 using System.Linq;
 
-namespace Itinero.Tests.Network.Restrictions {
-    public class RestrictionExtensionsTests {
+namespace Itinero.Tests.Network.Restrictions
+{
+    public class RestrictionExtensionsTests
+    {
         [Fact]
-        public void Invert_NoInvertPossible_ShouldReturnEmpty() {
+        public void Invert_NoInvertPossible_ShouldReturnEmpty()
+        {
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
@@ -24,7 +27,8 @@ namespace Itinero.Tests.Network.Restrictions {
         }
 
         [Fact]
-        public void Invert_OneInvertPossible_ForwardForward_ShouldReturnSingle() {
+        public void Invert_OneInvertPossible_ForwardForward_ShouldReturnSingle()
+        {
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
@@ -49,7 +53,8 @@ namespace Itinero.Tests.Network.Restrictions {
         }
 
         [Fact]
-        public void Invert_OneInvertPossible_BackwardForward_ShouldReturnSingle() {
+        public void Invert_OneInvertPossible_BackwardForward_ShouldReturnSingle()
+        {
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
@@ -74,7 +79,8 @@ namespace Itinero.Tests.Network.Restrictions {
         }
 
         [Fact]
-        public void Invert_OneInvertPossible_ForwardBackward_ShouldReturnSingle() {
+        public void Invert_OneInvertPossible_ForwardBackward_ShouldReturnSingle()
+        {
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
@@ -99,7 +105,8 @@ namespace Itinero.Tests.Network.Restrictions {
         }
 
         [Fact]
-        public void Invert_OneForwardInvertPossibleShouldReturnSingle() {
+        public void Invert_OneForwardInvertPossibleShouldReturnSingle()
+        {
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();

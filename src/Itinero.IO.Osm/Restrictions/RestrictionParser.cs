@@ -7,14 +7,16 @@ using OsmSharp.Db;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 
-namespace Itinero.IO.Osm.Restrictions {
+namespace Itinero.IO.Osm.Restrictions
+{
     /// <summary>
     /// Parses OSM restrictions. Input is an OSM relation restriction, output is one or more restricted sequences of vertices.
     /// </summary>
     /// <remarks>
     /// This was used a the main source: https://wiki.openstreetmap.org/wiki/Relation:restriction 
     /// </remarks>
-    public static class RestrictionParser {
+    public static class RestrictionParser
+    {
         private static readonly IReadOnlyDictionary<string, bool> RestrictionTypes = new Dictionary<string, bool> {
             {"no_left_turn", true},
             {"no_right_turn", true},
@@ -35,7 +37,8 @@ namespace Itinero.IO.Osm.Restrictions {
         /// <returns>A sequence of edges representing the turn restriction.</returns>
         public static Result<IEnumerable<(EdgeId edge, bool forward)>> GetEdgeSequence(this Relation relation,
             Func<long, VertexId?> getVertex,
-            Func<long, IEnumerable<(VertexId from, VertexId to, EdgeId id)>> getEdges) {
+            Func<long, IEnumerable<(VertexId from, VertexId to, EdgeId id)>> getEdges)
+        {
             var membersResult = relation.ParseMemberRoles();
             if (membersResult.IsError) {
                 return membersResult.ConvertError<IEnumerable<(EdgeId edge, bool forward)>>();
@@ -107,7 +110,8 @@ namespace Itinero.IO.Osm.Restrictions {
             return new Result<IEnumerable<(EdgeId edge, bool forward)>>(new[] {from.Value, to.Value});
         }
 
-        private static Result<(long fromWayId, OsmGeoKey via, long toWayId)> ParseMemberRoles(this Relation relation) {
+        private static Result<(long fromWayId, OsmGeoKey via, long toWayId)> ParseMemberRoles(this Relation relation)
+        {
             if (relation.Members == null) {
                 return new Result<(long fromWayId, OsmGeoKey via, long toWayId)>("Relation has no members.");
             }
@@ -171,7 +175,8 @@ namespace Itinero.IO.Osm.Restrictions {
         /// </remarks>
         /// <param name="relation">The restriction relation.</param>
         /// <returns>True if the restriction is 'negative', false if 'positive'.</returns>
-        public static Result<bool> IsNegative(this Relation relation) {
+        public static Result<bool> IsNegative(this Relation relation)
+        {
             try {
                 if (relation?.Tags == null) {
                     return new Result<bool>("Relation has no tags.");

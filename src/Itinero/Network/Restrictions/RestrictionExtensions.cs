@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Network.Restrictions {
+namespace Itinero.Network.Restrictions
+{
     /// <summary>
     /// Contains extension methods to work with restricted sequences.
     /// </summary>
-    public static class RestrictionExtensions {
+    public static class RestrictionExtensions
+    {
         /// <summary>
         /// Inverts the given restriction returning all possible sequences in the network starting with the same edges except the last edge.
         /// </summary>
@@ -16,7 +18,8 @@ namespace Itinero.Network.Restrictions {
         public static IEnumerable<IEnumerable<(EdgeId edge, bool forward)>> Invert<T>(
             this IEnumerable<(EdgeId edge, bool forward)> restrictedSequence,
             EdgeEnumerator<T> mutableNetworkEdgeEnumerator)
-            where T : IEdgeEnumerable {
+            where T : IEdgeEnumerable
+        {
             var firstPart = new List<(EdgeId edge, bool forward)>(restrictedSequence);
             if (firstPart.Count < 2) {
                 yield break; // no inverse possible.

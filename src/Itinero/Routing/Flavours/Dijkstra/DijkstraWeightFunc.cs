@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routing.Flavours.Dijkstra {
+namespace Itinero.Routing.Flavours.Dijkstra
+{
     /// <summary>
     /// The weight function.
     /// </summary>

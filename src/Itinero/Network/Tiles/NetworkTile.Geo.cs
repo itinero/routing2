@@ -5,8 +5,10 @@ using Itinero.IO;
 using Itinero.Network.Storage;
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.Tiles {
-    internal partial class NetworkTile {
+namespace Itinero.Network.Tiles
+{
+    internal partial class NetworkTile
+    {
         private const int CoordinateSizeInBytes = 3; // 3 bytes = 24 bits = 4096 x 4096.
         private const int TileResolutionInBits = CoordinateSizeInBytes * 8 / 2;
         private const int ElevationSizeInBytes = 2; // 2 bytes = 16 bits = [-32768, 32767], using dm as resolution
@@ -19,7 +21,8 @@ namespace Itinero.Network.Tiles {
         private uint _nextShapePointer = 0;
         private readonly ArrayBase<byte> _shapes;
 
-        private void SetCoordinate(uint localId, double longitude, double latitude, float? e) {
+        private void SetCoordinate(uint localId, double longitude, double latitude, float? e)
+        {
             // set elevation if needed.
             if (_elevation != null && e == null) {
                 throw new ArgumentNullException(nameof(e),
@@ -69,7 +72,8 @@ namespace Itinero.Network.Tiles {
             }
         }
 
-        private void GetCoordinate(uint localId, out double longitude, out double latitude, out float? elevation) {
+        private void GetCoordinate(uint localId, out double longitude, out double latitude, out float? elevation)
+        {
             var tileCoordinatePointer = _elevation == null
                 ? localId * CoordinateSizeInBytes * 2
                 : localId * (CoordinateSizeInBytes * 2 + ElevationSizeInBytes);
@@ -87,7 +91,8 @@ namespace Itinero.Network.Tiles {
             TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out longitude, out latitude);
         }
 
-        private uint SetShape(IEnumerable<(double longitude, double latitude, float? e)> shape) {
+        private uint SetShape(IEnumerable<(double longitude, double latitude, float? e)> shape)
+        {
             const int resolution = (1 << TileResolutionInBits) - 1;
             var originalPointer = _nextShapePointer;
             var blockPointer = originalPointer;
@@ -163,7 +168,8 @@ namespace Itinero.Network.Tiles {
             return originalPointer;
         }
 
-        internal IEnumerable<(double longitude, double latitude, float? e)> GetShape(uint? pointer) {
+        internal IEnumerable<(double longitude, double latitude, float? e)> GetShape(uint? pointer)
+        {
             if (pointer == null) {
                 yield break;
             }
@@ -216,7 +222,8 @@ namespace Itinero.Network.Tiles {
             } while (count == 255);
         }
 
-        private void WriteGeoTo(Stream stream) {
+        private void WriteGeoTo(Stream stream)
+        {
             stream.WriteVarInt32Nullable(_elevation);
 
             // write vertex locations.
@@ -237,7 +244,8 @@ namespace Itinero.Network.Tiles {
             }
         }
 
-        private void ReadGeoFrom(Stream stream) {
+        private void ReadGeoFrom(Stream stream)
+        {
             _elevation = stream.ReadVarInt32Nullable();
 
             // read vertex locations.

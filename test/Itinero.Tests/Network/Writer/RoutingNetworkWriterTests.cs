@@ -3,10 +3,13 @@ using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
 using Xunit;
 
-namespace Itinero.Tests.Network.Writer {
-    public class RoutingNetworkWriterTests {
+namespace Itinero.Tests.Network.Writer
+{
+    public class RoutingNetworkWriterTests
+    {
         [Fact]
-        public void RoutingNetworkWriter_Empty_AddVertex_ShouldReturnTileIdAnd0() {
+        public void RoutingNetworkWriter_Empty_AddVertex_ShouldReturnTileIdAnd0()
+        {
             // when adding a vertex to a tile the network should always generate an id in the same tile.
 
             var network = new RoutingNetwork(new RouterDb());
@@ -19,7 +22,8 @@ namespace Itinero.Tests.Network.Writer {
         }
 
         [Fact]
-        public void RoutingNetworkWriter_OneVertex_AddSecondVertexInTile_ShouldReturnTileIdAnd1() {
+        public void RoutingNetworkWriter_OneVertex_AddSecondVertexInTile_ShouldReturnTileIdAnd1()
+        {
             // when adding a vertex to a tile the network should always generate an id in the same tile.
 
             var network = new RoutingNetwork(new RouterDb());
@@ -38,7 +42,8 @@ namespace Itinero.Tests.Network.Writer {
         }
 
         [Fact]
-        public void RoutingNetworkWriter_OneVertex_TryGetVertex_ShouldReturnVertexLocation() {
+        public void RoutingNetworkWriter_OneVertex_TryGetVertex_ShouldReturnVertexLocation()
+        {
             // when adding a vertex to a tile the network should store the location accurately.
 
             var network = new RoutingNetwork(new RouterDb());
@@ -52,7 +57,8 @@ namespace Itinero.Tests.Network.Writer {
         }
 
         [Fact]
-        public void RoutingNetworkWriter_Empty_AddVertex_ShouldReturnProperTileId() {
+        public void RoutingNetworkWriter_Empty_AddVertex_ShouldReturnProperTileId()
+        {
             // when adding a vertex to a tile the network should always generate an id in the same tile with a proper
             // local id.
 
@@ -68,7 +74,8 @@ namespace Itinero.Tests.Network.Writer {
         }
 
         [Fact]
-        public void RoutingNetworkWriter_TwoVertices_AddEdge_ShouldReturn0() {
+        public void RoutingNetworkWriter_TwoVertices_AddEdge_ShouldReturn0()
+        {
             var network = new RoutingNetwork(new RouterDb());
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
                 (4.792613983154297, 51.26535213392538, (float?) null),
@@ -81,7 +88,8 @@ namespace Itinero.Tests.Network.Writer {
         }
 
         [Fact]
-        public void RoutingNetworkWriter_ThreeVertices_AddSecondEdge_ShouldReturnPointerAsId() {
+        public void RoutingNetworkWriter_ThreeVertices_AddSecondEdge_ShouldReturnPointerAsId()
+        {
             var network = new RoutingNetwork(new RouterDb());
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
                 (4.792613983154297, 51.26535213392538, (float?) null),
@@ -96,7 +104,8 @@ namespace Itinero.Tests.Network.Writer {
         }
 
         [Fact]
-        public void RoutingNetwork_AddEdge_OverTileBoundary_ShouldAddEdgeTwice_WithOneId() {
+        public void RoutingNetwork_AddEdge_OverTileBoundary_ShouldAddEdgeTwice_WithOneId()
+        {
             // store an edge across tile boundaries should store the edge twice.
             // once in the tile of vertex1, in forward direction.
             // once in the tile of vertex2, in backward direction.

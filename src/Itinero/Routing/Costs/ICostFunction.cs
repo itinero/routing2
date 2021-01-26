@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routing.Costs {
+namespace Itinero.Routing.Costs
+{
     /// <summary>
     /// Abstract definition of a cost function.
     /// </summary>
-    internal interface ICostFunction {
+    internal interface ICostFunction
+    {
         /// <summary>
         /// Gets the costs associated with the given network edge.
         /// </summary>

@@ -1,8 +1,10 @@
-namespace Itinero {
+namespace Itinero
+{
     /// <summary>
     /// Defines router db settings.
     /// </summary>
-    public class RouterDbConfiguration {
+    public class RouterDbConfiguration
+    {
         /// <summary>
         /// Gets or sets the zoom level.
         /// </summary>

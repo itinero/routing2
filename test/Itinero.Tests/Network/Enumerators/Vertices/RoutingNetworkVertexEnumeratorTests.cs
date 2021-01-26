@@ -2,10 +2,13 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Xunit;
 
-namespace Itinero.Tests.Network.Enumerators.Vertices {
-    public class RoutingNetworkVertexEnumeratorTests {
+namespace Itinero.Tests.Network.Enumerators.Vertices
+{
+    public class RoutingNetworkVertexEnumeratorTests
+    {
         [Fact]
-        public void RoutingNetwork_VertexEnumerator_Empty_ShouldNotReturnVertices() {
+        public void RoutingNetwork_VertexEnumerator_Empty_ShouldNotReturnVertices()
+        {
             var network = new RoutingNetwork(new RouterDb());
 
             var enumerator = network.GetVertexEnumerator();
@@ -13,7 +16,8 @@ namespace Itinero.Tests.Network.Enumerators.Vertices {
         }
 
         [Fact]
-        public void RoutingNetwork_VertexEnumerator_OneVertex_ShouldReturnOneVertex() {
+        public void RoutingNetwork_VertexEnumerator_OneVertex_ShouldReturnOneVertex()
+        {
             var network = new RoutingNetwork(new RouterDb());
 
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
@@ -26,7 +30,8 @@ namespace Itinero.Tests.Network.Enumerators.Vertices {
         }
 
         [Fact]
-        public void RoutingNetwork_VertexEnumerator_TwoVertices_ShouldReturnTwoVertices() {
+        public void RoutingNetwork_VertexEnumerator_TwoVertices_ShouldReturnTwoVertices()
+        {
             var network = new RoutingNetwork(new RouterDb());
 
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
@@ -42,7 +47,8 @@ namespace Itinero.Tests.Network.Enumerators.Vertices {
         }
 
         [Fact]
-        public void RoutingNetwork_VertexEnumerator_TwoVertices_DifferentTiles_ShouldReturnTwoVertices() {
+        public void RoutingNetwork_VertexEnumerator_TwoVertices_DifferentTiles_ShouldReturnTwoVertices()
+        {
             var network = new RoutingNetwork(new RouterDb());
 
             var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {

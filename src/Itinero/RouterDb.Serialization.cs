@@ -2,14 +2,17 @@ using System.IO;
 using Itinero.IO;
 using Itinero.Network.Serialization;
 
-namespace Itinero {
-    public sealed partial class RouterDb {
+namespace Itinero
+{
+    public sealed partial class RouterDb
+    {
         /// <summary>
         /// Reads a router db from the given stream.
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <returns>The router db as read from the stream.</returns>
-        public static RouterDb ReadFrom(Stream stream) {
+        public static RouterDb ReadFrom(Stream stream)
+        {
             return new(stream);
         }
 
@@ -17,7 +20,8 @@ namespace Itinero {
         /// Writes the router db to the given stream.
         /// </summary>
         /// <param name="stream">The stream.</param>
-        public void WriteTo(Stream stream) {
+        public void WriteTo(Stream stream)
+        {
             // write version #.
             stream.WriteVarInt32(1);
 

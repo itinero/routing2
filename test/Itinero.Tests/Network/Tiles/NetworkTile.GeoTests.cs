@@ -2,10 +2,13 @@ using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
 
-namespace Itinero.Tests.Network.Tiles {
-    public class NetworkTile_GeoTests {
+namespace Itinero.Tests.Network.Tiles
+{
+    public class NetworkTile_GeoTests
+    {
         [Fact]
-        public void NetworkTile_AddVertex0_ShouldStoreCoordinates() {
+        public void NetworkTile_AddVertex0_ShouldStoreCoordinates()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
@@ -17,7 +20,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddVertex0_ShouldStoreElevation() {
+        public void NetworkTile_AddVertex0_ShouldStoreElevation()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
@@ -28,7 +32,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddVertex1_ShouldStoreElevation() {
+        public void NetworkTile_AddVertex1_ShouldStoreElevation()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             networkTile.AddVertex(4.7868, 51.2643, 156);
@@ -39,7 +44,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge0_EmptyShape_ShouldStoreEdge() {
+        public void NetworkTile_AddEdge0_EmptyShape_ShouldStoreEdge()
+        {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
@@ -51,7 +57,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge0_OneShapePoint_ShouldStoreShapePoints() {
+        public void NetworkTile_AddEdge0_OneShapePoint_ShouldStoreShapePoints()
+        {
             var graphTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
@@ -75,7 +82,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge0_OneShapePoint_Elevation_ShouldStoreShapeElevation() {
+        public void NetworkTile_AddEdge0_OneShapePoint_Elevation_ShouldStoreShapeElevation()
+        {
             var graphTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728, 100);
@@ -100,7 +108,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge0_ThreeShapePoints_ShouldStoreThreeShapePoints() {
+        public void NetworkTile_AddEdge0_ThreeShapePoints_ShouldStoreThreeShapePoints()
+        {
             var graphTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
@@ -139,7 +148,8 @@ namespace Itinero.Tests.Network.Tiles {
         }
 
         [Fact]
-        public void NetworkTile_AddEdge0_ThreeShapePoints_Elevation_ShouldStoreElevation() {
+        public void NetworkTile_AddEdge0_ThreeShapePoints_Elevation_ShouldStoreElevation()
+        {
             var graphTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728, 100);

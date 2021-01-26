@@ -1,10 +1,12 @@
 using Itinero.Snapping;
 
-namespace Itinero.Routing {
+namespace Itinero.Routing
+{
     /// <summary>
     /// Abstract representation of a router that has a source.
     /// </summary>
-    public interface IHasTarget : IRouter {
+    public interface IHasTarget : IRouter
+    {
         /// <summary>
         /// Gets the target.
         /// </summary>

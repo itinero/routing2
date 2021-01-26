@@ -8,18 +8,21 @@ using Itinero.Routing.Costs;
 using Itinero.Routing.Flavours.Dijkstra;
 using Itinero.Snapping;
 
-namespace Itinero.Routing {
+namespace Itinero.Routing
+{
     /// <summary>
     /// Contains extensions for the IRouter interface.
     /// </summary>
-    public static class IRouterExtensions {
+    public static class IRouterExtensions
+    {
         /// <summary>
         /// Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="snapPoint">The point to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IHasSource From(this IRouter router, SnapPoint snapPoint) {
+        public static IHasSource From(this IRouter router, SnapPoint snapPoint)
+        {
             return router.From((snapPoint, (bool?) null));
         }
 
@@ -29,7 +32,8 @@ namespace Itinero.Routing {
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoint">The point to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IHasSource From(this IRouter router, (SnapPoint snapPoint, bool? direction) directedSnapPoint) {
+        public static IHasSource From(this IRouter router, (SnapPoint snapPoint, bool? direction) directedSnapPoint)
+        {
             return new Router(router.Network, router.Settings) {
                 Source = directedSnapPoint
             };
@@ -42,7 +46,8 @@ namespace Itinero.Routing {
         /// <param name="directedSnapPoint">The point to route from.</param>
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router,
-            (SnapPoint snapPoint, DirectionEnum? direction) directedSnapPoint) {
+            (SnapPoint snapPoint, DirectionEnum? direction) directedSnapPoint)
+        {
             return router.From(directedSnapPoint.ToDirected(router.Network));
         }
 
@@ -52,7 +57,8 @@ namespace Itinero.Routing {
         /// <param name="router">The router.</param>
         /// <param name="snapPoints">The points to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IHasSources From(this IRouter router, IReadOnlyList<SnapPoint> snapPoints) {
+        public static IHasSources From(this IRouter router, IReadOnlyList<SnapPoint> snapPoints)
+        {
             return router.From(snapPoints.ToDirected());
         }
 
@@ -63,7 +69,8 @@ namespace Itinero.Routing {
         /// <param name="directedSnapPoints">The points to route from.</param>
         /// <returns>A configured router.</returns>
         public static IHasSources From(this IRouter router,
-            IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints) {
+            IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
+        {
             return router.From(directedSnapPoints.ToDirected(router.Network));
         }
 
@@ -74,14 +81,16 @@ namespace Itinero.Routing {
         /// <param name="directedSnapPoints">The points to route from.</param>
         /// <returns>A configured router.</returns>
         public static IHasSources From(this IRouter router,
-            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> directedSnapPoints) {
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> directedSnapPoints)
+        {
             return new Router(router.Network, router.Settings) {
                 Sources = directedSnapPoints
             };
         }
 
         internal static IReadOnlyList<IReadOnlyList<Result<Path>>> Calculate(this IRouter manyToManyRouter,
-            IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets) {
+            IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
+        {
             var settings = manyToManyRouter.Settings;
             var routerDb = manyToManyRouter.Network;
 
@@ -90,7 +99,8 @@ namespace Itinero.Routing {
 
             var maxBox = settings.MaxBoxFor(routerDb, sources);
 
-            bool checkMaxDistance(VertexId v) {
+            bool checkMaxDistance(VertexId v)
+            {
                 if (maxBox == null) {
                     return false;
                 }
@@ -136,7 +146,8 @@ namespace Itinero.Routing {
 
         internal static IReadOnlyList<IReadOnlyList<Result<Path>>> Calculate(this IRouter manyToManyRouter,
             IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources,
-            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets) {
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
+        {
             var settings = manyToManyRouter.Settings;
             var routerDb = manyToManyRouter.Network;
 
@@ -145,7 +156,8 @@ namespace Itinero.Routing {
 
             var maxBox = settings.MaxBoxFor(routerDb, sources);
 
-            bool checkMaxDistance(VertexId v) {
+            bool checkMaxDistance(VertexId v)
+            {
                 if (maxBox == null) {
                     return false;
                 }

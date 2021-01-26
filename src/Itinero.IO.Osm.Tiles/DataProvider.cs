@@ -4,11 +4,13 @@ using System.IO;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Network;
 
-namespace Itinero.IO.Osm.Tiles {
+namespace Itinero.IO.Osm.Tiles
+{
     /// <summary>
     /// A data provider loading routable tiles on demand.
     /// </summary>
-    internal class DataProvider {
+    internal class DataProvider
+    {
         private readonly GlobalIdMap _idMap;
         private readonly string _baseUrl;
         private readonly HashSet<uint> _loadedTiles;
@@ -20,7 +22,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// <param name="routerDb">The router db.</param>
         /// <param name="baseUrl">The base url to load tiles from.</param>
         /// <param name="zoom">The zoom level.</param>
-        internal DataProvider(RouterDb routerDb, string baseUrl = TileParser.BaseUrl, uint zoom = 14) {
+        internal DataProvider(RouterDb routerDb, string baseUrl = TileParser.BaseUrl, uint zoom = 14)
+        {
             _baseUrl = baseUrl;
             _zoom = 14;
 
@@ -37,7 +40,8 @@ namespace Itinero.IO.Osm.Tiles {
         }
 
         private DataProvider(RouterDb routerDb, string baseUrl, uint zoom,
-            HashSet<uint> loadedTiles, GlobalIdMap idMap) {
+            HashSet<uint> loadedTiles, GlobalIdMap idMap)
+        {
             _baseUrl = baseUrl;
             _zoom = zoom;
             _idMap = idMap;
@@ -52,7 +56,8 @@ namespace Itinero.IO.Osm.Tiles {
             //     this.WriteTo);
         }
 
-        internal void VertexTouched(RoutingNetwork network, VertexId vertexId) {
+        internal void VertexTouched(RoutingNetwork network, VertexId vertexId)
+        {
             if (_loadedTiles.Contains(vertexId.TileId)) {
                 return;
             }
@@ -85,7 +90,8 @@ namespace Itinero.IO.Osm.Tiles {
 
         internal void TouchBox(RoutingNetwork network,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box) {
+                bottomRight) box)
+        {
             // build the tile range.
             var tileRange = new TileRange(box, (int) _zoom);
 
@@ -115,7 +121,8 @@ namespace Itinero.IO.Osm.Tiles {
             });
         }
 
-        internal void WriteTo(Stream stream) {
+        internal void WriteTo(Stream stream)
+        {
             // write version #.
             stream.WriteWithSize($"{nameof(DataProvider)}");
             stream.WriteVarInt32(1);
@@ -136,7 +143,8 @@ namespace Itinero.IO.Osm.Tiles {
             }
         }
 
-        internal static DataProvider ReadFrom(Stream stream, RouterDb routerDb) {
+        internal static DataProvider ReadFrom(Stream stream, RouterDb routerDb)
+        {
             // read & verify header.
             var header = stream.ReadWithSizeString();
             var version = stream.ReadVarInt32();

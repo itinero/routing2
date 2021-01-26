@@ -5,17 +5,20 @@ using System.Text;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routes.Paths {
+namespace Itinero.Routes.Paths
+{
     /// <summary>
     /// Represents a path in a graph as a collection of edges.
     /// </summary>
-    public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> {
+    public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
+    {
         private readonly List<(EdgeId edge, bool forward)> _edges;
         public List<(EdgeId edge, bool forward)> Edges => _edges;
         private readonly RoutingNetworkEdgeEnumerator _edgeEnumerator;
         private readonly RoutingNetwork _graph;
 
-        public Path(RoutingNetwork network) {
+        public Path(RoutingNetwork network)
+        {
             _graph = network;
             _edgeEnumerator = network.GetEdgeEnumerator();
 
@@ -54,7 +57,8 @@ namespace Itinero.Routes.Paths {
         /// </summary>
         public (EdgeId edge, bool direction) Last => _edges[Count - 1];
 
-        internal void RemoveFirst() {
+        internal void RemoveFirst()
+        {
             if (_edges.Count == 0) {
                 throw new InvalidOperationException("Cannot remove first from an already empty path.");
             }
@@ -62,7 +66,8 @@ namespace Itinero.Routes.Paths {
             _edges.RemoveAt(0);
         }
 
-        internal void RemoveLast() {
+        internal void RemoveLast()
+        {
             if (_edges.Count == 0) {
                 throw new InvalidOperationException("Cannot remove last from an already empty path.");
             }
@@ -80,7 +85,8 @@ namespace Itinero.Routes.Paths {
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="first">The vertex that should occur first.</param>
-        public void Append(EdgeId edge, VertexId first) {
+        public void Append(EdgeId edge, VertexId first)
+        {
             if (!_edgeEnumerator.MoveToEdge(edge)) {
                 throw new Exception($"Edge does not exist.");
             }
@@ -101,7 +107,8 @@ namespace Itinero.Routes.Paths {
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="last">The vertex that should occur last.</param>
-        public void Prepend(EdgeId edge, VertexId last) {
+        public void Prepend(EdgeId edge, VertexId last)
+        {
             if (!_edgeEnumerator.MoveToEdge(edge)) {
                 throw new Exception($"Edge does not exist.");
             }
@@ -117,15 +124,18 @@ namespace Itinero.Routes.Paths {
             }
         }
 
-        internal void AppendInternal(EdgeId edge, bool forward) {
+        internal void AppendInternal(EdgeId edge, bool forward)
+        {
             _edges.Add((edge, forward));
         }
 
-        internal void PrependInternal(EdgeId edge, bool forward) {
+        internal void PrependInternal(EdgeId edge, bool forward)
+        {
             _edges.Insert(0, (edge, forward));
         }
 
-        public IEnumerator<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> GetEnumerator() {
+        public IEnumerator<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> GetEnumerator()
+        {
             for (var i = 0; i < Count; i++) {
                 var edge = _edges[i];
                 var offset1 = (ushort) 0;
@@ -143,14 +153,16 @@ namespace Itinero.Routes.Paths {
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
+        IEnumerator IEnumerable.GetEnumerator()
+        {
             return GetEnumerator();
         }
 
         /// <summary>
         /// Returns a description of this path.
         /// </summary>
-        public override string ToString() {
+        public override string ToString()
+        {
             // 1 edge without offsets:         [0]->21543F->[4]
             // 1 edge with offsets:            [0]->10%-21543F-20%->[4]
             var builder = new StringBuilder();
@@ -213,7 +225,8 @@ namespace Itinero.Routes.Paths {
             return builder.ToString();
 
             // Declare a local function.
-            string OffsetPer(ushort offset, bool forward) {
+            string OffsetPer(ushort offset, bool forward)
+            {
                 if (forward) {
                     return $"{(double) offset / ushort.MaxValue * 100:F1}%";
                 }

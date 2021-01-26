@@ -2,8 +2,10 @@ using System;
 using Itinero.Network;
 using Itinero.Network.Mutation;
 
-namespace Itinero {
-    public sealed partial class RouterDb {
+namespace Itinero
+{
+    public sealed partial class RouterDb
+    {
         private RoutingNetworkMutator? _mutable;
 
         /// <summary>
@@ -15,7 +17,8 @@ namespace Itinero {
         /// Gets a mutable version of the latest network.
         /// </summary>
         /// <returns>The mutable version.</returns>
-        public RoutingNetworkMutator GetMutableNetwork() {
+        public RoutingNetworkMutator GetMutableNetwork()
+        {
             if (_mutable != null) {
                 throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
                                                     $"Check {nameof(HasMutableNetwork)} to check for a current mutable.");
@@ -25,7 +28,8 @@ namespace Itinero {
             return _mutable;
         }
 
-        void IRouterDbMutable.Finish(RoutingNetwork newNetwork) {
+        void IRouterDbMutable.Finish(RoutingNetwork newNetwork)
+        {
             Latest = newNetwork;
 
             _mutable = null;

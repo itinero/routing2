@@ -5,8 +5,10 @@ using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Snapping;
 
-namespace Itinero.Network.Search {
-    internal static class EdgeSearch {
+namespace Itinero.Network.Search
+{
+    internal static class EdgeSearch
+    {
         /// <summary>
         /// Enumerates all edges that have at least one vertex in the given bounding box.
         /// </summary>
@@ -15,7 +17,8 @@ namespace Itinero.Network.Search {
         /// <returns>An enumerator with all the vertices and their location.</returns>
         public static IEdgeEnumerator<RoutingNetwork> SearchEdgesInBox(this RoutingNetwork network,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box) {
+                bottomRight) box)
+        {
             var vertices = network.SearchVerticesInBox(box);
             return new VertexEdgeEnumerator(network, vertices.Select((i) => i.vertex));
         }
@@ -30,8 +33,10 @@ namespace Itinero.Network.Search {
         public static SnapPoint SnapInBox(this RoutingNetwork network,
             ((double longitude, double, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)
                 box,
-            Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null) {
-            bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum) {
+            Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null)
+        {
+            bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum)
+            {
                 if (isAcceptable.HasValue) {
                     return isAcceptable.Value;
                 }
@@ -186,10 +191,12 @@ namespace Itinero.Network.Search {
         public static IEnumerable<SnapPoint> SnapAllInBox(this RoutingNetwork routerDb,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                 bottomRight) box,
-            Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true) {
+            Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
+        {
             var edges = new HashSet<EdgeId>();
 
-            bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum) {
+            bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum)
+            {
                 if (isAcceptable.HasValue) {
                     return isAcceptable.Value;
                 }

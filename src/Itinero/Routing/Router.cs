@@ -2,9 +2,12 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Snapping;
 
-namespace Itinero.Routing {
-    internal class Router : IRouter, IRouterOneToOne, IRouterManyToMany, IRouterManyToOne, IRouterOneToMany {
-        internal Router(RoutingNetwork network, RoutingSettings settings) {
+namespace Itinero.Routing
+{
+    internal class Router : IRouter, IRouterOneToOne, IRouterManyToMany, IRouterManyToOne, IRouterOneToMany
+    {
+        internal Router(RoutingNetwork network, RoutingSettings settings)
+        {
             Network = network;
             Settings = settings;
         }

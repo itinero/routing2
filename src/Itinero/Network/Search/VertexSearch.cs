@@ -3,11 +3,13 @@ using Itinero.Geo;
 using Itinero.Network.Enumerators.Vertices;
 using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Search {
+namespace Itinero.Network.Search
+{
     /// <summary>
     /// Implements vertex searches.
     /// </summary>
-    internal static class VertexSearch {
+    internal static class VertexSearch
+    {
         /// <summary>
         /// Enumerates all vertices in the given bounding box.
         /// </summary>
@@ -17,7 +19,8 @@ namespace Itinero.Network.Search {
         internal static IEnumerable<(VertexId vertex, (double longitude, double latitude, float? e) location)>
             SearchVerticesInBox(this RoutingNetwork network,
                 ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                    bottomRight) box) {
+                    bottomRight) box)
+        {
             var rangeVertices = new TilesVertexEnumerator(network, box.TileRange(network.Zoom));
 
             while (rangeVertices.MoveNext()) {

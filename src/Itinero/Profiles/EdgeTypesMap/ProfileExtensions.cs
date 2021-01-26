@@ -1,15 +1,19 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Itinero.Profiles.EdgeTypesMap {
-    internal static class ProfileExtensions {
+namespace Itinero.Profiles.EdgeTypesMap
+{
+    internal static class ProfileExtensions
+    {
         public static IEnumerable<(string key, string value)> GetEdgeProfileFor(this Profile profile,
-            IEnumerable<(string key, string value)> attributes) {
+            IEnumerable<(string key, string value)> attributes)
+        {
             return new[] {profile}.GetEdgeProfileFor(attributes);
         }
 
         public static IEnumerable<(string key, string value)> GetEdgeProfileFor(this IEnumerable<Profile> profiles,
-            IEnumerable<(string key, string value)> attributes) {
+            IEnumerable<(string key, string value)> attributes)
+        {
             var allHash = profiles.GetEdgeFactorHash(attributes);
 
             var removed = new HashSet<string>();
@@ -33,7 +37,8 @@ namespace Itinero.Profiles.EdgeTypesMap {
         }
 
         private static int GetEdgeFactorHash(this IEnumerable<Profile> profiles,
-            IEnumerable<(string key, string value)> attributes) {
+            IEnumerable<(string key, string value)> attributes)
+        {
             var hash = 13.GetHashCode();
 
             foreach (var profile in profiles) {

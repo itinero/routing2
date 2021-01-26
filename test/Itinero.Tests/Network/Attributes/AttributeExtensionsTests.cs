@@ -4,10 +4,13 @@ using Itinero.IO;
 using Itinero.Network.Attributes;
 using Xunit;
 
-namespace Itinero.Tests.Network.Attributes {
-    public class AttributeExtensionsTests {
+namespace Itinero.Tests.Network.Attributes
+{
+    public class AttributeExtensionsTests
+    {
         [Fact]
-        public void AttributeExtensions_WriteAttributesTo_Empty_ShouldWrite1Byte() {
+        public void AttributeExtensions_WriteAttributesTo_Empty_ShouldWrite1Byte()
+        {
             var stream = new MemoryStream();
 
             var size = System.Array.Empty<(string key, string value)>().WriteAttributesTo(stream);
@@ -16,7 +19,8 @@ namespace Itinero.Tests.Network.Attributes {
         }
 
         [Fact]
-        public void AttributeExtensions_WriteAttributesTo_OneAttribute_ShouldWriteUnicodeWithSizes() {
+        public void AttributeExtensions_WriteAttributesTo_OneAttribute_ShouldWriteUnicodeWithSizes()
+        {
             var stream = new MemoryStream();
 
             var size = new (string key, string value)[] {
@@ -29,7 +33,8 @@ namespace Itinero.Tests.Network.Attributes {
         }
 
         [Fact]
-        public void AttributeExtensions_ReadAttributesFrom_Empty_ShouldReadEmpty() {
+        public void AttributeExtensions_ReadAttributesFrom_Empty_ShouldReadEmpty()
+        {
             var stream = new MemoryStream();
             stream.WriteVarInt32(0);
 
@@ -37,7 +42,8 @@ namespace Itinero.Tests.Network.Attributes {
         }
 
         [Fact]
-        public void AttributeExtensions_ReadWrite_1Attribute_ShouldBeIdenticalAfter() {
+        public void AttributeExtensions_ReadWrite_1Attribute_ShouldBeIdenticalAfter()
+        {
             var expected = new (string key, string value)[] {
                 ("source", "OpenStreetMap")
             };
@@ -54,7 +60,8 @@ namespace Itinero.Tests.Network.Attributes {
         }
 
         [Fact]
-        public void AttributeExtensions_ReadWrite_2Attribute_ShouldBeIdenticalAfter() {
+        public void AttributeExtensions_ReadWrite_2Attribute_ShouldBeIdenticalAfter()
+        {
             var expected = new (string key, string value)[] {
                 ("source", "OpenStreetMap"),
                 ("date", "2025-01-20")

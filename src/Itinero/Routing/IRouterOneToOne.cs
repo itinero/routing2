@@ -1,3 +1,4 @@
-namespace Itinero.Routing {
+namespace Itinero.Routing
+{
     public interface IRouterOneToOne : IHasSource, IHasTarget { }
 }

@@ -2,10 +2,13 @@ using Itinero.Network.Storage;
 using Reminiscence.Arrays;
 using Xunit;
 
-namespace Itinero.Tests.Network.Storage {
-    public class BitCoderTests {
+namespace Itinero.Tests.Network.Storage
+{
+    public class BitCoderTests
+    {
         [Fact]
-        public void BitCoder_ShouldCodeFixed_Int32_3_0() {
+        public void BitCoder_ShouldCodeFixed_Int32_3_0()
+        {
             var data = new MemoryArray<byte>(5);
 
             data.SetFixed(0, 3, 0);
@@ -14,7 +17,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeFixed_Int32_3_4242() {
+        public void BitCoder_ShouldCodeFixed_Int32_3_4242()
+        {
             var data = new MemoryArray<byte>(5);
 
             data.SetFixed(0, 3, 4242);
@@ -23,7 +27,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeFixed_Int32_3_424242() {
+        public void BitCoder_ShouldCodeFixed_Int32_3_424242()
+        {
             var data = new MemoryArray<byte>(5);
 
             data.SetFixed(0, 3, 424242);
@@ -32,7 +37,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32_0() {
+        public void BitCoder_ShouldCodeDynamic_UInt32_0()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(1, data.SetDynamicUInt32(0, 0));
@@ -41,7 +47,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32_46() {
+        public void BitCoder_ShouldCodeDynamic_UInt32_46()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(1, data.SetDynamicUInt32(0, 46));
@@ -50,7 +57,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32_4646() {
+        public void BitCoder_ShouldCodeDynamic_UInt32_4646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(2, data.SetDynamicUInt32(0, 4646));
@@ -59,7 +67,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32_464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt32_464646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(3, data.SetDynamicUInt32(0, 464646));
@@ -68,7 +77,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32_46464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt32_46464646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(4, data.SetDynamicUInt32(0, 46464646));
@@ -77,7 +87,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32_MaxValue() {
+        public void BitCoder_ShouldCodeDynamic_UInt32_MaxValue()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(5, data.SetDynamicUInt32(0, uint.MaxValue));
@@ -86,7 +97,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_0() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_0()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(1, data.SetDynamicUInt64(0, (ulong) 0));
@@ -95,7 +107,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_46() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_46()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(1, data.SetDynamicUInt64(0, (ulong) 46));
@@ -104,7 +117,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_4646() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_4646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(2, data.SetDynamicUInt64(0, (ulong) 4646));
@@ -113,7 +127,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_464646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(3, data.SetDynamicUInt64(0, (ulong) 464646));
@@ -122,7 +137,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_46464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_46464646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(4, data.SetDynamicUInt64(0, (ulong) 46464646));
@@ -131,7 +147,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_4646464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_4646464646()
+        {
             var data = new MemoryArray<byte>(5);
 
             Assert.Equal(5, data.SetDynamicUInt64(0, (ulong) 4646464646));
@@ -140,7 +157,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_464646464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_464646464646()
+        {
             var data = new MemoryArray<byte>(6);
 
             Assert.Equal(6, data.SetDynamicUInt64(0, (ulong) 464646464646));
@@ -149,7 +167,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_46464646464646() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_46464646464646()
+        {
             var data = new MemoryArray<byte>(7);
 
             Assert.Equal(7, data.SetDynamicUInt64(0, (ulong) 46464646464646));
@@ -158,7 +177,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt64_MaxValue() {
+        public void BitCoder_ShouldCodeDynamic_UInt64_MaxValue()
+        {
             var data = new MemoryArray<byte>(10);
 
             Assert.Equal(10, data.SetDynamicUInt64(0, ulong.MaxValue));
@@ -167,7 +187,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32Nullable_Null() {
+        public void BitCoder_ShouldCodeDynamic_UInt32Nullable_Null()
+        {
             var data = new MemoryArray<byte>(10);
 
             Assert.Equal(1, data.SetDynamicUInt32Nullable(0, null));
@@ -176,7 +197,8 @@ namespace Itinero.Tests.Network.Storage {
         }
 
         [Fact]
-        public void BitCoder_ShouldCodeDynamic_UInt32Nullable_0() {
+        public void BitCoder_ShouldCodeDynamic_UInt32Nullable_0()
+        {
             var data = new MemoryArray<byte>(10);
 
             Assert.Equal(1, data.SetDynamicUInt32Nullable(0, 0));

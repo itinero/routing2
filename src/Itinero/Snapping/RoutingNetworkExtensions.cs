@@ -3,6 +3,7 @@ using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Snapping {
+namespace Itinero.Snapping
+{
     internal static class RoutingNetworkExtensions { }
 }

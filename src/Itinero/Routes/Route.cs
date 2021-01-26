@@ -5,11 +5,13 @@ using System.Linq;
 using Itinero.Geo.Directions;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Routes {
+namespace Itinero.Routes
+{
     /// <summary>
     /// Represents a route.
     /// </summary>
-    public partial class Route : IEnumerable<RoutePosition> {
+    public partial class Route : IEnumerable<RoutePosition>
+    {
         /// <summary>
         /// Gets or sets the shape.
         /// </summary>
@@ -33,7 +35,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Represents a stop.
         /// </summary>
-        public class Stop {
+        public class Stop
+        {
             /// <summary>
             /// Gets or sets the shape index.
             /// </summary>
@@ -52,7 +55,8 @@ namespace Itinero.Routes {
             /// <summary>
             /// Creates a clone of this object.
             /// </summary>
-            public Stop Clone() {
+            public Stop Clone()
+            {
                 IEnumerable<(string key, string value)> attributes = null;
                 if (Attributes != null) {
                     attributes = new List<(string key, string value)>(Attributes);
@@ -80,7 +84,8 @@ namespace Itinero.Routes {
             /// <summary>
             /// Returns a description of this stop.
             /// </summary>
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{Attributes}@{Coordinate} ({Distance}m {Time}s)";
             }
         }
@@ -88,7 +93,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Represents meta-data about a part of this route.
         /// </summary>
-        public class Meta {
+        public class Meta
+        {
             /// <summary>
             /// The index of the last Shape where this Meta-information is valid
             /// </summary>
@@ -127,7 +133,8 @@ namespace Itinero.Routes {
             /// Creates a clone of this meta-object.
             /// </summary>
             /// <returns></returns>
-            public Meta Clone() {
+            public Meta Clone()
+            {
                 IEnumerable<(string key, string value)> attributes = null;
                 if (Attributes != null) {
                     attributes = new List<(string key, string value)>(Attributes);
@@ -163,7 +170,8 @@ namespace Itinero.Routes {
         /// A branch is a which the traveller passes by when following the route.
         /// It are thus the roads not taken.
         /// </summary>
-        public class Branch {
+        public class Branch
+        {
             /// <summary>
             /// The index of the coordinate where this branch branches of
             /// </summary>
@@ -190,7 +198,8 @@ namespace Itinero.Routes {
             /// <summary>
             /// Creates a clone of this object.
             /// </summary>
-            public Branch Clone() {
+            public Branch Clone()
+            {
                 IEnumerable<(string key, string value)> attributes = null;
                 if (Attributes != null) {
                     attributes = new List<(string key, string value)>(Attributes);
@@ -223,7 +232,8 @@ namespace Itinero.Routes {
         /// Gets the enumerator.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<RoutePosition> GetEnumerator() {
+        public IEnumerator<RoutePosition> GetEnumerator()
+        {
             return new RouteEnumerator(this);
         }
 
@@ -231,7 +241,8 @@ namespace Itinero.Routes {
         /// Gets the enumerator.
         /// </summary>
         /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator() {
+        IEnumerator IEnumerable.GetEnumerator()
+        {
             return new RouteEnumerator(this);
         }
     }
@@ -239,13 +250,15 @@ namespace Itinero.Routes {
     /// <summary>
     /// Represents a route enumerator.
     /// </summary>
-    internal class RouteEnumerator : IEnumerator<RoutePosition> {
+    internal class RouteEnumerator : IEnumerator<RoutePosition>
+    {
         private readonly Route _route;
 
         /// <summary>
         /// Creates a new route enumerator.
         /// </summary>
-        internal RouteEnumerator(Route route) {
+        internal RouteEnumerator(Route route)
+        {
             _route = route;
         }
 
@@ -254,7 +267,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Resets this enumerator.
         /// </summary>
-        public void Reset() {
+        public void Reset()
+        {
             _current = new RoutePosition(_route,
                 -1, -1, -1, -1);
         }
@@ -272,7 +286,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Move next.
         /// </summary>
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             if (_current.Route == null) {
                 Reset();
             }
@@ -289,12 +304,14 @@ namespace Itinero.Routes {
     /// <summary>
     /// Abstract representation of a route position.
     /// </summary>
-    public struct RoutePosition {
+    public struct RoutePosition
+    {
         /// <summary>
         /// Creates a new route position.
         /// </summary>
         public RoutePosition(Route route, int shape, int stopIndex,
-            int metaIndex, int branchIndex) {
+            int metaIndex, int branchIndex)
+        {
             Route = route;
             Shape = shape;
             StopIndex = stopIndex;
@@ -330,7 +347,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Move to the next position.
         /// </summary>
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             Shape++;
             if (Route.Shape == null ||
                 Shape >= Route.Shape.Count) {
@@ -379,7 +397,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Move to the next position.
         /// </summary>
-        public bool MovePrevious() {
+        public bool MovePrevious()
+        {
             Shape--;
             if (Route.Shape == null ||
                 Shape < 0 ||
@@ -415,11 +434,13 @@ namespace Itinero.Routes {
     /// <summary>
     /// Extension methods for the IRoutePosition-interface.
     /// </summary>
-    public static class IRoutePositionExtensions {
+    public static class IRoutePositionExtensions
+    {
         /// <summary>
         /// Returns true if this position has stops.
         /// </summary>
-        public static bool HasStops(this RoutePosition position) {
+        public static bool HasStops(this RoutePosition position)
+        {
             return position.Route.Stops != null &&
                    position.Route.Stops.Count > position.StopIndex &&
                    position.Route.Stops[position.StopIndex].Shape == position.Shape;
@@ -428,14 +449,16 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns the stops at this position.
         /// </summary>
-        public static IEnumerable<Route.Stop> Stops(this RoutePosition position) {
+        public static IEnumerable<Route.Stop> Stops(this RoutePosition position)
+        {
             throw new NotImplementedException();
         }
 
         /// <summary>
         /// Returns true if this position has branches.
         /// </summary>
-        public static bool HasBranches(this RoutePosition position) {
+        public static bool HasBranches(this RoutePosition position)
+        {
             return position.Route.Branches != null &&
                    position.Route.Branches.Length > position.BranchIndex &&
                    position.Route.Branches[position.BranchIndex].Shape == position.Shape;
@@ -444,7 +467,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns the branches at this position.
         /// </summary>
-        public static IEnumerable<Route.Branch> Branches(this RoutePosition position) {
+        public static IEnumerable<Route.Branch> Branches(this RoutePosition position)
+        {
             var branches = new List<Route.Branch>();
             if (position.Route.Branches != null &&
                 position.Route.Branches.Length > position.BranchIndex &&
@@ -463,7 +487,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns true if this position has current meta.
         /// </summary>
-        public static bool HasCurrentMeta(this RoutePosition position) {
+        public static bool HasCurrentMeta(this RoutePosition position)
+        {
             return position.Route.ShapeMeta != null &&
                    position.Route.ShapeMeta.Count > position.MetaIndex &&
                    position.Route.ShapeMeta[position.MetaIndex].Shape == position.Shape;
@@ -472,7 +497,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns the current meta.
         /// </summary>
-        public static Route.Meta CurrentMeta(this RoutePosition position) {
+        public static Route.Meta CurrentMeta(this RoutePosition position)
+        {
             if (position.HasCurrentMeta()) {
                 return position.Route.ShapeMeta[position.MetaIndex];
             }
@@ -483,7 +509,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns the meta that applies to this position.
         /// </summary>
-        public static Route.Meta Meta(this RoutePosition position) {
+        public static Route.Meta Meta(this RoutePosition position)
+        {
             if (position.Route.ShapeMeta != null &&
                 position.Route.ShapeMeta.Count > position.MetaIndex) {
                 return position.Route.ShapeMeta[position.MetaIndex];
@@ -495,49 +522,56 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns true if this position is the first position.
         /// </summary>
-        public static bool IsFirst(this RoutePosition position) {
+        public static bool IsFirst(this RoutePosition position)
+        {
             return position.Shape == 0;
         }
 
         /// <summary>
         /// Returns true if this position is the last position.
         /// </summary>
-        public static bool IsLast(this RoutePosition position) {
+        public static bool IsLast(this RoutePosition position)
+        {
             return position.Route.Shape.Count - 1 == position.Shape;
         }
 
         /// <summary>
         /// Gets the previous location.
         /// </summary>
-        public static (double longitude, double latitude, float? e) PreviousLocation(this RoutePosition position) {
+        public static (double longitude, double latitude, float? e) PreviousLocation(this RoutePosition position)
+        {
             return position.Route.Shape[position.Shape - 1];
         }
 
         /// <summary>
         /// Gets the next location.
         /// </summary>
-        public static (double longitude, double latitude, float? e) NextLocation(this RoutePosition position) {
+        public static (double longitude, double latitude, float? e) NextLocation(this RoutePosition position)
+        {
             return position.Route.Shape[position.Shape + 1];
         }
 
         /// <summary>
         /// Gets the location.
         /// </summary>
-        public static (double longitude, double latitude, float? e) Location(this RoutePosition position) {
+        public static (double longitude, double latitude, float? e) Location(this RoutePosition position)
+        {
             return position.Route.Shape[position.Shape];
         }
 
         /// <summary>
         /// Gets the direction at this position.
         /// </summary>
-        public static DirectionEnum Direction(this RoutePosition position) {
+        public static DirectionEnum Direction(this RoutePosition position)
+        {
             return DirectionCalculator.Calculate(position.Location(), position.NextLocation());
         }
 
         /// <summary>
         /// Gets the meta attribute for route at the current position.
         /// </summary>
-        public static string GetMetaAttribute(this RoutePosition position, string key) {
+        public static string GetMetaAttribute(this RoutePosition position, string key)
+        {
             var meta = position.Meta();
             if (meta?.Attributes == null) {
                 return string.Empty;
@@ -553,7 +587,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Returns true if the meta attribute for the route at the current position contains the given attribute.
         /// </summary>
-        public static bool ContainsMetaAttribute(this RoutePosition position, string key, string value) {
+        public static bool ContainsMetaAttribute(this RoutePosition position, string key, string value)
+        {
             var meta = position.Meta();
             if (meta?.Attributes == null) {
                 return false;
@@ -565,7 +600,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Gets the next route position.
         /// </summary>
-        public static RoutePosition? Next(this RoutePosition position) {
+        public static RoutePosition? Next(this RoutePosition position)
+        {
             if (position.MoveNext()) {
                 return position;
             }
@@ -576,7 +612,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Gets the previous route position.
         /// </summary>
-        public static RoutePosition? Previous(this RoutePosition position) {
+        public static RoutePosition? Previous(this RoutePosition position)
+        {
             if (position.MovePrevious()) {
                 return position;
             }
@@ -587,7 +624,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Gets the next position until a given stop condition is met.
         /// </summary>
-        public static RoutePosition? GetNextUntil(this RoutePosition position, Func<RoutePosition, bool> stopHere) {
+        public static RoutePosition? GetNextUntil(this RoutePosition position, Func<RoutePosition, bool> stopHere)
+        {
             var next = position.Next();
             while (next != null) {
                 if (stopHere(next.Value)) {
@@ -603,7 +641,8 @@ namespace Itinero.Routes {
         /// <summary>
         /// Gets the previous position until a given stop condition is met.
         /// </summary>
-        public static RoutePosition? GetPreviousUntil(this RoutePosition position, Func<RoutePosition, bool> stopHere) {
+        public static RoutePosition? GetPreviousUntil(this RoutePosition position, Func<RoutePosition, bool> stopHere)
+        {
             var next = position.Previous();
             while (next != null) {
                 if (stopHere(next.Value)) {

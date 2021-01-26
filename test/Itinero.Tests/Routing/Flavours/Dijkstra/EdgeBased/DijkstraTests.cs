@@ -2,10 +2,13 @@ using Itinero.Network;
 using Itinero.Snapping;
 using Xunit;
 
-namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
-    public class DijkstraTests {
+namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
+{
+    public class DijkstraTests
+    {
         [Fact]
-        public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath() {
+        public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -32,7 +35,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_OneHopShortest_ForwardForward_ShouldFindOneHopPath() {
+        public void Dijkstra_OneToOne_OneHopShortest_ForwardForward_ShouldFindOneHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -59,7 +63,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_OneHopShortest_ForwardBackward_ShouldNotFindPath() {
+        public void Dijkstra_OneToOne_OneHopShortest_ForwardBackward_ShouldNotFindPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -79,7 +84,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_OneHopShortest_BackwardBackward_ShouldNotFindPath() {
+        public void Dijkstra_OneToOne_OneHopShortest_BackwardBackward_ShouldNotFindPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -99,7 +105,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath() {
+        public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
@@ -131,7 +138,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath() {
+        public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3, vertex4;
@@ -168,7 +176,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths() {
+        public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
@@ -249,7 +258,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths() {
+        public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -316,7 +326,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_FourEdgeClosedNetwork_SameEdgeStartEnd_ForwardForward_ShouldFindFourHopPath() {
+        public void Dijkstra_OneToOne_FourEdgeClosedNetwork_SameEdgeStartEnd_ForwardForward_ShouldFindFourHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3, edge4;
             VertexId vertex1, vertex2, vertex3, vertex4;
@@ -360,7 +371,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_ThreeEdgeNetwork_SameEdge_ForwardBackward_PossibleUTurn_ShouldFindFourHopPath() {
+        public void Dijkstra_OneToOne_ThreeEdgeNetwork_SameEdge_ForwardBackward_PossibleUTurn_ShouldFindFourHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3;

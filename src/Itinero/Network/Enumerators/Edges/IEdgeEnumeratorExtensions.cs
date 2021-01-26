@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo;
 
-namespace Itinero.Network.Enumerators.Edges {
-    public static class IEdgeEnumeratorExtensions {
+namespace Itinero.Network.Enumerators.Edges
+{
+    public static class IEdgeEnumeratorExtensions
+    {
         /// <summary>
         /// Gets the complete shape, including start end end vertices.
         /// </summary>
@@ -13,7 +15,8 @@ namespace Itinero.Network.Enumerators.Edges {
         public static IEnumerable<(double longitude, double latitude, float? e)> GetCompleteShape<T, S>(
             this T enumerator)
             where T : IEdgeEnumerator<S>
-            where S : IEdgeEnumerable {
+            where S : IEdgeEnumerable
+        {
             yield return enumerator.FromLocation;
 
             var shape = enumerator.Shape;
@@ -31,7 +34,8 @@ namespace Itinero.Network.Enumerators.Edges {
         /// <returns>The length in meters.</returns>
         internal static double EdgeLength<T, S>(this T enumerator)
             where T : IEdgeEnumerator<S>
-            where S : IEdgeEnumerable {
+            where S : IEdgeEnumerable
+        {
             return enumerator.GetCompleteShape<T, S>().DistanceEstimateInMeter();
         }
 
@@ -47,7 +51,8 @@ namespace Itinero.Network.Enumerators.Edges {
             this T enumerator,
             ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
             where T : IEdgeEnumerator<S>
-            where S : IEdgeEnumerable {
+            where S : IEdgeEnumerable
+        {
             if (offset1 > offset2) {
                 throw new ArgumentException($"{nameof(offset1)} has to smaller than or equal to {nameof(offset2)}");
             }
@@ -137,7 +142,8 @@ namespace Itinero.Network.Enumerators.Edges {
         internal static (double longitude, double latitude, float? e) LocationOnEdge<T, S>(this T enumerator,
             in ushort offset)
             where T : IEdgeEnumerator<S>
-            where S : IEdgeEnumerable {
+            where S : IEdgeEnumerable
+        {
             // TODO: this can be optimized, build a performance test.
             var shape = enumerator.GetShapeBetween<T, S>().ToList();
             var length = enumerator.EdgeLength<T, S>();

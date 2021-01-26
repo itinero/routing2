@@ -1,8 +1,10 @@
-namespace Itinero.Snapping {
+namespace Itinero.Snapping
+{
     /// <summary>
     /// A settings objects for snapping options.
     /// </summary>
-    public class SnapperSettings {
+    public class SnapperSettings
+    {
         /// <summary>
         /// A flag to enable the option of using any profile as valid instead of all.
         /// </summary>

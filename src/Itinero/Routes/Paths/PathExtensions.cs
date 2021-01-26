@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routes.Paths {
+namespace Itinero.Routes.Paths
+{
     /// <summary>
     /// Extensions for path.
     /// </summary>
-    public static class PathExtensions {
+    public static class PathExtensions
+    {
         /// <summary>
         /// Calculates the weight of the path given the weight function.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="getWeight">The weight function.</param>
         /// <returns>The total weight.</returns>
-        public static double? Weight(this Result<Path> path, Func<RoutingNetworkEdgeEnumerator, double> getWeight) {
+        public static double? Weight(this Result<Path> path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
+        {
             if (path.IsError) {
                 return null;
             }
@@ -28,7 +31,8 @@ namespace Itinero.Routes.Paths {
         /// <param name="path">The path.</param>
         /// <param name="getWeight">The weight function.</param>
         /// <returns>The total weight.</returns>
-        public static double Weight(this Path path, Func<RoutingNetworkEdgeEnumerator, double> getWeight) {
+        public static double Weight(this Path path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
+        {
             var weight = 0.0;
 
             var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
@@ -54,7 +58,8 @@ namespace Itinero.Routes.Paths {
         /// <param name="path">The path.</param>
         /// <param name="next">The next path.</param>
         /// <returns>True if the next path</returns>
-        public static bool IsNext(this Path path, Path next) {
+        public static bool IsNext(this Path path, Path next)
+        {
             var last = path.Last;
             var first = next.First;
 
@@ -85,7 +90,8 @@ namespace Itinero.Routes.Paths {
         /// </summary>
         /// <param name="paths">The paths.</param>
         /// <returns>The merged path.</returns>
-        public static Path? Merge(this IEnumerable<Path> paths) {
+        public static Path? Merge(this IEnumerable<Path> paths)
+        {
             Path? merged = null;
             RoutingNetworkEdgeEnumerator? enumerator = null;
             foreach (var path in paths) {
@@ -119,7 +125,8 @@ namespace Itinero.Routes.Paths {
         /// Removes the first and/or last edge if they are not part of the path via the offset properties.
         /// </summary>
         /// <param name="path">The path.</param>
-        public static void Trim(this Path path) {
+        public static void Trim(this Path path)
+        {
             if (path.Count <= 1) {
                 return;
             }

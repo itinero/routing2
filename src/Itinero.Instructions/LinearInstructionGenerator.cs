@@ -4,7 +4,8 @@ using System.Linq;
 using Itinero.Instructions.Generators;
 using Itinero.Routes;
 
-namespace Itinero.Instructions {
+namespace Itinero.Instructions
+{
     /**
      * Given a list of IInstructionConstructors, the SimpleInstructionGenerator will construct a route in the following way:
      * - Try to generate a base instruction with the first instruction in the list. If this fails, try the next one
@@ -15,7 +16,8 @@ namespace Itinero.Instructions {
      * the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
      * whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
      */
-    internal class LinearInstructionGenerator {
+    internal class LinearInstructionGenerator
+    {
         private readonly IEnumerable<IInstructionGenerator> _constructors;
 
         public LinearInstructionGenerator(
@@ -30,7 +32,8 @@ namespace Itinero.Instructions {
             })) { }
 
         public LinearInstructionGenerator(
-            IEnumerable<IInstructionGenerator> constructors) {
+            IEnumerable<IInstructionGenerator> constructors)
+        {
             _constructors = constructors;
         }
 
@@ -38,7 +41,8 @@ namespace Itinero.Instructions {
             params IInstructionGenerator[] constructors) :
             this(constructors.ToList()) { }
 
-        private BaseInstruction ConstructNext(IndexedRoute r, int currentOffset) {
+        private BaseInstruction ConstructNext(IndexedRoute r, int currentOffset)
+        {
             foreach (var constructor in _constructors) {
                 var instruction = constructor.Generate(r, currentOffset);
                 if (instruction != null) {
@@ -49,7 +53,8 @@ namespace Itinero.Instructions {
             throw new Exception("Could not generate instruction");
         }
 
-        public IEnumerable<BaseInstruction> GenerateInstructions(Route route) {
+        public IEnumerable<BaseInstruction> GenerateInstructions(Route route)
+        {
             var indexedRoute = new IndexedRoute(route);
             var instructions = new List<BaseInstruction>();
 

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Storage;
 
-namespace Itinero.Network.Tiles {
-    internal class NetworkTileEnumerator {
+namespace Itinero.Network.Tiles
+{
+    internal class NetworkTileEnumerator
+    {
         private uint _localId;
         private uint? _nextEdgePointer;
         private uint? _shapePointer;
@@ -37,7 +39,8 @@ namespace Itinero.Network.Tiles {
         /// </summary>
         /// <param name="graphTile">The graph tile to move to.</param>
         /// <returns>True if the move succeeds.</returns>
-        public void MoveTo(NetworkTile graphTile) {
+        public void MoveTo(NetworkTile graphTile)
+        {
             Tile = graphTile;
 
             Reset();
@@ -48,7 +51,8 @@ namespace Itinero.Network.Tiles {
         /// </summary>
         /// <param name="vertex">The vertex.</param>
         /// <returns>True if the move succeeds and the vertex exists.</returns>
-        public bool MoveTo(VertexId vertex) {
+        public bool MoveTo(VertexId vertex)
+        {
             if (Tile == null) {
                 throw new InvalidOperationException("Move to graph tile first.");
             }
@@ -70,7 +74,8 @@ namespace Itinero.Network.Tiles {
         /// <param name="edge">The edge.</param>
         /// <param name="forward">The forward flag.</param>
         /// <returns>True if the move succeeds and the edge exists.</returns>
-        public bool MoveTo(EdgeId edge, bool forward) {
+        public bool MoveTo(EdgeId edge, bool forward)
+        {
             if (Tile == null) {
                 throw new InvalidOperationException("Move to graph tile first.");
             }
@@ -150,7 +155,8 @@ namespace Itinero.Network.Tiles {
         /// - the first vertex for the graph tile if there is no selected edge.
         /// - returns false if there is no data in the current tile or if there is no tile selected.
         /// </remarks>
-        public void Reset() {
+        public void Reset()
+        {
             if (Tile == null) {
                 throw new InvalidOperationException("Cannot reset an empty enumerator.");
             }
@@ -164,7 +170,8 @@ namespace Itinero.Network.Tiles {
         /// Moves to the next edge for the current vertex.
         /// </summary>
         /// <returns>True when there is a new edge.</returns>
-        public bool MoveNext() {
+        public bool MoveNext()
+        {
             if (Tile == null) {
                 throw new InvalidOperationException("Move to graph tile first.");
             }
@@ -310,7 +317,8 @@ namespace Itinero.Network.Tiles {
         /// </summary>
         /// <param name="fromOrder">The order of the source edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder) {
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        {
             if (Tile == null) {
                 return Enumerable.Empty<(uint turnCostType, uint cost)>();
             }
@@ -328,7 +336,8 @@ namespace Itinero.Network.Tiles {
         /// </summary>
         /// <param name="toOrder">The order of the target edge.</param>
         /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder) {
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        {
             if (Tile == null) {
                 return Enumerable.Empty<(uint turnCostType, uint cost)>();
             }

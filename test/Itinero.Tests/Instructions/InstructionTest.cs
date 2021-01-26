@@ -7,10 +7,13 @@ using Itinero.Routes;
 using Xunit;
 using LinearInstructionGenerator = Itinero.Instructions.LinearInstructionGenerator;
 
-namespace Itinero.Tests.Instructions {
-    public class InstructionTest {
+namespace Itinero.Tests.Instructions
+{
+    public class InstructionTest
+    {
         [Fact]
-        public void GenerateInstructions_AdvancedRoute_EmitsInstructions() {
+        public void GenerateInstructions_AdvancedRoute_EmitsInstructions()
+        {
             var route = new Route {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
@@ -38,18 +41,18 @@ namespace Itinero.Tests.Instructions {
                     (3.2133668661117554, 51.212247019059234, null) // 10
                 },
                 ShapeMeta = new List<Route.Meta> {
-                    new Route.Meta {
+                    new() {
                         Distance = 0,
                         Shape = 3,
                         Attributes = new[] {("name", "blokstraat"), ("highway", "residential")}
                     },
-                    new Route.Meta {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
-                    new Route.Meta {
+                    new() {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
+                    new() {
                         Distance = 15,
                         Shape = 4,
                         Attributes = new[] {("name", "Veldmaarschalk Fochstraat"), ("highway", "residential")}
                     },
-                    new Route.Meta {
+                    new() {
                         Distance = 200,
                         Shape = 10,
                         Attributes = new[] {
@@ -89,7 +92,8 @@ namespace Itinero.Tests.Instructions {
 
 
         [Fact]
-        public void Angles_AllOrthoDirections_CorrectAngle() {
+        public void Angles_AllOrthoDirections_CorrectAngle()
+        {
             var eflJuli_klaver = (3.2203030586242676, 51.215446076394535, (float?) null);
             var straightN = (3.2203037291765213, 51.21552000156258, (float?) null);
             var straightE = (3.2204418629407883, 51.215446496424235, (float?) null);

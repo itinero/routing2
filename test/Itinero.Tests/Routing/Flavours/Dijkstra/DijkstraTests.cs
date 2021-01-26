@@ -2,10 +2,13 @@ using Itinero.Network;
 using Itinero.Snapping;
 using Xunit;
 
-namespace Itinero.Tests.Routing.Flavours.Dijkstra {
-    public class DijkstraTests {
+namespace Itinero.Tests.Routing.Flavours.Dijkstra
+{
+    public class DijkstraTests
+    {
         [Fact]
-        public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath() {
+        public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -32,7 +35,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath() {
+        public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
@@ -64,7 +68,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath() {
+        public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3, vertex4;
@@ -101,7 +106,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra {
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_PathWithinEdge_NotShortest_ShouldFindShortest() {
+        public void Dijkstra_OneToOne_PathWithinEdge_NotShortest_ShouldFindShortest()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3;
@@ -154,7 +160,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra {
         }
 
         [Fact]
-        public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths() {
+        public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths()
+        {
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
@@ -216,7 +223,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra {
         }
 
         [Fact]
-        public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths() {
+        public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths()
+        {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;

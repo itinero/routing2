@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Itinero.Instructions.Generators {
+namespace Itinero.Instructions.Generators
+{
     /// <summary>
     /// The crossroad-instructions is an instruction that helps travellers cross intersections.
     ///
@@ -9,7 +10,8 @@ namespace Itinero.Instructions.Generators {
     /// And lets be honest, 'turn right' isn't all that clear when there is a road slightly right, right and sharp right.
     /// 
     /// </summary>
-    internal class IntersectionInstruction : BaseInstruction {
+    internal class IntersectionInstruction : BaseInstruction
+    {
         /// <summary>
         /// The list with all the branches and properties of all the roads at this crossroads, *except* the one we just came from.
         /// They are sorted by their relativeDegrees (where 0° is straight on the direction we came from)
@@ -21,12 +23,14 @@ namespace Itinero.Instructions.Generators {
 
         public IntersectionInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees,
             List<(int relativeDegrees, IEnumerable<(string, string)> tags)> allRoads, uint actualIndex) : base(
-            route, shapeIndex, shapeIndexEnd, turnDegrees) {
+            route, shapeIndex, shapeIndexEnd, turnDegrees)
+        {
             AllRoads = allRoads;
             ActualIndex = actualIndex;
         }
 
-        public string Mode() {
+        public string Mode()
+        {
             var turnCutoff = 30;
 
             if (ActualIndex == 1 && AllRoads.Count == 3
@@ -98,13 +102,16 @@ namespace Itinero.Instructions.Generators {
         }
 
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return
                 $"On the crossing: {Mode()} (road {ActualIndex + 1}/{AllRoads.Count} if left to right indexed) ({base.ToString()})";
         }
 
-        public class IntersectionInstructionGenerator : IInstructionGenerator {
-            public BaseInstruction Generate(IndexedRoute route, int offset) {
+        public class IntersectionInstructionGenerator : IInstructionGenerator
+        {
+            public BaseInstruction Generate(IndexedRoute route, int offset)
+            {
                 if (route.Last == offset + 1) {
                     // The next maneuver is 'arrive', no need to emit a complicated intersection-instruction
                     return null;

@@ -3,11 +3,13 @@ using Itinero.Profiles;
 using Itinero.Routes.Paths;
 using Itinero.Routing.DataStructures;
 
-namespace Itinero.Routes.Builders {
+namespace Itinero.Routes.Builders
+{
     /// <summary>
     /// Abstract representation of a route builder.
     /// </summary>
-    public interface IRouteBuilder {
+    public interface IRouteBuilder
+    {
         /// <summary>
         ///     Builds a route from the given path for the given profile.
         /// </summary>

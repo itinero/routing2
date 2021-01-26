@@ -3,10 +3,13 @@ using Itinero.Network.Search;
 using Xunit;
 using System.Linq;
 
-namespace Itinero.Tests.Network.Search {
-    public class VertexSearchTests {
+namespace Itinero.Tests.Network.Search
+{
+    public class VertexSearchTests
+    {
         [Fact]
-        public void VertexSearch_SearchVertexInBox_ShouldReturnOnlyVertexInBox() {
+        public void VertexSearch_SearchVertexInBox_ShouldReturnOnlyVertexInBox()
+        {
             var routerDb = new RouterDb();
             VertexId vertex1, vertex2;
             using (var writer = routerDb.GetMutableNetwork()) {

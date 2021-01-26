@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using Itinero.Geo.Elevation;
 
-namespace Itinero.Geo {
+namespace Itinero.Geo
+{
     /// <summary>
     /// Contains extension methods to work with coordinates, lines, bounding boxes and basic spatial operations.
     /// </summary>
-    public static class GeoExtensions {
+    public static class GeoExtensions
+    {
         /// <summary>
         /// Returns an estimate of the distance between the two given coordinates.
         /// </summary>
@@ -14,7 +16,8 @@ namespace Itinero.Geo {
         /// <param name="coordinate2">The second coordinate.</param>
         /// <remarks>Accuracy decreases with distance.</remarks>
         public static double DistanceEstimateInMeter(this (double longitude, double latitude, float? e) coordinate1,
-            (double longitude, double latitude, float? e) coordinate2) {
+            (double longitude, double latitude, float? e) coordinate2)
+        {
             var lat1Rad = coordinate1.latitude / 180d * Math.PI;
             var lon1Rad = coordinate1.longitude / 180d * Math.PI;
             var lat2Rad = coordinate2.latitude / 180d * Math.PI;
@@ -31,7 +34,8 @@ namespace Itinero.Geo {
         internal static double DistanceEstimateInMeterShape(
             this (double longitude, double latitude, float? e) coordinate1,
             (double longitude, double latitude, float? e) coordinate2,
-            IEnumerable<(double longitude, double latitude, float? e)>? shape = null) {
+            IEnumerable<(double longitude, double latitude, float? e)>? shape = null)
+        {
             if (shape == null) {
                 return coordinate1.DistanceEstimateInMeter(coordinate2);
             }
@@ -58,7 +62,8 @@ namespace Itinero.Geo {
         /// <param name="lineString">The linestring.</param>
         /// <remarks>Accuracy decreases with distance.</remarks>
         public static double DistanceEstimateInMeter(
-            this IEnumerable<(double longitude, double latitude, float? e)> lineString) {
+            this IEnumerable<(double longitude, double latitude, float? e)> lineString)
+        {
             var distance = 0.0;
 
             using var shapeEnumerator = lineString.GetEnumerator();
@@ -81,7 +86,8 @@ namespace Itinero.Geo {
         /// <param name="meter">The distance.</param>
         /// <returns>An offset coordinate.</returns>
         public static (double longitude, double latitude, float? e) OffsetWithDistanceX(
-            this (double longitude, double latitude, float? e) coordinate, double meter) {
+            this (double longitude, double latitude, float? e) coordinate, double meter)
+        {
             var offset = 0.001;
             var offsetLon = (coordinate.longitude + offset, coordinate.latitude).AddElevation(coordinate.e);
             var lonDistance = offsetLon.DistanceEstimateInMeter(coordinate);
@@ -98,7 +104,8 @@ namespace Itinero.Geo {
         /// <returns>An offset coordinate.</returns>
         public static (double longitude, double latitude, float? e) OffsetWithDistanceY(
             this (double longitude, double latitude, float? e) coordinate,
-            double meter) {
+            double meter)
+        {
             var offset = 0.001;
             var offsetLat = (coordinate.longitude, coordinate.latitude + offset).AddElevation(coordinate.e);
             var latDistance = offsetLat.DistanceEstimateInMeter(coordinate);
@@ -115,7 +122,8 @@ namespace Itinero.Geo {
         /// <returns>The offset coordinate.</returns>
         public static (double longitude, double latitude, float? e) PositionAlongLine(
             this ((double longitude, double latitude, float? e) coordinate1,
-                (double longitude, double latitude, float? e) coordinate2) line, double offset) {
+                (double longitude, double latitude, float? e) coordinate2) line, double offset)
+        {
             var coordinate1 = line.coordinate1;
             var coordinate2 = line.coordinate2;
 
@@ -141,7 +149,8 @@ namespace Itinero.Geo {
         public static (double longitude, double latitude, float? e)? ProjectOn(
             this ((double longitude, double latitude, float? e) coordinate1,
                 (double longitude, double latitude, float? e) coordinate2) line,
-            (double longitude, double latitude, float? e) coordinate) {
+            (double longitude, double latitude, float? e) coordinate)
+        {
             var coordinate1 = line.coordinate1;
             var coordinate2 = line.coordinate2;
 
@@ -212,7 +221,8 @@ namespace Itinero.Geo {
         /// <returns>The center.</returns>
         public static (double longitude, double latitude, float? e) Center(
             this ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box) {
+                bottomRight) box)
+        {
             float? e = null;
             if (box.topLeft.e.HasValue &&
                 box.bottomRight.e.HasValue) {
@@ -235,7 +245,8 @@ namespace Itinero.Geo {
                 this ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float?
                     e) bottomRight) box,
                 ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                    bottomRight) other) {
+                    bottomRight) other)
+        {
             if (!box.Overlaps(other.topLeft)) {
                 var center = box.Center();
 
@@ -286,7 +297,8 @@ namespace Itinero.Geo {
             this ((double longitude, double latitude, float? e) coordinate1,
                 (double longitude, double latitude, float? e) coordinate2) thisLine,
             ((double longitude, double latitude, float? e) coordinate1,
-                (double longitude, double latitude, float? e) coordinate2) line, bool checkSegment = true) {
+                (double longitude, double latitude, float? e) coordinate2) line, bool checkSegment = true)
+        {
             var det = (double) (line.A() * thisLine.B() - thisLine.A() * line.B());
             if (Math.Abs(det) <= E) { // lines are parallel; no intersections.
                 return null;
@@ -350,17 +362,20 @@ namespace Itinero.Geo {
         }
 
         private static double A(this ((double longitude, double latitude, float? e) coordinate1,
-            (double longitude, double latitude, float? e) coordinate2) line) {
+            (double longitude, double latitude, float? e) coordinate2) line)
+        {
             return line.coordinate2.latitude - line.coordinate1.latitude;
         }
 
         private static double B(this ((double longitude, double latitude, float? e) coordinate1,
-            (double longitude, double latitude, float? e) coordinate2) line) {
+            (double longitude, double latitude, float? e) coordinate2) line)
+        {
             return line.coordinate1.longitude - line.coordinate2.longitude;
         }
 
         private static double C(this ((double longitude, double latitude, float? e) coordinate1,
-            (double longitude, double latitude, float? e) coordinate2) line) {
+            (double longitude, double latitude, float? e) coordinate2) line)
+        {
             return line.A() * line.coordinate1.longitude +
                    line.B() * line.coordinate1.latitude;
         }
@@ -373,7 +388,8 @@ namespace Itinero.Geo {
         /// <returns>The size in meter.</returns>
         public static ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float?
             e) bottomRight)
-            BoxAround(this (double longitude, double latitude, float? e) coordinate, double sizeInMeters) {
+            BoxAround(this (double longitude, double latitude, float? e) coordinate, double sizeInMeters)
+        {
             var offsetLat = (coordinate.longitude, coordinate.latitude + 0.1, (float?) null);
             var offsetLon = (coordinate.longitude + 0.1, coordinate.latitude, (float?) null);
             var latDistance = offsetLat.DistanceEstimateInMeter(coordinate);
@@ -394,7 +410,8 @@ namespace Itinero.Geo {
         public static bool Overlaps(
             this ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                 bottomRight) box,
-            (double longitude, double latitude, float? e) coordinate) {
+            (double longitude, double latitude, float? e) coordinate)
+        {
             return box.bottomRight.latitude < coordinate.latitude && coordinate.latitude <= box.topLeft.latitude &&
                    box.topLeft.longitude < coordinate.longitude && coordinate.longitude <= box.bottomRight.longitude;
         }

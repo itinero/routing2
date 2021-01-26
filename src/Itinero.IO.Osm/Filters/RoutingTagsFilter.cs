@@ -2,15 +2,18 @@ using System.Collections.Generic;
 using System.Linq;
 using OsmSharp;
 
-namespace Itinero.IO.Osm.Filters {
+namespace Itinero.IO.Osm.Filters
+{
     /// <summary>
     /// The default built-in routing tags filter.
     /// </summary>
-    public sealed class RoutingTagsFilter : ITagsFilter {
+    public sealed class RoutingTagsFilter : ITagsFilter
+    {
         private RoutingTagsFilter() { }
 
         /// <inheritdoc/>
-        public IEnumerable<(string key, string value)>? Filter(OsmGeo osmGeo) {
+        public IEnumerable<(string key, string value)>? Filter(OsmGeo osmGeo)
+        {
             if (osmGeo.Tags == null) {
                 return null;
             }
@@ -26,7 +29,8 @@ namespace Itinero.IO.Osm.Filters {
             return null;
         }
 
-        private static IEnumerable<(string key, string value)>? FilterWay(OsmGeo osmGeo) {
+        private static IEnumerable<(string key, string value)>? FilterWay(OsmGeo osmGeo)
+        {
             foreach (var t in osmGeo.Tags) {
                 if (t.Key == "highway") {
                     return osmGeo.Tags.Select(x => (x.Key, x.Value));

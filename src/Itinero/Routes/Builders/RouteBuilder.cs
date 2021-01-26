@@ -6,11 +6,13 @@ using Itinero.Network.Enumerators.Edges;
 using Itinero.Profiles;
 using Itinero.Routes.Paths;
 
-namespace Itinero.Routes.Builders {
+namespace Itinero.Routes.Builders
+{
     /// <summary>
     ///     Default route builder implementation.
     /// </summary>
-    public class RouteBuilder : IRouteBuilder {
+    public class RouteBuilder : IRouteBuilder
+    {
         private static readonly ThreadLocal<RouteBuilder> DefaultLazy = new(() => new RouteBuilder());
 
         /// <summary>
@@ -19,7 +21,8 @@ namespace Itinero.Routes.Builders {
         public static RouteBuilder Default => DefaultLazy.Value;
 
         /// <inheritdoc />
-        public Result<Route> Build(RoutingNetwork routingNetwork, Profile profile, Path path) {
+        public Result<Route> Build(RoutingNetwork routingNetwork, Profile profile, Path path)
+        {
             var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
 
             // SpareEnumerator is used in the branch-calculation. IT offers no guarantees about the state
@@ -138,7 +141,8 @@ namespace Itinero.Routes.Builders {
         /// <param name="branchBlacklist">Edges in this list won't be used as branches</param>
         private void AddBranches(VertexId centralVertexId, RoutingNetworkEdgeEnumerator edgeEnumerator,
             RoutingNetworkEdgeEnumerator spareEnumerator, int shapeIndex,
-            ICollection<Route.Branch> addTo, HashSet<EdgeId> branchBlacklist) {
+            ICollection<Route.Branch> addTo, HashSet<EdgeId> branchBlacklist)
+        {
             edgeEnumerator.MoveTo(centralVertexId);
             while (edgeEnumerator.MoveNext()) {
                 // Iterates over all edges of the endvertex

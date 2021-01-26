@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Indexes;
 
-namespace Itinero.Profiles.EdgeTypesMap {
-    internal class ProfilesEdgeTypeMap : AttributeSetMap {
-        public ProfilesEdgeTypeMap(IEnumerable<Profile> profiles) {
+namespace Itinero.Profiles.EdgeTypesMap
+{
+    internal class ProfilesEdgeTypeMap : AttributeSetMap
+    {
+        public ProfilesEdgeTypeMap(IEnumerable<Profile> profiles)
+        {
             var sorted = profiles.ToArray();
             Array.Sort(sorted, (x, y) =>
                 string.Compare(x.Name, y.Name, StringComparison.Ordinal));

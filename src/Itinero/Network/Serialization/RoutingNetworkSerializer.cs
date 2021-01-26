@@ -5,9 +5,12 @@ using Itinero.Network.DataStructures;
 using Itinero.Network.Mutation;
 using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Serialization {
-    internal static class RoutingNetworkSerializer {
-        public static void WriteTo(this RoutingNetworkMutator routingNetworkMutator, Stream stream) {
+namespace Itinero.Network.Serialization
+{
+    internal static class RoutingNetworkSerializer
+    {
+        public static void WriteTo(this RoutingNetworkMutator routingNetworkMutator, Stream stream)
+        {
             // write version #.
             stream.WriteVarInt32(1);
 
@@ -23,7 +26,8 @@ namespace Itinero.Network.Serialization {
             }
         }
 
-        public static RoutingNetwork ReadFrom(this Stream stream, RouterDb routerDb) {
+        public static RoutingNetwork ReadFrom(this Stream stream, RouterDb routerDb)
+        {
             // check version #.
             var version = stream.ReadVarInt32();
             if (version != 1) {

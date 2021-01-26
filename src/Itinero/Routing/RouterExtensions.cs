@@ -6,10 +6,13 @@ using Itinero.Geo.Directions;
 using Itinero.Network;
 using Itinero.Snapping;
 
-namespace Itinero.Routing {
-    internal static class RouterExtensions {
+namespace Itinero.Routing
+{
+    internal static class RouterExtensions
+    {
         internal static (SnapPoint snapPoint, bool? direction) ToDirected(
-            this (SnapPoint snapPoint, DirectionEnum? angle) snapPointAndDirection, RoutingNetwork routerDb) {
+            this (SnapPoint snapPoint, DirectionEnum? angle) snapPointAndDirection, RoutingNetwork routerDb)
+        {
             if (snapPointAndDirection.angle == null) {
                 return (snapPointAndDirection.snapPoint, null);
             }
@@ -20,14 +23,16 @@ namespace Itinero.Routing {
         }
 
         internal static (SnapPoint snapPoint, bool? direction) ToDirected(
-            this (SnapPoint snapPoint, double angle) snapPointAndDirection, RoutingNetwork routerDb) {
+            this (SnapPoint snapPoint, double angle) snapPointAndDirection, RoutingNetwork routerDb)
+        {
             return (snapPointAndDirection.snapPoint,
                 snapPointAndDirection.snapPoint.DirectionFromAngle(routerDb, snapPointAndDirection.angle, out _));
         }
 
         internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(
             this IEnumerable<(SnapPoint snapPoint, DirectionEnum? directionEnum)> sps,
-            RoutingNetwork routerDb) {
+            RoutingNetwork routerDb)
+        {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
             foreach (var sp in sps) {
                 directedSps.Add((sp.snapPoint, (double) sp.directionEnum).ToDirected(routerDb));
@@ -38,7 +43,8 @@ namespace Itinero.Routing {
 
         internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(
             this IReadOnlyList<(SnapPoint snapPoint, double angle)> sps,
-            RoutingNetwork routerDb) {
+            RoutingNetwork routerDb)
+        {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
             foreach (var sp in sps) {
                 directedSps.Add(sp.ToDirected(routerDb));
@@ -47,7 +53,8 @@ namespace Itinero.Routing {
             return directedSps;
         }
 
-        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<SnapPoint> sps) {
+        internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<SnapPoint> sps)
+        {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
             foreach (var sp in sps) {
                 directedSps.Add((sp, null));
@@ -57,7 +64,8 @@ namespace Itinero.Routing {
         }
 
         internal static IReadOnlyList<SnapPoint> ToUndirected(
-            this IReadOnlyList<(SnapPoint sp, bool? directed)> directedSps) {
+            this IReadOnlyList<(SnapPoint sp, bool? directed)> directedSps)
+        {
             var sps = new List<SnapPoint>();
             foreach (var (sp, direction) in directedSps) {
                 if (direction != null) {
@@ -71,7 +79,8 @@ namespace Itinero.Routing {
         }
 
         internal static bool TryToUndirected(
-            this IEnumerable<(SnapPoint sp, bool? directed)> directedSps, out IReadOnlyList<SnapPoint> undirected) {
+            this IEnumerable<(SnapPoint sp, bool? directed)> directedSps, out IReadOnlyList<SnapPoint> undirected)
+        {
             var sps = new List<SnapPoint>();
             foreach (var (sp, direction) in directedSps) {
                 if (direction != null) {
@@ -90,13 +99,15 @@ namespace Itinero.Routing {
         internal static ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude,
             float? e) bottomRight)?
             MaxBoxFor(this RoutingSettings settings,
-                RoutingNetwork routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sps) {
+                RoutingNetwork routerDb, IEnumerable<(SnapPoint sp, bool? direction)> sps)
+        {
             return settings.MaxBoxFor(routerDb, sps.Select(x => x.sp));
         }
 
         internal static ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude,
             float? e) bottomRight)? MaxBoxFor(this RoutingSettings settings,
-                RoutingNetwork routerDb, IEnumerable<SnapPoint> sp) {
+                RoutingNetwork routerDb, IEnumerable<SnapPoint> sp)
+        {
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                 bottomRight)? maxBox =
                     null;

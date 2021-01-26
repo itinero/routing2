@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using Itinero.IO;
 
-namespace Itinero.Network.Attributes {
+namespace Itinero.Network.Attributes
+{
     /// <summary>
     /// Contains extension methods for attribute handling.
     /// </summary>
-    public static class AttributeExtensions {
+    public static class AttributeExtensions
+    {
         /// <summary>
         /// Tries to get the value for the given key.
         /// </summary>
@@ -17,7 +19,8 @@ namespace Itinero.Network.Attributes {
         /// <param name="value">The value, if any.</param>
         /// <returns>True if the key was found, false otherwise.</returns>
         public static bool TryGetValue(this IEnumerable<(string key, string value)> attributes, string key,
-            out string value) {
+            out string value)
+        {
             foreach (var (k, v) in attributes) {
                 if (key != k) {
                     continue;
@@ -39,7 +42,8 @@ namespace Itinero.Network.Attributes {
         /// <param name="exclude">Keys to exclude.</param>
         /// <returns>Trie of the same attributes.</returns>
         public static bool ContainsSame(this IEnumerable<(string key, string value)> attributes,
-            IEnumerable<(string key, string value)> other, params string[] exclude) {
+            IEnumerable<(string key, string value)> other, params string[] exclude)
+        {
             var attributesCount = 0;
             var otherCount = 0;
             foreach (var a in attributes) {
@@ -71,7 +75,8 @@ namespace Itinero.Network.Attributes {
         /// <param name="attributes">The attributes.</param>
         /// <param name="key">The key.</param>
         /// <returns>True if the key was found.</returns>
-        public static bool RemoveKey(this List<(string key, string value)> attributes, string key) {
+        public static bool RemoveKey(this List<(string key, string value)> attributes, string key)
+        {
             for (var i = 0; i < attributes.Count; i++) {
                 var a = attributes[i];
                 if (a.key != key) {
@@ -91,7 +96,8 @@ namespace Itinero.Network.Attributes {
         /// <param name="attributes">The attributes.</param>
         /// <param name="other">The other attributes.</param>
         public static void AddOrReplace(this List<(string key, string value)> attributes,
-            IEnumerable<(string key, string value)> other) {
+            IEnumerable<(string key, string value)> other)
+        {
             if (attributes == null) {
                 throw new ArgumentNullException(nameof(attributes));
             }
@@ -109,7 +115,8 @@ namespace Itinero.Network.Attributes {
         /// <param name="value">The value.</param>
         /// <returns>True if the key was found.</returns>
         public static bool AddOrReplace(this List<(string key, string value)> attributes,
-            string key, string value) {
+            string key, string value)
+        {
             for (var i = 0; i < attributes.Count; i++) {
                 var a = attributes[i];
                 if (a.key != key) {
@@ -129,7 +136,8 @@ namespace Itinero.Network.Attributes {
         /// </summary>
         /// <param name="attributes">The attributes to write.</param>
         /// <returns>The number of byte written.</returns>
-        internal static long WriteAttributesTo(this IEnumerable<(string key, string value)> attributes, Stream stream) {
+        internal static long WriteAttributesTo(this IEnumerable<(string key, string value)> attributes, Stream stream)
+        {
             var pos = stream.Position;
             foreach (var (key, value) in attributes) {
                 var bytes = System.Text.Encoding.Unicode.GetBytes(key);
@@ -151,7 +159,8 @@ namespace Itinero.Network.Attributes {
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
         /// <returns>The attributes read.</returns>
-        internal static IEnumerable<(string key, string value)> ReadAttributesFrom(this Stream stream) {
+        internal static IEnumerable<(string key, string value)> ReadAttributesFrom(this Stream stream)
+        {
             var attributes = new List<(string key, string value)>();
 
             var keySize = stream.ReadVarInt32();

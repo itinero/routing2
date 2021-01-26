@@ -7,10 +7,13 @@ using OsmSharp.Db;
 using OsmSharp.Tags;
 using Xunit;
 
-namespace Itinero.Tests.IO.Osm.Restrictions {
-    public class RestrictionParserTests {
+namespace Itinero.Tests.IO.Osm.Restrictions
+{
+    public class RestrictionParserTests
+    {
         [Fact]
-        public void RestrictionParser_GetEdgeSequence_OneViaNode_ForwardForward_ShouldForwardForwardSequence() {
+        public void RestrictionParser_GetEdgeSequence_OneViaNode_ForwardForward_ShouldForwardForwardSequence()
+        {
             var relation = new Relation {
                 Id = 1,
                 Members = new[] {
@@ -30,7 +33,8 @@ namespace Itinero.Tests.IO.Osm.Restrictions {
                 {new OsmGeoKey(OsmGeoType.Way, 2), new Way {Id = 2, Nodes = new long[] {1, 3}}}
             };
 
-            IEnumerable<(VertexId from, VertexId to, EdgeId id)> GetEdges(long wayId) {
+            IEnumerable<(VertexId from, VertexId to, EdgeId id)> GetEdges(long wayId)
+            {
                 switch (wayId) {
                     case 1:
                         yield return (new VertexId(0, 2), new VertexId(0, 1), new EdgeId(0, 1));
@@ -54,7 +58,8 @@ namespace Itinero.Tests.IO.Osm.Restrictions {
         }
 
         [Fact]
-        public void RestrictionParser_GetEdgeSequence_OneViaWay_NotSupported() {
+        public void RestrictionParser_GetEdgeSequence_OneViaWay_NotSupported()
+        {
             var relation = new Relation {
                 Id = 1,
                 Members = new[] {

@@ -5,19 +5,23 @@ using Itinero.Network.Enumerators.Edges;
 using Itinero.Profiles;
 using Itinero.Routing.Costs.EdgeTypes;
 
-namespace Itinero.Routing.Costs {
-    internal class ProfileCostFunctionCached : ICostFunction {
+namespace Itinero.Routing.Costs
+{
+    internal class ProfileCostFunctionCached : ICostFunction
+    {
         private readonly Profile _profile;
         private readonly EdgeFactorCache _edgeFactorCache;
 
-        internal ProfileCostFunctionCached(Profile profile, EdgeFactorCache edgeFactorCache) {
+        internal ProfileCostFunctionCached(Profile profile, EdgeFactorCache edgeFactorCache)
+        {
             _profile = profile;
             _edgeFactorCache = edgeFactorCache;
         }
 
         public (bool canAccess, bool canStop, double cost, double turnCost) Get(
             IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
-            IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges) {
+            IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
+        {
             // get edge factor and length.
             EdgeFactor factor;
             var edgeTypeId = edgeEnumerator.EdgeTypeId;

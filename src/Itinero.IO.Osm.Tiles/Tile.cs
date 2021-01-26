@@ -1,8 +1,11 @@
 ﻿using System;
 
-namespace Itinero.IO.Osm.Tiles {
-    internal class Tile {
-        public Tile(uint x, uint y, int zoom) {
+namespace Itinero.IO.Osm.Tiles
+{
+    internal class Tile
+    {
+        public Tile(uint x, uint y, int zoom)
+        {
             X = x;
             Y = y;
             Zoom = zoom;
@@ -10,7 +13,8 @@ namespace Itinero.IO.Osm.Tiles {
             CalculateBounds();
         }
 
-        private void CalculateBounds() {
+        private void CalculateBounds()
+        {
             var n = Math.PI - 2.0 * Math.PI * Y / Math.Pow(2.0, Zoom);
             Left = X / Math.Pow(2.0, Zoom) * 360.0 - 180.0;
             Top = 180.0 / Math.PI * Math.Atan(Math.Sinh(n));
@@ -59,7 +63,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// Updates the data in this tile to correspond with the given local tile id.
         /// </summary>
         /// <param name="localId">The local tile id.</param>
-        public void UpdateToLocalId(ulong localId) {
+        public void UpdateToLocalId(ulong localId)
+        {
             var xMax = (ulong) (1 << (int) Zoom);
 
             X = (uint) (localId % xMax);
@@ -84,7 +89,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// <param name="localId">The local id.</param>
         /// <param name="zoom">The zoom level.</param>
         /// <returns>The tile.</returns>
-        public static Tile FromLocalId(ulong localId, int zoom) {
+        public static Tile FromLocalId(ulong localId, int zoom)
+        {
             var xMax = (ulong) (1 << zoom);
 
             return new Tile((uint) (localId % xMax),
@@ -96,7 +102,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// </summary>
         /// <param name="zoom">The zoom level.</param>
         /// <returns>The maximum local id for the given zoom level</returns>
-        public static ulong MaxLocalId(int zoom) {
+        public static ulong MaxLocalId(int zoom)
+        {
             var xMax = (ulong) (1 << zoom);
 
             return xMax * xMax;
@@ -109,7 +116,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// <param name="longitude">The longitude.</param>
         /// <param name="resolution">The resolution.</param>
         /// <returns>A local coordinate pair.</returns>
-        public (int x, int y) ToLocalCoordinates(double longitude, double latitude, int resolution) {
+        public (int x, int y) ToLocalCoordinates(double longitude, double latitude, int resolution)
+        {
             var latStep = (Top - Bottom) / resolution;
             var lonStep = (Right - Left) / resolution;
             var top = Top;
@@ -125,7 +133,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// <param name="y"></param>
         /// <param name="resolution"></param>
         /// <returns>A global coordinate pair.</returns>
-        public (double longitude, double latitude) FromLocalCoordinates(int x, int y, int resolution) {
+        public (double longitude, double latitude) FromLocalCoordinates(int x, int y, int resolution)
+        {
             var latStep = (Top - Bottom) / resolution;
             var lonStep = (Right - Left) / resolution;
             var top = Top;
@@ -141,7 +150,8 @@ namespace Itinero.IO.Osm.Tiles {
         /// <param name="longitude">The longitude.</param>
         /// <param name="zoom">The zoom level.</param>
         /// <returns>The tile a the given coordinates.</returns>
-        public static Tile WorldToTile(double longitude, double latitude, int zoom) {
+        public static Tile WorldToTile(double longitude, double latitude, int zoom)
+        {
             var n = (int) Math.Floor(Math.Pow(2, zoom)); // replace by bitshifting?
 
             var rad = latitude / 180d * Math.PI;
@@ -154,14 +164,16 @@ namespace Itinero.IO.Osm.Tiles {
             return new Tile(x, y, zoom);
         }
 
-        public bool IsInside(double longitude, double latitude) {
+        public bool IsInside(double longitude, double latitude)
+        {
             return !(Top <= latitude ||
                      Bottom >= latitude ||
                      Left >= longitude ||
                      Right <= longitude);
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"{X},{Y}@{Zoom}";
         }
     }

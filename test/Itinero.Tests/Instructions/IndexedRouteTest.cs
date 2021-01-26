@@ -4,10 +4,13 @@ using Itinero.Instructions;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class IndexedRouteTest {
+namespace Itinero.Tests.Instructions
+{
+    public class IndexedRouteTest
+    {
         [Fact]
-        public void BuildMetaList_SmallRoute_MetaDataIsCorrect() {
+        public void BuildMetaList_SmallRoute_MetaDataIsCorrect()
+        {
             var route = new Route {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
@@ -20,13 +23,13 @@ namespace Itinero.Tests.Instructions {
                     (3.1847423315048218, 51.20736399569539, null)
                 },
                 ShapeMeta = new List<Route.Meta> {
-                    new Route.Meta {Attributes = new[] {("name", "A")}, Shape = 1},
-                    new Route.Meta {
+                    new() {Attributes = new[] {("name", "A")}, Shape = 1},
+                    new() {
                         Attributes =
                             new[] {("name", "B")},
                         Shape = 4
                     },
-                    new Route.Meta {
+                    new() {
                         Attributes = new[] {("name", "C")},
                         Shape = 6
                     }

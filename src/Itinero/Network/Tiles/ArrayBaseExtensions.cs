@@ -1,7 +1,9 @@
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.Tiles {
-    internal static class ArrayBaseExtensions {
+namespace Itinero.Network.Tiles
+{
+    internal static class ArrayBaseExtensions
+    {
         /// <summary>
         /// Increase the array size with a fixed step (but never more) to ensure the given position fits.
         /// </summary>
@@ -11,7 +13,8 @@ namespace Itinero.Network.Tiles {
         /// <param name="fill">The default value to set.</param>
         /// <typeparam name="T">The type of the elements in the array.</typeparam>
         public static void EnsureMinimumSize<T>(this ArrayBase<T> array, long position,
-            long step = 16, T fill = default) {
+            long step = 16, T fill = default)
+        {
             if (array.Length > position) {
                 return;
             }

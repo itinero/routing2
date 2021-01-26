@@ -12,18 +12,21 @@ using Itinero.Snapping;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Routing.Flavours.Dijkstra {
+namespace Itinero.Routing.Flavours.Dijkstra
+{
     /// <summary>
     /// A dijkstra implementation.
     /// </summary>
-    internal class Dijkstra {
+    internal class Dijkstra
+    {
         private readonly PathTree _tree = new();
         private readonly HashSet<VertexId> _visits = new();
         private readonly BinaryHeap<uint> _heap = new();
 
         public Path? Run(RoutingNetwork network, SnapPoint source, SnapPoint target,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
-            Func<VertexId, bool>? queued = null) {
+            Func<VertexId, bool>? queued = null)
+        {
             var paths = Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
             if (paths == null) {
                 return null;
@@ -38,8 +41,10 @@ namespace Itinero.Routing.Flavours.Dijkstra {
 
         public Path[] Run(RoutingNetwork network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
-            Func<VertexId, bool>? queued = null) {
-            double GetWorst((uint pointer, double cost)[] targets) {
+            Func<VertexId, bool>? queued = null)
+        {
+            double GetWorst((uint pointer, double cost)[] targets)
+            {
                 var worst = 0d;
                 for (var i = 0; i < targets.Length; i++) {
                     if (!(targets[i].cost > worst)) {

@@ -5,10 +5,13 @@ using Itinero.Snapping;
 using Itinero.Tests.Profiles;
 using Xunit;
 
-namespace Itinero.Tests.Routing {
-    public class IRouterOneToOneExtensionsTests {
+namespace Itinero.Tests.Routing
+{
+    public class IRouterOneToOneExtensionsTests
+    {
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_ShouldMatchEdge() {
+        public void IRouterOneToOneExtensions_Calculate_OneEdge_ShouldMatchEdge()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.801073670387268, 51.268064181900094, (float?) null)
@@ -35,7 +38,8 @@ namespace Itinero.Tests.Routing {
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_ShouldMatchEdge() {
+        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_ShouldMatchEdge()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.801073670387268, 51.268064181900094, (float?) null)
@@ -62,7 +66,8 @@ namespace Itinero.Tests.Routing {
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_WithShapePoint_ShouldMatchEdge() {
+        public void IRouterOneToOneExtensions_Calculate_OneEdge_WithShapePoint_ShouldMatchEdge()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.801073670387268, 51.268064181900094, (float?) null)
@@ -93,7 +98,8 @@ namespace Itinero.Tests.Routing {
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_WithShapePoint_ShouldMatchEdge() {
+        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_WithShapePoint_ShouldMatchEdge()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.801073670387268, 51.268064181900094, (float?) null)
@@ -124,7 +130,8 @@ namespace Itinero.Tests.Routing {
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_With2ShapePoints_ShouldMatchEdge() {
+        public void IRouterOneToOneExtensions_Calculate_OneEdge_With2ShapePoints_ShouldMatchEdge()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.801073670387268, 51.268064181900094, (float?) null)
@@ -158,7 +165,8 @@ namespace Itinero.Tests.Routing {
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_With2ShapePoints_ShouldMatchEdge() {
+        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_With2ShapePoints_ShouldMatchEdge()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.801073670387268, 51.268064181900094, (float?) null)
@@ -192,7 +200,8 @@ namespace Itinero.Tests.Routing {
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_TwoEdge_With2ShapePoints_ShouldMatchEdges() {
+        public void IRouterOneToOneExtensions_Calculate_TwoEdge_With2ShapePoints_ShouldMatchEdges()
+        {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
                     (4.801771044731140, 51.268886491558250, (float?) null),

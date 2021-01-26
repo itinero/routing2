@@ -13,8 +13,10 @@ using OsmSharp.Db;
 using OsmSharp.Streams;
 using OsmSharp.Tags;
 
-namespace Itinero.IO.Osm {
-    public class RouterDbStreamTarget : OsmStreamTarget {
+namespace Itinero.IO.Osm
+{
+    public class RouterDbStreamTarget : OsmStreamTarget
+    {
         private readonly Dictionary<long, VertexId> _vertexPerNode;
         private readonly NodeIndex _nodeIndex;
         private readonly RoutingNetworkMutator _mutableRouterDb;
@@ -23,7 +25,8 @@ namespace Itinero.IO.Osm {
         private readonly IElevationHandler? _elevationHandler;
 
         public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
-            ITagsFilter tagsFilter, IElevationHandler? elevationHandler = null) {
+            ITagsFilter tagsFilter, IElevationHandler? elevationHandler = null)
+        {
             _mutableRouterDb = mutableRouterDb;
             _tagsFilter = tagsFilter;
             _elevationHandler = elevationHandler;
@@ -36,11 +39,13 @@ namespace Itinero.IO.Osm {
 
         private bool _firstPass = true;
 
-        public override void Initialize() {
+        public override void Initialize()
+        {
             _firstPass = true;
         }
 
-        public override bool OnBeforePull() {
+        public override bool OnBeforePull()
+        {
             // execute the first pass.
             DoPull(true, false, false);
 
@@ -53,7 +58,8 @@ namespace Itinero.IO.Osm {
             return false;
         }
 
-        public override void AddNode(Node node) {
+        public override void AddNode(Node node)
+        {
             if (_firstPass) {
                 return;
             }
@@ -73,7 +79,8 @@ namespace Itinero.IO.Osm {
             }
         }
 
-        public override void AddWay(Way way) {
+        public override void AddWay(Way way)
+        {
             var filteredTags = _tagsFilter.Filter(way);
             if (filteredTags == null) {
                 return;
@@ -143,7 +150,8 @@ namespace Itinero.IO.Osm {
 
         private readonly Dictionary<OsmGeoKey, IEnumerable<EdgeId>?> _restrictionWayMembers = new();
 
-        public override void AddRelation(Relation relation) {
+        public override void AddRelation(Relation relation)
+        {
             var negativeResult = relation.IsNegative();
             if (negativeResult.IsError) {
                 return; // not a valid restriction.
@@ -177,7 +185,8 @@ namespace Itinero.IO.Osm {
                 }
             }
             else {
-                IEnumerable<(VertexId from, VertexId to, EdgeId id)> EdgesForWay(long wayId) {
+                IEnumerable<(VertexId from, VertexId to, EdgeId id)> EdgesForWay(long wayId)
+                {
                     if (_restrictionWayMembers.TryGetValue(new OsmGeoKey(OsmGeoType.Way, wayId),
                             out var edges) &&
                         edges != null) {
@@ -222,7 +231,8 @@ namespace Itinero.IO.Osm {
         }
 
         private void AddRestrictedSequence(IEnumerable<(EdgeId edgeId, bool forward)> sequence,
-            TagsCollectionBase tags) {
+            TagsCollectionBase tags)
+        {
             using var e = sequence.GetEnumerator();
             if (!e.MoveNext()) {
                 return;

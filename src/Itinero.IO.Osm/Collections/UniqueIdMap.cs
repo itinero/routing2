@@ -18,12 +18,14 @@
 
 using System.Collections.Generic;
 
-namespace Itinero.IO.Osm.Collections {
+namespace Itinero.IO.Osm.Collections
+{
     /// <summary>
     /// A unique id map, only vertex per id.
     /// </summary>
     public class UniqueIdMap<T>
-        where T : struct {
+        where T : struct
+    {
         private readonly Dictionary<long, Block> _blocks;
         private readonly int _blockSize;
         private static T _defaultValue;
@@ -31,7 +33,8 @@ namespace Itinero.IO.Osm.Collections {
         /// <summary>
         /// Creates a new id map.
         /// </summary>
-        public UniqueIdMap(T defaultValue, int blockSize = 32) {
+        public UniqueIdMap(T defaultValue, int blockSize = 32)
+        {
             _blocks = new Dictionary<long, Block>();
             _blockSize = blockSize;
             _defaultValue = defaultValue;
@@ -40,7 +43,8 @@ namespace Itinero.IO.Osm.Collections {
         /// <summary>
         /// Sets a tile id.
         /// </summary>
-        public void Set(long id, T vertex) {
+        public void Set(long id, T vertex)
+        {
             var blockIdx = id / _blockSize;
             var offset = id - blockIdx * _blockSize;
 
@@ -69,7 +73,8 @@ namespace Itinero.IO.Osm.Collections {
         /// <summary>
         /// Gets a tile id.
         /// </summary>
-        public T Get(long id) {
+        public T Get(long id)
+        {
             var blockIdx = id / _blockSize;
             var offset = id - blockIdx * _blockSize;
 
@@ -85,14 +90,16 @@ namespace Itinero.IO.Osm.Collections {
         /// </summary>
         public IEnumerable<long> NonDefaultIndices => throw new System.NotImplementedException();
 
-        private struct Block {
+        private struct Block
+        {
             public uint Start { get; set; }
 
             public uint End { get; set; }
 
             public T[] Data { get; set; }
 
-            public T Get(long offset) {
+            public T Get(long offset)
+            {
                 if (Start > offset) {
                     return _defaultValue;
                 }
@@ -103,7 +110,8 @@ namespace Itinero.IO.Osm.Collections {
                 return Data[offset - Start];
             }
 
-            public void Set(long offset, T value) {
+            public void Set(long offset, T value)
+            {
                 if (Start > offset) { // expand at the beginning.
                     var newData = new T[End - offset + 1];
                     Data.CopyTo(newData, (int) (Start - offset));

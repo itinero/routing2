@@ -1,12 +1,15 @@
 using System;
 using Itinero.Routes;
 
-namespace Itinero.Instructions {
-    internal class Box<T> {
+namespace Itinero.Instructions
+{
+    internal class Box<T>
+    {
         public T Content { get; set; }
     }
 
-    internal static class Utils {
+    internal static class Utils
+    {
         private const double RADIUS_OF_EARTH = 6371000;
 
         /// <summary>
@@ -15,7 +18,8 @@ namespace Itinero.Instructions {
         /// </summary>
         /// <remarks>Accuracy decreases with distance.</remarks>
         public static double DistanceEstimateInMeter((double lon, double lat, float? e) c1,
-            (double lon, double lat, float? e) c2) {
+            (double lon, double lat, float? e) c2)
+        {
             var lat1Rad = c1.lat / 180d * Math.PI;
             var lon1Rad = c1.lon / 180d * Math.PI;
             var lat2Rad = c2.lat / 180d * Math.PI;
@@ -37,7 +41,8 @@ namespace Itinero.Instructions {
         /// <param name="c2"></param>
         /// <returns></returns>
         public static double AngleBetween((double lon, double lat, float? e) c1,
-            (double lon, double lat, float? e) c2) {
+            (double lon, double lat, float? e) c2)
+        {
             var dy = c2.lat - c1.lat;
             var dx = Math.Cos(Math.PI / 180 * c1.lat) * (c2.lon - c1.lon);
             // phi is the angle we search, but with 0 pointing eastwards and in radians
@@ -59,14 +64,16 @@ namespace Itinero.Instructions {
         }
 
 
-        public static string GetAttributeOrNull(this Route.Meta meta, string key) {
+        public static string GetAttributeOrNull(this Route.Meta meta, string key)
+        {
             return meta.GetAttributeOrDefault(key, null);
         }
 
         /**
          * Normalizes degrees to be between -180 (incl) and 180 (excl)
          */
-        public static int NormalizeDegrees(this double degrees) {
+        public static int NormalizeDegrees(this double degrees)
+        {
             if (degrees <= -180) {
                 degrees += 360;
             }
@@ -78,7 +85,8 @@ namespace Itinero.Instructions {
             return (int) degrees;
         }
 
-        public static string GetAttributeOrDefault(this Route.Meta meta, string key, string deflt) {
+        public static string GetAttributeOrDefault(this Route.Meta meta, string key, string deflt)
+        {
             if (meta == null) {
                 return deflt;
             }
@@ -92,7 +100,8 @@ namespace Itinero.Instructions {
             return deflt;
         }
 
-        public static string DegreesToText(this int degrees) {
+        public static string DegreesToText(this int degrees)
+        {
             var cutoff = 30;
             if (-cutoff < degrees && degrees < cutoff) {
                 return "straight on";

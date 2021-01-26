@@ -6,14 +6,17 @@ using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.Tiles {
-    internal partial class NetworkTile {
+namespace Itinero.Network.Tiles
+{
+    internal partial class NetworkTile
+    {
         private uint _turnCostPointer = 0;
         private readonly ArrayBase<uint> _turnCostPointers = new MemoryArray<uint>(0);
         private readonly ArrayBase<byte> _turnCosts = new MemoryArray<byte>(0);
 
         internal void AddTurnCosts(VertexId vertex, uint turnCostType,
-            EdgeId[] edges, uint[,] costs) {
+            EdgeId[] edges, uint[,] costs)
+        {
             if (edges.Length > OrderCoder.MAX_ORDER_HEAD_TAIL) {
                 throw new ArgumentException(
                     $"Cannot add turn costs for vertices with more than {OrderCoder.MAX_ORDER_HEAD_TAIL} edges.");
@@ -162,7 +165,8 @@ namespace Itinero.Network.Tiles {
         }
 
         internal IEnumerable<(uint turnCostType, uint cost)>
-            GetTurnCosts(VertexId vertex, byte fromOrder, byte toOrder) {
+            GetTurnCosts(VertexId vertex, byte fromOrder, byte toOrder)
+        {
             if (_turnCostPointers.Length <= vertex.LocalId) {
                 yield break;
             }
@@ -203,7 +207,8 @@ namespace Itinero.Network.Tiles {
             }
         }
 
-        private void SetFromOrder(NetworkTileEnumerator enumerator, byte order) {
+        private void SetFromOrder(NetworkTileEnumerator enumerator, byte order)
+        {
             var pointer = enumerator.EdgeId.LocalId;
 
             // skip over vertices and next-pointers.

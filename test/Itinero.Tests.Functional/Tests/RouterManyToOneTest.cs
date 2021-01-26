@@ -4,14 +4,17 @@ using Itinero.Routes;
 using Itinero.Routing;
 using Itinero.Snapping;
 
-namespace Itinero.Tests.Functional.Tests {
+namespace Itinero.Tests.Functional.Tests
+{
     /// <summary>
     /// A many-to-one routing test.
     /// </summary>
     public class RouterManyToOneTest : FunctionalTest<Route[], (RoutingNetwork routerDb, SnapPoint[] sources, SnapPoint
-        target, Profile profile)> {
+        target, Profile profile)>
+    {
         protected override Route[] Execute(
-            (RoutingNetwork routerDb, SnapPoint[] sources, SnapPoint target, Profile profile) input) {
+            (RoutingNetwork routerDb, SnapPoint[] sources, SnapPoint target, Profile profile) input)
+        {
             var (routerDb, sources, target, profile) = input;
 
             var results = routerDb.Route(new RoutingSettings {Profile = profile})

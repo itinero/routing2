@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Writer {
-    internal interface IRoutingNetworkWritable {
+namespace Itinero.Network.Writer
+{
+    internal interface IRoutingNetworkWritable
+    {
         int Zoom { get; }
 
         RouterDb RouterDb { get; }

@@ -1,10 +1,13 @@
 using Reminiscence.Arrays;
 
-namespace Itinero.Network.Storage {
-    internal static class BitCoder {
+namespace Itinero.Network.Storage
+{
+    internal static class BitCoder
+    {
         private const byte Mask = 128 - 1;
 
-        public static long SetDynamicUInt32(this ArrayBase<byte> data, long i, uint value) {
+        public static long SetDynamicUInt32(this ArrayBase<byte> data, long i, uint value)
+        {
             var d0 = (byte) (value & Mask);
             value >>= 7;
             if (value == 0) {
@@ -52,7 +55,8 @@ namespace Itinero.Network.Storage {
             return 5;
         }
 
-        public static long SetDynamicUInt64(this ArrayBase<byte> data, long i, ulong value) {
+        public static long SetDynamicUInt64(this ArrayBase<byte> data, long i, ulong value)
+        {
             var d0 = (byte) (value & Mask);
             value >>= 7;
             if (value == 0) {
@@ -175,7 +179,8 @@ namespace Itinero.Network.Storage {
             return 10;
         }
 
-        public static long GetDynamicUInt32(this ArrayBase<byte> data, long i, out uint value) {
+        public static long GetDynamicUInt32(this ArrayBase<byte> data, long i, out uint value)
+        {
             var d = data[i];
             if (d < 128) {
                 value = d;
@@ -212,7 +217,8 @@ namespace Itinero.Network.Storage {
             return 5;
         }
 
-        public static long GetDynamicUInt64(this ArrayBase<byte> data, long i, out ulong value) {
+        public static long GetDynamicUInt64(this ArrayBase<byte> data, long i, out ulong value)
+        {
             var d = data[i];
             if (d < 128) {
                 value = d;
@@ -289,7 +295,8 @@ namespace Itinero.Network.Storage {
             return 10;
         }
 
-        public static uint ToUnsigned(int value) {
+        public static uint ToUnsigned(int value)
+        {
             var unsigned = (uint) value;
             if (value < 0) {
                 unsigned = (uint) -value;
@@ -303,7 +310,8 @@ namespace Itinero.Network.Storage {
             return unsigned;
         }
 
-        public static int FromUnsigned(uint unsigned) {
+        public static int FromUnsigned(uint unsigned)
+        {
             var sign = unsigned & (uint) 1;
 
             var value = (int) (unsigned >> 1);
@@ -314,35 +322,41 @@ namespace Itinero.Network.Storage {
             return value;
         }
 
-        public static long SetDynamicInt32(this ArrayBase<byte> data, long i, int value) {
+        public static long SetDynamicInt32(this ArrayBase<byte> data, long i, int value)
+        {
             return data.SetDynamicUInt32(i, ToUnsigned(value));
         }
 
-        public static long GetDynamicInt32(this ArrayBase<byte> data, long i, out int value) {
+        public static long GetDynamicInt32(this ArrayBase<byte> data, long i, out int value)
+        {
             var c = data.GetDynamicUInt32(i, out var unsigned);
             value = FromUnsigned(unsigned);
             return c;
         }
 
-        public static long SetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, uint? value) {
+        public static long SetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, uint? value)
+        {
             value = value == null ? 0 : value + 1;
             return data.SetDynamicUInt32(i, value.Value);
         }
 
-        public static long GetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, out uint? value) {
+        public static long GetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, out uint? value)
+        {
             var c = data.GetDynamicUInt32(i, out var unsigned);
             value = unsigned == 0 ? null : (uint?) unsigned - 1;
             return c;
         }
 
-        public static void SetFixed(this ArrayBase<byte> data, long i, int bytes, int value) {
+        public static void SetFixed(this ArrayBase<byte> data, long i, int bytes, int value)
+        {
             for (var b = 0; b < bytes; b++) {
                 data[i + b] = (byte) (value & byte.MaxValue);
                 value >>= 8;
             }
         }
 
-        public static void GetFixed(this ArrayBase<byte> data, long i, int bytes, out int value) {
+        public static void GetFixed(this ArrayBase<byte> data, long i, int bytes, out int value)
+        {
             value = 0;
             for (var b = 0; b < bytes; b++) {
                 value += data[i + b] << (b * 8);

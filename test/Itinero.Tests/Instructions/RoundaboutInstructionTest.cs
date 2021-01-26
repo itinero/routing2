@@ -4,10 +4,13 @@ using Itinero.Instructions.Generators;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class RoundaboutInstructionTest {
+namespace Itinero.Tests.Instructions
+{
+    public class RoundaboutInstructionTest
+    {
         [Fact]
-        public void GenerateRoundabout_FirstExitRight_GetsInstruction() {
+        public void GenerateRoundabout_FirstExitRight_GetsInstruction()
+        {
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
             var route = new Route {
@@ -50,7 +53,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void GenerateRoundabout_StraightOn_GetsInstruction2ndExit() {
+        public void GenerateRoundabout_StraightOn_GetsInstruction2ndExit()
+        {
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
             var route = new Route();
