@@ -85,7 +85,8 @@ namespace Itinero.Instructions.ToText {
          * A POSITIVE angle is going left,
          * A NEGATIVE angle is going right
          */
-        public static IInstructionToText ParseInstructionToText(JObject jobj, Box<IInstructionToText> wholeToText = null,
+        public static IInstructionToText ParseInstructionToText(JObject jobj,
+            Box<IInstructionToText> wholeToText = null,
             Dictionary<string, IInstructionToText> extensions = null, string context = "") {
             extensions ??= new Dictionary<string, IInstructionToText>();
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
@@ -181,7 +182,8 @@ namespace Itinero.Instructions.ToText {
             return (instruction => { return instruction.Type == condition; }, false);
         }
 
-        public static SubstituteText ParseRenderValue(string value, Dictionary<string, IInstructionToText> extensions = null,
+        public static SubstituteText ParseRenderValue(string value,
+            Dictionary<string, IInstructionToText> extensions = null,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
             bool crashOnNotFound = true) {

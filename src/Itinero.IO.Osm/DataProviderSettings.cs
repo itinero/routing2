@@ -1,13 +1,11 @@
 using Itinero.Geo.Elevation;
 using Itinero.IO.Osm.Filters;
 
-namespace Itinero.IO.Osm
-{
+namespace Itinero.IO.Osm {
     /// <summary>
     /// Data provider settings.
     /// </summary>
-    public class DataProviderSettings
-    {
+    public class DataProviderSettings {
         /// <summary>
         /// Gets or sets the tags filter.
         /// </summary>

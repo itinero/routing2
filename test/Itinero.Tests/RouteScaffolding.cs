@@ -9,7 +9,8 @@ namespace Itinero.Tests {
         }
 
         public static Route GenerateRoute(
-            params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[] parts) {
+            params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[]
+                parts) {
             return GenerateRoute(new List<Route.Branch>(), parts);
         }
 
@@ -19,14 +20,15 @@ namespace Itinero.Tests {
          */
         public static Route GenerateRoute(
             List<Route.Branch> branches,
-            params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[] parts)  
-        {
+            params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[]
+                parts) {
             var allCoordinates = new List<(double longitude, double latitude, float? e)>();
             var metas = new List<Route.Meta>();
             foreach (var part in parts) {
                 allCoordinates.AddRange(part.coordinates);
                 var meta = new Route.Meta {
-                    Shape = allCoordinates.Count, // This is different from the routebuilder, as that one _does_ include the last coordinate 
+                    Shape = allCoordinates
+                        .Count, // This is different from the routebuilder, as that one _does_ include the last coordinate 
                     Attributes = part.segmentAttributes
                 };
                 metas.Add(meta);
@@ -34,7 +36,7 @@ namespace Itinero.Tests {
 
             metas[^1].Shape--;
             Route.Branch[] branchesArr = branches?.ToArray() ?? System.Array.Empty<Route.Branch>();
-            
+
             return new Route {
                 ShapeMeta = metas,
                 Shape = allCoordinates,

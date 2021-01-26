@@ -1,10 +1,8 @@
-namespace Itinero.Geo.Elevation
-{
+namespace Itinero.Geo.Elevation {
     /// <summary>
     /// Abstract representation of an elevation handler.
     /// </summary>
-    public interface IElevationHandler
-    {
+    public interface IElevationHandler {
         /// <summary>
         /// Add elevation to the given coordinate.
         /// </summary>

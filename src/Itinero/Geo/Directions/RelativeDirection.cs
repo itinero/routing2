@@ -1,10 +1,8 @@
-namespace Itinero.Geo.Directions
-{
+namespace Itinero.Geo.Directions {
     /// <summary>
     /// Represents a relative direction.
     /// </summary>
-    public class RelativeDirection
-    {
+    public class RelativeDirection {
         /// <summary>
         /// Gets or sets the direction
         /// </summary>

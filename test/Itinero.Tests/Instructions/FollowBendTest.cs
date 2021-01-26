@@ -76,7 +76,7 @@ namespace Itinero.Tests.Instructions {
             Assert.Equal(1, bend.ShapeIndex);
             Assert.Equal(6, bend.ShapeIndexEnd);
         }
-        
+
         [Fact]
         public void GenerateBend_RightBendWithOuter_GetsBend() {
             var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
@@ -87,7 +87,7 @@ namespace Itinero.Tests.Instructions {
             Assert.Equal(1, bend.ShapeIndex);
             Assert.Equal(6, bend.ShapeIndexEnd);
         }
-        
+
         [Fact]
         public void GenerateBend_RightBendWithInner_GetsBend() {
             var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(

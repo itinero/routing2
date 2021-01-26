@@ -5,23 +5,20 @@ using System.Text;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routes.Paths
-{
+namespace Itinero.Routes.Paths {
     /// <summary>
     /// Represents a path in a graph as a collection of edges.
     /// </summary>
-    public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
-    {
+    public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> {
         private readonly List<(EdgeId edge, bool forward)> _edges;
         public List<(EdgeId edge, bool forward)> Edges => _edges;
         private readonly RoutingNetworkEdgeEnumerator _edgeEnumerator;
         private readonly RoutingNetwork _graph;
 
-        public Path(RoutingNetwork network)
-        {
+        public Path(RoutingNetwork network) {
             _graph = network;
             _edgeEnumerator = network.GetEdgeEnumerator();
-            
+
             _edges = new List<(EdgeId edge, bool forward)>();
         }
 
@@ -55,17 +52,21 @@ namespace Itinero.Routes.Paths
         /// <summary>
         /// Gets the last edge.
         /// </summary>
-        public (EdgeId edge, bool direction) Last => _edges[this.Count - 1];
+        public (EdgeId edge, bool direction) Last => _edges[Count - 1];
 
-        internal void RemoveFirst()
-        {
-            if (_edges.Count == 0) throw new InvalidOperationException("Cannot remove first from an already empty path.");
+        internal void RemoveFirst() {
+            if (_edges.Count == 0) {
+                throw new InvalidOperationException("Cannot remove first from an already empty path.");
+            }
+
             _edges.RemoveAt(0);
         }
 
-        internal void RemoveLast()
-        {
-            if (_edges.Count == 0) throw new InvalidOperationException("Cannot remove last from an already empty path.");
+        internal void RemoveLast() {
+            if (_edges.Count == 0) {
+                throw new InvalidOperationException("Cannot remove last from an already empty path.");
+            }
+
             _edges.RemoveAt(_edges.Count - 1);
         }
 
@@ -79,22 +80,19 @@ namespace Itinero.Routes.Paths
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="first">The vertex that should occur first.</param>
-        public void Append(EdgeId edge, VertexId first)
-        {
-            if (!_edgeEnumerator.MoveToEdge(edge))
+        public void Append(EdgeId edge, VertexId first) {
+            if (!_edgeEnumerator.MoveToEdge(edge)) {
                 throw new Exception($"Edge does not exist.");
+            }
 
-            if (_edgeEnumerator.From == first)
-            {
-                this.AppendInternal(edge, true);
+            if (_edgeEnumerator.From == first) {
+                AppendInternal(edge, true);
             }
-            else if (_edgeEnumerator.To == first)
-            {
-                this.AppendInternal(edge, false);
+            else if (_edgeEnumerator.To == first) {
+                AppendInternal(edge, false);
             }
-            else
-            {
-                throw new Exception($"Cannot append edge, the given vertex is not part of it."); 
+            else {
+                throw new Exception($"Cannot append edge, the given vertex is not part of it.");
             }
         }
 
@@ -103,97 +101,90 @@ namespace Itinero.Routes.Paths
         /// </summary>
         /// <param name="edge">The edge.</param>
         /// <param name="last">The vertex that should occur last.</param>
-        public void Prepend(EdgeId edge, VertexId last)
-        {
-            if (!_edgeEnumerator.MoveToEdge(edge)) 
+        public void Prepend(EdgeId edge, VertexId last) {
+            if (!_edgeEnumerator.MoveToEdge(edge)) {
                 throw new Exception($"Edge does not exist.");
+            }
 
-            if (_edgeEnumerator.From == last)
-            {
-                this.PrependInternal(edge, false);
+            if (_edgeEnumerator.From == last) {
+                PrependInternal(edge, false);
             }
-            else if (_edgeEnumerator.To == last)
-            {
-                this.PrependInternal(edge, true);
+            else if (_edgeEnumerator.To == last) {
+                PrependInternal(edge, true);
             }
-            else
-            {
-                throw new Exception($"Cannot prepend edge, the given vertex is not part of it."); 
+            else {
+                throw new Exception($"Cannot prepend edge, the given vertex is not part of it.");
             }
         }
 
-        internal void AppendInternal(EdgeId edge, bool forward)
-        {
+        internal void AppendInternal(EdgeId edge, bool forward) {
             _edges.Add((edge, forward));
         }
 
-        internal void PrependInternal(EdgeId edge, bool forward)
-        {
+        internal void PrependInternal(EdgeId edge, bool forward) {
             _edges.Insert(0, (edge, forward));
         }
 
-        public IEnumerator<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> GetEnumerator()
-        {
-            for (var i = 0; i < this.Count; i++)
-            {
+        public IEnumerator<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> GetEnumerator() {
+            for (var i = 0; i < Count; i++) {
                 var edge = _edges[i];
-                var offset1 = (ushort)0;
+                var offset1 = (ushort) 0;
                 var offset2 = ushort.MaxValue;
-                
-                if (i == 0) offset1 = this.Offset1;
-                if (i == this.Count - 1) offset2 = this.Offset2;
+
+                if (i == 0) {
+                    offset1 = Offset1;
+                }
+
+                if (i == Count - 1) {
+                    offset2 = Offset2;
+                }
 
                 yield return (edge.edge, edge.forward, offset1, offset2);
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
+        IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
 
         /// <summary>
         /// Returns a description of this path.
         /// </summary>
-        public override string ToString()
-        {
+        public override string ToString() {
             // 1 edge without offsets:         [0]->21543F->[4]
             // 1 edge with offsets:            [0]->10%-21543F-20%->[4]
             var builder = new StringBuilder();
 
-            if (_edges.Count > 0)
-            { // there is a first edge.
+            if (_edges.Count > 0) { // there is a first edge.
                 var first = _edges[0];
                 _edgeEnumerator.MoveToEdge(first.edge, first.forward);
                 builder.Append($"[{_edgeEnumerator.From}]");
                 builder.Append("->");
-                if (this.Offset1 != 0)
-                {
-                    builder.Append(OffsetPer(this.Offset1, true));
+                if (Offset1 != 0) {
+                    builder.Append(OffsetPer(Offset1, true));
                     builder.Append("-");
                 }
 
                 builder.Append($"{first.edge}");
                 builder.Append(first.forward ? "F" : "B");
 
-                if (_edges.Count == 1)
-                {
-                    if ((first.forward && this.Offset2 != ushort.MaxValue) ||
-                        (!first.forward && this.Offset2 != 0))
-                    {
+                if (_edges.Count == 1) {
+                    if (first.forward && Offset2 != ushort.MaxValue ||
+                        !first.forward && Offset2 != 0) {
                         builder.Append("-");
-                        builder.Append(OffsetPer(this.Offset2, first.forward));
+                        builder.Append(OffsetPer(Offset2, first.forward));
                     }
+
                     builder.Append("->");
                     builder.Append($"[{_edgeEnumerator.To}]");
                     return builder.ToString();
                 }
+
                 builder.Append("->");
                 builder.Append($"[{_edgeEnumerator.To}]");
             }
 
-            for (var e = 1; e < _edges.Count - 1; e++)
-            {
+            for (var e = 1; e < _edges.Count - 1; e++) {
                 var edgeAndDirection = _edges[e];
                 _edgeEnumerator.MoveToEdge(edgeAndDirection.edge, edgeAndDirection.forward);
                 builder.Append("->");
@@ -203,33 +194,31 @@ namespace Itinero.Routes.Paths
                 builder.Append($"[{_edgeEnumerator.To}]");
             }
 
-            if (_edges.Count > 0)
-            { // there is a last edge.
+            if (_edges.Count > 0) { // there is a last edge.
                 var last = _edges[_edges.Count - 1];
                 builder.Append("->");
                 builder.Append($"{last.edge}");
                 builder.Append(last.forward ? "F" : "B");
-                if (this.Offset2 != ushort.MaxValue)
-                {
+                if (Offset2 != ushort.MaxValue) {
                     builder.Append("-");
-                    builder.Append(OffsetPer(this.Offset2, true));
+                    builder.Append(OffsetPer(Offset2, true));
                 }
+
                 _edgeEnumerator.MoveToEdge(last.edge, last.forward);
                 builder.Append("->");
                 builder.Append($"[{_edgeEnumerator.To}]");
                 return builder.ToString();
             }
-            
+
             return builder.ToString();
-            
+
             // Declare a local function.
-            string OffsetPer(ushort offset, bool forward)
-            {
-                if (forward)
-                {
-                    return $"{(double) offset / ushort.MaxValue*100:F1}%";
+            string OffsetPer(ushort offset, bool forward) {
+                if (forward) {
+                    return $"{(double) offset / ushort.MaxValue * 100:F1}%";
                 }
-                return $"{(double) (ushort.MaxValue - offset) / ushort.MaxValue*100:F1}%";
+
+                return $"{(double) (ushort.MaxValue - offset) / ushort.MaxValue * 100:F1}%";
             }
         }
     }

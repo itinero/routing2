@@ -1,7 +1,3 @@
-namespace Itinero.Data
-{
-    public class DataProvider
-    {
-        
-    }
+namespace Itinero.Data {
+    public class DataProvider { }
 }

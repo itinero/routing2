@@ -1,20 +1,18 @@
 using System.Collections.Generic;
 
-namespace Itinero.Profiles
-{
+namespace Itinero.Profiles {
     /// <summary>
     /// Abstract representation of a profile.
     /// </summary>
     /// <remarks>
     /// This is a single possible behaviour of a vehicle (e.g. 'bicycle.fastest').
     /// </remarks>
-    public abstract class Profile
-    {
+    public abstract class Profile {
         /// <summary>
         /// Gets the name of this profile.
         /// </summary>
         public abstract string Name { get; }
-        
+
         /// <summary>
         /// Gets an edge factor for the given attributes.
         /// </summary>

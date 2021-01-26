@@ -97,7 +97,8 @@ namespace Itinero.Instructions.ToText {
                     else if (subsValues.TryGetValue(text, out var newValue)) {
                         if (newValue is BaseInstruction instr) {
                             resultText += _nestedToText.Content.ToText(instr);
-                        }else {
+                        }
+                        else {
                             resultText += newValue;
                         }
                     }

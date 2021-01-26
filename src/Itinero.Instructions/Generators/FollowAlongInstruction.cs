@@ -18,6 +18,7 @@ namespace Itinero.Instructions.Generators {
                 // We never a follow along as first or as last...
                 return null;
             }
+
             var usedShapes = 1;
             var totalDistance = 0.0;
             route.Meta[offset].Attributes.TryGetValue("name", out var name);
@@ -27,15 +28,16 @@ namespace Itinero.Instructions.Generators {
                     // To much turn for a follow along...
                     break;
                 }
-                
+
                 route.Meta[offset + usedShapes].Attributes.TryGetValue("name", out var newName);
                 if (name != newName) {
                     // Different street!
                     break;
                 }
+
                 var distance = route.DistanceToNextPoint(offset + usedShapes);
                 totalDistance += distance;
-                
+
                 usedShapes++;
             }
 
@@ -45,7 +47,7 @@ namespace Itinero.Instructions.Generators {
             }
 
             var totalChange =
-                (route.ArrivingDirectionAt(offset + usedShapes) - route.ArrivingDirectionAt(offset )).NormalizeDegrees();
+                (route.ArrivingDirectionAt(offset + usedShapes) - route.ArrivingDirectionAt(offset)).NormalizeDegrees();
 
             // A gentle bend also does turn, at least a few degrees per meter
             if (Math.Abs(totalChange) < 45) {

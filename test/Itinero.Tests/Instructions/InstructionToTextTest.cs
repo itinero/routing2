@@ -46,7 +46,7 @@ namespace Itinero.Tests.Instructions {
             );
             var left = compound.ToText(new BaseInstruction(null, 0, 90));
             Assert.Equal("Turn left", left);
-            
+
             var right = compound.ToText(new BaseInstruction(null, 0, -90));
             Assert.Equal("Turn right", right);
             var straight = compound.ToText(new BaseInstruction(null, 0, 0));

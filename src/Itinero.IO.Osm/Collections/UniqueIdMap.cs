@@ -18,14 +18,12 @@
 
 using System.Collections.Generic;
 
-namespace Itinero.IO.Osm.Collections
-{
+namespace Itinero.IO.Osm.Collections {
     /// <summary>
     /// A unique id map, only vertex per id.
     /// </summary>
     public class UniqueIdMap<T>
-        where T : struct
-    {
+        where T : struct {
         private readonly Dictionary<long, Block> _blocks;
         private readonly int _blockSize;
         private static T _defaultValue;
@@ -33,8 +31,7 @@ namespace Itinero.IO.Osm.Collections
         /// <summary>
         /// Creates a new id map.
         /// </summary>
-        public UniqueIdMap(T defaultValue, int blockSize = 32)
-        {
+        public UniqueIdMap(T defaultValue, int blockSize = 32) {
             _blocks = new Dictionary<long, Block>();
             _blockSize = blockSize;
             _defaultValue = defaultValue;
@@ -43,23 +40,19 @@ namespace Itinero.IO.Osm.Collections
         /// <summary>
         /// Sets a tile id.
         /// </summary>
-        public void Set(long id, T vertex)
-        {
+        public void Set(long id, T vertex) {
             var blockIdx = id / _blockSize;
-            var offset = id - (blockIdx * _blockSize);
+            var offset = id - blockIdx * _blockSize;
 
-            if (!_blocks.TryGetValue(blockIdx, out var block))
-            {
-                block = new Block()
-                {
-                    Start = (uint)offset,
-                    End = (uint)offset,
-                    Data = new T[] { vertex }
+            if (!_blocks.TryGetValue(blockIdx, out var block)) {
+                block = new Block() {
+                    Start = (uint) offset,
+                    End = (uint) offset,
+                    Data = new T[] {vertex}
                 };
                 _blocks[blockIdx] = block;
             }
-            else
-            {
+            else {
                 block.Set(offset, vertex);
                 _blocks[blockIdx] = block;
             }
@@ -68,24 +61,22 @@ namespace Itinero.IO.Osm.Collections
         /// <summary>
         /// Gets or sets the tile id for the given id.
         /// </summary>
-        public T this[long id]
-        {
-            get => this.Get(id);
-            set => this.Set(id, value);
+        public T this[long id] {
+            get => Get(id);
+            set => Set(id, value);
         }
 
         /// <summary>
         /// Gets a tile id.
         /// </summary>
-        public T Get(long id)
-        {
+        public T Get(long id) {
             var blockIdx = id / _blockSize;
-            var offset = id - (blockIdx * _blockSize);
+            var offset = id - blockIdx * _blockSize;
 
-            if (!_blocks.TryGetValue(blockIdx, out var block))
-            {
+            if (!_blocks.TryGetValue(blockIdx, out var block)) {
                 return _defaultValue;
             }
+
             return block.Get(offset);
         }
 
@@ -94,55 +85,48 @@ namespace Itinero.IO.Osm.Collections
         /// </summary>
         public IEnumerable<long> NonDefaultIndices => throw new System.NotImplementedException();
 
-        private struct Block
-        {
+        private struct Block {
             public uint Start { get; set; }
 
             public uint End { get; set; }
 
             public T[] Data { get; set; }
 
-            public T Get(long offset)
-            {
-                if (Start > offset)
-                {
+            public T Get(long offset) {
+                if (Start > offset) {
                     return _defaultValue;
                 }
-                else if (offset > End)
-                {
+                else if (offset > End) {
                     return _defaultValue;
                 }
-                return this.Data[offset - Start];
+
+                return Data[offset - Start];
             }
 
-            public void Set(long offset, T value)
-            {
-                if (Start > offset)
-                { // expand at the beginning.
+            public void Set(long offset, T value) {
+                if (Start > offset) { // expand at the beginning.
                     var newData = new T[End - offset + 1];
-                    Data.CopyTo(newData, (int)(Start - offset));
-                    for (var i = 1; i < Start - offset; i++)
-                    {
+                    Data.CopyTo(newData, (int) (Start - offset));
+                    for (var i = 1; i < Start - offset; i++) {
                         newData[i] = _defaultValue;
                     }
+
                     Data = newData;
-                    Start = (uint)offset;
+                    Start = (uint) offset;
                     Data[0] = value;
                 }
-                else if (End < offset)
-                { // expand at the end.
+                else if (End < offset) { // expand at the end.
                     var newData = new T[offset - Start + 1];
                     Data.CopyTo(newData, 0);
-                    for(var i = End + 1 - Start; i < newData.Length - 1; i++)
-                    {
+                    for (var i = End + 1 - Start; i < newData.Length - 1; i++) {
                         newData[i] = _defaultValue;
                     }
+
                     Data = newData;
-                    End = (uint)offset;
+                    End = (uint) offset;
                     Data[offset - Start] = value;
                 }
-                else
-                {
+                else {
                     Data[offset - Start] = value;
                 }
             }

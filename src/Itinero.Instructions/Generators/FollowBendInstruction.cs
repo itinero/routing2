@@ -16,19 +16,20 @@ namespace Itinero.Instructions.Generators {
     }
 
     internal class FollowBendGenerator : IInstructionGenerator {
-
         private static bool DoesFollowBend(IndexedRoute route, int shapeI, double dAngle, int angleSign) {
             // We aren't allowed to have branches on the inner side, to avoid confusing situations
 
             if (shapeI >= route.Branches.Count) {
                 return true;
             }
-            
+
             foreach (var branch in route.Branches[shapeI]) {
                 // What is the angle-difference of the branch?
                 // This resembles the route.DirectionChangeAt-definition
-                var dBranchAngle = (Utils.AngleBetween(route.Shape[shapeI], branch.Coordinate) - route.ArrivingDirectionAt(shapeI)).NormalizeDegrees();
-                
+                var dBranchAngle =
+                    (Utils.AngleBetween(route.Shape[shapeI], branch.Coordinate) - route.ArrivingDirectionAt(shapeI))
+                    .NormalizeDegrees();
+
                 // With the angle in hand, we can ask ourselves: lies it on the inner side?
                 if (Math.Sign(dBranchAngle) != angleSign) {
                     // It lies on the other side; this branch doesn't pose a problem
@@ -38,21 +39,21 @@ namespace Itinero.Instructions.Generators {
                 // We know the signs are the same; so we pretend both are going left (aka positive)
                 var dAngleAbs = Math.Abs(dAngle);
                 var dBranchAbs = Math.Abs(dBranchAngle);
-                
+
                 // If the turning angle of the route is bigger, then the branch lies on the outer side
                 if (dBranchAbs < dAngleAbs) {
                     continue;
                 }
-                
+
                 // At this point, we know the branch lies on _the inner side_
                 // We cannot issue a simple follow bend
                 return false;
-
             }
+
             return true;
         }
-        
-        
+
+
         public BaseInstruction Generate(IndexedRoute route, int offset) {
             if (offset == 0 || offset == route.Last) {
                 // We never have a bend at first or as last...
@@ -85,18 +86,17 @@ namespace Itinero.Instructions.Generators {
                 }
 
 
-
                 if (!DoesFollowBend(route, offset + usedShapes, dAngle, angleSign)) {
                     // 
                     break;
                 }
-                
+
                 route.Meta[offset + usedShapes].Attributes.TryGetValue("name", out var newName);
                 if (name != newName) {
                     // Different street
                     break;
                 }
-                
+
                 totalDistance += distance;
                 angleDiff += dAngle;
                 // We keep the total angle too; as it might turn more then 180°

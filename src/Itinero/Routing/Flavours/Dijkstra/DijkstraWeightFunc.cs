@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routing.Flavours.Dijkstra
-{
+namespace Itinero.Routing.Flavours.Dijkstra {
     /// <summary>
     /// The weight function.
     /// </summary>
@@ -14,6 +13,6 @@ namespace Itinero.Routing.Flavours.Dijkstra
     /// - cost: the cost of traversing the edge.
     /// - turnCost: the cost of turning onto the edge from the previous edges.
     /// </remarks>
-    internal delegate (double cost, double turnCost) DijkstraWeightFunc(RoutingNetworkEdgeEnumerator edgeEnumerator, 
+    internal delegate (double cost, double turnCost) DijkstraWeightFunc(RoutingNetworkEdgeEnumerator edgeEnumerator,
         IEnumerable<(EdgeId edge, byte? turn)> previousEdges);
 }

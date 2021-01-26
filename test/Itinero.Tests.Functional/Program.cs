@@ -30,36 +30,32 @@ namespace Itinero.Tests.Functional {
             if (!Directory.Exists("cache")) {
                 Directory.CreateDirectory("cache");
             }
+
             TileParser.DownloadFunc = DownloadHelper.Download;
-            
+
             // create a new srtm data instance.
             // it accepts a folder to download and cache data into.
             var srtmCache = new DirectoryInfo("srtm-cache");
-            if (!srtmCache.Exists)
-            {
+            if (!srtmCache.Exists) {
                 srtmCache.Create();
             }
+
             // setup elevation integration.
-            var srtmData = new SRTMData(srtmCache.FullName)
-            {
-                GetMissingCell = (string path, string name) =>
-                {
+            var srtmData = new SRTMData(srtmCache.FullName) {
+                GetMissingCell = (string path, string name) => {
                     var filename = name + ".hgt.zip";
                     var hgt = Path.Combine(path, filename);
 
-                    if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename))
-                    {
+                    if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename)) {
                         return true;
                     }
 
                     return false;
                 }
             };
-            ElevationHandler.Default = new ElevationHandler((lat, lon) =>
-            {
+            ElevationHandler.Default = new ElevationHandler((lat, lon) => {
                 var elevation = srtmData.GetElevation(lat, lon);
-                if (!elevation.HasValue)
-                {
+                if (!elevation.HasValue) {
                     return 0;
                 }
 
@@ -105,14 +101,17 @@ namespace Itinero.Tests.Functional {
             var instructions = Instructions.Instructions.FromFile(args[2]);
 
             routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
-            
-            void TestInstructions(string name, (double lon, double lat, float? e) from, (double lon, double lat, float? e) to) {
+
+            void TestInstructions(string name, (double lon, double lat, float? e) from,
+                (double lon, double lat, float? e) to) {
                 var latest = routerDb.Latest;
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
                     .To(latest.Snap().To(to)).Calculate().Value;
                 var instr = instructions.Generate(route, "en");
-                File.WriteAllText(name + ".geojson", IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonLines(instr)));
-                File.WriteAllText(name+".points.geojson", IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonPoints()));
+                File.WriteAllText(name + ".geojson",
+                    IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonLines(instr)));
+                File.WriteAllText(name + ".points.geojson",
+                    IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonPoints()));
             }
 
 
@@ -122,7 +121,7 @@ namespace Itinero.Tests.Functional {
 
             TestInstructions("benoitlaan", (3.2120606303215027, 51.21027101966819, null), (3.199746608734131,
                 51.20655402916297, null));
-            
+
             // var latest = routerDb.Latest;
             //
             // var snap1 = latest.Snap().To(5.9732794761657715,

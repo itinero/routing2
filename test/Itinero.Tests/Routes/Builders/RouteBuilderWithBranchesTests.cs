@@ -98,8 +98,8 @@ namespace Itinero.Tests.Routes.Builders {
             Assert.Equal(("name", "B3"), route.ShapeMeta[0].Attributes.ToList()[0]);
             Assert.Equal(("name", "C"), route.ShapeMeta[1].Attributes.ToList()[0]);
         }
-        
-         [Fact]
+
+        [Fact]
         public void RouteBuilder_MixedBranchesAtMiddle_BranchesAreAdded() {
             var center = (4.801073670387268, 51.268064181900094);
 

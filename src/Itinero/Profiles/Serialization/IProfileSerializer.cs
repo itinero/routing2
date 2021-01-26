@@ -1,17 +1,15 @@
 using System.IO;
 
-namespace Itinero.Profiles.Serialization
-{
+namespace Itinero.Profiles.Serialization {
     /// <summary>
     /// Abstract representation of a profile serializer.
     /// </summary>
-    public interface IProfileSerializer
-    {
+    public interface IProfileSerializer {
         /// <summary>
         /// Used to identify the appropriate serializer for a profile.
         /// </summary>
         public string Id { get; }
-        
+
         /// <summary>
         /// Writes the given profile to the given stream.
         /// </summary>

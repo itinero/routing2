@@ -1,12 +1,10 @@
 using Itinero.Routes;
 
-namespace Itinero.Geo.Elevation
-{
+namespace Itinero.Geo.Elevation {
     /// <summary>
     /// Extensions for the route object related to elevation.
     /// </summary>
-    public static class RouteExtensions
-    {
+    public static class RouteExtensions {
         /// <summary>
         /// Adds elevation to the route.
         /// </summary>
@@ -15,13 +13,11 @@ namespace Itinero.Geo.Elevation
         /// <remarks>
         /// This only adds elevation if an elevation handler was registered. It doesn't overwrite any elevation data already there.
         /// </remarks>
-        public static void AddElevation(this Route route, IElevationHandler? elevationHandler = null)
-        {
-            for (var s = 0; s < route.Shape.Count; s++)
-            {
+        public static void AddElevation(this Route route, IElevationHandler? elevationHandler = null) {
+            for (var s = 0; s < route.Shape.Count; s++) {
                 route.Shape[s] = route.Shape[s].AddElevation(elevationHandler: elevationHandler);
             }
-            
+
             // TODO: add branches when implemented.
         }
     }

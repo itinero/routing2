@@ -1,29 +1,26 @@
 ﻿using System;
 
-namespace Itinero.Network
-{
+namespace Itinero.Network {
     // TODO: the internal graph structure bleeds out via the tiled ids.
     /// <summary>
     /// Represents a vertex ID composed of a tile ID and a vertex ID.
     /// </summary>
-    public readonly struct VertexId : IEquatable<VertexId>
-    {
+    public readonly struct VertexId : IEquatable<VertexId> {
         /// <summary>
         /// Creates a new vertex id.
         /// </summary>
         /// <param name="tileId">The tile id.</param>
         /// <param name="localId">The local id.</param>
-        public VertexId(uint tileId, uint localId)
-        {
-            this.TileId = tileId;
-            this.LocalId = localId;
+        public VertexId(uint tileId, uint localId) {
+            TileId = tileId;
+            LocalId = localId;
         }
 
         /// <summary>
         /// Gets or sets the tile id.
         /// </summary>
         public uint TileId { get; }
-        
+
         /// <summary>
         /// Gets or sets the local id.
         /// </summary>
@@ -32,56 +29,51 @@ namespace Itinero.Network
         /// <summary>
         /// Returns an empty vertex id.
         /// </summary>
-        public static VertexId Empty => new VertexId(uint.MaxValue, uint.MaxValue);
+        public static VertexId Empty => new(uint.MaxValue, uint.MaxValue);
 
         /// <summary>
         /// Returns true if this vertex id is empty.
         /// </summary>
         /// <returns></returns>
-        public bool IsEmpty()
-        {
-            return this.TileId == uint.MaxValue;
+        public bool IsEmpty() {
+            return TileId == uint.MaxValue;
         }
 
         /// <summary>
         /// Returns a human readable description.
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
-        {
-            return $"{this.LocalId} @ {this.TileId}";
+        public override string ToString() {
+            return $"{LocalId} @ {TileId}";
         }
-        
+
         /// <summary>
         /// Returns true if the two vertices represent the same id.
         /// </summary>
         /// <returns></returns>
-        public static bool operator ==(VertexId vertex1, VertexId vertex2)
-        {
+        public static bool operator ==(VertexId vertex1, VertexId vertex2) {
             return vertex1.LocalId == vertex2.LocalId &&
-                vertex1.TileId == vertex2.TileId;
+                   vertex1.TileId == vertex2.TileId;
         }
 
-        public static bool operator !=(VertexId vertex1, VertexId vertex2)
-        {
+        public static bool operator !=(VertexId vertex1, VertexId vertex2) {
             return !(vertex1 == vertex2);
         }
 
-        public bool Equals(VertexId other)
-        {
+        public bool Equals(VertexId other) {
             return LocalId == other.LocalId && TileId == other.TileId;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
+        public override bool Equals(object obj) {
+            if (ReferenceEquals(null, obj)) {
+                return false;
+            }
+
             return obj is VertexId other && Equals(other);
         }
 
-        public override int GetHashCode()
-        {
-            unchecked
-            {
+        public override int GetHashCode() {
+            unchecked {
                 return ((int) TileId * 397) ^ (int) LocalId;
             }
         }
@@ -90,9 +82,8 @@ namespace Itinero.Network
         /// Encodes the info in this vertex into one 64bit unsigned integer.
         /// </summary>
         /// <returns>An encoded version of this vertex.</returns>
-        internal ulong Encode()
-        {
-            return (((ulong) this.TileId) << 32) + this.LocalId;
+        internal ulong Encode() {
+            return ((ulong) TileId << 32) + LocalId;
         }
 
         /// <summary>
@@ -102,10 +93,9 @@ namespace Itinero.Network
         /// <param name="tileId">The tile id.</param>
         /// <param name="localId">The local id.</param>
         /// <returns>The decoded version of the vertex.</returns>
-        internal static void Decode(ulong encoded, out uint tileId, out uint localId)
-        {
+        internal static void Decode(ulong encoded, out uint tileId, out uint localId) {
             tileId = (uint) (encoded >> 32);
-            var tileOffset = ((ulong) tileId) << 32;
+            var tileOffset = (ulong) tileId << 32;
             localId = (uint) (encoded - tileOffset);
         }
 
@@ -114,8 +104,7 @@ namespace Itinero.Network
         /// </summary>
         /// <param name="encoded">The encoded version a vertex.</param>
         /// <returns>The decoded version of the vertex.</returns>
-        internal static VertexId Decode(ulong encoded)
-        {
+        internal static VertexId Decode(ulong encoded) {
             Decode(encoded, out var tileId, out var localId);
             return new VertexId(tileId, localId);
         }

@@ -20,17 +20,14 @@ using System.IO;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Filters;
 
-namespace Itinero.Tests.Functional.IO.Osm
-{
-    public static class RouterDbStreamTargetTests
-    {
+namespace Itinero.Tests.Functional.IO.Osm {
+    public static class RouterDbStreamTargetTests {
         /// <summary>
         /// Loads a router db given the OSM file.
         /// </summary>
         /// <param name="osmPbfFile">An OSM-PBF file.</param>
         /// <returns>A loaded router db</returns>
-        public static RouterDb LoadFrom(string osmPbfFile)
-        {
+        public static RouterDb LoadFrom(string osmPbfFile) {
             var routerDb = new RouterDb();
 
             using var stream = File.OpenRead(osmPbfFile);

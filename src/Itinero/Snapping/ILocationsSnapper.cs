@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 
-namespace Itinero.Snapping
-{
+namespace Itinero.Snapping {
     /// <summary>
     /// A snapper end point accepting locations.
     /// </summary>
-    public interface ILocationsSnapper
-    {
+    public interface ILocationsSnapper {
         /// <summary>
         /// Snaps to the given locations.
         /// </summary>

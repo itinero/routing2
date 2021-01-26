@@ -21,13 +21,13 @@ namespace Itinero.Instructions {
         public LinearInstructionGenerator(
             IEnumerable<string> constructorNames) :
             this(constructorNames.Select(name => {
-            if (AllGenerators.AllGeneratorsDict.TryGetValue(name, out var gen)) {
-                return gen;
-            }
+                if (AllGenerators.AllGeneratorsDict.TryGetValue(name, out var gen)) {
+                    return gen;
+                }
 
-            throw new Exception(("The generator " + name + "; try one of " +
-                                 String.Join(", ", AllGenerators.AllGeneratorsDict.Keys)));
-        })) { }
+                throw new Exception("The generator " + name + "; try one of " +
+                                    string.Join(", ", AllGenerators.AllGeneratorsDict.Keys));
+            })) { }
 
         public LinearInstructionGenerator(
             IEnumerable<IInstructionGenerator> constructors) {
@@ -66,7 +66,7 @@ namespace Itinero.Instructions {
             }
 
             instructions[0] = new StartInstruction(indexedRoute, instructions[0]);
-            
+
             return instructions;
         }
     }

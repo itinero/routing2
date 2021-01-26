@@ -1,12 +1,10 @@
 using Itinero.Profiles;
 
-namespace Itinero.Routing
-{
+namespace Itinero.Routing {
     /// <summary>
     /// Settings to configure routing.
     /// </summary>
-    public class RoutingSettings
-    {
+    public class RoutingSettings {
         /// <summary>
         /// Gets or sets the profile.
         /// </summary>

@@ -1,12 +1,10 @@
 using Itinero.IO.Osm.Tiles.Parsers;
 
-namespace Itinero.IO.Osm.Tiles
-{
+namespace Itinero.IO.Osm.Tiles {
     /// <summary>
     /// The data provider settings.
     /// </summary>
-    public class DataProviderSettings
-    {
+    public class DataProviderSettings {
         /// <summary>
         /// The url of the routeable tiles server.
         /// </summary>

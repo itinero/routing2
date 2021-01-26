@@ -181,16 +181,15 @@ namespace Itinero.Tests.Instructions {
 
             var l = toText.ToText(new BaseInstruction(null, 0, 90));
             Assert.Equal("Go left", l);
-            
+
             var r = toText.ToText(new BaseInstruction(null, 0, -90));
             Assert.Equal("Go right", r);
 
 
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
-
         }
-        
+
         [Fact]
         public void ParseFormat_WithNestedAndExtensions_ExtensionsTrigger() {
             var format =
@@ -203,10 +202,10 @@ namespace Itinero.Tests.Instructions {
                 "  }," +
                 "\"roundabout\": {\"*\": \"Go $lr\"}" +
                 "}";
-            var toText = FromJson.ParseInstructionToText(JObject.Parse(format), null, new Dictionary<string, IInstructionToText>());
+            var toText = FromJson.ParseInstructionToText(JObject.Parse(format), null,
+                new Dictionary<string, IInstructionToText>());
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
-
         }
     }
 }

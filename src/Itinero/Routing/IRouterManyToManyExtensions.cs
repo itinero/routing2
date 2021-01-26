@@ -5,30 +5,25 @@ using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
 
-namespace Itinero.Routing
-{
+namespace Itinero.Routing {
     /// <summary>
     /// Many to many extensions.
     /// </summary>
-    public static class IRouterManyToManyExtensions
-    {
+    public static class IRouterManyToManyExtensions {
         /// <summary>
         /// Calculates the paths.
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToMany manyToManyRouter)
-        {
+        public static IReadOnlyList<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToMany manyToManyRouter) {
             var sources = manyToManyRouter.Sources;
             var targets = manyToManyRouter.Targets;
 
             if (!sources.TryToUndirected(out var sourcesUndirected) ||
-                !targets.TryToUndirected(out var targetsUndirected))
-            {
+                !targets.TryToUndirected(out var targetsUndirected)) {
                 return manyToManyRouter.Calculate(sources, targets);
             }
-            else
-            {
+            else {
                 return manyToManyRouter.Calculate(sourcesUndirected, targetsUndirected);
             }
         }
@@ -38,12 +33,12 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToMany manyToManyRouter)
-        {
+        public static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToMany manyToManyRouter) {
             var paths = manyToManyRouter.Paths();
-            return paths.Select(x =>
-            {
-                return x.Select(y => RouteBuilder.Default.Build(manyToManyRouter.Network, manyToManyRouter.Settings.Profile, y)).ToArray();
+            return paths.Select(x => {
+                return x.Select(y =>
+                        RouteBuilder.Default.Build(manyToManyRouter.Network, manyToManyRouter.Settings.Profile, y))
+                    .ToArray();
             }).ToArray();
         }
 
@@ -53,10 +48,10 @@ namespace Itinero.Routing
         /// <param name="manyToManyWeightRouter">The router.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static Result<IReadOnlyList<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter)
-        {
+        public static Result<IReadOnlyList<IReadOnlyList<double?>>> Calculate(
+            this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter) {
             return null;
-            
+
             // var profileHandler = manyToManyWeightRouter.Router.Network.GetCostFunctionFor(
             //     manyToManyWeightRouter.Router.Settings.Profile);
             // var paths = manyToManyWeightRouter.Router.Paths();

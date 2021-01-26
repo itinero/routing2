@@ -19,8 +19,8 @@ namespace Itinero.Instructions {
             _generator = generator;
             _instructionToTexts = instructionToTexts;
         }
-        
-        
+
+
         public static Instructions FromFile(string path) {
             var jobj = JObject.Parse(File.ReadAllText(path));
             var (generator, languages) = FromJson.ParseRouteToInstructions(jobj);
@@ -29,14 +29,13 @@ namespace Itinero.Instructions {
 
         public (int shapeIndex, int shapeEnd, string)[] Generate(Route r, string language) {
             if (!_instructionToTexts.TryGetValue(language, out var instructionToText)) {
-                throw new ArgumentException("Language " + language + " not supported; only supported languages are"+ string.Join(", ", _instructionToTexts.Keys));
+                throw new ArgumentException("Language " + language + " not supported; only supported languages are" +
+                                            string.Join(", ", _instructionToTexts.Keys));
             }
 
             var instructions = _generator.GenerateInstructions(r);
             var texts = instructions.Select(i => (i.ShapeIndex, i.ShapeIndexEnd, instructionToText.ToText(i)));
             return texts.ToArray();
         }
-        
-        
     }
 }

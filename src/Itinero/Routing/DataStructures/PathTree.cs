@@ -1,17 +1,14 @@
-namespace Itinero.Routing.DataStructures
-{
+namespace Itinero.Routing.DataStructures {
     /// <summary>
     /// Represents a tree of paths by linking their segments together.
     /// </summary>
-    internal sealed class PathTree
-    {
+    internal sealed class PathTree {
         // TODO: this entire path tree idea can be faster by storing raw structs.
-        
+
         /// <summary>
         /// Creates a new path tree.
         /// </summary>
-        public PathTree()
-        {
+        public PathTree() {
             // TODO: perhaps we can reuse arrays somehow.
             _data = new uint[1024];
         }
@@ -23,11 +20,9 @@ namespace Itinero.Routing.DataStructures
         /// Adds a new segment.
         /// </summary>
         /// <returns></returns>
-        public uint Add(uint data0, uint data1)
-        {
+        public uint Add(uint data0, uint data1) {
             var id = _pointer;
-            if (_data.Length <= _pointer + 2)
-            {
+            if (_data.Length <= _pointer + 2) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -41,11 +36,9 @@ namespace Itinero.Routing.DataStructures
         /// Adds a new segment.
         /// </summary>
         /// <returns></returns>
-        public uint Add(uint data0, uint data1, uint data2)
-        {
+        public uint Add(uint data0, uint data1, uint data2) {
             var id = _pointer;
-            if (_data.Length <= _pointer + 3)
-            {
+            if (_data.Length <= _pointer + 3) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -60,11 +53,9 @@ namespace Itinero.Routing.DataStructures
         /// Adds a new segment.
         /// </summary>
         /// <returns></returns>
-        public uint Add(uint data0, uint data1, uint data2, uint data3)
-        {
+        public uint Add(uint data0, uint data1, uint data2, uint data3) {
             var id = _pointer;
-            if (_data.Length <= _pointer + 4)
-            {
+            if (_data.Length <= _pointer + 4) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -80,11 +71,9 @@ namespace Itinero.Routing.DataStructures
         /// Adds a new segment.
         /// </summary>
         /// <returns></returns>
-        public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4)
-        {
+        public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4) {
             var id = _pointer;
-            if (_data.Length <= _pointer + 5)
-            {
+            if (_data.Length <= _pointer + 5) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -101,11 +90,9 @@ namespace Itinero.Routing.DataStructures
         /// Adds a new segment.
         /// </summary>
         /// <returns></returns>
-        public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4, uint data5)
-        {
+        public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4, uint data5) {
             var id = _pointer;
-            if (_data.Length <= _pointer + 6)
-            {
+            if (_data.Length <= _pointer + 6) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -123,11 +110,9 @@ namespace Itinero.Routing.DataStructures
         /// Adds a new segment.
         /// </summary>
         /// <returns></returns>
-        public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4, uint data5, uint data6)
-        {
+        public uint Add(uint data0, uint data1, uint data2, uint data3, uint data4, uint data5, uint data6) {
             var id = _pointer;
-            if (_data.Length <= _pointer + 7)
-            {
+            if (_data.Length <= _pointer + 7) {
                 System.Array.Resize(ref _data, _data.Length * 2);
             }
 
@@ -145,8 +130,7 @@ namespace Itinero.Routing.DataStructures
         /// <summary>
         /// Gets the data at the given pointer.
         /// </summary>
-        public void Get(uint pointer, out uint data0, out uint data1)
-        {
+        public void Get(uint pointer, out uint data0, out uint data1) {
             data0 = _data[pointer + 0];
             data1 = _data[pointer + 1];
         }
@@ -154,8 +138,7 @@ namespace Itinero.Routing.DataStructures
         /// <summary>
         /// Gets the data at the given pointer.
         /// </summary>
-        public void Get(uint pointer, out uint data0, out uint data1, out uint data2)
-        {
+        public void Get(uint pointer, out uint data0, out uint data1, out uint data2) {
             data0 = _data[pointer + 0];
             data1 = _data[pointer + 1];
             data2 = _data[pointer + 2];
@@ -165,8 +148,7 @@ namespace Itinero.Routing.DataStructures
         /// Gets the data at the given pointer.
         /// </summary>
         public void Get(uint pointer, out uint data0, out uint data1, out uint data2,
-            out uint data3)
-        {
+            out uint data3) {
             data0 = _data[pointer + 0];
             data1 = _data[pointer + 1];
             data2 = _data[pointer + 2];
@@ -177,8 +159,7 @@ namespace Itinero.Routing.DataStructures
         /// Gets the data at the given pointer.
         /// </summary>
         public void Get(uint pointer, out uint data0, out uint data1, out uint data2,
-            out uint data3, out uint data4)
-        {
+            out uint data3, out uint data4) {
             data0 = _data[pointer + 0];
             data1 = _data[pointer + 1];
             data2 = _data[pointer + 2];
@@ -190,8 +171,7 @@ namespace Itinero.Routing.DataStructures
         /// Gets the data at the given pointer.
         /// </summary>
         public void Get(uint pointer, out uint data0, out uint data1, out uint data2,
-            out uint data3, out uint data4, out uint data5)
-        {
+            out uint data3, out uint data4, out uint data5) {
             data0 = _data[pointer + 0];
             data1 = _data[pointer + 1];
             data2 = _data[pointer + 2];
@@ -204,8 +184,7 @@ namespace Itinero.Routing.DataStructures
         /// Gets the data at the given pointer.
         /// </summary>
         public void Get(uint pointer, out uint data0, out uint data1, out uint data2,
-            out uint data3, out uint data4, out uint data5, out uint data6)
-        {
+            out uint data3, out uint data4, out uint data5, out uint data6) {
             data0 = _data[pointer + 0];
             data1 = _data[pointer + 1];
             data2 = _data[pointer + 2];
@@ -218,8 +197,7 @@ namespace Itinero.Routing.DataStructures
         /// <summary>
         /// Clears all data.
         /// </summary>
-        public void Clear()
-        {
+        public void Clear() {
             _pointer = 0;
         }
     }

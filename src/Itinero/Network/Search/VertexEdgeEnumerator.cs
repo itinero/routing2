@@ -2,37 +2,31 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Network.Search
-{
-    internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork>
-    {
+namespace Itinero.Network.Search {
+    internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork> {
         private readonly IEnumerator<VertexId> _vertexEnumerator;
 
-        public VertexEdgeEnumerator(RoutingNetwork graph, IEnumerable<VertexId> vertices)
-        {
+        public VertexEdgeEnumerator(RoutingNetwork graph, IEnumerable<VertexId> vertices) {
             Network = graph;
             _vertexEnumerator = vertices.GetEnumerator();
             RoutingNetworkEdgeEnumerator = graph.GetEdgeEnumerator();
         }
-        
+
         private bool _firstEdge = false;
-        
-        public void Reset()
-        {
+
+        public void Reset() {
             _firstEdge = false;
             RoutingNetworkEdgeEnumerator.Reset();
             _vertexEnumerator.Reset();
         }
 
-        public bool MoveNext()
-        {
-            if (!_firstEdge)
-            {
-                while (_vertexEnumerator.MoveNext())
-                {
-                    while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
-                    {
-                        if (!RoutingNetworkEdgeEnumerator.MoveNext()) break;
+        public bool MoveNext() {
+            if (!_firstEdge) {
+                while (_vertexEnumerator.MoveNext()) {
+                    while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current)) {
+                        if (!RoutingNetworkEdgeEnumerator.MoveNext()) {
+                            break;
+                        }
 
                         _firstEdge = true;
                         return true;
@@ -42,28 +36,30 @@ namespace Itinero.Network.Search
                 return false;
             }
 
-            while (true)
-            {
-                if (RoutingNetworkEdgeEnumerator.MoveNext())
-                {
+            while (true) {
+                if (RoutingNetworkEdgeEnumerator.MoveNext()) {
                     return true;
                 }
 
-                if (!_vertexEnumerator.MoveNext()) return false;
-                while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
-                {
-                    if (RoutingNetworkEdgeEnumerator.MoveNext()) return true;
-                    if (!_vertexEnumerator.MoveNext()) return false;
+                if (!_vertexEnumerator.MoveNext()) {
+                    return false;
+                }
+
+                while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current)) {
+                    if (RoutingNetworkEdgeEnumerator.MoveNext()) {
+                        return true;
+                    }
+
+                    if (!_vertexEnumerator.MoveNext()) {
+                        return false;
+                    }
                 }
             }
         }
 
         internal RoutingNetworkEdgeEnumerator RoutingNetworkEdgeEnumerator { get; }
 
-        public void Dispose()
-        {
-            
-        }
+        public void Dispose() { }
 
         public RoutingNetwork Network { get; }
 
@@ -79,13 +75,12 @@ namespace Itinero.Network.Search
         public uint? Length => RoutingNetworkEdgeEnumerator.Length;
         public byte? Head => RoutingNetworkEdgeEnumerator.Head;
         public byte? Tail => RoutingNetworkEdgeEnumerator.Tail;
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
-        {
+
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder) {
             return RoutingNetworkEdgeEnumerator.GetTurnCostTo(fromOrder);
         }
 
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
-        {
+        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder) {
             return RoutingNetworkEdgeEnumerator.GetTurnCostFrom(toOrder);
         }
     }

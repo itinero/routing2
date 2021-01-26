@@ -32,7 +32,7 @@ namespace Itinero.Routes.Builders {
             foreach (var edge in path.Edges) {
                 allEdgeIds.Add(edge.edge);
             }
-            
+
             foreach (var (edge, direction, offset1, offset2) in path) {
                 if (route.Shape.Count == 0) {
                     // This is the first edge of the route - we have to check for branches at the start loction
@@ -60,7 +60,7 @@ namespace Itinero.Routes.Builders {
                 distance = (offset2 - offset1) / (double) ushort.MaxValue * distance;
                 route.TotalDistance += distance;
 
-                var speed =factor.ForwardSpeedMeterPerSecond ;
+                var speed = factor.ForwardSpeedMeterPerSecond;
                 if (speed <= 0) {
                     // Something is wrong here
                     throw new ArgumentException("Speed is zero! Did you pass a wrong profile to the route builder?");
@@ -115,7 +115,8 @@ namespace Itinero.Routes.Builders {
                     }
                 }
                 else {
-                    AddBranches(edgeEnumerator.To, edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches, allEdgeIds);
+                    AddBranches(edgeEnumerator.To, edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches,
+                        allEdgeIds);
                 }
 
                 seenEdges++;
@@ -141,18 +142,18 @@ namespace Itinero.Routes.Builders {
             edgeEnumerator.MoveTo(centralVertexId);
             while (edgeEnumerator.MoveNext()) {
                 // Iterates over all edges of the endvertex
-               
+
                 if (branchBlacklist.Contains(edgeEnumerator.Id)) {
                     // We make sure not to pick the current nor the next edge of the path
                     // This is simple as we have a hashset containing _all_ the edge ids ¯\_(ツ)_/¯
                     continue;
                 }
-                
+
                 // If the vertex of the crossroads are the same as the from, we would walk forward over the branch if we would take it
                 var isForward = edgeEnumerator.Forward;
                 spareEnumerator.MoveToEdge(edgeEnumerator.Id, isForward);
-                using var shapeEnum = spareEnumerator.GetShapeBetween(includeVertices:false).GetEnumerator();
-                shapeEnum.MoveNext();// Init enumerator at first value
+                using var shapeEnum = spareEnumerator.GetShapeBetween(includeVertices: false).GetEnumerator();
+                shapeEnum.MoveNext(); // Init enumerator at first value
                 shapeEnum.MoveNext();
                 var branch = new Route.Branch {
                     Attributes = edgeEnumerator.Attributes,

@@ -47,8 +47,9 @@ namespace Itinero.Instructions {
             }
 #if DEBUG
             if (metas.Count + 1 != route.Shape.Count) {
-                throw new Exception("Length of the meta doesn't match. There are "+route.Shape.Count+" shapes, but the last meta has an index of "+
-                                    route.ShapeMeta[^1].Shape+", resulting in a metalist of "+metas.Count);
+                throw new Exception("Length of the meta doesn't match. There are " + route.Shape.Count +
+                                    " shapes, but the last meta has an index of " +
+                                    route.ShapeMeta[^1].Shape + ", resulting in a metalist of " + metas.Count);
             }
 #endif
 
@@ -155,7 +156,7 @@ namespace Itinero.Instructions {
                 "#ff0000", "#00ff00", "#0000ff", "#000000"
             };
 
-            for (var i = 0; i < instructions.Length ; i++) {
+            for (var i = 0; i < instructions.Length; i++) {
                 var (index, end, text) = instructions[i];
                 var coordinates = Route.Shape.GetRange(index, Math.Max(2, 1 + end - index));
                 var meta = Meta[index];
