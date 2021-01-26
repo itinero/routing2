@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Itinero.Tests.Instructions
@@ -35,7 +35,7 @@ namespace Itinero.Tests.Instructions
                 " \"$startDegrees>135&$startDegrees<=225\": \"Start south\", " +
                 "\"$startDegrees>225\": \"Start west\" }}";
 
-            var toText = FromJson.ParseInstructionToText(JObject.Parse(input));
+            var toText = FromJson.ParseInstructionToText(JsonParse(input));
             var north = toText.ToText(new StartInstruction(null, 0, 0, 0));
             Assert.Equal("Start north", north);
             var east = toText.ToText(new StartInstruction(null, 0, 50, 0));
@@ -108,7 +108,7 @@ namespace Itinero.Tests.Instructions
                 "\"$turnDegrees>-135&$turnDegrees<=-65\": \"Turn left onto $.name\",\"$turnDegrees>-65&$turnDegrees<=-25\": \"Turn slightly left onto $.name\",\"$turnDegrees<-25&$turnDegrees<25\": \"Continue onto $.name\",\"$turnDegrees>=135\": \"Turn sharply right onto $.name\",\"$turnDegrees<135&$turnDegrees>=65\": \"Turn right onto $.name\",\"$turnDegrees<65&$turnDegrees>=25\": \"Turn slightly right onto $.name\"}," +
                 "\"*\": \"Fallback: $type $turndegrees\"";
             var toText = (ConditionalToText)
-                FromJson.ParseInstructionToText(JObject.Parse("{" + baseInstructionToLeftRight + "}"));
+                FromJson.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
             Assert.Equal(2, toText._options.Count());
             Assert.False(toText._options[0].predicate(new StartInstruction(null, 0, 0, 0)));
             Assert.True(toText._options[1].predicate(new StartInstruction(null, 0, 0, 0)));
@@ -132,7 +132,7 @@ namespace Itinero.Tests.Instructions
                 "$turnDegrees<135&$turnDegrees>=65\": \"Turn right\",\"$turnDegrees<65&$turnDegrees>=25\": \"Turn slightly right\"," +
                 "\"*\": \"Fallback: $type $turndegrees\"";
             var toText = (ConditionalToText)
-                FromJson.ParseInstructionToText(JObject.Parse("{" + baseInstructionToLeftRight + "}"));
+                FromJson.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
             Assert.Equal(8, toText._options.Count());
             Assert.False(toText._options[0].predicate(new StartInstruction(null, 0, 0, 0)));
             Assert.True(toText._options[3].predicate(new StartInstruction(null, 0, 0, 0)));
@@ -156,7 +156,7 @@ namespace Itinero.Tests.Instructions
                 "\"*\": \"Fallback: $type $turndegrees\"";
 
             var toText = (ConditionalToText)
-                FromJson.ParseInstructionToText(JObject.Parse("{" + baseInstructionToLeftRight + "}"));
+                FromJson.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
 
             Assert.Equal(3, toText._options.Count());
 
@@ -190,7 +190,7 @@ namespace Itinero.Tests.Instructions
                 "\"base\": \"Go $lr\"," +
                 "\"roundabout\": \"Go $lr\"" +
                 "}";
-            var toText = FromJson.ParseInstructionToText(JObject.Parse(format));
+            var toText = FromJson.ParseInstructionToText(JsonParse(format));
 
             var l = toText.ToText(new BaseInstruction(null, 0, 90));
             Assert.Equal("Go left", l);
@@ -216,10 +216,14 @@ namespace Itinero.Tests.Instructions
                 "  }," +
                 "\"roundabout\": {\"*\": \"Go $lr\"}" +
                 "}";
-            var toText = FromJson.ParseInstructionToText(JObject.Parse(format), null,
-                new Dictionary<string, IInstructionToText>());
+            var toText = FromJson.ParseInstructionToText(JsonParse(format), null, new Dictionary<string, IInstructionToText>());
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
+        }
+      
+        private static JsonElement JsonParse(string contents)
+        {
+          return  JsonDocument.Parse(contents).RootElement;
         }
     }
 }

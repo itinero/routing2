@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Itinero.Instructions.ToText;
 using Itinero.Routes;
-using Newtonsoft.Json.Linq;
 
 namespace Itinero.Instructions
 {
@@ -22,12 +22,12 @@ namespace Itinero.Instructions
             _generator = generator;
             _instructionToTexts = instructionToTexts;
         }
-
-
+        
         public static Instructions FromFile(string path)
         {
-            var jobj = JObject.Parse(File.ReadAllText(path));
-            var (generator, languages) = FromJson.ParseRouteToInstructions(jobj);
+            var jobj = JsonDocument.Parse(File.OpenRead(path));
+            var (generator, languages) = FromJson.ParseRouteToInstructions(jobj.RootElement);
+
             return new Instructions(generator, languages);
         }
 
