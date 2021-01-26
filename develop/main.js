@@ -347,7 +347,7 @@ var assemblies = [
       { "name": "Itinero.Instructions.Instructions", "rp": "Itinero.Instructions_Instructions.html", "cl": 0, "ucl": 19, "cal": 19, "tl": 46, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Instructions.LinearInstructionGenerator", "rp": "Itinero.Instructions_LinearInstructionGenerator.html", "cl": 28, "ucl": 11, "cal": 39, "tl": 78, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Instructions.ToText.ConditionalToText", "rp": "Itinero.Instructions_ConditionalToText.html", "cl": 14, "ucl": 2, "cal": 16, "tl": 38, "ct": "LineCoverage", "mc": "-", "cb": 3, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Instructions.ToText.FromJson", "rp": "Itinero.Instructions_FromJson.html", "cl": 78, "ucl": 19, "cal": 97, "tl": 212, "ct": "LineCoverage", "mc": "-", "cb": 32, "tb": 42, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Instructions.ToText.FromJson", "rp": "Itinero.Instructions_FromJson.html", "cl": 79, "ucl": 18, "cal": 97, "tl": 208, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 38, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Instructions.ToText.SubstituteText", "rp": "Itinero.Instructions_SubstituteText.html", "cl": 63, "ucl": 18, "cal": 81, "tl": 138, "ct": "LineCoverage", "mc": "-", "cb": 42, "tb": 61, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Instructions.Utils", "rp": "Itinero.Instructions_Utils.html", "cl": 56, "ucl": 5, "cal": 61, "tl": 127, "ct": "LineCoverage", "mc": "-", "cb": 20, "tb": 24, "lch": [], "bch": [], "hc": [] },
     ]},
