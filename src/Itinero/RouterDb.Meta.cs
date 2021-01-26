@@ -26,7 +26,7 @@ namespace Itinero
         {
             stream.WriteByte(1);
 
-            Meta.WriteAttributesTo(stream);
+            this.Meta.WriteAttributesTo(stream);
         }
     }
 }

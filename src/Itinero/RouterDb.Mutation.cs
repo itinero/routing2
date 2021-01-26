@@ -30,7 +30,7 @@ namespace Itinero
 
         void IRouterDbMutable.Finish(RoutingNetwork newNetwork)
         {
-            Latest = newNetwork;
+            this.Latest = newNetwork;
 
             _mutable = null;
         }

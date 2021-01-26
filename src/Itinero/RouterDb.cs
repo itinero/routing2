@@ -28,13 +28,13 @@ namespace Itinero
         {
             configuration ??= RouterDbConfiguration.Default;
 
-            Latest = new RoutingNetwork(this, configuration.Zoom);
+            this.Latest = new RoutingNetwork(this, configuration.Zoom);
             _edgeTypeIndex = new AttributeSetIndex();
             _edgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeIndex = new AttributeSetIndex();
             _turnCostTypeMap = AttributeSetMap.Default;
 
-            ProfileConfiguration = new RouterDbProfileConfiguration(this);
+            this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
         private RouterDb(Stream stream)
@@ -46,7 +46,7 @@ namespace Itinero
             }
 
             // read network.
-            Latest = stream.ReadFrom(this);
+            this.Latest = stream.ReadFrom(this);
 
             // read edge type map data.
             _edgeTypeIndex = AttributeSetIndex.ReadFrom(stream);
@@ -55,9 +55,9 @@ namespace Itinero
             _turnCostTypeMap = AttributeSetMap.Default;
 
             // read attributes.
-            Meta = new List<(string key, string value)>(ReadAttributesFrom(stream));
+            this.Meta = new List<(string key, string value)>(ReadAttributesFrom(stream));
 
-            ProfileConfiguration = new RouterDbProfileConfiguration(this);
+            this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
         /// <summary>
