@@ -38,18 +38,18 @@ namespace Itinero.Tests.Instructions {
                     (3.2133668661117554, 51.212247019059234, null) // 10
                 },
                 ShapeMeta = new List<Route.Meta> {
-                    new() {
+                    new Route.Meta {
                         Distance = 0,
                         Shape = 3,
                         Attributes = new[] {("name", "blokstraat"), ("highway", "residential")}
                     },
-                    new() {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
-                    new() {
+                    new Route.Meta {Distance = 150, Shape = 2, Attributes = new[] {("highway", "cycleway")}},
+                    new Route.Meta {
                         Distance = 15,
                         Shape = 4,
                         Attributes = new[] {("name", "Veldmaarschalk Fochstraat"), ("highway", "residential")}
                     },
-                    new() {
+                    new Route.Meta {
                         Distance = 200,
                         Shape = 10,
                         Attributes = new[] {

@@ -58,7 +58,7 @@ namespace Itinero.Routes {
                     attributes = new List<(string key, string value)>(Attributes);
                 }
 
-                return new Stop() {
+                return new Stop {
                     Attributes = attributes,
                     Shape = Shape,
                     Coordinate = Coordinate,
@@ -133,7 +133,7 @@ namespace Itinero.Routes {
                     attributes = new List<(string key, string value)>(Attributes);
                 }
 
-                return new Meta() {
+                return new Meta {
                     Attributes = attributes,
                     Shape = Shape,
                     Distance = Distance,
@@ -196,7 +196,7 @@ namespace Itinero.Routes {
                     attributes = new List<(string key, string value)>(Attributes);
                 }
 
-                return new Branch() {
+                return new Branch {
                     Attributes = attributes,
                     Shape = Shape,
                     Coordinate = Coordinate

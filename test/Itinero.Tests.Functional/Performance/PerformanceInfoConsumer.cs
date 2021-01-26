@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Serilog;
 
 namespace Itinero.Tests.Functional.Performance {
@@ -29,7 +30,7 @@ namespace Itinero.Tests.Functional.Performance {
         public PerformanceInfoConsumer(string name, int memUseLoggingInterval, int iterations = 1) {
             _name = name;
             _memoryUsageTimer =
-                new System.Threading.Timer(LogMemoryUsage, null, memUseLoggingInterval, memUseLoggingInterval);
+                new Timer(LogMemoryUsage, null, memUseLoggingInterval, memUseLoggingInterval);
             _iterations = iterations;
         }
 

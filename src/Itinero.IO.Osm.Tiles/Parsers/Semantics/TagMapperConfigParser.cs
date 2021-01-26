@@ -50,7 +50,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers.Semantics {
                             }
                         }
 
-                        mappings[predicate] = new TagMapperConfig() {
+                        mappings[predicate] = new TagMapperConfig {
                             ReverseMapping = mapping,
                             OsmKey = osmKey,
                             Predicate = predicate

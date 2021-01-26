@@ -15,7 +15,7 @@ namespace Itinero.IO.Osm.Restrictions {
     /// This was used a the main source: https://wiki.openstreetmap.org/wiki/Relation:restriction 
     /// </remarks>
     public static class RestrictionParser {
-        private static readonly IReadOnlyDictionary<string, bool> RestrictionTypes = new Dictionary<string, bool>() {
+        private static readonly IReadOnlyDictionary<string, bool> RestrictionTypes = new Dictionary<string, bool> {
             {"no_left_turn", true},
             {"no_right_turn", true},
             {"no_straight_on", true},

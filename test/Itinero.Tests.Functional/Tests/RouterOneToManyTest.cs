@@ -14,7 +14,7 @@ namespace Itinero.Tests.Functional.Tests {
             (RoutingNetwork routerDb, SnapPoint source, SnapPoint[] targets, Profile profile) input) {
             var (routerDb, source, targets, profile) = input;
 
-            var results = routerDb.Route(new RoutingSettings() {Profile = profile})
+            var results = routerDb.Route(new RoutingSettings {Profile = profile})
                 .From(source)
                 .To(targets)
                 .Calculate();

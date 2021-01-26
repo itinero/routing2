@@ -54,7 +54,7 @@ namespace Itinero.Routes {
                 metas = new Route.Meta[metas1 + metas2 - 1];
                 if (route1.ShapeMeta != null) {
                     for (var i = 0; i < route1.ShapeMeta.Count; i++) {
-                        metas[i] = new Route.Meta() {
+                        metas[i] = new Route.Meta {
                             Attributes = new List<(string key, string value)>(route1.ShapeMeta[i].Attributes),
                             Shape = route1.ShapeMeta[i].Shape
                         };
@@ -63,7 +63,7 @@ namespace Itinero.Routes {
 
                 if (route2.ShapeMeta != null) {
                     for (var i = 1; i < route2.ShapeMeta.Count; i++) {
-                        metas[metas1 + i - 1] = new Route.Meta() {
+                        metas[metas1 + i - 1] = new Route.Meta {
                             Attributes = new List<(string key, string value)>(route2.ShapeMeta[i].Attributes),
                             Shape = route2.ShapeMeta[i].Shape + shapeoffset,
                             Distance = route2.ShapeMeta[i].Distance + distanceoffset,
@@ -78,7 +78,7 @@ namespace Itinero.Routes {
             if (route1.Stops != null) {
                 for (var i = 0; i < route1.Stops.Count; i++) {
                     var stop = route1.Stops[i];
-                    stops.Add(new Route.Stop() {
+                    stops.Add(new Route.Stop {
                         Attributes = new List<(string key, string value)>(stop.Attributes),
                         Coordinate = stop.Coordinate,
                         Shape = stop.Shape
@@ -100,7 +100,7 @@ namespace Itinero.Routes {
                         }
                     }
 
-                    stops.Add(new Route.Stop() {
+                    stops.Add(new Route.Stop {
                         Attributes = new List<(string key, string value)>(stop.Attributes),
                         Coordinate = stop.Coordinate,
                         Shape = stop.Shape + shapeoffset
@@ -118,7 +118,7 @@ namespace Itinero.Routes {
                 if (route1.Branches != null) {
                     for (var i = 0; i < route1.Branches.Length; i++) {
                         var branch = route1.Branches[i];
-                        branches[i] = new Route.Branch() {
+                        branches[i] = new Route.Branch {
                             Attributes = new List<(string key, string value)>(branch.Attributes),
                             Coordinate = branch.Coordinate,
                             Shape = branch.Shape
@@ -129,7 +129,7 @@ namespace Itinero.Routes {
                 if (route2.Branches != null) {
                     for (var i = 0; i < route2.Branches.Length; i++) {
                         var branch = route2.Branches[i];
-                        branches[branches1 + i] = new Route.Branch() {
+                        branches[branches1 + i] = new Route.Branch {
                             Attributes = new List<(string key, string value)>(branch.Attributes),
                             Coordinate = branch.Coordinate,
                             Shape = branch.Shape + shapeoffset

@@ -45,7 +45,7 @@ namespace Itinero.IO.Osm.Collections {
             var offset = id - blockIdx * _blockSize;
 
             if (!_blocks.TryGetValue(blockIdx, out var block)) {
-                block = new Block() {
+                block = new Block {
                     Start = (uint) offset,
                     End = (uint) offset,
                     Data = new T[] {vertex}

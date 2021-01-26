@@ -11,20 +11,20 @@ namespace Itinero.Tests.IO.Osm.Restrictions {
     public class RestrictionParserTests {
         [Fact]
         public void RestrictionParser_GetEdgeSequence_OneViaNode_ForwardForward_ShouldForwardForwardSequence() {
-            var relation = new Relation() {
+            var relation = new Relation {
                 Id = 1,
                 Members = new[] {
                     new RelationMember(1, "from", OsmGeoType.Way),
                     new RelationMember(1, "via", OsmGeoType.Node),
                     new RelationMember(2, "to", OsmGeoType.Way)
                 },
-                Tags = new TagsCollection() {
+                Tags = new TagsCollection {
                     new("type", "restriction"),
                     new("restriction", "no_right_turn")
                 }
             };
 
-            var data = new Dictionary<OsmGeoKey, OsmGeo>() {
+            var data = new Dictionary<OsmGeoKey, OsmGeo> {
                 {new OsmGeoKey(OsmGeoType.Node, 1), new Node {Id = 1}},
                 {new OsmGeoKey(OsmGeoType.Way, 1), new Way {Id = 1, Nodes = new long[] {2, 1}}},
                 {new OsmGeoKey(OsmGeoType.Way, 2), new Way {Id = 2, Nodes = new long[] {1, 3}}}
@@ -55,14 +55,14 @@ namespace Itinero.Tests.IO.Osm.Restrictions {
 
         [Fact]
         public void RestrictionParser_GetEdgeSequence_OneViaWay_NotSupported() {
-            var relation = new Relation() {
+            var relation = new Relation {
                 Id = 1,
                 Members = new[] {
                     new RelationMember(1, "from", OsmGeoType.Way),
                     new RelationMember(2, "via", OsmGeoType.Way),
                     new RelationMember(3, "to", OsmGeoType.Way)
                 },
-                Tags = new TagsCollection() {
+                Tags = new TagsCollection {
                     new("type", "restriction"),
                     new("restriction", "no_right_turn")
                 }

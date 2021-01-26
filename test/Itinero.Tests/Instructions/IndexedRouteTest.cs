@@ -20,13 +20,13 @@ namespace Itinero.Tests.Instructions {
                     (3.1847423315048218, 51.20736399569539, null)
                 },
                 ShapeMeta = new List<Route.Meta> {
-                    new() {Attributes = new[] {("name", "A")}, Shape = 1},
-                    new() {
+                    new Route.Meta {Attributes = new[] {("name", "A")}, Shape = 1},
+                    new Route.Meta {
                         Attributes =
                             new[] {("name", "B")},
                         Shape = 4
                     },
-                    new() {
+                    new Route.Meta {
                         Attributes = new[] {("name", "C")},
                         Shape = 6
                     }

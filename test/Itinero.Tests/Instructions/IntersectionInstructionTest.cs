@@ -102,11 +102,11 @@ namespace Itinero.Tests.Instructions {
             };
 
             route.ShapeMeta = new List<Route.Meta> {
-                new() {
+                new Route.Meta {
                     Shape = 1,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
-                new() {
+                new Route.Meta {
                     Shape = 3,
                     Attributes = new[] {("name", "Groenestraat"), ("highway", "residential")}
                 }
@@ -149,11 +149,11 @@ namespace Itinero.Tests.Instructions {
             };
 
             route.ShapeMeta = new List<Route.Meta> {
-                new() {
+                new Route.Meta {
                     Shape = 1,
                     Attributes = new[] {("name", "Rozendal"), ("highway", "residential")}
                 },
-                new() {
+                new Route.Meta {
                     Shape = 3,
                     Attributes = new[] {("name", "Groenestraat"), ("highway", "residential")}
                 }

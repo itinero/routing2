@@ -54,6 +54,7 @@ resharper_braces_for_while = required
 resharper_csharp_empty_block_style = together_same_line
 resharper_csharp_naming_rule.types_and_namespaces = AaBb, I + AaBb
 resharper_csharp_stick_comment = false
+resharper_enforce_line_ending_style = true
 resharper_use_indent_from_vs = false
 
 # ReSharper inspection severities
