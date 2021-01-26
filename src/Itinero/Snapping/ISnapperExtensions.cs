@@ -14,7 +14,7 @@ namespace Itinero.Snapping
         /// <returns>The result if any. Snapping will fail if a vertex has no edges.</returns>
         public static Result<SnapPoint> To(this ISnapper snapper, VertexId vertexId, EdgeId? edgeId = null)
         {
-            return snapper.To(new [] {(vertexId, edgeId)}).First();
+            return snapper.To(new[] {(vertexId, edgeId)}).First();
         }
     }
 }

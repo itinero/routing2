@@ -12,12 +12,12 @@ namespace Itinero.Network
         /// The minimum id for edges crossing tile boundaries.
         /// </summary>
         internal const uint MinCrossId = MaxLocalId + 1;
-        
+
         /// <summary>
         /// The maximum number of internal edges in one tile.
         /// </summary>
-        internal const uint MaxLocalId = (uint.MaxValue / 2) - 1;
-    
+        internal const uint MaxLocalId = uint.MaxValue / 2 - 1;
+
         /// <summary>
         /// Creates a new edge id.
         /// </summary>
@@ -25,10 +25,10 @@ namespace Itinero.Network
         /// <param name="localId">The local id.</param>
         public EdgeId(uint tileId, uint localId)
         {
-            this.TileId = tileId;
-            this.LocalId = localId;
+            TileId = tileId;
+            LocalId = localId;
         }
-        
+
         /// <summary>
         /// Gets or sets the tile id.
         /// </summary>
@@ -42,7 +42,7 @@ namespace Itinero.Network
         /// <summary>
         /// Returns an empty edge id.
         /// </summary>
-        public static readonly EdgeId Empty = new EdgeId(uint.MaxValue, uint.MaxValue);
+        public static readonly EdgeId Empty = new(uint.MaxValue, uint.MaxValue);
 
         /// <summary>
         /// Returns true if this edge id is empty.
@@ -50,7 +50,7 @@ namespace Itinero.Network
         /// <returns></returns>
         public bool IsEmpty()
         {
-            return this.TileId == uint.MaxValue;
+            return TileId == uint.MaxValue;
         }
 
         /// <summary>
@@ -59,13 +59,13 @@ namespace Itinero.Network
         /// <returns></returns>
         public override string ToString()
         {
-            if (this.LocalId >= MinCrossId)
-            {
-                return $"{this.LocalId} (X {this.LocalId - MinCrossId}) @ {this.TileId} ";
+            if (LocalId >= MinCrossId) {
+                return $"{LocalId} (X {LocalId - MinCrossId}) @ {TileId} ";
             }
-            return $"{this.LocalId} @ {this.TileId}";
+
+            return $"{LocalId} @ {TileId}";
         }
-        
+
         /// <summary>
         /// Returns true if the two edges represent the same id.
         /// </summary>
@@ -73,9 +73,9 @@ namespace Itinero.Network
         public static bool operator ==(EdgeId vertex1, EdgeId vertex2)
         {
             return vertex1.LocalId == vertex2.LocalId &&
-                vertex1.TileId == vertex2.TileId;
+                   vertex1.TileId == vertex2.TileId;
         }
-        
+
         /// <summary>
         /// Returns true if the two edges don't represent the same id.
         /// </summary>
@@ -104,8 +104,7 @@ namespace Itinero.Network
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            unchecked
-            {
+            unchecked {
                 return ((int) TileId * 397) ^ (int) LocalId;
             }
         }
@@ -116,7 +115,7 @@ namespace Itinero.Network
         /// <returns>An encoded version of this edge.</returns>
         internal ulong Encode()
         {
-            return (((ulong) this.TileId) << 32) + this.LocalId;
+            return ((ulong) TileId << 32) + LocalId;
         }
 
         /// <summary>
@@ -127,8 +126,8 @@ namespace Itinero.Network
         internal static EdgeId Decode(ulong encoded)
         {
             var tileId = (uint) (encoded >> 32);
-            var localId = (uint) (encoded - ((ulong)tileId << 32));
-            
+            var localId = (uint) (encoded - ((ulong) tileId << 32));
+
             return new EdgeId(tileId, localId);
         }
     }

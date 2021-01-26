@@ -17,46 +17,41 @@ namespace Itinero
         public Result(T result)
         {
             _value = result;
-            this.ErrorMessage = string.Empty;
-            this.IsError = false;
+            ErrorMessage = string.Empty;
+            IsError = false;
         }
 
         /// <summary>
         /// Creates a new result.
         /// </summary>
         public Result(string errorMessage)
-            : this(errorMessage, (m) => new Exception(m))
-        {
-
-        }
+            : this(errorMessage, (m) => new Exception(m)) { }
 
         /// <summary>
         /// Creates a new result.
         /// </summary>
         public Result(string errorMessage, Func<string, Exception>? createException)
         {
-            _value = default(T);
+            _value = default;
             _createException = createException;
-            this.ErrorMessage = errorMessage;
-            this.IsError = true;
+            ErrorMessage = errorMessage;
+            IsError = true;
         }
 
         /// <summary>
         /// Gets the result.
         /// </summary>
-        public T Value
-        {
-            get
-            {
-                if(this.IsError &&
-                   _createException != null)
-                {
-                    throw _createException(this.ErrorMessage);
+        public T Value {
+            get {
+                if (IsError &&
+                    _createException != null) {
+                    throw _createException(ErrorMessage);
                 }
+
                 return _value;
             }
         }
-        
+
         /// <summary>
         /// Implicit conversion to a boolean indication success or fail.
         /// </summary>
@@ -66,7 +61,7 @@ namespace Itinero
         {
             return !result.IsError;
         }
-        
+
         /// <summary>
         /// Implicit conversion to the result object type.
         /// </summary>
@@ -76,7 +71,7 @@ namespace Itinero
         {
             return result.Value;
         }
-        
+
         /// <summary>
         /// Implicit conversion from the result object type.
         /// </summary>
@@ -84,7 +79,8 @@ namespace Itinero
         /// <returns>The result object.</returns>
         public static implicit operator Result<T>(T result)
         {
-            return new Result<T>(result);;
+            return new(result);
+            ;
         }
 
         /// <summary>
@@ -103,11 +99,11 @@ namespace Itinero
         /// <returns></returns>
         public Result<TNew> ConvertError<TNew>()
         {
-            if(!this.IsError)
-            {
+            if (!IsError) {
                 throw new Exception("Cannot convert a result that represents more than an error.");
             }
-            return new Result<TNew>(this.ErrorMessage, this._createException);
+
+            return new Result<TNew>(ErrorMessage, _createException);
         }
 
         /// <summary>
@@ -116,15 +112,15 @@ namespace Itinero
         /// <returns></returns>
         public override string ToString()
         {
-            if (this.IsError)
-            {
-                return $"Result<{nameof(T)}>: {this.ErrorMessage}";
+            if (IsError) {
+                return $"Result<{nameof(T)}>: {ErrorMessage}";
             }
-            if (this.Value == null)
-            {
+
+            if (Value == null) {
                 return $"Result<{nameof(T)}>: null";
             }
-            return $"Result<{nameof(T)}>: {this.Value.ToString()}";
+
+            return $"Result<{nameof(T)}>: {Value.ToString()}";
         }
     }
 }

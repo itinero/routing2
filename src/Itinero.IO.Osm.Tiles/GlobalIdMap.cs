@@ -7,6 +7,7 @@ using Itinero.Network;
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
+
 namespace Itinero.IO.Osm.Tiles
 {
     /// <summary>
@@ -14,7 +15,7 @@ namespace Itinero.IO.Osm.Tiles
     /// </summary>
     internal class GlobalIdMap : IEnumerable<(long globalId, VertexId vertex)>
     {
-        private readonly Dictionary<long, VertexId> _vertexPerId = new Dictionary<long, VertexId>();
+        private readonly Dictionary<long, VertexId> _vertexPerId = new();
 
         /// <summary>
         /// Sets a new mapping.
@@ -40,8 +41,7 @@ namespace Itinero.IO.Osm.Tiles
         /// <inheritdoc/>
         public IEnumerator<(long globalId, VertexId vertex)> GetEnumerator()
         {
-            foreach (var pair in _vertexPerId)
-            {
+            foreach (var pair in _vertexPerId) {
                 yield return (pair.Key, pair.Value);
             }
         }
@@ -54,15 +54,14 @@ namespace Itinero.IO.Osm.Tiles
         internal long WriteTo(Stream stream)
         {
             var p = stream.Position;
-            
+
             // write header and version.
             stream.WriteWithSize($"{nameof(GlobalIdMap)}");
             stream.WriteByte(1);
-            
+
             // write data.
             stream.WriteVarInt64(_vertexPerId.Count);
-            foreach (var pair in _vertexPerId)
-            {
+            foreach (var pair in _vertexPerId) {
                 stream.WriteVarInt64(pair.Key);
                 stream.WriteVarUInt32(pair.Value.TileId);
                 stream.WriteVarUInt32(pair.Value.LocalId);
@@ -76,18 +75,22 @@ namespace Itinero.IO.Osm.Tiles
             // read & verify header.
             var header = stream.ReadWithSizeString();
             var version = stream.ReadByte();
-            if (header != nameof(GlobalIdMap)) throw new InvalidDataException($"Cannot read {nameof(GlobalIdMap)}: Header invalid.");
-            if (version != 1) throw new InvalidDataException($"Cannot read {nameof(GlobalIdMap)}: Version # invalid.");
-            
+            if (header != nameof(GlobalIdMap)) {
+                throw new InvalidDataException($"Cannot read {nameof(GlobalIdMap)}: Header invalid.");
+            }
+
+            if (version != 1) {
+                throw new InvalidDataException($"Cannot read {nameof(GlobalIdMap)}: Version # invalid.");
+            }
+
             // read size first
             var globalIdMap = new GlobalIdMap();
             var size = stream.ReadVarInt64();
-            for (var p = 0; p < size; p++)
-            {
+            for (var p = 0; p < size; p++) {
                 var nodeId = stream.ReadVarInt64();
                 var tileId = stream.ReadVarUInt32();
                 var localId = stream.ReadVarUInt32();
-                
+
                 globalIdMap.Set(nodeId, new VertexId(tileId, localId));
             }
 

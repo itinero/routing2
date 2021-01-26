@@ -17,20 +17,19 @@ namespace Itinero.Tests.Network.Attributes
 
             Assert.Equal(1, size);
         }
-        
+
         [Fact]
         public void AttributeExtensions_WriteAttributesTo_OneAttribute_ShouldWriteUnicodeWithSizes()
         {
             var stream = new MemoryStream();
 
-            var size = new (string key, string value)[]
-            {
-              ("source", "OpenStreetMap")   
+            var size = new (string key, string value)[] {
+                ("source", "OpenStreetMap")
             }.WriteAttributesTo(stream);
 
-            Assert.Equal( 1 + 
-                1 + Encoding.Unicode.GetByteCount("source") +
-                1 + Encoding.Unicode.GetByteCount("OpenStreetMap"), size);
+            Assert.Equal(1 +
+                         1 + Encoding.Unicode.GetByteCount("source") +
+                         1 + Encoding.Unicode.GetByteCount("OpenStreetMap"), size);
         }
 
         [Fact]
@@ -38,18 +37,17 @@ namespace Itinero.Tests.Network.Attributes
         {
             var stream = new MemoryStream();
             stream.WriteVarInt32(0);
-            
+
             Assert.Empty(stream.ReadAttributesFrom());
         }
 
         [Fact]
         public void AttributeExtensions_ReadWrite_1Attribute_ShouldBeIdenticalAfter()
         {
-            var expected = new (string key, string value)[]
-            {
+            var expected = new (string key, string value)[] {
                 ("source", "OpenStreetMap")
             };
-            
+
             // write
             var stream = new MemoryStream();
             expected.WriteAttributesTo(stream);
@@ -57,19 +55,18 @@ namespace Itinero.Tests.Network.Attributes
             // read.
             stream.Seek(0, SeekOrigin.Begin);
             var attributes = stream.ReadAttributesFrom();
-            
+
             Assert.Equal(expected, attributes);
         }
 
         [Fact]
         public void AttributeExtensions_ReadWrite_2Attribute_ShouldBeIdenticalAfter()
         {
-            var expected = new (string key, string value)[]
-            {
+            var expected = new (string key, string value)[] {
                 ("source", "OpenStreetMap"),
                 ("date", "2025-01-20")
             };
-            
+
             // write
             var stream = new MemoryStream();
             expected.WriteAttributesTo(stream);
@@ -77,7 +74,7 @@ namespace Itinero.Tests.Network.Attributes
             // read.
             stream.Seek(0, SeekOrigin.Begin);
             var attributes = stream.ReadAttributesFrom();
-            
+
             Assert.Equal(expected, attributes);
         }
     }

@@ -17,28 +17,27 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource, SnapPoint target)
         {
-            return new Router(hasSource.Network, hasSource.Settings)
-            {
+            return new Router(hasSource.Network, hasSource.Settings) {
                 Source = hasSource.Source,
                 Target = (target, null)
             };
         }
-        
+
         /// <summary>
         /// Configures the router to route to the given point.
         /// </summary>
         /// <param name="hasSource">The hasSource.</param>
         /// <param name="target">The target.</param>
         /// <returns>A configured router.</returns>
-        public static IRouterOneToOne To(this IHasSource hasSource,  (SnapPoint snapPoint, DirectionEnum? direction) target)
+        public static IRouterOneToOne To(this IHasSource hasSource,
+            (SnapPoint snapPoint, DirectionEnum? direction) target)
         {
-            return new Router(hasSource.Network, hasSource.Settings)
-            {
+            return new Router(hasSource.Network, hasSource.Settings) {
                 Source = hasSource.Source,
                 Target = target.ToDirected(hasSource.Network)
             };
         }
-        
+
         /// <summary>
         /// Configures the router to route to the given point.
         /// </summary>
@@ -47,13 +46,12 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource, (SnapPoint snapPoint, bool? direction) target)
         {
-            return new Router(hasSource.Network, hasSource.Settings)
-            {
+            return new Router(hasSource.Network, hasSource.Settings) {
                 Source = hasSource.Source,
                 Target = target
             };
         }
-        
+
         /// <summary>
         /// Configures the router to route to the given points.
         /// </summary>
@@ -71,21 +69,22 @@ namespace Itinero.Routing
         /// <param name="hasSource">The hasSource.</param>
         /// <param name="directedSnapPoints">The points to route from.</param>
         /// <returns>A configured router.</returns>
-        public static IRouterOneToMany To(this IHasSource hasSource, IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
+        public static IRouterOneToMany To(this IHasSource hasSource,
+            IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? direction)> directedSnapPoints)
         {
             return hasSource.To(directedSnapPoints.ToDirected(hasSource.Network));
         }
-        
+
         /// <summary>
         /// Configures the router to route to the given points.
         /// </summary>
         /// <param name="hasSource">The hasSource.</param>
         /// <param name="targets">The targets.</param>
         /// <returns>A configured router.</returns>
-        public static IRouterOneToMany To(this IHasSource hasSource, IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
+        public static IRouterOneToMany To(this IHasSource hasSource,
+            IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
         {
-            return new Router(hasSource.Network, hasSource.Settings)
-            {
+            return new Router(hasSource.Network, hasSource.Settings) {
                 Source = hasSource.Source,
                 Targets = targets
             };

@@ -21,8 +21,7 @@ namespace Itinero.Routing
             var targets = new[] {oneToOneRouter.Target};
 
             if (!sources.TryToUndirected(out var sourcesUndirected) ||
-                !targets.TryToUndirected(out var targetsUndirected))
-            {
+                !targets.TryToUndirected(out var targetsUndirected)) {
                 return oneToOneRouter.Calculate(sources, targets).First().First();
             }
 
@@ -39,7 +38,7 @@ namespace Itinero.Routing
             return RouteBuilder.Default.Build(oneToOneRouter.Network, oneToOneRouter.Settings.Profile,
                 oneToOneRouter.Path());
         }
-        
+
         /// <summary>
         /// Calculates the weights.
         /// </summary>
@@ -48,7 +47,7 @@ namespace Itinero.Routing
         public static Result<double?> Calculate(this IRouterWeights<IRouterOneToOne> oneToOneWeightRouter)
         {
             return null;
-            
+
             // var profileHandler = oneToOneWeightRouter.Router.Network.GetCostFunctionFor(
             //     oneToOneWeightRouter.Router.Settings.Profile);
             // return oneToOneWeightRouter.Router.Path().Weight(profileHandler.GetForwardWeight);

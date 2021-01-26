@@ -5,7 +5,5 @@ using Itinero.Network.Enumerators.Edges;
 
 namespace Itinero.Snapping
 {
-    internal static class RoutingNetworkExtensions
-    {
-    }
+    internal static class RoutingNetworkExtensions { }
 }

@@ -14,16 +14,17 @@ namespace Itinero.Snapping
         /// <returns></returns>
         public static Result<SnapPoint> To(this ILocationsSnapper locationsSnapper, double longitude, double latitude)
         {
-            return locationsSnapper.To(new[] {(longitude, latitude, (float?)null)}).First();
+            return locationsSnapper.To(new[] {(longitude, latitude, (float?) null)}).First();
         }
-        
+
         /// <summary>
         /// Snap to the given location.
         /// </summary>
         /// <param name="locationsSnapper">The snappable.</param>
         /// <param name="location">The location.</param>
         /// <returns></returns>
-        public static Result<SnapPoint> To(this ILocationsSnapper locationsSnapper, (double longitude, double latitude, float? e) location)
+        public static Result<SnapPoint> To(this ILocationsSnapper locationsSnapper,
+            (double longitude, double latitude, float? e) location)
         {
             return locationsSnapper.To(new[] {location}).First();
         }

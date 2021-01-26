@@ -14,7 +14,7 @@ namespace Itinero.Profiles
         /// Gets the name of this profile.
         /// </summary>
         public abstract string Name { get; }
-        
+
         /// <summary>
         /// Gets an edge factor for the given attributes.
         /// </summary>

@@ -9,10 +9,10 @@ namespace Itinero
         /// Gets or sets the zoom level.
         /// </summary>
         public int Zoom { get; set; }
-        
+
         /// <summary>
         /// Gets the default configuration.
         /// </summary>
-        public static readonly RouterDbConfiguration Default = new RouterDbConfiguration() { Zoom = 14 };
+        public static readonly RouterDbConfiguration Default = new() {Zoom = 14};
     }
 }

@@ -1,6 +1,7 @@
-namespace Itinero.Instructions.Generators {
-    internal class RoundaboutInstruction : BaseInstruction {
-
+namespace Itinero.Instructions.Generators
+{
+    internal class RoundaboutInstruction : BaseInstruction
+    {
         /**
          * This boolean is here for cases as:  https://www.openstreetmap.org/directions?engine=graphhopper_car&route=50.94569%2C3.15129%3B50.94636%2C3.15186#map=19/50.94623/3.15189
          */
@@ -17,22 +18,23 @@ namespace Itinero.Instructions.Generators {
             int shapeIndexEnd,
             int turnDegrees,
             int exitNumber,
-            bool exitIsOnTheInside = false) : base(route, shapeIndex, shapeIndexEnd, turnDegrees) {
+            bool exitIsOnTheInside = false) : base(route, shapeIndex, shapeIndexEnd, turnDegrees)
+        {
             ExitNumber = exitNumber;
             ExitIsOnTheInside = exitIsOnTheInside;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"Take the roundabout to go {TurnDegrees.DegreesToText()} via the {ExitNumber + 1}th exit."
                    + (ExitIsOnTheInside ? "WARNING: this exit is on the inner side of the roundabout!" : "");
         }
     }
 
-    internal class RoundaboutInstructionGenerator : IInstructionGenerator {
-
-        
-        
-        public BaseInstruction Generate(IndexedRoute route, int offset) {
+    internal class RoundaboutInstructionGenerator : IInstructionGenerator
+    {
+        public BaseInstruction Generate(IndexedRoute route, int offset)
+        {
             // The roundabout instruction starts when the next segment is on the roundabout ("Go on the roundabout...")
             // and ends when the person leaves the roundabout ("... and take the n'th exit")
 
@@ -47,6 +49,7 @@ namespace Itinero.Instructions.Generators {
                 if (route.Branches.Count > offset + usedInstructions) {
                     exitCount += route.Branches[offset + usedInstructions].Count;
                 }
+
                 usedInstructions++;
             }
 

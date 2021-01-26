@@ -13,7 +13,7 @@ namespace Itinero
         private AttributeSetMap _turnCostTypeMap;
 
         internal RouterDbProfileConfiguration ProfileConfiguration { get; }
-        
+
         public IEnumerable<(string key, string value)> GetEdgeType(uint id)
         {
             return _edgeTypeIndex.GetById(id);
@@ -23,12 +23,11 @@ namespace Itinero
         {
             _edgeTypeMap = edgeTypeMap;
         }
-        
+
         internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
         {
             return (_edgeTypeMap.Id,
-                a =>
-                {
+                a => {
                     var m = _edgeTypeMap.Mapping(a);
                     return _edgeTypeIndex.Get(m);
                 });
@@ -41,11 +40,10 @@ namespace Itinero
 
         internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetTurnCostTypeMap()
         {
-            return (_turnCostTypeMap.Id, a =>
-                {
-                    var m = _turnCostTypeMap.Mapping(a);
-                    return _turnCostTypeIndex.Get(m);
-                });
+            return (_turnCostTypeMap.Id, a => {
+                var m = _turnCostTypeMap.Mapping(a);
+                return _turnCostTypeIndex.Get(m);
+            });
         }
     }
 }

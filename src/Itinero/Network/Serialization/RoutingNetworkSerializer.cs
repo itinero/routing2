@@ -13,14 +13,13 @@ namespace Itinero.Network.Serialization
         {
             // write version #.
             stream.WriteVarInt32(1);
-            
+
             // write zoom.
             stream.WriteVarInt32(routingNetworkMutator.Zoom);
-            
+
             // write tiles.
-            stream.WriteVarUInt32((uint)routingNetworkMutator.GetTiles().Count());
-            foreach (var tileId in routingNetworkMutator.GetTiles())
-            {
+            stream.WriteVarUInt32((uint) routingNetworkMutator.GetTiles().Count());
+            foreach (var tileId in routingNetworkMutator.GetTiles()) {
                 var tile = routingNetworkMutator.GetTile(tileId);
 
                 tile?.WriteTo(stream);
@@ -31,21 +30,22 @@ namespace Itinero.Network.Serialization
         {
             // check version #.
             var version = stream.ReadVarInt32();
-            if (version != 1) throw new InvalidDataException("Unknown version #.");
-            
+            if (version != 1) {
+                throw new InvalidDataException("Unknown version #.");
+            }
+
             // read zoom.
             var zoom = stream.ReadVarInt32();
 
             var tileCount = stream.ReadVarUInt32();
             var tiles = new SparseArray<NetworkTile?>(0);
-            for (var t = 0; t < tileCount; t++)
-            {
+            for (var t = 0; t < tileCount; t++) {
                 var tile = NetworkTile.ReadFrom(stream);
-                
+
                 tiles.EnsureMinimumSize(tile.TileId);
                 tiles[tile.TileId] = tile;
             }
-            
+
             return new RoutingNetwork(routerDb, tiles, zoom);
         }
     }

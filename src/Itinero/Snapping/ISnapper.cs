@@ -16,7 +16,7 @@ namespace Itinero.Snapping
         /// <param name="settings">Function to set the settings.</param>
         /// <returns>The setup snappable.</returns>
         ILocationsSnapper Using(Action<SnapperSettings> settings);
-        
+
         /// <summary>
         /// Use the given profile for snapping.
         /// </summary>
@@ -24,7 +24,7 @@ namespace Itinero.Snapping
         /// <param name="settings">Function to set the settings.</param>
         /// <returns>The setup snappable.</returns>
         ILocationsSnapper Using(Profile profile, Action<SnapperSettings>? settings = null);
-        
+
         /// <summary>
         /// Snaps to the given vertices.
         /// </summary>

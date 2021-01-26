@@ -12,6 +12,7 @@ using Itinero.Profiles;
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
+
 namespace Itinero
 {
     /// <summary>
@@ -26,13 +27,13 @@ namespace Itinero
         public RouterDb(RouterDbConfiguration? configuration = null)
         {
             configuration ??= RouterDbConfiguration.Default;
-            
-            Latest = new RoutingNetwork(this, configuration.Zoom);
+
+            this.Latest = new RoutingNetwork(this, configuration.Zoom);
             _edgeTypeIndex = new AttributeSetIndex();
             _edgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeIndex = new AttributeSetIndex();
             _turnCostTypeMap = AttributeSetMap.Default;
-                
+
             this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
@@ -40,20 +41,22 @@ namespace Itinero
         {
             // check version #.
             var version = stream.ReadVarInt32();
-            if (version != 1) throw new InvalidDataException("Unknown version #.");
-            
+            if (version != 1) {
+                throw new InvalidDataException("Unknown version #.");
+            }
+
             // read network.
             this.Latest = stream.ReadFrom(this);
-            
+
             // read edge type map data.
             _edgeTypeIndex = AttributeSetIndex.ReadFrom(stream);
             _edgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeIndex = AttributeSetIndex.ReadFrom(stream);
             _turnCostTypeMap = AttributeSetMap.Default;
-            
+
             // read attributes.
-            this.Meta = new List<(string key, string value)>(this.ReadAttributesFrom(stream));
-                
+            this.Meta = new List<(string key, string value)>(ReadAttributesFrom(stream));
+
             this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
@@ -65,6 +68,6 @@ namespace Itinero
         /// <summary>
         /// Gets the usage notifier.
         /// </summary>
-        public DataUseNotifier UsageNotifier { get; } = new DataUseNotifier();
+        public DataUseNotifier UsageNotifier { get; } = new();
     }
 }

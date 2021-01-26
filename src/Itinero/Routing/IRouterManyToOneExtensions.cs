@@ -23,33 +23,35 @@ namespace Itinero.Routing
             var target = routerOneToMany.Target;
 
             if (target.direction.HasValue ||
-                !sources.TryToUndirected(out var sourcesUndirected))
-            {
+                !sources.TryToUndirected(out var sourcesUndirected)) {
                 var routes = routerOneToMany.Calculate(
-                    sources,  new []{target});
-                if (routes == null) throw new Exception("Could not calculate routes.") ;
+                    sources, new[] {target});
+                if (routes == null) {
+                    throw new Exception("Could not calculate routes.");
+                }
 
                 var manyToOne = new Result<Path>[sources.Count];
-                for (var s = 0; s < manyToOne.Length; s++)
-                {
+                for (var s = 0; s < manyToOne.Length; s++) {
                     manyToOne[s] = routes[s][0];
                 }
+
                 return manyToOne;
             }
-            else
-            {
-                var routes = routerOneToMany.Calculate(sourcesUndirected, new [] {target.sp});
-                if (routes == null) throw new Exception("Could not calculate routes.");
+            else {
+                var routes = routerOneToMany.Calculate(sourcesUndirected, new[] {target.sp});
+                if (routes == null) {
+                    throw new Exception("Could not calculate routes.");
+                }
 
                 var manyToOne = new Result<Path>[sources.Count];
-                for (var s = 0; s < manyToOne.Length; s++)
-                {
+                for (var s = 0; s < manyToOne.Length; s++) {
                     manyToOne[s] = routes[s][0];
                 }
+
                 return manyToOne;
             }
         }
-        
+
         /// <summary>
         /// Calculates the routes.
         /// </summary>
@@ -60,7 +62,7 @@ namespace Itinero.Routing
             return routerManyToOne.Paths().Select(x => RouteBuilder.Default.Build(routerManyToOne.Network,
                 routerManyToOne.Settings.Profile, x)).ToArray();
         }
-        
+
         /// <summary>
         /// Calculates the weights.
         /// </summary>

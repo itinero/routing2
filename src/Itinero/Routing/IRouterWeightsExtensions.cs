@@ -14,7 +14,7 @@ namespace Itinero.Routing
         {
             return new RouterWeights<IRouterOneToOne>(router);
         }
-        
+
         /// <summary>
         /// Configures the router to calculate weights.
         /// </summary>
@@ -24,7 +24,7 @@ namespace Itinero.Routing
         {
             return new RouterWeights<IRouterManyToOne>(router);
         }
-        
+
         /// <summary>
         /// Configures the router to calculate weights.
         /// </summary>
@@ -34,7 +34,7 @@ namespace Itinero.Routing
         {
             return new RouterWeights<IRouterOneToMany>(router);
         }
-        
+
         /// <summary>
         /// Configures the router to calculate weights.
         /// </summary>

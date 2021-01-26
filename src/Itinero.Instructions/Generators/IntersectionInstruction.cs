@@ -23,7 +23,7 @@ namespace Itinero.Instructions.Generators
 
         public IntersectionInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees,
             List<(int relativeDegrees, IEnumerable<(string, string)> tags)> allRoads, uint actualIndex) : base(
-        route,    shapeIndex, shapeIndexEnd, turnDegrees)
+            route, shapeIndex, shapeIndexEnd, turnDegrees)
         {
             AllRoads = allRoads;
             ActualIndex = actualIndex;
@@ -34,54 +34,42 @@ namespace Itinero.Instructions.Generators
             var turnCutoff = 30;
 
             if (ActualIndex == 1 && AllRoads.Count == 3
-            )
-            {
+            ) {
                 if (TurnDegrees > turnCutoff
-                )
-                {
-                    if (TurnDegrees < 60)
-                    {
+                ) {
+                    if (TurnDegrees < 60) {
                         // We are going left, but this is not the leftmost street
                         return "slightly left";
                     }
-                    else
-                    {
+                    else {
                         return "left, but not leftmost";
                     }
                 }
 
-                if (TurnDegrees < -turnCutoff)
-                {
-                    if (TurnDegrees < -60)
-                    {
+                if (TurnDegrees < -turnCutoff) {
+                    if (TurnDegrees < -60) {
                         // We are going left, but this is not the leftmost street
                         return "slightly right";
                     }
-                    else
-                    {
+                    else {
                         return "right, but not rightmost";
                     }
                 }
 
-                if (TurnDegrees < turnCutoff && TurnDegrees > -turnCutoff)
-                {
+                if (TurnDegrees < turnCutoff && TurnDegrees > -turnCutoff) {
                     // The most boring crossroads in existence
                     return "cross the road";
                 }
             }
 
-            if (ActualIndex == 0)
-            {
+            if (ActualIndex == 0) {
                 // We take the leftmost road
-                if (180 - TurnDegrees < turnCutoff)
-                {
+                if (180 - TurnDegrees < turnCutoff) {
                     return "sharp left";
                 }
 
-                if (TurnDegrees > turnCutoff)
-                {
-                    if (AllRoads[1].relativeDegrees > turnCutoff)
-                    {
+                if (TurnDegrees > turnCutoff) {
+                    if (AllRoads[1].relativeDegrees > turnCutoff) {
                         // The 'next' street is quite 'left' as well, we should not confuse our users
                         return "leftmost";
                     }
@@ -92,18 +80,14 @@ namespace Itinero.Instructions.Generators
                 return "keep left";
             }
 
-            if (ActualIndex == this.AllRoads.Count - 1)
-            {
+            if (ActualIndex == AllRoads.Count - 1) {
                 // We take the rightmost road
-                if (180 + TurnDegrees < turnCutoff)
-                {
+                if (180 + TurnDegrees < turnCutoff) {
                     return "sharp right";
                 }
 
-                if (TurnDegrees < turnCutoff)
-                {
-                    if (-AllRoads[AllRoads.Count - 2].relativeDegrees < turnCutoff)
-                    {
+                if (TurnDegrees < turnCutoff) {
+                    if (-AllRoads[AllRoads.Count - 2].relativeDegrees < turnCutoff) {
                         // The 'next' street is quite 'right' as well, we should not confuse our users
                         return "rightmost";
                     }
@@ -128,15 +112,13 @@ namespace Itinero.Instructions.Generators
         {
             public BaseInstruction Generate(IndexedRoute route, int offset)
             {
-                if (route.Last == offset + 1)
-                {
+                if (route.Last == offset + 1) {
                     // The next maneuver is 'arrive', no need to emit a complicated intersection-instruction
                     return null;
                 }
 
                 var branches = route.Branches[offset];
-                if (branches.Count == 0)
-                {
+                if (branches.Count == 0) {
                     return null;
                 }
 
@@ -144,8 +126,7 @@ namespace Itinero.Instructions.Generators
 
 
                 var incomingDirection = route.ArrivingDirectionAt(offset);
-                foreach (var branch in branches)
-                {
+                foreach (var branch in branches) {
                     var branchAbsDirection = Utils.AngleBetween(route.Shape[offset], branch.Coordinate);
                     var branchRelDirection = branchAbsDirection - incomingDirection;
                     incomingStreets.Add((branchRelDirection.NormalizeDegrees(), branch.Attributes));
@@ -158,7 +139,6 @@ namespace Itinero.Instructions.Generators
                 incomingStreets = incomingStreets.OrderByDescending(br => br.relativeDegrees).ToList();
 
                 var actualIndex = incomingStreets.IndexOf(nextStep);
-
 
 
                 var instruction = new IntersectionInstruction(route,

@@ -1,23 +1,28 @@
 using System;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Generators {
+namespace Itinero.Instructions.Generators
+{
     /**
      * The follow along is more or less the 'continue along this road' instruction.
      * It is issued if no single bend is more then 35° (incl) at a time
      * 
      */
-    internal class FollowAlongInstruction : BaseInstruction {
+    internal class FollowAlongInstruction : BaseInstruction
+    {
         public FollowAlongInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
             route, shapeIndex, shapeIndexEnd, turnDegrees) { }
     }
 
-    internal class FollowAlongGenerator : IInstructionGenerator {
-        public BaseInstruction Generate(IndexedRoute route, int offset) {
+    internal class FollowAlongGenerator : IInstructionGenerator
+    {
+        public BaseInstruction Generate(IndexedRoute route, int offset)
+        {
             if (offset == 0 || offset == route.Last) {
                 // We never a follow along as first or as last...
                 return null;
             }
+
             var usedShapes = 1;
             var totalDistance = 0.0;
             route.Meta[offset].Attributes.TryGetValue("name", out var name);
@@ -27,15 +32,16 @@ namespace Itinero.Instructions.Generators {
                     // To much turn for a follow along...
                     break;
                 }
-                
+
                 route.Meta[offset + usedShapes].Attributes.TryGetValue("name", out var newName);
                 if (name != newName) {
                     // Different street!
                     break;
                 }
+
                 var distance = route.DistanceToNextPoint(offset + usedShapes);
                 totalDistance += distance;
-                
+
                 usedShapes++;
             }
 
@@ -45,7 +51,7 @@ namespace Itinero.Instructions.Generators {
             }
 
             var totalChange =
-                (route.ArrivingDirectionAt(offset + usedShapes) - route.ArrivingDirectionAt(offset )).NormalizeDegrees();
+                (route.ArrivingDirectionAt(offset + usedShapes) - route.ArrivingDirectionAt(offset)).NormalizeDegrees();
 
             // A gentle bend also does turn, at least a few degrees per meter
             if (Math.Abs(totalChange) < 45) {

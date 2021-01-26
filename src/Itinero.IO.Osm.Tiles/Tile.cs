@@ -6,24 +6,24 @@ namespace Itinero.IO.Osm.Tiles
     {
         public Tile(uint x, uint y, int zoom)
         {
-            this.X = x;
-            this.Y = y;
-            this.Zoom = zoom;
+            X = x;
+            Y = y;
+            Zoom = zoom;
 
-            this.CalculateBounds();
+            CalculateBounds();
         }
-        
+
         private void CalculateBounds()
         {
-            var n = Math.PI - ((2.0 * Math.PI * this.Y) / Math.Pow(2.0, this.Zoom));
-            this.Left = ((this.X / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
-            this.Top = (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            var n = Math.PI - 2.0 * Math.PI * Y / Math.Pow(2.0, Zoom);
+            Left = X / Math.Pow(2.0, Zoom) * 360.0 - 180.0;
+            Top = 180.0 / Math.PI * Math.Atan(Math.Sinh(n));
 
-            n = Math.PI - ((2.0 * Math.PI * (this.Y + 1)) / Math.Pow(2.0, this.Zoom));
-            this.Right = ((this.X + 1) / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0;
-            this.Bottom = (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            n = Math.PI - 2.0 * Math.PI * (Y + 1) / Math.Pow(2.0, Zoom);
+            Right = (X + 1) / Math.Pow(2.0, Zoom) * 360.0 - 180.0;
+            Bottom = 180.0 / Math.PI * Math.Atan(Math.Sinh(n));
         }
-        
+
         /// <summary>
         /// Gets X.
         /// </summary>
@@ -38,7 +38,7 @@ namespace Itinero.IO.Osm.Tiles
         /// Gets the zoom level.
         /// </summary>
         public int Zoom { get; private set; }
-        
+
         /// <summary>
         /// Gets the top.
         /// </summary>
@@ -65,23 +65,21 @@ namespace Itinero.IO.Osm.Tiles
         /// <param name="localId">The local tile id.</param>
         public void UpdateToLocalId(ulong localId)
         {
-            var xMax = (ulong) (1 << (int) this.Zoom);
+            var xMax = (ulong) (1 << (int) Zoom);
 
-            this.X = (uint) (localId % xMax);
-            this.Y = (uint) (localId / xMax);
+            X = (uint) (localId % xMax);
+            Y = (uint) (localId / xMax);
         }
 
         /// <summary>
         /// Gets the local tile id.
         /// </summary>
         /// <remarks>This is the id relative to the zoom level.</remarks>
-        public uint LocalId
-        {
-            get
-            {
-                var xMax = (1 << (int) this.Zoom);
+        public uint LocalId {
+            get {
+                var xMax = 1 << (int) Zoom;
 
-                return (uint)(this.Y * xMax + this.X);
+                return (uint) (Y * xMax + X);
             }
         }
 
@@ -95,7 +93,7 @@ namespace Itinero.IO.Osm.Tiles
         {
             var xMax = (ulong) (1 << zoom);
 
-            return new Tile((uint) (localId % xMax), 
+            return new Tile((uint) (localId % xMax),
                 (uint) (localId / xMax), zoom);
         }
 
@@ -120,14 +118,14 @@ namespace Itinero.IO.Osm.Tiles
         /// <returns>A local coordinate pair.</returns>
         public (int x, int y) ToLocalCoordinates(double longitude, double latitude, int resolution)
         {
-            var latStep = (this.Top - this.Bottom) / resolution;
-            var lonStep = (this.Right - this.Left) / resolution;
-            var top = this.Top;
-            var left = this.Left;
-            
+            var latStep = (Top - Bottom) / resolution;
+            var lonStep = (Right - Left) / resolution;
+            var top = Top;
+            var left = Left;
+
             return ((int) ((longitude - left) / lonStep), (int) ((top - latitude) / latStep));
         }
-        
+
         /// <summary> 
         /// Converts a set of local coordinates to a lat/lon pair.
         /// </summary>
@@ -137,14 +135,14 @@ namespace Itinero.IO.Osm.Tiles
         /// <returns>A global coordinate pair.</returns>
         public (double longitude, double latitude) FromLocalCoordinates(int x, int y, int resolution)
         {
-            var latStep = (this.Top - this.Bottom) / resolution;
-            var lonStep = (this.Right - this.Left) / resolution;
-            var top = this.Top;
-            var left = this.Left;
+            var latStep = (Top - Bottom) / resolution;
+            var lonStep = (Right - Left) / resolution;
+            var top = Top;
+            var left = Left;
 
-            return ((left + (lonStep * x)), (top - (y * latStep)));
+            return (left + lonStep * x, top - y * latStep);
         }
-        
+
         /// <summary>
         /// Gets the tile at the given coordinates for the given zoom level.
         /// </summary>
@@ -156,27 +154,27 @@ namespace Itinero.IO.Osm.Tiles
         {
             var n = (int) Math.Floor(Math.Pow(2, zoom)); // replace by bitshifting?
 
-            var rad = (latitude / 180d) * System.Math.PI;
+            var rad = latitude / 180d * Math.PI;
 
             var x = (uint) ((longitude + 180.0f) / 360.0f * n);
             var y = (uint) (
                 (1.0f - Math.Log(Math.Tan(rad) + 1.0f / Math.Cos(rad))
-                 / Math.PI) / 2f * n);
+                    / Math.PI) / 2f * n);
 
-            return new Tile (x, y, zoom);
+            return new Tile(x, y, zoom);
         }
 
         public bool IsInside(double longitude, double latitude)
         {
-            return !(this.Top <= latitude || 
-                this.Bottom >= latitude ||
-                this.Left >= longitude || 
-                this.Right <= longitude);
+            return !(Top <= latitude ||
+                     Bottom >= latitude ||
+                     Left >= longitude ||
+                     Right <= longitude);
         }
 
         public override string ToString()
         {
-            return $"{this.X},{this.Y}@{this.Zoom}";
+            return $"{X},{Y}@{Zoom}";
         }
     }
 }

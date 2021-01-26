@@ -22,7 +22,8 @@ namespace Itinero.Instructions.Generators
 
         public readonly BaseInstruction then;
 
-        public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees, uint projectionDistance, BaseInstruction contained = null) :
+        public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
+            uint projectionDistance, BaseInstruction contained = null) :
             base(route, 0, 0, turnDegrees)
         {
             StartDegrees = absoluteStartingDegrees;
@@ -31,12 +32,10 @@ namespace Itinero.Instructions.Generators
         }
 
 
-        public StartInstruction(IndexedRoute route, BaseInstruction contained = null) : this(route, 
+        public StartInstruction(IndexedRoute route, BaseInstruction contained = null) : this(route,
             0,
-            route.DepartingDirectionAt(0).NormalizeDegrees(), 
-         0, contained)
-        {
-        }
+            route.DepartingDirectionAt(0).NormalizeDegrees(),
+            0, contained) { }
 
         public override string ToString()
         {
@@ -49,8 +48,7 @@ namespace Itinero.Instructions.Generators
     {
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
-            if (offset == 0)
-            {
+            if (offset == 0) {
                 return new StartInstruction(route);
             }
 

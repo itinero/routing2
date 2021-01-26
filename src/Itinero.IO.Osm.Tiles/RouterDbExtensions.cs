@@ -15,9 +15,9 @@ namespace Itinero.IO.Osm.Tiles
         public static void UseRouteableTiles(this RouterDb routerDb, Action<DataProviderSettings> configure = null)
         {
             var settings = new DataProviderSettings();
-            
+
             configure?.Invoke(settings);
-            
+
             var dataProvider = new DataProvider(routerDb, settings.Url, settings.Zoom);
         }
     }

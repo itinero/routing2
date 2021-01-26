@@ -5,15 +5,13 @@ using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
 using Xunit;
 
-namespace Itinero.Tests.Instructions {
-    public class ParseInstructionTest {
-        private static JsonElement JsonParse(string contents)
-        {
-          return  JsonDocument.Parse(contents).RootElement;
-        }
-        
+namespace Itinero.Tests.Instructions
+{
+    public class ParseInstructionTest
+    {
         [Fact]
-        public void ParseRenderValue_SimpleValue_SubstitutionInstruction() {
+        public void ParseRenderValue_SimpleValue_SubstitutionInstruction()
+        {
             var parsed = FromJson.ParseRenderValue("Turn $turnDegrees around, so you are at $tUrnDeGReEs");
             var result = parsed.ToText(new BaseInstruction(null, 0, 42));
             Assert.Equal("Turn 42 around, so you are at 42", result);
@@ -21,14 +19,16 @@ namespace Itinero.Tests.Instructions {
 
 
         [Fact]
-        public void ParseRenderValue_SubstitutionWithNoSpace_SubstitutionInstruction() {
+        public void ParseRenderValue_SubstitutionWithNoSpace_SubstitutionInstruction()
+        {
             var parsed = FromJson.ParseRenderValue("Take the ${exitNumber}th exit");
             var result = parsed.ToText(new RoundaboutInstruction(null, 0, 5, 42, 5));
             Assert.Equal("Take the 5th exit", result);
         }
 
         [Fact]
-        public void ParseCondition_AdvancedCondition_CorrectResult() {
+        public void ParseCondition_AdvancedCondition_CorrectResult()
+        {
             var input =
                 "{\"start\": { \"$startDegrees>=-45&$startDegrees<=45\": \"Start north\"," +
                 " \"$startDegrees>45&$startDegrees<=135\": \"Start east\"," +
@@ -45,7 +45,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseCondition_TypeCondition_BasicCondition() {
+        public void ParseCondition_TypeCondition_BasicCondition()
+        {
             var (p, prior) = FromJson.ParseCondition("base");
             Assert.False(prior);
             Assert.True(p(new BaseInstruction(null, 0, 42)));
@@ -53,7 +54,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseCondition_EqCondition_BasicCondition() {
+        public void ParseCondition_EqCondition_BasicCondition()
+        {
             var (p, prior) = FromJson.ParseCondition("$turndegrees=42");
             Assert.False(prior);
             Assert.True(p(new BaseInstruction(null, 0, 42)));
@@ -61,7 +63,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseCondition_CompareCondition_BasicCondition() {
+        public void ParseCondition_CompareCondition_BasicCondition()
+        {
             var (p, _) = FromJson.ParseCondition("$turndegrees<=42");
             Assert.True(p(new BaseInstruction(null, 0, 35)));
             Assert.True(p(new BaseInstruction(null, 0, 42)));
@@ -89,7 +92,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseCondition_FallbackCondition_BasicCondition() {
+        public void ParseCondition_FallbackCondition_BasicCondition()
+        {
             var (p, prior) = FromJson.ParseCondition("*");
             Assert.True(prior);
             Assert.True(p(new BaseInstruction(null, 0, 42)));
@@ -97,7 +101,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseInstruction_AttemptToGiveName_GivesFallback() {
+        public void ParseInstruction_AttemptToGiveName_GivesFallback()
+        {
             var baseInstructionToLeftRight =
                 "\"$.name\": {\"$turnDegrees<=-135\": \"Turn sharply left onto $.name\"," +
                 "\"$turnDegrees>-135&$turnDegrees<=-65\": \"Turn left onto $.name\",\"$turnDegrees>-65&$turnDegrees<=-25\": \"Turn slightly left onto $.name\",\"$turnDegrees<-25&$turnDegrees<25\": \"Continue onto $.name\",\"$turnDegrees>=135\": \"Turn sharply right onto $.name\",\"$turnDegrees<135&$turnDegrees>=65\": \"Turn right onto $.name\",\"$turnDegrees<65&$turnDegrees>=25\": \"Turn slightly right onto $.name\"}," +
@@ -116,7 +121,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseInstruction_InstructionGoesLeft_GivesLeft() {
+        public void ParseInstruction_InstructionGoesLeft_GivesLeft()
+        {
             var baseInstructionToLeftRight =
                 "\"$turnDegrees<=-135\": \"Turn sharply left\"," +
                 "\"$turnDegrees>-135&$turnDegrees<=-65\": \"Turn left\"," +
@@ -142,7 +148,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseInstruction_TypeDiscrimination_RegocnizesStart() {
+        public void ParseInstruction_TypeDiscrimination_RegocnizesStart()
+        {
             var baseInstructionToLeftRight =
                 "\"start\":\"START\"," +
                 "\"base\":\"BASE\"," +
@@ -170,7 +177,8 @@ namespace Itinero.Tests.Instructions {
         }
 
         [Fact]
-        public void ParseFormat_WithExtensions_ExtensionsTrigger() {
+        public void ParseFormat_WithExtensions_ExtensionsTrigger()
+        {
             var format =
                 "{" +
                 "\"extensions\": {" +
@@ -186,18 +194,18 @@ namespace Itinero.Tests.Instructions {
 
             var l = toText.ToText(new BaseInstruction(null, 0, 90));
             Assert.Equal("Go left", l);
-            
+
             var r = toText.ToText(new BaseInstruction(null, 0, -90));
             Assert.Equal("Go right", r);
 
 
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
-
         }
-        
+
         [Fact]
-        public void ParseFormat_WithNestedAndExtensions_ExtensionsTrigger() {
+        public void ParseFormat_WithNestedAndExtensions_ExtensionsTrigger()
+        {
             var format =
                 "{" +
                 "\"extensions\": {" +
@@ -211,7 +219,11 @@ namespace Itinero.Tests.Instructions {
             var toText = FromJson.ParseInstructionToText(JsonParse(format), null, new Dictionary<string, IInstructionToText>());
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
-
+        }
+      
+        private static JsonElement JsonParse(string contents)
+        {
+          return  JsonDocument.Parse(contents).RootElement;
         }
     }
 }

@@ -3,12 +3,14 @@ using System.Linq;
 using Itinero.Instructions.Generators;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.ToText {
+namespace Itinero.Instructions.ToText
+{
     /***
      * Instruction to text changes an instruction object into text based on simple substitution.
      * It uses reflection to create a dictionary of all available fields, which are substituted
      */
-    internal class SubstituteText : IInstructionToText {
+    internal class SubstituteText : IInstructionToText
+    {
         private readonly string _context;
         private readonly bool _crashOnMissingKey;
 
@@ -34,7 +36,8 @@ namespace Itinero.Instructions.ToText {
             string context = "context not set",
             Dictionary<string, IInstructionToText> extensions = null,
             bool crashOnMissingKey = true
-        ) {
+        )
+        {
             var allTexts = new List<(string textOrVarName, bool substitute)>();
             foreach (var (txt, subs) in text) {
                 allTexts.Add((subs ? txt.ToLower() : txt, subs));
@@ -48,7 +51,8 @@ namespace Itinero.Instructions.ToText {
         }
 
 
-        public string ToText(BaseInstruction instruction) {
+        public string ToText(BaseInstruction instruction)
+        {
             var subsValues = new Dictionary<string, object>();
 
             foreach (var f in instruction.GetType().GetFields()) {
@@ -97,7 +101,8 @@ namespace Itinero.Instructions.ToText {
                     else if (subsValues.TryGetValue(text, out var newValue)) {
                         if (newValue is BaseInstruction instr) {
                             resultText += _nestedToText.Content.ToText(instr);
-                        }else {
+                        }
+                        else {
                             resultText += newValue;
                         }
                     }
@@ -120,11 +125,13 @@ namespace Itinero.Instructions.ToText {
             return resultText;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return string.Join("", _text.Select(txt => txt.textOrVarName));
         }
 
-        public int SubstitutedValueCount() {
+        public int SubstitutedValueCount()
+        {
             return _text.Count(v => v.substitute);
         }
     }

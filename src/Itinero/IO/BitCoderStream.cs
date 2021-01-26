@@ -8,12 +8,10 @@ namespace Itinero.IO
 
         public static void WriteVarUInt32Nullable(this Stream stream, uint? value)
         {
-            if (value == null)
-            {
+            if (value == null) {
                 stream.WriteVarUInt32(0);
             }
-            else
-            {
+            else {
                 stream.WriteVarUInt32(value.Value + 1);
             }
         }
@@ -22,8 +20,7 @@ namespace Itinero.IO
         {
             var d0 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 return;
             }
@@ -31,8 +28,7 @@ namespace Itinero.IO
             d0 += 128;
             var d1 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 return;
@@ -41,8 +37,7 @@ namespace Itinero.IO
             d1 += 128;
             var d2 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -52,8 +47,7 @@ namespace Itinero.IO
             d2 += 128;
             var d3 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -74,12 +68,10 @@ namespace Itinero.IO
 
         public static void WriteVarUInt64Nullable(this Stream stream, ulong? value)
         {
-            if (value == null)
-            {
+            if (value == null) {
                 stream.WriteVarUInt64(0);
             }
-            else
-            {
+            else {
                 stream.WriteVarUInt64(value.Value + 1);
             }
         }
@@ -88,8 +80,7 @@ namespace Itinero.IO
         {
             var d0 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 return;
             }
@@ -97,8 +88,7 @@ namespace Itinero.IO
             d0 += 128;
             var d1 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 return;
@@ -107,8 +97,7 @@ namespace Itinero.IO
             d1 += 128;
             var d2 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -118,8 +107,7 @@ namespace Itinero.IO
             d2 += 128;
             var d3 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -130,8 +118,7 @@ namespace Itinero.IO
             d3 += 128;
             var d4 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -143,8 +130,7 @@ namespace Itinero.IO
             d4 += 128;
             var d5 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -157,8 +143,7 @@ namespace Itinero.IO
             d5 += 128;
             var d6 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -172,8 +157,7 @@ namespace Itinero.IO
             d6 += 128;
             var d7 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -188,8 +172,7 @@ namespace Itinero.IO
             d7 += 128;
             var d8 = (byte) (value & Mask);
             value >>= 7;
-            if (value == 0)
-            {
+            if (value == 0) {
                 stream.WriteByte(d0);
                 stream.WriteByte(d1);
                 stream.WriteByte(d2);
@@ -220,7 +203,9 @@ namespace Itinero.IO
         public static uint? ReadVarUInt32Nullable(this Stream stream)
         {
             var value = stream.ReadVarUInt32();
-            if (value == 0) return null;
+            if (value == 0) {
+                return null;
+            }
 
             return value - 1;
         }
@@ -229,45 +214,47 @@ namespace Itinero.IO
         {
             var value = 0U;
             var d = stream.ReadByte();
-            if (d < 128)
-            {
-                value = (uint)d;
+            if (d < 128) {
+                value = (uint) d;
                 return value;
             }
-            value = (uint)d - 128;
+
+            value = (uint) d - 128;
             d = stream.ReadByte();
-            if (d < 128)
-            {
-                value += ((uint)d << 7);
+            if (d < 128) {
+                value += (uint) d << 7;
                 return value;
             }
+
             d -= 128;
-            value += ((uint)d << 7);
+            value += (uint) d << 7;
             d = stream.ReadByte();
-            if (d < 128)
-            {
-                value += ((uint)d << 14);
+            if (d < 128) {
+                value += (uint) d << 14;
                 return value;
             }
+
             d -= 128;
-            value += ((uint)d << 14);
+            value += (uint) d << 14;
             d = stream.ReadByte();
-            if (d < 128)
-            {
-                value += ((uint)d << 21);
+            if (d < 128) {
+                value += (uint) d << 21;
                 return value;
             }
+
             d -= 128;
-            value += ((uint)d << 21); 
-            d =stream.ReadByte();
-            value += ((uint) d << 28);
+            value += (uint) d << 21;
+            d = stream.ReadByte();
+            value += (uint) d << 28;
             return value;
         }
 
         public static ulong? ReadVarUInt64Nullable(this Stream stream)
         {
             var value = stream.ReadVarUInt64();
-            if (value == 0) return null;
+            if (value == 0) {
+                return null;
+            }
 
             return value - 1;
         }
@@ -276,98 +263,99 @@ namespace Itinero.IO
         {
             var value = 0UL;
             var d = stream.ReadByte();
-            if (d < 128)
-            {
-                value = (ulong)d;
+            if (d < 128) {
+                value = (ulong) d;
                 return value;
             }
 
             value = (ulong) d - 128;
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((uint) d << 7);
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (uint) d << 7;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 7);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((uint) d << 14);
+            value += (ulong) d << 7;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (uint) d << 14;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 14);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((ulong) d << 21);
+            value += (ulong) d << 14;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (ulong) d << 21;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 21);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((ulong) d << 28);
+            value += (ulong) d << 21;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (ulong) d << 28;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 28);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((ulong) d << 35);
+            value += (ulong) d << 28;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (ulong) d << 35;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 35);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((ulong) d << 42);
+            value += (ulong) d << 35;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (ulong) d << 42;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 42);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((ulong) d << 49);
+            value += (ulong) d << 42;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (ulong) d << 49;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 49);
-            d = stream.ReadByte();;
-            if (d < 128)
-            {
-                value += ((ulong) d << 56);
+            value += (ulong) d << 49;
+            d = stream.ReadByte();
+            ;
+            if (d < 128) {
+                value += (ulong) d << 56;
                 return value;
             }
 
             d -= 128;
-            value += ((ulong) d << 56);
-            d = stream.ReadByte();;
-            value += ((ulong) d << 63);
+            value += (ulong) d << 56;
+            d = stream.ReadByte();
+            ;
+            value += (ulong) d << 63;
             return value;
         }
 
         private static ulong ToUnsigned(long value)
         {
             var unsigned = (ulong) value;
-            if (value < 0) unsigned = (ulong) -value;
+            if (value < 0) {
+                unsigned = (ulong) -value;
+            }
 
             unsigned <<= 1;
-            if (value < 0)
-            {
+            if (value < 0) {
                 unsigned += 1;
             }
 
@@ -376,15 +364,18 @@ namespace Itinero.IO
 
         private static ulong? ToUnsigned(long? valueNullable)
         {
-            if (valueNullable == null) return null;
+            if (valueNullable == null) {
+                return null;
+            }
 
             var value = valueNullable.Value;
             var unsigned = (ulong) value;
-            if (value < 0) unsigned = (ulong) -value;
+            if (value < 0) {
+                unsigned = (ulong) -value;
+            }
 
             unsigned <<= 1;
-            if (value < 0)
-            {
+            if (value < 0) {
                 unsigned += 1;
             }
 
@@ -394,11 +385,12 @@ namespace Itinero.IO
         private static uint ToUnsigned(int value)
         {
             var unsigned = (uint) value;
-            if (value < 0) unsigned = (uint) -value;
+            if (value < 0) {
+                unsigned = (uint) -value;
+            }
 
             unsigned <<= 1;
-            if (value < 0)
-            {
+            if (value < 0) {
                 unsigned += 1;
             }
 
@@ -407,15 +399,18 @@ namespace Itinero.IO
 
         private static uint? ToUnsigned(int? valueNullable)
         {
-            if (valueNullable == null) return null;
+            if (valueNullable == null) {
+                return null;
+            }
 
             var value = valueNullable.Value;
             var unsigned = (uint) value;
-            if (value < 0) unsigned = (uint) -value;
+            if (value < 0) {
+                unsigned = (uint) -value;
+            }
 
             unsigned <<= 1;
-            if (value < 0)
-            {
+            if (value < 0) {
                 unsigned += 1;
             }
 
@@ -424,11 +419,10 @@ namespace Itinero.IO
 
         private static long FromUnsigned(ulong unsigned)
         {
-            var sign = unsigned & (uint)1;
+            var sign = unsigned & (uint) 1;
 
-            var value = (long)(unsigned >> 1);
-            if (sign == 1)
-            {
+            var value = (long) (unsigned >> 1);
+            if (sign == 1) {
                 value = -value;
             }
 
@@ -437,14 +431,15 @@ namespace Itinero.IO
 
         private static long? FromUnsigned(ulong? unsignedNullable)
         {
-            if (unsignedNullable == null) return null;
+            if (unsignedNullable == null) {
+                return null;
+            }
 
             var unsigned = unsignedNullable.Value;
-            var sign = unsigned & (uint)1;
+            var sign = unsigned & (uint) 1;
 
-            var value = (long)(unsigned >> 1);
-            if (sign == 1)
-            {
+            var value = (long) (unsigned >> 1);
+            if (sign == 1) {
                 value = -value;
             }
 
@@ -453,11 +448,10 @@ namespace Itinero.IO
 
         private static int FromUnsigned(uint unsigned)
         {
-            var sign = unsigned & (uint)1;
+            var sign = unsigned & (uint) 1;
 
-            var value = (int)(unsigned >> 1);
-            if (sign == 1)
-            {
+            var value = (int) (unsigned >> 1);
+            if (sign == 1) {
                 value = -value;
             }
 
@@ -466,25 +460,26 @@ namespace Itinero.IO
 
         private static int? FromUnsigned(uint? unsignedNullable)
         {
-            if (unsignedNullable == null) return null;
+            if (unsignedNullable == null) {
+                return null;
+            }
 
             var unsigned = unsignedNullable.Value;
-            var sign = unsigned & (uint)1;
+            var sign = unsigned & (uint) 1;
 
-            var value = (int)(unsigned >> 1);
-            if (sign == 1)
-            {
+            var value = (int) (unsigned >> 1);
+            if (sign == 1) {
                 value = -value;
             }
 
             return value;
         }
-        
+
         public static void WriteVarInt32Nullable(this Stream data, int? value)
         {
             data.WriteVarUInt32Nullable(ToUnsigned(value));
         }
-        
+
         public static void WriteVarInt32(this Stream data, int value)
         {
             data.WriteVarUInt32(ToUnsigned(value));
@@ -499,12 +494,12 @@ namespace Itinero.IO
         {
             return FromUnsigned(data.ReadVarUInt32());
         }
-        
+
         public static void WriteVarInt64Nullable(this Stream data, long? value)
         {
             data.WriteVarUInt64Nullable(ToUnsigned(value));
         }
-        
+
         public static void WriteVarInt64(this Stream data, long value)
         {
             data.WriteVarUInt64(ToUnsigned(value));
@@ -522,9 +517,8 @@ namespace Itinero.IO
 
         public static void WriteInt64(this Stream stream, long value)
         {
-            for (var b = 0; b < 8; b++)
-            {
-                stream.WriteByte((byte)(value & byte.MaxValue));
+            for (var b = 0; b < 8; b++) {
+                stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
@@ -532,9 +526,8 @@ namespace Itinero.IO
         public static long ReadInt64(this Stream stream)
         {
             var value = 0L;
-            for (var b = 0; b < 8; b++)
-            {
-                value += ((long)stream.ReadByte() << (b * 8));
+            for (var b = 0; b < 8; b++) {
+                value += (long) stream.ReadByte() << (b * 8);
             }
 
             return value;
@@ -542,9 +535,8 @@ namespace Itinero.IO
 
         public static void WriteUInt32(this Stream stream, uint value)
         {
-            for (var b = 0; b < 4; b++)
-            {
-                stream.WriteByte((byte)(value & byte.MaxValue));
+            for (var b = 0; b < 4; b++) {
+                stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
@@ -552,9 +544,8 @@ namespace Itinero.IO
         public static uint ReadUInt32(this Stream stream)
         {
             var value = 0U;
-            for (var b = 0; b < 4; b++)
-            {
-                value += ((uint)stream.ReadByte() << (b * 8));
+            for (var b = 0; b < 4; b++) {
+                value += (uint) stream.ReadByte() << (b * 8);
             }
 
             return value;
@@ -562,9 +553,8 @@ namespace Itinero.IO
 
         public static void WriteUInt64(this Stream stream, ulong value)
         {
-            for (var b = 0; b < 8; b++)
-            {
-                stream.WriteByte((byte)(value & byte.MaxValue));
+            for (var b = 0; b < 8; b++) {
+                stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
@@ -572,9 +562,8 @@ namespace Itinero.IO
         public static ulong ReadUInt64(this Stream stream)
         {
             var value = 0UL;
-            for (var b = 0; b < 8; b++)
-            {
-                value += ((ulong)stream.ReadByte() << (b * 8));
+            for (var b = 0; b < 8; b++) {
+                value += (ulong) stream.ReadByte() << (b * 8);
             }
 
             return value;
@@ -582,9 +571,8 @@ namespace Itinero.IO
 
         public static void WriteInt32(this Stream stream, int value)
         {
-            for (var b = 0; b < 4; b++)
-            {
-                stream.WriteByte((byte)(value & byte.MaxValue));
+            for (var b = 0; b < 4; b++) {
+                stream.WriteByte((byte) (value & byte.MaxValue));
                 value >>= 8;
             }
         }
@@ -592,9 +580,8 @@ namespace Itinero.IO
         public static int ReadInt32(this Stream stream)
         {
             var value = 0;
-            for (var b = 0; b < 4; b++)
-            {
-                value += (stream.ReadByte() << (b * 8));
+            for (var b = 0; b < 4; b++) {
+                value += stream.ReadByte() << (b * 8);
             }
 
             return value;

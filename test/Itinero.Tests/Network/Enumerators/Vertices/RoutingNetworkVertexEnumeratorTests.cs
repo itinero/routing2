@@ -20,9 +20,8 @@ namespace Itinero.Tests.Network.Enumerators.Vertices
         {
             var network = new RoutingNetwork(new RouterDb());
 
-            var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
-            {
-                (4.7868, 51.2643, (float?)null)
+            var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+                (4.7868, 51.2643, (float?) null)
             });
 
             var enumerator = network.GetVertexEnumerator();
@@ -35,10 +34,9 @@ namespace Itinero.Tests.Network.Enumerators.Vertices
         {
             var network = new RoutingNetwork(new RouterDb());
 
-            var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
-            {
-                (4.800467491149902, 51.26896368721961, (float?)null),
-                (4.800467491149902, 51.26896368721961, (float?)null)
+            var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+                (4.800467491149902, 51.26896368721961, (float?) null),
+                (4.800467491149902, 51.26896368721961, (float?) null)
             });
 
             var enumerator = network.GetVertexEnumerator();
@@ -53,10 +51,9 @@ namespace Itinero.Tests.Network.Enumerators.Vertices
         {
             var network = new RoutingNetwork(new RouterDb());
 
-            var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[]
-            {
-                (4.800467491149902, 51.26896368721961, (float?)null),
-                (5.801111221313477, 51.26676859478893, (float?)null)
+            var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+                (4.800467491149902, 51.26896368721961, (float?) null),
+                (5.801111221313477, 51.26676859478893, (float?) null)
             });
 
             var enumerator = network.GetVertexEnumerator();

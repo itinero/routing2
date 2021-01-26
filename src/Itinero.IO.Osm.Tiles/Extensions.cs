@@ -15,7 +15,7 @@ namespace Itinero.IO.Osm.Tiles
                 : obj is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture)
                 : obj.ToString();
         }
-        
+
         /// <summary>
         /// Loads a string from an embedded resource stream.
         /// </summary>

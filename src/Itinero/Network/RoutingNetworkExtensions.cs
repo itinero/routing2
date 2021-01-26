@@ -15,13 +15,16 @@ namespace Itinero.Network
         /// <param name="vertex">The vertex.</param>
         /// <returns>The location.</returns>
         /// <exception cref="ArgumentOutOfRangeException">When the vertex doesn't exist.</exception>
-        public static (double longitude, double latitude, float? e) GetVertex(this RoutingNetwork routingNetwork, VertexId vertex)
+        public static (double longitude, double latitude, float? e) GetVertex(this RoutingNetwork routingNetwork,
+            VertexId vertex)
         {
-            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) throw new ArgumentOutOfRangeException(nameof(vertex));
+            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) {
+                throw new ArgumentOutOfRangeException(nameof(vertex));
+            }
 
             return (longitude, latitude, e);
         }
-        
+
         /// <summary>
         /// Gets an enumerable with all vertices.
         /// </summary>
@@ -30,8 +33,7 @@ namespace Itinero.Network
         public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork)
         {
             var enumerator = routingNetwork.GetVertexEnumerator();
-            while (enumerator.MoveNext())
-            {
+            while (enumerator.MoveNext()) {
                 yield return enumerator.Current;
             }
         }
@@ -44,13 +46,15 @@ namespace Itinero.Network
         public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork)
         {
             var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
-            foreach (var vertex in routingNetwork.GetVertices())
-            {
-                if (!edgeEnumerator.MoveTo(vertex)) continue;
+            foreach (var vertex in routingNetwork.GetVertices()) {
+                if (!edgeEnumerator.MoveTo(vertex)) {
+                    continue;
+                }
 
-                while (edgeEnumerator.MoveNext())
-                {
-                    if (!edgeEnumerator.Forward) continue;
+                while (edgeEnumerator.MoveNext()) {
+                    if (!edgeEnumerator.Forward) {
+                        continue;
+                    }
 
                     yield return edgeEnumerator.Id;
                 }
@@ -60,18 +64,20 @@ namespace Itinero.Network
         internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
         {
             if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
-                cache == null)
-            {
+                cache == null) {
                 return new ProfileCostFunction(profile);
             }
-            
+
             return new ProfileCostFunctionCached(profile, cache);
         }
 
-        internal static IEnumerable<(string key, string value)> GetAttributes(this RoutingNetwork routerDb, EdgeId edge)
+        internal static IEnumerable<(string key, string value)>
+            GetAttributes(this RoutingNetwork routerDb, EdgeId edge)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
-            if (!enumerator.MoveToEdge(edge)) return Enumerable.Empty<(string key, string value)>();
+            if (!enumerator.MoveToEdge(edge)) {
+                return Enumerable.Empty<(string key, string value)>();
+            }
 
             return enumerator.Attributes;
         }

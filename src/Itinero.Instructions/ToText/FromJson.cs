@@ -33,7 +33,6 @@ namespace Itinero.Instructions.ToText
             var generators = jobj.GetProperty("generators").EnumerateArray().Select(v => v.GetString()).ToList();
             var generator = new LinearInstructionGenerator(generators);
             var languages = jobj.GetProperty("languages");
-
             var toTexts = new Dictionary<string, IInstructionToText>();
             foreach (var obj in languages.EnumerateObject()) {
                 var langCode = obj.Name;

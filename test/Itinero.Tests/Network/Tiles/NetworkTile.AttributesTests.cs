@@ -9,14 +9,13 @@ namespace Itinero.Tests.Network.Tiles
         [Fact]
         public void NetworkTile_AddEdge0_OneAttribute_ShouldStoreAttribute()
         {
-            var graphTile = new NetworkTile(14, 
+            var graphTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
-            var edge = graphTile.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[]
-                {
-                    ("a_key","A value")
+            var edge = graphTile.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] {
+                    ("a_key", "A value")
                 }
             );
 
@@ -30,18 +29,17 @@ namespace Itinero.Tests.Network.Tiles
             Assert.Equal("a_key", attribute.key);
             Assert.Equal("A value", attribute.value);
         }
-        
+
         [Fact]
         public void NetworkTile_AddEdge0_ThreeAttributes_ShouldStoreAttributes()
         {
-            var graphTile = new NetworkTile(14, 
+            var graphTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
             var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
             var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
-            var edge = graphTile.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[]
-                {
-                    ("a_key","A value"),
+            var edge = graphTile.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] {
+                    ("a_key", "A value"),
                     ("a_second_key", "Another value"),
                     ("a_last_key", "A last value")
                 }
