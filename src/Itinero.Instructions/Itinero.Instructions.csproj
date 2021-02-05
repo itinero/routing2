@@ -3,6 +3,11 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
+        <AssemblyName>Itinero.Instructions</AssemblyName>
+        <LangVersion>default</LangVersion>
+        <PackageId>Itinero.Instructions</PackageId>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
