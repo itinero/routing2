@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\src\Itinero.Instructions\Itinero.Instructions.csproj" />
     <ProjectReference Include="..\..\src\Itinero.IO.Osm.Tiles\Itinero.IO.Osm.Tiles.csproj" />
     <ProjectReference Include="..\..\src\Itinero.IO.Osm\Itinero.IO.Osm.csproj" />
+    <ProjectReference Include="..\..\src\Itinero.IO.Streams.Processors\Itinero.IO.Streams.Processors.csproj" />
     <ProjectReference Include="..\..\src\Itinero.Profiles.Lua\Itinero.Profiles.Lua.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
   </ItemGroup>
@@ -23,5 +24,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="bicycle.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Genders.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

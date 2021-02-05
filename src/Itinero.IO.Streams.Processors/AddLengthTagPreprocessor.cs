@@ -29,6 +29,7 @@ namespace Itinero.IO.Streams.Processors
         {
             if (feature is Node n) {
                 if (n.Id != null && _neededNodes.Contains(n.Id.Value)) {
+                    _neededNodes.Remove(n.Id.Value);
                     _keptNodes.Add(n.Id.Value, n);
                 }
 
