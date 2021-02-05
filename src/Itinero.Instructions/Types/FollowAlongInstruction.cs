@@ -1,7 +1,7 @@
 using System;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     /**
      * The follow along is more or less the 'continue along this road' instruction.

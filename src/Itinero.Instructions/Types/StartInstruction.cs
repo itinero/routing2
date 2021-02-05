@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     /***
      * The 'startInstruction' represents the projection from the actual startpoint (e.g. an adress) to the snapped point on the road.

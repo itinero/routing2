@@ -1,7 +1,7 @@
 using System;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     /**
      * A bend in the road is there if:

@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Instructions.ToText
+namespace Itinero.Instructions.Config
 {
     internal class ConditionalToText : IInstructionToText
     {

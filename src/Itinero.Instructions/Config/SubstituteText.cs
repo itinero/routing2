@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.ToText
+namespace Itinero.Instructions.Config
 {
     /***
      * Instruction to text changes an instruction object into text based on simple substitution.
@@ -14,21 +14,18 @@ namespace Itinero.Instructions.ToText
         private readonly string _context;
         private readonly bool _crashOnMissingKey;
 
-        /**
-         * Extra "fields" to convert this into a string
-         */
-        private readonly Dictionary<string, IInstructionToText> _extensions;
+        private readonly Dictionary<string, IInstructionToText>
+            _extensions; // extra "fields" to convert this into a string
 
         private readonly Box<IInstructionToText> _nestedToText;
-
         private readonly IEnumerable<(string textOrVarName, bool substitute)> _text;
 
-        /**
-         * Only used for testing
-         */
-        internal SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$"))),
-            null,
-            "a unit test") { }
+        // /**
+        //  * Only used for testing
+        //  */
+        // internal SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$"))),
+        //     null,
+        //     "a unit test") { }
 
         public SubstituteText(
             IEnumerable<(string textOrVarName, bool substitute)> text,
@@ -49,7 +46,6 @@ namespace Itinero.Instructions.ToText
             _extensions = extensions;
             _crashOnMissingKey = crashOnMissingKey;
         }
-
 
         public string ToText(BaseInstruction instruction)
         {

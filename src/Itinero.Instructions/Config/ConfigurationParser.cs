@@ -4,16 +4,17 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Itinero.Instructions.Types;
+using Itinero.Instructions.Types.Generators;
 
 namespace Itinero.Instructions.Config
 {
     internal static class ConfigurationParser
     {
         private static readonly Regex RenderValueRegex =
-            new Regex(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
+            new(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
 
         private static readonly List<(string, Predicate<(string a, string b)>)> Operators =
-            new List<(string, Predicate<(string a, string b)>)> {
+            new() {
                 // This is a list, as we first need to match '<=' and '>=', otherwise we might think the match is "abc<" = "def", not "abc" <= "def
                 ("<=", t => BothDouble(t, d => d.a <= d.b)),
                 (">=", t => BothDouble(t, d => d.a >= d.b)),
@@ -26,14 +27,24 @@ namespace Itinero.Instructions.Config
         /// <summary>
         /// Parses the full pipeline
         /// </summary>
-        /// <param name="jobj"></param>
-        /// <returns></returns>
-        public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
-            ParseRouteToInstructions(JsonElement jobj)
+        /// <param name="jsonElement">The json element to start from.</param>
+        /// <param name="getGenerator">A function to get a generator for a given name.</param>
+        /// <returns>The instruction generator and the to text translators.</returns>
+        public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts) ParseRouteToInstructions(
+            JsonElement jsonElement, Func<string, IInstructionGenerator?> getGenerator)
         {
-            var generators = jobj.GetProperty("generators").EnumerateArray().Select(v => v.GetString()).ToList();
+            // parse generator names and instantiate generators.
+            var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString()).ToList();
+            var generators = generatorNames.Select(name => {
+                var g = getGenerator(name);
+                if (g == null) throw new Exception($"Generator not found: {name}");
+
+                return g;
+            });
             var generator = new LinearInstructionGenerator(generators);
-            var languages = jobj.GetProperty("languages");
+            
+            // parse instructions to text configurations.
+            var languages = jsonElement.GetProperty("languages");
             var toTexts = new Dictionary<string, IInstructionToText>();
             foreach (var obj in languages.EnumerateObject()) {
                 var langCode = obj.Name;
@@ -87,7 +98,7 @@ namespace Itinero.Instructions.Config
          * A POSITIVE angle is going left,
          * A NEGATIVE angle is going right
          */
-        public static IInstructionToText ParseInstructionToText(JsonElement jobj,
+        private static IInstructionToText ParseInstructionToText(JsonElement jobj,
             Box<IInstructionToText> wholeToText = null,
             Dictionary<string, IInstructionToText> extensions = null, string context = "")
         {
@@ -137,7 +148,7 @@ namespace Itinero.Instructions.Config
             return false;
         }
 
-        public static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
+        private static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
             Dictionary<string, IInstructionToText> extensions = null)
@@ -186,7 +197,7 @@ namespace Itinero.Instructions.Config
             return (instruction => instruction.Type == condition, false);
         }
 
-        public static SubstituteText ParseRenderValue(string value,
+        private static SubstituteText ParseRenderValue(string value,
             Dictionary<string, IInstructionToText> extensions = null,
             Box<IInstructionToText> wholeToText = null,
             string context = "",

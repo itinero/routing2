@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     /// <summary>
     /// The crossroad-instructions is an instruction that helps travellers cross intersections.
