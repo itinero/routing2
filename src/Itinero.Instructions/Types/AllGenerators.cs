@@ -9,7 +9,7 @@ namespace Itinero.Instructions.Generators
 {
     internal static class AllGenerators
     {
-        private static List<IInstructionGenerator> Generators = new List<IInstructionGenerator> {
+        private static readonly List<IInstructionGenerator> Generators = new List<IInstructionGenerator> {
             new BaseInstructionGenerator(),
             new EndInstructionGenerator(),
             new StartInstructionGenerator(),
@@ -19,7 +19,7 @@ namespace Itinero.Instructions.Generators
             new FollowBendGenerator()
         };
 
-        public static Dictionary<string, IInstructionGenerator> AllGeneratorsDict = GetDict();
+        public static readonly Dictionary<string, IInstructionGenerator> AllGeneratorsDict = GetDict();
 
         private static Dictionary<string, IInstructionGenerator> GetDict()
         {

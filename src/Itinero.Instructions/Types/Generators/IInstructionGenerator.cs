@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     internal interface IInstructionGenerator
     {

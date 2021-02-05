@@ -1,6 +1,9 @@
 namespace Itinero.Instructions.Generators
 {
     /// <summary>
+    /// A base instruction.
+    /// </summary>
+    /// <remarks>
     ///     An instruction is a piece that describes a traveller how they should behave to reach their destination.
     ///     An instruction applies on one or more segments, and contains two parts:
     ///     - The next meters to travel, e.g. 'follow along road XYZ, which has properties P and Q'
@@ -24,7 +27,7 @@ namespace Itinero.Instructions.Generators
     ///     - Voice instructions, which should be spoken at the right time before the traveller has to make a maneuver
     ///     - Written instructions, on app, which should show the appropriate text at the right time
     ///     - Extra information, e.g. about the street currently travelled, the next street, the upcoming turn, ...
-    /// </summary>
+    /// </remarks>
     internal class BaseInstruction
     {
         public BaseInstruction(IndexedRoute route,
@@ -84,21 +87,7 @@ namespace Itinero.Instructions.Generators
 
         public override string ToString()
         {
-            return $"Follow from p{ShapeIndex} to p{ShapeIndexEnd}, where you turn {TurnDegrees}°";
-        }
-    }
-
-    internal class BaseInstructionGenerator : IInstructionGenerator
-    {
-        public BaseInstruction Generate(IndexedRoute route, int offset)
-        {
-            if (offset + 1 >= route.Last) {
-                // The current offset is already the last index of the shape; this is the endpoint
-                return null;
-            }
-
-            // We are on the end of segment 'offset', what should we do next?
-            return new BaseInstruction(route, offset, route.DirectionChangeAt(offset + 1));
+            return $"Follow from p{this.ShapeIndex} to p{this.ShapeIndexEnd}, where you turn {this.TurnDegrees}°";
         }
     }
 }

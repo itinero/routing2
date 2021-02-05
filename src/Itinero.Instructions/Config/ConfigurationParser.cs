@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
 
-namespace Itinero.Instructions.ToText
+namespace Itinero.Instructions.Config
 {
-    internal class FromJson
+    internal static class ConfigurationParser
     {
         private static readonly Regex RenderValueRegex =
             new Regex(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
@@ -23,10 +23,11 @@ namespace Itinero.Instructions.ToText
                 (">", t => BothDouble(t, d => d.a > d.b))
             };
 
-
-        /**
-         * Parses the full pipeline
-         */
+        /// <summary>
+        /// Parses the full pipeline
+        /// </summary>
+        /// <param name="jobj"></param>
+        /// <returns></returns>
         public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
             ParseRouteToInstructions(JsonElement jobj)
         {
@@ -142,7 +143,7 @@ namespace Itinero.Instructions.ToText
             Dictionary<string, IInstructionToText> extensions = null)
         {
             if (condition == "*") {
-                return (_ => { return true; }, true);
+                return (_ => true, true);
             }
 
             if (condition.IndexOf("&", StringComparison.Ordinal) >= 0) {
@@ -171,7 +172,7 @@ namespace Itinero.Instructions.ToText
                 // And apply the instruction on it!
                 // We pull the instruction from thin air by returning a lambda instead
                 return (
-                    instruction => { return op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction))); },
+                    instruction => op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction))),
                     false);
             }
 
@@ -179,10 +180,10 @@ namespace Itinero.Instructions.ToText
             // This could either be a type matching or a substitution that has to exist
             var rendered = ParseRenderValue(condition, extensions, wholeToText, context, false);
             if (rendered.SubstitutedValueCount() > 0) {
-                return (instruction => { return rendered.ToText(instruction) != null; }, false);
+                return (instruction => rendered.ToText(instruction) != null, false);
             }
 
-            return (instruction => { return instruction.Type == condition; }, false);
+            return (instruction => instruction.Type == condition, false);
         }
 
         public static SubstituteText ParseRenderValue(string value,
@@ -194,12 +195,13 @@ namespace Itinero.Instructions.ToText
             var parts = RenderValueRegex.Match(value).Groups[1].Captures
                     .Select(m => {
                         var v = m.Value;
-                        if (v.StartsWith("$")) {
-                            v = v.Substring(1).Trim('{', '}').ToLower();
-                            return (v, true);
+                        if (!v.StartsWith("$")) {
+                            return (m.Value, false);
                         }
 
-                        return (m.Value, false);
+                        v = v.Substring(1).Trim('{', '}').ToLower();
+                        return (v, true);
+
                     }).ToList()
                 ;
             return new SubstituteText(parts, wholeToText, context, extensions, crashOnNotFound);
