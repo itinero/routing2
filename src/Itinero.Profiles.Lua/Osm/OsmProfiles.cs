@@ -11,7 +11,7 @@ namespace Itinero.Profiles.Lua.Osm
         private static readonly Lazy<Profile> LazyBicycle = new(() =>
         {
             var script = new Script();
-            script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.bicycle.lua"));
+            script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.bicycle.lua"));
             return new LuaProfile(script);
         });
 
@@ -23,7 +23,7 @@ namespace Itinero.Profiles.Lua.Osm
         private static readonly Lazy<Profile> LazyPedestrian = new(() =>
         {
             var script = new Script();
-            script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.pedestrian.lua"));
+            script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.pedestrian.lua"));
             return new LuaProfile(script);
         });
 
