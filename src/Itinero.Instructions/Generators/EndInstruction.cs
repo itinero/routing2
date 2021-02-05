@@ -1,3 +1,4 @@
+// ReSharper disable MemberCanBePrivate.Global
 namespace Itinero.Instructions.Generators
 {
     /***

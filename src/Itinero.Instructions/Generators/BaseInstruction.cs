@@ -46,11 +46,13 @@ namespace Itinero.Instructions.Generators
             this.Type = Tp(this);
         }
         
+        /* Important: the below values should be FIELDS and _not_ have accessors with {get;} */
+
         /// <summary>
         ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
         ///     which starts at 'ShapeIndex', what should they do next?
         /// </summary>
-        public int ShapeIndex { get; }
+        public readonly int ShapeIndex;
 
         /// <summary>
         ///     The index where the described instruction stops.
@@ -59,18 +61,18 @@ namespace Itinero.Instructions.Generators
         ///         ShapeIndex; some others describe multiple segments
         ///     </remarks>
         /// </summary>
-        public int ShapeIndexEnd { get; }
+        public readonly int ShapeIndexEnd;
 
         /// <summary>
         ///     The amount of degrees to turn at the end of the road.
         ///     0° is straight on, positive is turning left and negative is turning right
         /// </summary>
-        public int TurnDegrees { get; }
+        public readonly int TurnDegrees;
 
         /// <summary>
         /// Gets the type of instruction.
         /// </summary>
-        public string Type  { get; }
+        public readonly string Type;
 
         public IndexedRoute Route {
             get; /* Important - because this is a property, it'll won't be picked up in the substitutions because that one only loads fields */
