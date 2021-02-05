@@ -27,11 +27,30 @@ namespace Itinero.Instructions.Generators
     /// </summary>
     internal class BaseInstruction
     {
+        public BaseInstruction(IndexedRoute route,
+            int shapeIndex, int shapeIndexEnd, int turnDegrees)
+        {
+            this.Route = route;
+            this.ShapeIndex = shapeIndex;
+            this.ShapeIndexEnd = shapeIndexEnd;
+            this.TurnDegrees = turnDegrees;
+            this.Type = Tp(this);
+        }
+
+        public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
+        {
+            this.Route = route;
+            this.ShapeIndex = shapeIndex;
+            this.ShapeIndexEnd = shapeIndex + 1;
+            this.TurnDegrees = turnDegrees.NormalizeDegrees();
+            this.Type = Tp(this);
+        }
+        
         /// <summary>
         ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
         ///     which starts at 'ShapeIndex', what should they do next?
         /// </summary>
-        public readonly int ShapeIndex;
+        public int ShapeIndex { get; }
 
         /// <summary>
         ///     The index where the described instruction stops.
@@ -40,35 +59,18 @@ namespace Itinero.Instructions.Generators
         ///         ShapeIndex; some others describe multiple segments
         ///     </remarks>
         /// </summary>
-        public readonly int ShapeIndexEnd;
+        public int ShapeIndexEnd { get; }
 
         /// <summary>
         ///     The amount of degrees to turn at the end of the road.
         ///     0° is straight on, positive is turning left and negative is turning right
         /// </summary>
-        public readonly int TurnDegrees;
+        public int TurnDegrees { get; }
 
-        public readonly string Type;
-
-
-        public BaseInstruction(IndexedRoute route,
-            int shapeIndex, int shapeIndexEnd, int turnDegrees)
-        {
-            Route = route;
-            ShapeIndex = shapeIndex;
-            ShapeIndexEnd = shapeIndexEnd;
-            TurnDegrees = turnDegrees;
-            Type = Tp(this);
-        }
-
-        public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
-        {
-            Route = route;
-            ShapeIndex = shapeIndex;
-            ShapeIndexEnd = shapeIndex + 1;
-            TurnDegrees = turnDegrees.NormalizeDegrees();
-            Type = Tp(this);
-        }
+        /// <summary>
+        /// Gets the type of instruction.
+        /// </summary>
+        public string Type  { get; }
 
         public IndexedRoute Route {
             get; /* Important - because this is a property, it'll won't be picked up in the substitutions because that one only loads fields */

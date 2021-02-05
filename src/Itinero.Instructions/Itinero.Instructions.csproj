@@ -9,4 +9,9 @@
       <ProjectReference Include="..\Itinero\Itinero.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Languages\en-GB.json" />
+      <EmbeddedResource Include="Languages\en-GB.json" />
+    </ItemGroup>
+
 </Project>

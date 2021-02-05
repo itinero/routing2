@@ -8,9 +8,9 @@ using Itinero.Routes;
 
 namespace Itinero.Instructions
 {
-    /**
-     * With this class, one can create an object to convert routes into a list of textual instructions
-     */
+    /// <summary>
+    /// Generates instructions.
+    /// </summary>
     public class Instructions
     {
         private readonly LinearInstructionGenerator _generator;
