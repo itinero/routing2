@@ -9,6 +9,10 @@ using Itinero.Instructions.Types;
 
 namespace Itinero.Instructions.Config
 {
+    /// <summary>
+    /// The conditional to text simply contains a list of conditions (predicates) and appropriate 'toText' to generate;
+    /// It basically implements a 'switch case'-instruction
+    /// </summary>
     internal class ConditionalToText : IInstructionToText
     {
         internal readonly List<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;
