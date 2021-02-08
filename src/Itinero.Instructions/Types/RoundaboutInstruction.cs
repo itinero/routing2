@@ -5,12 +5,12 @@ namespace Itinero.Instructions.Types
         /**
          * This boolean is here for cases as:  https://www.openstreetmap.org/directions?engine=graphhopper_car&route=50.94569%2C3.15129%3B50.94636%2C3.15186#map=19/50.94623/3.15189
          */
-        public readonly bool ExitIsOnTheInside;
+        public  bool ExitIsOnTheInside { get; }
 
         /// <summary>
         ///     The number of the exit to take (one-based)
         /// </summary>
-        public readonly int ExitNumber;
+        public int ExitNumber { get; }
 
         public RoundaboutInstruction(
             IndexedRoute route,

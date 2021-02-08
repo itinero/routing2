@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Itinero.Instructions.Types;
 using Itinero.Network.Attributes;
 
@@ -44,15 +46,15 @@ namespace Itinero.Instructions.Config
         {
             var subsValues = new Dictionary<string, object>();
 
-            foreach (var f in instruction.GetType().GetFields()) {
-                if (!f.IsPublic) {
+            foreach (var f in instruction.GetType().GetProperties()) {
+                if (!f.CanRead) {
                     continue;
                 }
 
                 subsValues[f.Name.ToLower()] = f.GetValue(instruction);
             }
 
-            var resultText = "";
+            var resultText = new StringBuilder();
             foreach (var (text, substitute) in _text) {
                 if (substitute) {
                     var firstChar = text.ToCharArray()[0];
@@ -85,18 +87,18 @@ namespace Itinero.Instructions.Config
                             return null;
                         }
 
-                        resultText += v;
+                        resultText.Append(v);
                     }
                     else if (subsValues.TryGetValue(text, out var newValue)) {
                         if (newValue is BaseInstruction instr) {
-                            resultText += _nestedToText.Content.ToText(instr);
+                            resultText.Append(_nestedToText.Content.ToText(instr));
                         }
                         else {
-                            resultText += newValue;
+                            resultText.Append(newValue);
                         }
                     }
                     else if (_extensions != null && _extensions.TryGetValue(text, out var subs)) {
-                        resultText += subs.ToText(instruction);
+                        resultText.Append(subs.ToText(instruction));
                     }
                     else if (_crashOnMissingKey) {
                         throw new KeyNotFoundException(
@@ -107,11 +109,11 @@ namespace Itinero.Instructions.Config
                     }
                 }
                 else {
-                    resultText += text;
+                    resultText.Append(text);
                 }
             }
 
-            return resultText;
+            return resultText.ToString();
         }
 
         public override string ToString()
