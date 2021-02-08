@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Itinero.IO.Streams.Processors;
 using OsmSharp;
@@ -171,7 +172,22 @@ namespace Itinero.Tests.Processors
                     Assert.Equal("M", geo.Tags.GetValue("_gender"));
                 }
                 );
+        }
 
+        [Fact]
+        public void ExfilratingDataPreprocessor_ExtractWikidata_WikidataIsContained()
+        {
+            HashSet<string> resultingData = null;
+            var input = this.GenerateStreamSource(pieterColpaertsteeg);
+            var exfilatrator = new ExfiltratingDataProcessor(input, geo =>   geo.Tags?.GetValue("name:etymology:wikidata"),
+                dataSet => {
+                    resultingData = dataSet;
+                });
+            IterateTillDone(exfilatrator, _ => {});
+            
+            Assert.NotNull(resultingData);
+            Assert.Single(resultingData);
+            Assert.Contains("Q76797345", resultingData);
         }
     }
 }
