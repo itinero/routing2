@@ -5,12 +5,12 @@ using OsmSharp.Streams;
 
 namespace Itinero.IO.Streams.Processors
 {
-    public class ExfiltratingDataProcessor : PreprocessorStream
+    public class ExfiltratingDataProcessor<T> : PreprocessorStream
     {
-        private readonly HashSet<string> _data = new();
-        private readonly Func<OsmGeo, string?> _extract;
-        private readonly Action<HashSet<string>> _whenDone;
-        private bool _extracted = false;
+        private readonly HashSet<T> _data = new();
+        private readonly Func<OsmGeo, T> _extract;
+        private readonly Action<HashSet<T>> _whenDone;
+        private bool _extracted;
 
         /// <summary>
         ///     Extract data from an OsmGeo-object and stores it in a set
@@ -22,8 +22,8 @@ namespace Itinero.IO.Streams.Processors
         /// </param>
         /// <param name="whenDone">When the stream resets, this action is called</param>
         public ExfiltratingDataProcessor(OsmStreamSource actualSource,
-            Func<OsmGeo, string> extract,
-            Action<HashSet<string>> whenDone
+            Func<OsmGeo, T?> extract,
+            Action<HashSet<T>> whenDone
         ) : base(actualSource, 1)
         {
             _extract = extract;
@@ -33,7 +33,7 @@ namespace Itinero.IO.Streams.Processors
         private protected override void PreprocessFeature(OsmGeo feature)
         {
             var value = _extract(feature);
-            if (string.IsNullOrEmpty(value)) {
+            if (value == null) {
                 return;
             }
 

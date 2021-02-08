@@ -179,7 +179,7 @@ namespace Itinero.Tests.Processors
         {
             HashSet<string> resultingData = null;
             var input = this.GenerateStreamSource(pieterColpaertsteeg);
-            var exfilatrator = new ExfiltratingDataProcessor(input, geo =>   geo.Tags?.GetValue("name:etymology:wikidata"),
+            var exfilatrator = new ExfiltratingDataProcessor<string>(input, geo =>   geo.Tags?.GetValue("name:etymology:wikidata"),
                 dataSet => {
                     resultingData = dataSet;
                 });
