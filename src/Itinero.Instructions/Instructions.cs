@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Itinero.Instructions.ToText;
+using Itinero.Instructions.Config;
+using Itinero.Instructions.Types;
 using Itinero.Routes;
 
 namespace Itinero.Instructions
@@ -26,7 +27,7 @@ namespace Itinero.Instructions
         public static Instructions FromFile(string path)
         {
             var jobj = JsonDocument.Parse(File.OpenRead(path));
-            var (generator, languages) = FromJson.ParseRouteToInstructions(jobj.RootElement);
+            var (generator, languages) = ConfigurationParser.ParseRouteToInstructions(jobj.RootElement);
 
             return new Instructions(generator, languages);
         }

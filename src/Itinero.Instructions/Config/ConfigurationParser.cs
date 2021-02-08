@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Itinero.Instructions.Types;
-using Itinero.Instructions.Types.Generators;
 
+[assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
 namespace Itinero.Instructions.Config
 {
     internal static class ConfigurationParser
@@ -25,24 +26,26 @@ namespace Itinero.Instructions.Config
             };
 
         /// <summary>
-        /// Parses the full pipeline
+        ///     Parses the full pipeline
         /// </summary>
         /// <param name="jsonElement">The json element to start from.</param>
-        /// <param name="getGenerator">A function to get a generator for a given name.</param>
         /// <returns>The instruction generator and the to text translators.</returns>
-        public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts) ParseRouteToInstructions(
-            JsonElement jsonElement, Func<string, IInstructionGenerator?> getGenerator)
+        public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
+            ParseRouteToInstructions(
+                JsonElement jsonElement)
         {
             // parse generator names and instantiate generators.
-            var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString()).ToList();
+            var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString())
+                .ToList();
             var generators = generatorNames.Select(name => {
-                var g = getGenerator(name);
-                if (g == null) throw new Exception($"Generator not found: {name}");
+                if (AllGenerators.AllGeneratorsDict.TryGetValue(name, out var g)) {
+                    return g;
+                }
 
-                return g;
+                throw new Exception($"Generator not found: {name}");
             });
             var generator = new LinearInstructionGenerator(generators);
-            
+
             // parse instructions to text configurations.
             var languages = jsonElement.GetProperty("languages");
             var toTexts = new Dictionary<string, IInstructionToText>();
@@ -98,7 +101,7 @@ namespace Itinero.Instructions.Config
          * A POSITIVE angle is going left,
          * A NEGATIVE angle is going right
          */
-        private static IInstructionToText ParseInstructionToText(JsonElement jobj,
+        internal static IInstructionToText ParseInstructionToText(JsonElement jobj,
             Box<IInstructionToText> wholeToText = null,
             Dictionary<string, IInstructionToText> extensions = null, string context = "")
         {
@@ -109,7 +112,7 @@ namespace Itinero.Instructions.Config
             foreach (var obj in jobj.EnumerateObject()) {
                 var key = obj.Name;
                 var value = obj.Value;
-                
+
                 if (key == "extensions") {
                     var extensionsSource = obj.Value;
                     foreach (var ext in extensionsSource.EnumerateObject()) {
@@ -148,7 +151,7 @@ namespace Itinero.Instructions.Config
             return false;
         }
 
-        private static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
+        internal static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
             Dictionary<string, IInstructionToText> extensions = null)
@@ -197,7 +200,7 @@ namespace Itinero.Instructions.Config
             return (instruction => instruction.Type == condition, false);
         }
 
-        private static SubstituteText ParseRenderValue(string value,
+        internal static SubstituteText ParseRenderValue(string value,
             Dictionary<string, IInstructionToText> extensions = null,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
@@ -212,7 +215,6 @@ namespace Itinero.Instructions.Config
 
                         v = v.Substring(1).Trim('{', '}').ToLower();
                         return (v, true);
-
                     }).ToList()
                 ;
             return new SubstituteText(parts, wholeToText, context, extensions, crashOnNotFound);

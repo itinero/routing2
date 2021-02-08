@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Itinero.Instructions;
-using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
 using Itinero.Routes;
 using Xunit;
 

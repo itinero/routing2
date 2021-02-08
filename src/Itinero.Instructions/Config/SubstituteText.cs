@@ -20,13 +20,6 @@ namespace Itinero.Instructions.Config
         private readonly Box<IInstructionToText> _nestedToText;
         private readonly IEnumerable<(string textOrVarName, bool substitute)> _text;
 
-        // /**
-        //  * Only used for testing
-        //  */
-        // internal SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$"))),
-        //     null,
-        //     "a unit test") { }
-
         public SubstituteText(
             IEnumerable<(string textOrVarName, bool substitute)> text,
             Box<IInstructionToText> nestedToText = null,

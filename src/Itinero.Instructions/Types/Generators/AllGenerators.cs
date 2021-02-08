@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Itinero.Instructions.Types.Generators;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     internal static class AllGenerators
     {
@@ -13,7 +14,7 @@ namespace Itinero.Instructions.Generators
             new BaseInstructionGenerator(),
             new EndInstructionGenerator(),
             new StartInstructionGenerator(),
-            new IntersectionInstruction.IntersectionInstructionGenerator(),
+            new IntersectionInstructionGenerator(),
             new RoundaboutInstructionGenerator(),
             new FollowAlongGenerator(),
             new FollowBendGenerator()

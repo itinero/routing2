@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Generators;
-using Itinero.Instructions.ToText;
+using Itinero.Instructions.Config;
+using Itinero.Instructions.Types;
 using Itinero.Routes;
 
 namespace Itinero.Instructions

@@ -2,9 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Itinero.Instructions;
-using Itinero.Instructions.Generators;
-using Itinero.Instructions.ToText;
-using Newtonsoft.Json.Linq;
+using Itinero.Instructions.Config;
+using Itinero.Instructions.Types.Generators;
 using Xunit;
 
 namespace Itinero.Tests.Instructions
@@ -34,7 +33,7 @@ namespace Itinero.Tests.Instructions
             "\"roundabout\": Taking the ${exitNumber}th exit\"";
 
         private static readonly IInstructionToText SimpleToText =
-            FromJson.ParseInstructionToText(JsonDocument.Parse("{" + baseInstructionToLeftRight + "}").RootElement);
+            ConfigurationParser.ParseInstructionToText(JsonDocument.Parse("{" + baseInstructionToLeftRight + "}").RootElement);
 
         private static readonly LinearInstructionGenerator gen = new(
             new EndInstructionGenerator(),

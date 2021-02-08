@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Itinero.Instructions.Generators;
-using Itinero.Instructions.ToText;
+using Itinero.Instructions.Config;
+using Itinero.Instructions.Types;
 using Xunit;
 
 namespace Itinero.Tests.Instructions
@@ -12,7 +12,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void ParseRenderValue_SimpleValue_SubstitutionInstruction()
         {
-            var parsed = FromJson.ParseRenderValue("Turn $turnDegrees around, so you are at $tUrnDeGReEs");
+            var parsed = ConfigurationParser.ParseRenderValue("Turn $turnDegrees around, so you are at $tUrnDeGReEs");
             var result = parsed.ToText(new BaseInstruction(null, 0, 42));
             Assert.Equal("Turn 42 around, so you are at 42", result);
         }
@@ -21,7 +21,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void ParseRenderValue_SubstitutionWithNoSpace_SubstitutionInstruction()
         {
-            var parsed = FromJson.ParseRenderValue("Take the ${exitNumber}th exit");
+            var parsed = ConfigurationParser.ParseRenderValue("Take the ${exitNumber}th exit");
             var result = parsed.ToText(new RoundaboutInstruction(null, 0, 5, 42, 5));
             Assert.Equal("Take the 5th exit", result);
         }
@@ -35,7 +35,7 @@ namespace Itinero.Tests.Instructions
                 " \"$startDegrees>135&$startDegrees<=225\": \"Start south\", " +
                 "\"$startDegrees>225\": \"Start west\" }}";
 
-            var toText = FromJson.ParseInstructionToText(JsonParse(input));
+            var toText = ConfigurationParser.ParseInstructionToText(JsonParse(input));
             var north = toText.ToText(new StartInstruction(null, 0, 0, 0));
             Assert.Equal("Start north", north);
             var east = toText.ToText(new StartInstruction(null, 0, 50, 0));
@@ -47,7 +47,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void ParseCondition_TypeCondition_BasicCondition()
         {
-            var (p, prior) = FromJson.ParseCondition("base");
+            var (p, prior) = ConfigurationParser.ParseCondition("base");
             Assert.False(prior);
             Assert.True(p(new BaseInstruction(null, 0, 42)));
             Assert.True(p(new BaseInstruction(null, 0, 43)));
@@ -56,7 +56,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void ParseCondition_EqCondition_BasicCondition()
         {
-            var (p, prior) = FromJson.ParseCondition("$turndegrees=42");
+            var (p, prior) = ConfigurationParser.ParseCondition("$turndegrees=42");
             Assert.False(prior);
             Assert.True(p(new BaseInstruction(null, 0, 42)));
             Assert.False(p(new BaseInstruction(null, 0, 43)));
@@ -65,26 +65,26 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void ParseCondition_CompareCondition_BasicCondition()
         {
-            var (p, _) = FromJson.ParseCondition("$turndegrees<=42");
+            var (p, _) = ConfigurationParser.ParseCondition("$turndegrees<=42");
             Assert.True(p(new BaseInstruction(null, 0, 35)));
             Assert.True(p(new BaseInstruction(null, 0, 42)));
             Assert.False(p(new BaseInstruction(null, 0, 43)));
             Assert.False(p(new BaseInstruction(null, 0, 50)));
 
-            (p, _) = FromJson.ParseCondition("$turndegrees<42");
+            (p, _) = ConfigurationParser.ParseCondition("$turndegrees<42");
             Assert.True(p(new BaseInstruction(null, 0, 35)));
             Assert.False(p(new BaseInstruction(null, 0, 42)));
             Assert.False(p(new BaseInstruction(null, 0, 43)));
             Assert.False(p(new BaseInstruction(null, 0, 50)));
 
 
-            (p, _) = FromJson.ParseCondition("$turndegrees>42");
+            (p, _) = ConfigurationParser.ParseCondition("$turndegrees>42");
             Assert.False(p(new BaseInstruction(null, 0, 35)));
             Assert.False(p(new BaseInstruction(null, 0, 42)));
             Assert.True(p(new BaseInstruction(null, 0, 43)));
             Assert.True(p(new BaseInstruction(null, 0, 50)));
 
-            (p, _) = FromJson.ParseCondition("$turndegrees>=42");
+            (p, _) = ConfigurationParser.ParseCondition("$turndegrees>=42");
             Assert.False(p(new BaseInstruction(null, 0, 35)));
             Assert.True(p(new BaseInstruction(null, 0, 42)));
             Assert.True(p(new BaseInstruction(null, 0, 43)));
@@ -94,7 +94,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void ParseCondition_FallbackCondition_BasicCondition()
         {
-            var (p, prior) = FromJson.ParseCondition("*");
+            var (p, prior) = ConfigurationParser.ParseCondition("*");
             Assert.True(prior);
             Assert.True(p(new BaseInstruction(null, 0, 42)));
             Assert.True(p(new BaseInstruction(null, 0, 43)));
@@ -108,7 +108,7 @@ namespace Itinero.Tests.Instructions
                 "\"$turnDegrees>-135&$turnDegrees<=-65\": \"Turn left onto $.name\",\"$turnDegrees>-65&$turnDegrees<=-25\": \"Turn slightly left onto $.name\",\"$turnDegrees<-25&$turnDegrees<25\": \"Continue onto $.name\",\"$turnDegrees>=135\": \"Turn sharply right onto $.name\",\"$turnDegrees<135&$turnDegrees>=65\": \"Turn right onto $.name\",\"$turnDegrees<65&$turnDegrees>=25\": \"Turn slightly right onto $.name\"}," +
                 "\"*\": \"Fallback: $type $turndegrees\"";
             var toText = (ConditionalToText)
-                FromJson.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
+                ConfigurationParser.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
             Assert.Equal(2, toText._options.Count());
             Assert.False(toText._options[0].predicate(new StartInstruction(null, 0, 0, 0)));
             Assert.True(toText._options[1].predicate(new StartInstruction(null, 0, 0, 0)));
@@ -132,7 +132,7 @@ namespace Itinero.Tests.Instructions
                 "$turnDegrees<135&$turnDegrees>=65\": \"Turn right\",\"$turnDegrees<65&$turnDegrees>=25\": \"Turn slightly right\"," +
                 "\"*\": \"Fallback: $type $turndegrees\"";
             var toText = (ConditionalToText)
-                FromJson.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
+                ConfigurationParser.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
             Assert.Equal(8, toText._options.Count());
             Assert.False(toText._options[0].predicate(new StartInstruction(null, 0, 0, 0)));
             Assert.True(toText._options[3].predicate(new StartInstruction(null, 0, 0, 0)));
@@ -156,7 +156,7 @@ namespace Itinero.Tests.Instructions
                 "\"*\": \"Fallback: $type $turndegrees\"";
 
             var toText = (ConditionalToText)
-                FromJson.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
+                ConfigurationParser.ParseInstructionToText(JsonParse("{" + baseInstructionToLeftRight + "}"));
 
             Assert.Equal(3, toText._options.Count());
 
@@ -190,7 +190,7 @@ namespace Itinero.Tests.Instructions
                 "\"base\": \"Go $lr\"," +
                 "\"roundabout\": \"Go $lr\"" +
                 "}";
-            var toText = FromJson.ParseInstructionToText(JsonParse(format));
+            var toText = ConfigurationParser.ParseInstructionToText(JsonParse(format));
 
             var l = toText.ToText(new BaseInstruction(null, 0, 90));
             Assert.Equal("Go left", l);
@@ -216,7 +216,7 @@ namespace Itinero.Tests.Instructions
                 "  }," +
                 "\"roundabout\": {\"*\": \"Go $lr\"}" +
                 "}";
-            var toText = FromJson.ParseInstructionToText(JsonParse(format), null, new Dictionary<string, IInstructionToText>());
+            var toText = ConfigurationParser.ParseInstructionToText(JsonParse(format), null, new Dictionary<string, IInstructionToText>());
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
         }
