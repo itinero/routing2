@@ -1,3 +1,4 @@
+// ReSharper disable MemberCanBePrivate.Global
 namespace Itinero.Instructions.Generators
 {
     /***
@@ -20,6 +21,7 @@ namespace Itinero.Instructions.Generators
         /// </summary>
         public readonly uint ProjectionDistance;
 
+        // ReSharper disable once NotAccessedField.Global
         public readonly BaseInstruction then;
 
         public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,

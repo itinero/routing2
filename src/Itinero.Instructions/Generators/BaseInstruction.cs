@@ -27,6 +27,27 @@ namespace Itinero.Instructions.Generators
     /// </summary>
     internal class BaseInstruction
     {
+        public BaseInstruction(IndexedRoute route,
+            int shapeIndex, int shapeIndexEnd, int turnDegrees)
+        {
+            this.Route = route;
+            this.ShapeIndex = shapeIndex;
+            this.ShapeIndexEnd = shapeIndexEnd;
+            this.TurnDegrees = turnDegrees;
+            this.Type = Tp(this);
+        }
+
+        public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
+        {
+            this.Route = route;
+            this.ShapeIndex = shapeIndex;
+            this.ShapeIndexEnd = shapeIndex + 1;
+            this.TurnDegrees = turnDegrees.NormalizeDegrees();
+            this.Type = Tp(this);
+        }
+        
+        /* Important: the below values should be FIELDS and _not_ have accessors with {get;} */
+
         /// <summary>
         ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
         ///     which starts at 'ShapeIndex', what should they do next?
@@ -48,27 +69,10 @@ namespace Itinero.Instructions.Generators
         /// </summary>
         public readonly int TurnDegrees;
 
+        /// <summary>
+        /// Gets the type of instruction.
+        /// </summary>
         public readonly string Type;
-
-
-        public BaseInstruction(IndexedRoute route,
-            int shapeIndex, int shapeIndexEnd, int turnDegrees)
-        {
-            Route = route;
-            ShapeIndex = shapeIndex;
-            ShapeIndexEnd = shapeIndexEnd;
-            TurnDegrees = turnDegrees;
-            Type = Tp(this);
-        }
-
-        public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
-        {
-            Route = route;
-            ShapeIndex = shapeIndex;
-            ShapeIndexEnd = shapeIndex + 1;
-            TurnDegrees = turnDegrees.NormalizeDegrees();
-            Type = Tp(this);
-        }
 
         public IndexedRoute Route {
             get; /* Important - because this is a property, it'll won't be picked up in the substitutions because that one only loads fields */
