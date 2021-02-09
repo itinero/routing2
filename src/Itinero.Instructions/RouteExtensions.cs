@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Itinero.Instructions.Types;
 using Itinero.Routes;
 
 namespace Itinero.Instructions
@@ -16,6 +14,14 @@ namespace Itinero.Instructions
             return new(route, generator);
         }
 
+        public static double DistanceBetween(this Route route, int shapeStart, int shapeEnd)
+        {
+            var sum = 0.0;
+            for (var i = shapeStart; i < shapeEnd; i++) {
+                sum += Utils.DistanceEstimateInMeter(route.Shape[i], route.Shape[i + 1]);
+            }
 
+            return sum;
+        }
     }
 }

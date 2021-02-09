@@ -1,3 +1,5 @@
+using System;
+
 namespace Itinero.Instructions.Types
 {
     /***
@@ -8,7 +10,7 @@ namespace Itinero.Instructions.Types
     {
         public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
             uint projectionDistance, BaseInstruction contained = null) :
-            base(route, 0, 0, turnDegrees)
+            base(route, 0, Math.Max(0, contained?.ShapeIndexEnd ?? 0), turnDegrees)
         {
             this.StartDegrees = absoluteStartingDegrees;
             this.ProjectionDistance = projectionDistance;

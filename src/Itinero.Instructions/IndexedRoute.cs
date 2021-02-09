@@ -130,7 +130,8 @@ namespace Itinero.Instructions
 
             return Utils.AngleBetween(prevPoint, this.Shape[offset]);
         }
-
+        
+ 
         /// <summary>
         ///     The direction change at a given shape index.
         ///     Going straight on at this shape will result in 0° here.
