@@ -75,6 +75,10 @@ namespace Itinero.Tests.Functional
                 var progress = new OsmStreamFilterProgress();
                 var osmPbfStream = new PBFOsmStreamSource(osmStream);
                 progress.RegisterSource(osmPbfStream);
+                
+                // 
+                
+                // 
                 routerDb.UseOsmData(progress);
             }
 

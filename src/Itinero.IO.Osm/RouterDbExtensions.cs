@@ -32,9 +32,12 @@ namespace Itinero.IO.Osm
             // get settings.
             var tagsFilter = settings.TagsFilter;
             var elevationHandler = settings.ElevationHandler;
+            
+            // TODO: preprocessors
+            
 
             // use writer to fill router db.
-            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, tagsFilter, elevationHandler);
+            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, elevationHandler);
             routerDbStreamTarget.RegisterSource(data);
             routerDbStreamTarget.Initialize();
             routerDbStreamTarget.Pull();
