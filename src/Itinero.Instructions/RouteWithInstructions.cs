@@ -82,10 +82,6 @@ namespace Itinero.Instructions
                 lastMeta = meta;
             }
 
-            if (metas.Last().Shape != _route.ShapeMeta.Last().Shape) {
-                throw new Exception("nooo");
-            }
-
             return new Route {
                 Attributes = _route.Attributes,
                 Branches = _route.Branches,
