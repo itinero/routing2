@@ -5,7 +5,7 @@ using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 using Itinero.Routes;
 
-namespace Itinero.Instructions
+namespace Itinero.Instructions.Config
 {
     /// <summary>
     /// Constructs instructions using the instruction constructors.
@@ -24,8 +24,7 @@ namespace Itinero.Instructions
     {
         private readonly IEnumerable<IInstructionGenerator> _constructors;
 
-        public LinearInstructionGenerator(
-            IEnumerable<IInstructionGenerator> constructors)
+        public LinearInstructionGenerator(IEnumerable<IInstructionGenerator> constructors)
         {
             _constructors = constructors;
         }
@@ -67,5 +66,6 @@ namespace Itinero.Instructions
 
             return instructions;
         }
+        
     }
 }

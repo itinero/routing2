@@ -1,8 +1,7 @@
 using System;
-using Itinero.Instructions.Types.Generators;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Types
+namespace Itinero.Instructions.Types.Generators
 {
     internal class FollowAlongGenerator : IInstructionGenerator
     {

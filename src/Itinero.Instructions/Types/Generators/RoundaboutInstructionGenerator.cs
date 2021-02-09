@@ -1,6 +1,4 @@
-using Itinero.Instructions.Types.Generators;
-
-namespace Itinero.Instructions.Types
+namespace Itinero.Instructions.Types.Generators
 {
     internal class RoundaboutInstructionGenerator : IInstructionGenerator
     {

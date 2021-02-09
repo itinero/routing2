@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Types.Generators;
 
-namespace Itinero.Instructions.Types
+namespace Itinero.Instructions.Types.Generators
 {
     internal class IntersectionInstructionGenerator : IInstructionGenerator
     {

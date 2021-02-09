@@ -28,7 +28,7 @@ namespace Itinero.Instructions.Types
     ///     - Written instructions, on app, which should show the appropriate text at the right time
     ///     - Extra information, e.g. about the street currently travelled, the next street, the upcoming turn, ...
     /// </remarks>
-    internal class BaseInstruction
+    public class BaseInstruction
     {
         public BaseInstruction(IndexedRoute route,
             int shapeIndex, int shapeIndexEnd, int turnDegrees)

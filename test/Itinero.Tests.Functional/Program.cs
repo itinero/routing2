@@ -101,21 +101,23 @@ namespace Itinero.Tests.Functional
 
             var latest = routerDb.Latest;
 
-            var instructions = Instructions.Instructions.FromFile(args[2]);
-
             routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
+
+            var instruction =
+                InstructionsGenerator.FromConfigFile("../../../../../src/Itinero.Instructions/Config/default.json");
+
 
             void TestInstructions(string name, (double lon, double lat, float? e) from,
                 (double lon, double lat, float? e) to)
             {
                 var latest = routerDb.Latest;
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
-                    .To(latest.Snap().To(to)).Calculate().Value;
-                var instr = instructions.Generate(route, "en");
+                    .To(latest.Snap().To(to)).Calculate().Value
+                    .WithInstructions(instruction)
+                    .MergeInstructions("maneuver", "en");
+                
                 File.WriteAllText(name + ".geojson",
-                    IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonLines(instr)));
-                File.WriteAllText(name + ".points.geojson",
-                    IndexedRoute.InGeoJson(new IndexedRoute(route).GeojsonPoints()));
+                    new IndexedRoute(route).GeojsonLines());
             }
 
 

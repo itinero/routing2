@@ -6,7 +6,7 @@ using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 using Itinero.Routes;
 using Xunit;
-using LinearInstructionGenerator = Itinero.Instructions.LinearInstructionGenerator;
+using LinearInstructionGenerator = Itinero.Instructions.Config.LinearInstructionGenerator;
 
 namespace Itinero.Tests.Instructions
 {

@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Itinero.Instructions.Types;
+using Itinero.Instructions.Types.Generators;
 
 [assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
 namespace Itinero.Instructions.Config
@@ -29,16 +30,18 @@ namespace Itinero.Instructions.Config
         ///     Parses the full pipeline
         /// </summary>
         /// <param name="jsonElement">The json element to start from.</param>
+        /// <param name="knownGenerators">The instruction generators that can be used during the construction - should include them all explicitely</param>
         /// <returns>The instruction generator and the to text translators.</returns>
         public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
             ParseRouteToInstructions(
-                JsonElement jsonElement)
+                JsonElement jsonElement,
+                Dictionary<string, IInstructionGenerator> knownGenerators)
         {
             // parse generator names and instantiate generators.
             var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString())
                 .ToList();
             var generators = generatorNames.Select(name => {
-                if (AllGenerators.AllGeneratorsDict.TryGetValue(name, out var g)) {
+                if (knownGenerators.TryGetValue(name, out var g)) {
                     return g;
                 }
 
