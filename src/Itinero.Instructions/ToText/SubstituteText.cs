@@ -15,17 +15,17 @@ namespace Itinero.Instructions.ToText
         private readonly string _context;
         private readonly bool _crashOnMissingKey;
 
-        private readonly Dictionary<string, IInstructionToText>
+        private readonly Dictionary<string, IInstructionToText>?
             _extensions; // extra "fields" to convert this into a string
 
-        private readonly Box<IInstructionToText> _nestedToText;
+        private readonly Box<IInstructionToText>? _nestedToText;
         private readonly IEnumerable<(string textOrVarName, bool substitute)> _text;
 
         public SubstituteText(
             IEnumerable<(string textOrVarName, bool substitute)> text,
-            Box<IInstructionToText> nestedToText = null,
+            Box<IInstructionToText>? nestedToText = null,
             string context = "context not set",
-            Dictionary<string, IInstructionToText> extensions = null,
+            Dictionary<string, IInstructionToText>? extensions = null,
             bool crashOnMissingKey = true
         )
         {
@@ -41,7 +41,7 @@ namespace Itinero.Instructions.ToText
             _crashOnMissingKey = crashOnMissingKey;
         }
 
-        public string ToText(BaseInstruction instruction)
+        public string? ToText(BaseInstruction instruction)
         {
             var subsValues = new Dictionary<string, object>();
 
@@ -76,7 +76,7 @@ namespace Itinero.Instructions.ToText
                             return null;
                         }
 
-                        var segment = instruction.Route?.Meta[index]?.Attributes;
+                        var segment = instruction.Route?.Meta?[index]?.Attributes;
                         if (segment == null || !segment.TryGetValue(key, out var v)) {
                             if (_crashOnMissingKey) {
                                 throw new KeyNotFoundException("The segment does not contain a key  " + text +

@@ -8,21 +8,21 @@ using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 
 [assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
+
 namespace Itinero.Instructions.ToText
 {
     internal static class ConfigurationParser
     {
-        
         private static readonly Regex RenderValueRegex =
             new(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
 
-        private static readonly List<(string, Predicate<(string a, string b)>)> Operators =
+        private static readonly List<(string, Predicate<(string? a, string? b)>)> Operators =
             new() {
                 // This is a list, as we first need to match '<=' and '>=', otherwise we might think the match is "abc<" = "def", not "abc" <= "def
                 ("<=", t => BothDouble(t, d => d.a <= d.b)),
                 (">=", t => BothDouble(t, d => d.a >= d.b)),
-                ("!=", t => t.a != t.b),
-                ("=", t => t.a == t.b),
+                ("!=", t => t.a != null && t.b != null && t.a != t.b),
+                ("=", t => t.a != null && t.b != null && t.a == t.b),
                 ("<", t => BothDouble(t, d => d.a < d.b)),
                 (">", t => BothDouble(t, d => d.a > d.b))
             };
@@ -31,7 +31,10 @@ namespace Itinero.Instructions.ToText
         ///     Parses the full pipeline
         /// </summary>
         /// <param name="jsonElement">The json element to start from.</param>
-        /// <param name="knownGenerators">The instruction generators that can be used during the construction - should include them all explicitely</param>
+        /// <param name="knownGenerators">
+        ///     The instruction generators that can be used during the construction - should include them
+        ///     all explicitely
+        /// </param>
         /// <returns>The instruction generator and the to text translators.</returns>
         public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
             ParseRouteToInstructions(
@@ -106,8 +109,8 @@ namespace Itinero.Instructions.ToText
          * A NEGATIVE angle is going right
          */
         internal static IInstructionToText ParseInstructionToText(JsonElement jobj,
-            Box<IInstructionToText> wholeToText = null,
-            Dictionary<string, IInstructionToText> extensions = null, string context = "")
+            Box<IInstructionToText>? wholeToText = null,
+            Dictionary<string, IInstructionToText>? extensions = null, string context = "")
         {
             extensions ??= new Dictionary<string, IInstructionToText>();
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
@@ -137,7 +140,7 @@ namespace Itinero.Instructions.ToText
         }
 
         private static IInstructionToText ParseSubObj(JsonElement j, string context,
-            Dictionary<string, IInstructionToText> extensions, Box<IInstructionToText> wholeToText)
+            Dictionary<string, IInstructionToText> extensions, Box<IInstructionToText>? wholeToText)
         {
             if (j.ValueKind == JsonValueKind.String) {
                 return ParseRenderValue(j.GetString(), extensions, wholeToText, context);
@@ -146,7 +149,7 @@ namespace Itinero.Instructions.ToText
             return ParseInstructionToText(j, wholeToText, extensions, context);
         }
 
-        private static bool BothDouble((string a, string b) t, Predicate<(double a, double b)> p)
+        private static bool BothDouble((string? a, string? b) t, Predicate<(double a, double b)> p)
         {
             if (double.TryParse(t.a, out var a) && double.TryParse(t.b, out var b)) {
                 return p.Invoke((a, b));
@@ -156,9 +159,9 @@ namespace Itinero.Instructions.ToText
         }
 
         internal static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
-            Box<IInstructionToText> wholeToText = null,
+            Box<IInstructionToText>? wholeToText = null,
             string context = "",
-            Dictionary<string, IInstructionToText> extensions = null)
+            Dictionary<string, IInstructionToText>? extensions = null)
         {
             if (condition == "*") {
                 return (_ => true, true);
@@ -182,7 +185,7 @@ namespace Itinero.Instructions.ToText
                 var parts = condition.Split(key).Select(renderValue =>
                         ParseRenderValue(renderValue, extensions, wholeToText, context + "." + key, false))
                     .ToList();
-                if (parts.Count() != 2) {
+                if (parts.Count != 2) {
                     throw new ArgumentException("Parsing condition " + condition +
                                                 " failed, it has an operator, but to much matches. Maybe you forgot to add an '&' between the conditions?");
                 }
@@ -201,12 +204,14 @@ namespace Itinero.Instructions.ToText
                 return (instruction => rendered.ToText(instruction) != null, false);
             }
 
-            return (instruction => instruction.Type == condition, false);
+            return (
+                instruction => string.Equals(instruction.Type, condition, StringComparison.CurrentCultureIgnoreCase),
+                false);
         }
 
         internal static SubstituteText ParseRenderValue(string value,
-            Dictionary<string, IInstructionToText> extensions = null,
-            Box<IInstructionToText> wholeToText = null,
+            Dictionary<string, IInstructionToText>? extensions = null,
+            Box<IInstructionToText>? wholeToText = null,
             string context = "",
             bool crashOnNotFound = true)
         {

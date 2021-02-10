@@ -12,6 +12,6 @@ namespace Itinero.Instructions.ToText
         /// </summary>
         /// <param name="instruction">The instruction to translate.</param>
         /// <returns>The instruction text.</returns>
-        string ToText(BaseInstruction instruction);
+        string? ToText(BaseInstruction instruction);
     }
 }
