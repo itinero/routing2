@@ -53,7 +53,7 @@ namespace Itinero.Instructions.Types
         ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
         ///     which starts at 'ShapeIndex', what should they do next?
         /// </summary>
-        public readonly int ShapeIndex;
+        public int ShapeIndex { get; }
 
         /// <summary>
         ///     The index where the described instruction stops.
@@ -62,13 +62,13 @@ namespace Itinero.Instructions.Types
         ///         ShapeIndex; some others describe multiple segments
         ///     </remarks>
         /// </summary>
-        public readonly int ShapeIndexEnd;
+        public int ShapeIndexEnd { get; }
 
         /// <summary>
         ///     The amount of degrees to turn at the end of the road.
         ///     0° is straight on, positive is turning left and negative is turning right
         /// </summary>
-        public readonly int TurnDegrees;
+        public int TurnDegrees { get; }
 
         /// <summary>
         ///     Gets the type of instruction.
