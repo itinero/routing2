@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Itinero.Instructions.Config;
+using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types;
 using Xunit;
 

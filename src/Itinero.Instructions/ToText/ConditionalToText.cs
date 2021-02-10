@@ -7,7 +7,7 @@ using Itinero.Instructions.Types;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Instructions.Config
+namespace Itinero.Instructions.ToText
 {
     /// <summary>
     /// The conditional to text simply contains a list of conditions (predicates) and appropriate 'toText' to generate;

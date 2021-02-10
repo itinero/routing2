@@ -13,16 +13,16 @@ namespace Itinero.Instructions
     /// </summary>
     public class IndexedRoute
     {
-        public readonly List<List<Route.Branch>> Branches;
+        public List<List<Route.Branch>> Branches { get; }
 
         /// <summary>
         ///     A one-on-one list, where every meta is matched with every shape.
         ///     (thus: Meta[i] will correspond with the meta for the segment starting at Shape[i]
         ///     (Note that Shape[Shape.Count - 1] is thus _not_ defined
         /// </summary>
-        public readonly List<Route.Meta> Meta;
+        public List<Route.Meta> Meta { get; }
 
-        public readonly Route Route;
+        public Route Route { get; }
 
 
         internal IndexedRoute(Route route)

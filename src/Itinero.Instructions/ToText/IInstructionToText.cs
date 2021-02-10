@@ -1,6 +1,6 @@
 using Itinero.Instructions.Types;
 
-namespace Itinero.Instructions.Config
+namespace Itinero.Instructions.ToText
 {
     /// <summary>
     /// Abstract representation of a class to translate instructions to text.

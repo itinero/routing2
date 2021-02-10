@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Itinero.Instructions.Config;
+using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types;
 using Xunit;
 

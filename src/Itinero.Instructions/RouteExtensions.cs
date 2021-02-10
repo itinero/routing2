@@ -7,11 +7,18 @@ namespace Itinero.Instructions
         /// <summary>
         ///     Adds instructions to the route,
         /// </summary>
-        /// <param name="route"></param>
         /// <returns></returns>
         public static RouteWithInstructions WithInstructions(this Route route, InstructionsGenerator generator)
         {
             return new(route, generator);
+        }
+        /// <summary>
+        ///     Adds the default instructions to the route,
+        /// </summary>
+        /// <returns></returns>
+        public static RouteWithInstructions WithInstructions(this Route route)
+        {
+            return new(route, InstructionsGenerator.Default);
         }
 
         public static double DistanceBetween(this Route route, int shapeStart, int shapeEnd)

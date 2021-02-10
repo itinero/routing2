@@ -36,7 +36,7 @@ namespace Itinero.Instructions.Types.Generators
         }
 
         public static Dictionary<string, IInstructionGenerator> GetDict(
-            IEnumerable<IInstructionGenerator> extraGenerators = null)
+            IEnumerable<IInstructionGenerator>? extraGenerators = null)
         {
             var dict = new Dictionary<string, IInstructionGenerator>();
 

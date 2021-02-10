@@ -112,9 +112,10 @@ namespace Itinero.Tests.Functional
             {
                 var latest = routerDb.Latest;
                 var route = latest.Route(bicycle).From(latest.Snap().To(from))
-                    .To(latest.Snap().To(to)).Calculate().Value
+                    .To(latest.Snap().To(to)).Calculate()
+                    .Value
                     .WithInstructions(instruction)
-                    .MergeInstructions("maneuver", "en");
+                    .MergeInstructions(("maneuver:en", "en"), ("maneuver:fr", "fr"));
                 
                 File.WriteAllText(name + ".geojson",
                     new IndexedRoute(route).GeojsonLines());

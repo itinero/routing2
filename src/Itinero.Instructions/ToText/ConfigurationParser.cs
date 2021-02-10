@@ -8,10 +8,11 @@ using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 
 [assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
-namespace Itinero.Instructions.Config
+namespace Itinero.Instructions.ToText
 {
     internal static class ConfigurationParser
     {
+        
         private static readonly Regex RenderValueRegex =
             new(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
 

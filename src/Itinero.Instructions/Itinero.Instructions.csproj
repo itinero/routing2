@@ -12,11 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Languages\en-GB.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Config\default.json" />
+      <EmbeddedResource Include="ToText\default.json" />
     </ItemGroup>
 
 </Project>

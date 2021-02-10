@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Itinero.Instructions.Types;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Config
+namespace Itinero.Instructions.ToText
 {
     /***
      * Instruction to text changes an instruction object into text based on simple substitution.

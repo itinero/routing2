@@ -53,19 +53,6 @@ namespace Itinero
         }
 
         /// <summary>
-        /// Applies the given function on the value if any, returns the error message otherwise.
-        /// </summary>
-        /// <returns>A newly constructed 'Result' object, with either f(r.Value) or r.ErrorMessage</returns>
-        public Result<X> Map<X>(Func<T, X> f)
-        {
-            if (this) {
-                return new Result<X>(f(_value));
-            }
-
-            return new Result<X>(this.ErrorMessage);
-        }
-
-        /// <summary>
         /// Implicit conversion to a boolean indication success or fail.
         /// </summary>
         /// <param name="result">The result object.</param>
