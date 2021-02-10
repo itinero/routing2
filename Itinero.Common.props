@@ -3,7 +3,7 @@
   
   <!--- Package information, Version -->
   <PropertyGroup>
-    <PackageVersion>2.0.0-alpha-006</PackageVersion>
+    <PackageVersion>2.0.0-alpha-007</PackageVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Description>Itinero - Routeplanning for .NET.</Description>
     <Copyright>Itinero BV</Copyright>
@@ -12,6 +12,7 @@
     <PackageIconUrl>http://www.itinero.tech/logos/itinero_logo_notext.svg.128.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/itinero/routing2/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Itinero Contributors</Authors>
     <Company>Itinero BV</Company>
   </PropertyGroup>

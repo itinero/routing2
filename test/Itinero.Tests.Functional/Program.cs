@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Geo.Elevation;
 using Itinero.Instructions;
+using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua.Osm;
@@ -12,8 +12,6 @@ using Itinero.Tests.Functional.Download;
 using OsmSharp.Logging;
 using Serilog;
 using Serilog.Events;
-using SRTM;
-using SRTM.Sources;
 using TraceEventType = Itinero.Logging.TraceEventType;
 
 namespace Itinero.Tests.Functional
@@ -36,51 +34,49 @@ namespace Itinero.Tests.Functional
 
             TileParser.DownloadFunc = DownloadHelper.Download;
 
-            // create a new srtm data instance.
-            // it accepts a folder to download and cache data into.
-            var srtmCache = new DirectoryInfo("srtm-cache");
-            if (!srtmCache.Exists) {
-                srtmCache.Create();
-            }
+            // // create a new srtm data instance.
+            // // it accepts a folder to download and cache data into.
+            // var srtmCache = new DirectoryInfo("srtm-cache");
+            // if (!srtmCache.Exists) {
+            //     srtmCache.Create();
+            // }
 
-            // setup elevation integration.
-            var srtmData = new SRTMData(srtmCache.FullName) {
-                GetMissingCell = (string path, string name) => {
-                    var filename = name + ".hgt.zip";
-                    var hgt = Path.Combine(path, filename);
-
-                    if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename)) {
-                        return true;
-                    }
-
-                    return false;
-                }
-            };
-            ElevationHandler.Default = new ElevationHandler((lat, lon) => {
-                var elevation = srtmData.GetElevation(lat, lon);
-                if (!elevation.HasValue) {
-                    return 0;
-                }
-
-                return (short) elevation;
-            });
+            // // setup elevation integration.
+            // var srtmData = new SRTMData(srtmCache.FullName) {
+            //     GetMissingCell = (string path, string name) => {
+            //         var filename = name + ".hgt.zip";
+            //         var hgt = Path.Combine(path, filename);
+            //
+            //         if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename)) {
+            //             return true;
+            //         }
+            //
+            //         return false;
+            //     }
+            // };
+            // ElevationHandler.Default = new ElevationHandler((lat, lon) => {
+            //     var elevation = srtmData.GetElevation(lat, lon);
+            //     if (!elevation.HasValue) {
+            //         return 0;
+            //     }
+            //
+            //     return (short) elevation;
+            // });
 
             TileParser.DownloadFunc = DownloadHelper.Download;
 
             var bicycle = OsmProfiles.Bicycle;
             var pedestrian = OsmProfiles.Pedestrian;
 
-            /*
-           
             // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration() {
+            var routerDb = new RouterDb(new RouterDbConfiguration {
                 Zoom = 14
             });
             routerDb.PrepareFor(bicycle);
-            
-            routerDb.PrepareFor(bicycle);
+
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+
             /*using var osmStream = File.OpenRead(args[0]);
             using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
                 "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
@@ -96,8 +92,6 @@ namespace Itinero.Tests.Functional
             }*/
 
             //*/
-            var routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
-            routerDb.PrepareFor(bicycle);
 
             var latest = routerDb.Latest;
 
@@ -116,27 +110,12 @@ namespace Itinero.Tests.Functional
                     .Value
                     .WithInstructions(instruction)
                     .MergeInstructions(("maneuver:en", "en"), ("maneuver:fr", "fr"));
-                
+
                 File.WriteAllText(name + ".geojson",
                     new IndexedRoute(route).GeojsonLines());
             }
 
 
-            TestInstructions("pietervdvn2station",
-                (3.2201850414276123, 51.21573337581372, null),
-                (3.218393325805664, 51.19681315008202, null));
-
-            TestInstructions("benoitlaan", (3.2120606303215027, 51.21027101966819, null), (3.199746608734131,
-                51.20655402916297, null));
-
-            // var latest = routerDb.Latest;
-            //
-            // var snap1 = latest.Snap().To(5.9732794761657715,
-            //     49.93364075288293).Value;
-            // var snap2 = latest.Snap().To(5.972356796264648,
-            //     49.93735597155516).Value;
-            // var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            // var json = route.Value.ToGeoJson();
             //
             // routerDb.PrepareFor(bicycle);
             //

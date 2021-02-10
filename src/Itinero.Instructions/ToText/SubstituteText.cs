@@ -101,7 +101,7 @@ namespace Itinero.Instructions.ToText
                     }
                     else if (_crashOnMissingKey) {
                         throw new KeyNotFoundException(
-                            $"The instruction does not contain a field or extension with name {text}; try one of {string.Join(", ", subsValues.Keys)} or an extensions such as {string.Join(", ", _extensions?.Keys.ToList() ?? new List<string>())}. Did you intend to use a segment property? Use $.{text} instead. This happened at {_context}");
+                            $"The instruction of type {instruction.Type} does not contain a field or extension with name {text}; try one of {string.Join(", ", subsValues.Keys)} or an extensions such as {string.Join(", ", _extensions?.Keys.ToList() ?? new List<string>())}. Did you intend to use a segment property? Use $.{text} instead. This happened at {_context}");
                     }
                     else {
                         return null;

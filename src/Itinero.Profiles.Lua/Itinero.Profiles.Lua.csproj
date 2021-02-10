@@ -11,11 +11,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="**\*.lua" />
-        <EmbeddedResource Include="**\*.lua" />
+      <ProjectReference Include="..\Itinero\Itinero.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Itinero\Itinero.csproj" />
+      <None Remove="Osm\bicycle.lua" />
+      <EmbeddedResource Include="Osm\bicycle.lua" />
+      <None Remove="Osm\pedestrian.lua" />
+      <EmbeddedResource Include="Osm\pedestrian.lua" />
     </ItemGroup>
+
 </Project>

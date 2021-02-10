@@ -8,7 +8,7 @@ namespace Itinero.Profiles.Lua.Osm
     /// </summary>
     public static class OsmProfiles
     {
-        private static readonly Lazy<Profile> LazyBicycle = new Lazy<Profile>(() =>
+        private static readonly Lazy<Profile> LazyBicycle = new(() =>
         {
             var script = new Script();
             script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.bicycle.lua"));
@@ -20,7 +20,7 @@ namespace Itinero.Profiles.Lua.Osm
         /// </summary>
         public static Profile Bicycle { get; } = LazyBicycle.Value;
         
-        private static readonly Lazy<Profile> LazyPedestrian = new Lazy<Profile>(() =>
+        private static readonly Lazy<Profile> LazyPedestrian = new(() =>
         {
             var script = new Script();
             script.DoString(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.pedestrian.lua"));
@@ -37,14 +37,10 @@ namespace Itinero.Profiles.Lua.Osm
         /// </summary>
         private static string LoadEmbeddedResource(string name)
         {
-            using (var stream = typeof(OsmProfiles).Assembly.GetManifestResourceStream(name))
-            {
-                if (stream == null) throw new Exception($"Profile {name} not found.");
-                using (var streamReader = new StreamReader(stream))
-                {
-                    return streamReader.ReadToEnd();
-                }
-            }
+            using var stream = typeof(Script).Assembly.GetManifestResourceStream(name);
+            if (stream == null) throw new Exception($"Profile {name} not found.");
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
         }
     }
 }
