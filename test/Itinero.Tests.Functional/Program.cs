@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.Geo.Elevation;
 using Itinero.Instructions;
-using Itinero.IO.Json.GeoJson;
+using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua.Osm;
@@ -12,16 +13,20 @@ using Itinero.Tests.Functional.Download;
 using OsmSharp.Logging;
 using Serilog;
 using Serilog.Events;
+using SRTM;
+using SRTM.Sources;
 using TraceEventType = Itinero.Logging.TraceEventType;
 
 namespace Itinero.Tests.Functional
 {
-    internal class Program
+    internal static class Program
     {
-        private static void Main(string[] args)
+        private static RouterDb DownloadRouterDb(
+            string localFile,
+            string remoteSourceUrl = "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf",
+            string localTargetFile = "data.routerdb"
+            )
         {
-            EnableLogging();
-
             // make sure the results folder exists.
             if (!Directory.Exists("results")) {
                 Directory.CreateDirectory("results");
@@ -34,86 +39,84 @@ namespace Itinero.Tests.Functional
 
             TileParser.DownloadFunc = DownloadHelper.Download;
 
-            // // create a new srtm data instance.
-            // // it accepts a folder to download and cache data into.
-            // var srtmCache = new DirectoryInfo("srtm-cache");
-            // if (!srtmCache.Exists) {
-            //     srtmCache.Create();
-            // }
+            // create a new srtm data instance.
+            // it accepts a folder to download and cache data into.
+            var srtmCache = new DirectoryInfo("srtm-cache");
+            if (!srtmCache.Exists) {
+                srtmCache.Create();
+            }
 
-            // // setup elevation integration.
-            // var srtmData = new SRTMData(srtmCache.FullName) {
-            //     GetMissingCell = (string path, string name) => {
-            //         var filename = name + ".hgt.zip";
-            //         var hgt = Path.Combine(path, filename);
-            //
-            //         if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename)) {
-            //             return true;
-            //         }
-            //
-            //         return false;
-            //     }
-            // };
-            // ElevationHandler.Default = new ElevationHandler((lat, lon) => {
-            //     var elevation = srtmData.GetElevation(lat, lon);
-            //     if (!elevation.HasValue) {
-            //         return 0;
-            //     }
-            //
-            //     return (short) elevation;
-            // });
+            // setup elevation integration.
+            var srtmData = new SRTMData(srtmCache.FullName) {
+                GetMissingCell = (path, name) => {
+                    var filename = name + ".hgt.zip";
+                    var hgt = Path.Combine(path, filename);
 
-            TileParser.DownloadFunc = DownloadHelper.Download;
+                    if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename)) {
+                        return true;
+                    }
 
-            var bicycle = OsmProfiles.Bicycle;
-            var pedestrian = OsmProfiles.Pedestrian;
+                    return false;
+                }
+            };
+            ElevationHandler.Default = new ElevationHandler((lat, lon) => {
+                var elevation = srtmData.GetElevation(lat, lon);
+                if (!elevation.HasValue) {
+                    return 0;
+                }
 
-            // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration {
-                Zoom = 14
+                return (short) elevation;
             });
-            routerDb.PrepareFor(bicycle);
-
+            
+            
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
 
-            /*using var osmStream = File.OpenRead(args[0]);
-            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+            using var osmStream = File.OpenRead(Staging.Download.Get(localFile, remoteSourceUrl));
             //using var osmStream = File.OpenRead(args[0]);
             var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
             var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
             progress.RegisterSource(osmPbfStream);
+            var routerDb = new RouterDb(new RouterDbConfiguration {
+                Zoom = 14
+            });
             routerDb.UseOsmData(progress);
-            
-            using (var outputStream = File.Open(args[1], FileMode.Create))
-            {
-                routerDb.WriteTo(outputStream);
-            }*/
 
-            //*/
+            using var outputStream = File.Open(localTargetFile, FileMode.Create);
+            routerDb.WriteTo(outputStream);
 
+            return routerDb;
+        }
+
+        public static void TestInstructions(this RouterDb routerDb, 
+            Profile profile,
+            InstructionsGenerator instructions,
+            string name, (double lon, double lat, float? e) from,
+            (double lon, double lat, float? e) to)
+        {
             var latest = routerDb.Latest;
+            var route = latest.Route(profile).From(latest.Snap().To(from))
+                .To(latest.Snap().To(to)).Calculate()
+                .Value
+                .WithInstructions(instructions)
+                .MergeInstructions(("maneuver:en", "en"), ("maneuver:fr", "fr"));
 
-            routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
+            File.WriteAllText(name + ".geojson",
+                new IndexedRoute(route).GeojsonLines());
+        }
+        
 
-            var instruction =
-                InstructionsGenerator.FromConfigFile("../../../../../src/Itinero.Instructions/Config/default.json");
+        private static void Main(string[] args)
+        {
+            EnableLogging();
 
 
-            void TestInstructions(string name, (double lon, double lat, float? e) from,
-                (double lon, double lat, float? e) to)
-            {
-                var latest = routerDb.Latest;
-                var route = latest.Route(bicycle).From(latest.Snap().To(from))
-                    .To(latest.Snap().To(to)).Calculate()
-                    .Value
-                    .WithInstructions(instruction)
-                    .MergeInstructions(("maneuver:en", "en"), ("maneuver:fr", "fr"));
+            TileParser.DownloadFunc = DownloadHelper.Download;
 
-                File.WriteAllText(name + ".geojson",
-                    new IndexedRoute(route).GeojsonLines());
-            }
+            DownloadRouterDb("belgium-latest.osm.pbf",
+                "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf",
+                "belgium-latest.routerdb"
+            );
 
 
             //
