@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
@@ -9,6 +9,10 @@ using Itinero.Instructions.Generators;
 
 namespace Itinero.Instructions.ToText
 {
+    /// <summary>
+    /// The conditional to text simply contains a list of conditions (predicates) and appropriate 'toText' to generate;
+    /// It basically implements a 'switch case'-instruction
+    /// </summary>
     internal class ConditionalToText : IInstructionToText
     {
         internal readonly List<(Predicate<BaseInstruction> predicate, IInstructionToText toText)> _options;

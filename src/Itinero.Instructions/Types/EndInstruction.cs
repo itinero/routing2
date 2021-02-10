@@ -1,5 +1,4 @@
-// ReSharper disable MemberCanBePrivate.Global
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     /***
      * The 'startInstruction' represents the projection from the actual startpoint (e.g. an adress) to the snapped point on the road.
@@ -29,14 +28,6 @@ namespace Itinero.Instructions.Generators
         public override string ToString()
         {
             return $"Your destination lies {ProjectionDistance}m away from the road";
-        }
-    }
-
-    internal class EndInstructionGenerator : IInstructionGenerator
-    {
-        public BaseInstruction Generate(IndexedRoute route, int offset)
-        {
-            return route.Last - 1 == offset ? new EndInstruction(route) : null;
         }
     }
 }

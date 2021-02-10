@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Geo.Elevation;
 using Itinero.Instructions;
 using Itinero.IO.Json.GeoJson;
-using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua.Osm;
@@ -14,8 +12,6 @@ using Itinero.Tests.Functional.Download;
 using OsmSharp.Logging;
 using Serilog;
 using Serilog.Events;
-using SRTM;
-using SRTM.Sources;
 using TraceEventType = Itinero.Logging.TraceEventType;
 
 namespace Itinero.Tests.Functional
@@ -71,36 +67,55 @@ namespace Itinero.Tests.Functional
 
             var bicycle = OsmProfiles.Bicycle;
             var pedestrian = OsmProfiles.Pedestrian;
-           
+
             // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration() {
+            var routerDb = new RouterDb(new RouterDbConfiguration {
                 Zoom = 14
             });
             routerDb.PrepareFor(bicycle);
-            
+
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            using (var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"))) {
-                //using var osmStream = File.OpenRead(args[0]);
-                var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
-                var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
-                progress.RegisterSource(osmPbfStream);
-                routerDb.UseOsmData(progress);
-            }
+
+            /*using var osmStream = File.OpenRead(args[0]);
+            using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+            //using var osmStream = File.OpenRead(args[0]);
+            var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
+            var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
+            progress.RegisterSource(osmPbfStream);
+            routerDb.UseOsmData(progress);
+            
+            using (var outputStream = File.Open(args[1], FileMode.Create))
+            {
+                routerDb.WriteTo(outputStream);
+            }*/
+
+            //*/
 
             var latest = routerDb.Latest;
-            
-            var snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            var snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            var json = route.Value.ToGeoJson();
-            
-            var instructions = Instructions.Instructions.Default()
-                .Generate(route.Value, "en");
-            
+
+            routerDb = RouterDb.ReadFrom(File.OpenRead(args[1]));
+
+            var instruction =
+                InstructionsGenerator.FromConfigFile("../../../../../src/Itinero.Instructions/Config/default.json");
+
+
+            void TestInstructions(string name, (double lon, double lat, float? e) from,
+                (double lon, double lat, float? e) to)
+            {
+                var latest = routerDb.Latest;
+                var route = latest.Route(bicycle).From(latest.Snap().To(from))
+                    .To(latest.Snap().To(to)).Calculate()
+                    .Value
+                    .WithInstructions(instruction)
+                    .MergeInstructions(("maneuver:en", "en"), ("maneuver:fr", "fr"));
+
+                File.WriteAllText(name + ".geojson",
+                    new IndexedRoute(route).GeojsonLines());
+            }
+
+
             //
             // routerDb.PrepareFor(bicycle);
             //

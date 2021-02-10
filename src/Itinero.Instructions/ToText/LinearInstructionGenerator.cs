@@ -1,38 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
+using Itinero.Instructions.Types.Generators;
 using Itinero.Routes;
 
-namespace Itinero.Instructions
+namespace Itinero.Instructions.ToText
 {
-    /**
-     * Given a list of IInstructionConstructors, the SimpleInstructionGenerator will construct a route in the following way:
-     * - Try to generate a base instruction with the first instruction in the list. If this fails, try the next one
-     * - Check the shape-index of the generated instruction and move the index of the route forward
-     * - Try to generate a new instruction as described above
-     *
-     * This means that the list of 'baseInstructionConstructors' should go from "very specialized" to "very generic", e.g.
-     * the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
-     * whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
-     */
+    /// <summary>
+    /// Constructs instructions using the instruction constructors.
+    /// </summary>
+    /// <remarks>
+    /// Given a list of instruction constructors, this will construct a route in the following way:
+    ///  - Try to generate a base instruction with the first instruction in the list. If this fails, try the next one
+    ///  - Check the shape-index of the generated instruction and move the index of the route forward
+    ///  - Try to generate a new instruction as described above
+    /// 
+    ///  This means that the list of 'baseInstructionConstructors' should go from "very specialized" to "very generic", e.g.
+    ///  the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
+    ///  whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
+    /// </remarks>
     internal class LinearInstructionGenerator
     {
         private readonly IEnumerable<IInstructionGenerator> _constructors;
-
-        public LinearInstructionGenerator(
-            IEnumerable<string> constructorNames) :
-            this(constructorNames.Select(name => {
-                if (AllGenerators.AllGeneratorsDict.TryGetValue(name, out var gen)) {
-                    return gen;
-                }
-
-                throw new Exception("The generator " + name + "; try one of " +
-                                    string.Join(", ", AllGenerators.AllGeneratorsDict.Keys));
-            })) { }
-
-        public LinearInstructionGenerator(
-            IEnumerable<IInstructionGenerator> constructors)
+        
+        public LinearInstructionGenerator(IEnumerable<IInstructionGenerator> constructors)
         {
             _constructors = constructors;
         }
@@ -60,7 +52,7 @@ namespace Itinero.Instructions
 
             var currentIndex = 0;
             while (currentIndex < indexedRoute.Last) {
-                var instruction = ConstructNext(indexedRoute, currentIndex);
+                var instruction = this.ConstructNext(indexedRoute, currentIndex);
                 instructions.Add(instruction);
                 if (instruction.ShapeIndexEnd == currentIndex) {
                     currentIndex++;
@@ -74,5 +66,6 @@ namespace Itinero.Instructions
 
             return instructions;
         }
+        
     }
 }

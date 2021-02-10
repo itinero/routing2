@@ -71,7 +71,7 @@ namespace Itinero
         {
             return result.Value;
         }
-
+        
         /// <summary>
         /// Implicit conversion from the result object type.
         /// </summary>
@@ -80,7 +80,6 @@ namespace Itinero
         public static implicit operator Result<T>(T result)
         {
             return new(result);
-            ;
         }
 
         /// <summary>

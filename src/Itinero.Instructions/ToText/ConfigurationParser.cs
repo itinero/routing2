@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Itinero.Instructions.Generators;
+using Itinero.Instructions.Types;
+using Itinero.Instructions.Types.Generators;
 
+[assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
 namespace Itinero.Instructions.ToText
 {
-    internal class FromJson
+    internal static class ConfigurationParser
     {
+        
         private static readonly Regex RenderValueRegex =
-            new Regex(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
+            new(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
 
         private static readonly List<(string, Predicate<(string a, string b)>)> Operators =
-            new List<(string, Predicate<(string a, string b)>)> {
+            new() {
                 // This is a list, as we first need to match '<=' and '>=', otherwise we might think the match is "abc<" = "def", not "abc" <= "def
                 ("<=", t => BothDouble(t, d => d.a <= d.b)),
                 (">=", t => BothDouble(t, d => d.a >= d.b)),
@@ -23,16 +27,31 @@ namespace Itinero.Instructions.ToText
                 (">", t => BothDouble(t, d => d.a > d.b))
             };
 
-
-        /**
-         * Parses the full pipeline
-         */
+        /// <summary>
+        ///     Parses the full pipeline
+        /// </summary>
+        /// <param name="jsonElement">The json element to start from.</param>
+        /// <param name="knownGenerators">The instruction generators that can be used during the construction - should include them all explicitely</param>
+        /// <returns>The instruction generator and the to text translators.</returns>
         public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
-            ParseRouteToInstructions(JsonElement jobj)
+            ParseRouteToInstructions(
+                JsonElement jsonElement,
+                Dictionary<string, IInstructionGenerator> knownGenerators)
         {
-            var generators = jobj.GetProperty("generators").EnumerateArray().Select(v => v.GetString()).ToList();
+            // parse generator names and instantiate generators.
+            var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString())
+                .ToList();
+            var generators = generatorNames.Select(name => {
+                if (knownGenerators.TryGetValue(name, out var g)) {
+                    return g;
+                }
+
+                throw new Exception($"Generator not found: {name}");
+            });
             var generator = new LinearInstructionGenerator(generators);
-            var languages = jobj.GetProperty("languages");
+
+            // parse instructions to text configurations.
+            var languages = jsonElement.GetProperty("languages");
             var toTexts = new Dictionary<string, IInstructionToText>();
             foreach (var obj in languages.EnumerateObject()) {
                 var langCode = obj.Name;
@@ -86,7 +105,7 @@ namespace Itinero.Instructions.ToText
          * A POSITIVE angle is going left,
          * A NEGATIVE angle is going right
          */
-        public static IInstructionToText ParseInstructionToText(JsonElement jobj,
+        internal static IInstructionToText ParseInstructionToText(JsonElement jobj,
             Box<IInstructionToText> wholeToText = null,
             Dictionary<string, IInstructionToText> extensions = null, string context = "")
         {
@@ -97,7 +116,7 @@ namespace Itinero.Instructions.ToText
             foreach (var obj in jobj.EnumerateObject()) {
                 var key = obj.Name;
                 var value = obj.Value;
-                
+
                 if (key == "extensions") {
                     var extensionsSource = obj.Value;
                     foreach (var ext in extensionsSource.EnumerateObject()) {
@@ -136,13 +155,13 @@ namespace Itinero.Instructions.ToText
             return false;
         }
 
-        public static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
+        internal static (Predicate<BaseInstruction> predicate, bool lowPriority) ParseCondition(string condition,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
             Dictionary<string, IInstructionToText> extensions = null)
         {
             if (condition == "*") {
-                return (_ => { return true; }, true);
+                return (_ => true, true);
             }
 
             if (condition.IndexOf("&", StringComparison.Ordinal) >= 0) {
@@ -171,7 +190,7 @@ namespace Itinero.Instructions.ToText
                 // And apply the instruction on it!
                 // We pull the instruction from thin air by returning a lambda instead
                 return (
-                    instruction => { return op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction))); },
+                    instruction => op.Invoke((parts[0].ToText(instruction), parts[1].ToText(instruction))),
                     false);
             }
 
@@ -179,13 +198,13 @@ namespace Itinero.Instructions.ToText
             // This could either be a type matching or a substitution that has to exist
             var rendered = ParseRenderValue(condition, extensions, wholeToText, context, false);
             if (rendered.SubstitutedValueCount() > 0) {
-                return (instruction => { return rendered.ToText(instruction) != null; }, false);
+                return (instruction => rendered.ToText(instruction) != null, false);
             }
 
-            return (instruction => { return instruction.Type == condition; }, false);
+            return (instruction => instruction.Type == condition, false);
         }
 
-        public static SubstituteText ParseRenderValue(string value,
+        internal static SubstituteText ParseRenderValue(string value,
             Dictionary<string, IInstructionToText> extensions = null,
             Box<IInstructionToText> wholeToText = null,
             string context = "",
@@ -194,12 +213,12 @@ namespace Itinero.Instructions.ToText
             var parts = RenderValueRegex.Match(value).Groups[1].Captures
                     .Select(m => {
                         var v = m.Value;
-                        if (v.StartsWith("$")) {
-                            v = v.Substring(1).Trim('{', '}').ToLower();
-                            return (v, true);
+                        if (!v.StartsWith("$")) {
+                            return (m.Value, false);
                         }
 
-                        return (m.Value, false);
+                        v = v.Substring(1).Trim('{', '}').ToLower();
+                        return (v, true);
                     }).ToList()
                 ;
             return new SubstituteText(parts, wholeToText, context, extensions, crashOnNotFound);

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
+using Itinero.Instructions.Types;
 using Xunit;
 
 namespace Itinero.Tests.Instructions
@@ -30,9 +30,9 @@ namespace Itinero.Tests.Instructions
                 {
                     "direction", new ConditionalToText(
                         new List<(Predicate<BaseInstruction>, IInstructionToText)> {
-                            (i => i.TurnDegrees > 0, new SubstituteText("left")),
-                            (i => i.TurnDegrees < 0, new SubstituteText("right")),
-                            (_ => true, new SubstituteText("rehtendoare"))
+                            (i => i.TurnDegrees > 0, new SubstituteText(new []{("left", false)})),
+                            (i => i.TurnDegrees < 0, new SubstituteText(new []{("right", false)})),
+                            (_ => true, new SubstituteText(new []{("rehtendoare", false)}))
                         }
                     )
                 }

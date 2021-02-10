@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Instructions.Generators;
+using System.Text;
+using Itinero.Instructions.Types;
 using Itinero.Network.Attributes;
 
 namespace Itinero.Instructions.ToText
@@ -14,21 +15,11 @@ namespace Itinero.Instructions.ToText
         private readonly string _context;
         private readonly bool _crashOnMissingKey;
 
-        /**
-         * Extra "fields" to convert this into a string
-         */
-        private readonly Dictionary<string, IInstructionToText> _extensions;
+        private readonly Dictionary<string, IInstructionToText>
+            _extensions; // extra "fields" to convert this into a string
 
         private readonly Box<IInstructionToText> _nestedToText;
-
         private readonly IEnumerable<(string textOrVarName, bool substitute)> _text;
-
-        /**
-         * Only used for testing
-         */
-        internal SubstituteText(params string[] text) : this(text.Select(t => (t.TrimStart('$'), t.StartsWith("$"))),
-            null,
-            "a unit test") { }
 
         public SubstituteText(
             IEnumerable<(string textOrVarName, bool substitute)> text,
@@ -50,20 +41,19 @@ namespace Itinero.Instructions.ToText
             _crashOnMissingKey = crashOnMissingKey;
         }
 
-
         public string ToText(BaseInstruction instruction)
         {
             var subsValues = new Dictionary<string, object>();
 
-            foreach (var f in instruction.GetType().GetFields()) {
-                if (!f.IsPublic) {
+            foreach (var f in instruction.GetType().GetProperties()) {
+                if (!f.CanRead) {
                     continue;
                 }
 
                 subsValues[f.Name.ToLower()] = f.GetValue(instruction);
             }
 
-            var resultText = "";
+            var resultText = new StringBuilder();
             foreach (var (text, substitute) in _text) {
                 if (substitute) {
                     var firstChar = text.ToCharArray()[0];
@@ -96,18 +86,18 @@ namespace Itinero.Instructions.ToText
                             return null;
                         }
 
-                        resultText += v;
+                        resultText.Append(v);
                     }
                     else if (subsValues.TryGetValue(text, out var newValue)) {
                         if (newValue is BaseInstruction instr) {
-                            resultText += _nestedToText.Content.ToText(instr);
+                            resultText.Append(_nestedToText.Content.ToText(instr));
                         }
                         else {
-                            resultText += newValue;
+                            resultText.Append(newValue);
                         }
                     }
                     else if (_extensions != null && _extensions.TryGetValue(text, out var subs)) {
-                        resultText += subs.ToText(instruction);
+                        resultText.Append(subs.ToText(instruction));
                     }
                     else if (_crashOnMissingKey) {
                         throw new KeyNotFoundException(
@@ -118,11 +108,11 @@ namespace Itinero.Instructions.ToText
                     }
                 }
                 else {
-                    resultText += text;
+                    resultText.Append(text);
                 }
             }
 
-            return resultText;
+            return resultText.ToString();
         }
 
         public override string ToString()
