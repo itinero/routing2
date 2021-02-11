@@ -23,6 +23,7 @@ namespace Itinero.Tests.Functional
     {
         private static RouterDb DownloadRouterDb(
             string localFile,
+            IReadOnlyCollection<Profile> profiles,
             string remoteSourceUrl = "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf",
             string localTargetFile = "data.routerdb"
             )
@@ -59,6 +60,7 @@ namespace Itinero.Tests.Functional
                     return false;
                 }
             };
+            
             ElevationHandler.Default = new ElevationHandler((lat, lon) => {
                 var elevation = srtmData.GetElevation(lat, lon);
                 if (!elevation.HasValue) {
@@ -67,7 +69,6 @@ namespace Itinero.Tests.Functional
 
                 return (short) elevation;
             });
-            
             
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
@@ -80,6 +81,10 @@ namespace Itinero.Tests.Functional
             var routerDb = new RouterDb(new RouterDbConfiguration {
                 Zoom = 14
             });
+            foreach (var profile in profiles) {
+                routerDb.PrepareFor(profile);
+            }
+            
             routerDb.UseOsmData(progress);
 
             using var outputStream = File.Open(localTargetFile, FileMode.Create);
@@ -114,6 +119,7 @@ namespace Itinero.Tests.Functional
             TileParser.DownloadFunc = DownloadHelper.Download;
 
             DownloadRouterDb("belgium-latest.osm.pbf",
+                new []{ OsmProfiles.Bicycle, OsmProfiles.Pedestrian },
                 "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf",
                 "belgium-latest.routerdb"
             );
