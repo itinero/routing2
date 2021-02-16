@@ -16,7 +16,7 @@ namespace Itinero.Profiles
         public abstract string Name { get; }
 
         /// <summary>
-        /// Gets an edge factor for the given attributes.
+        /// Gets the edge factor for the given attributes.
         /// </summary>
         /// <param name="attributes">The attributes.</param>
         /// <returns>An edge factor.</returns>
