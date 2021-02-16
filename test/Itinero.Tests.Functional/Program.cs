@@ -23,7 +23,9 @@ namespace Itinero.Tests.Functional
 
         private static void Main(string[] args)
         {
-                     TileParser.DownloadFunc = DownloadHelper.Download;
+            EnableLogging();
+            
+            TileParser.DownloadFunc = DownloadHelper.Download;
 
 
             // // create a new srtm data instance.

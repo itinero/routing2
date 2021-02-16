@@ -19,7 +19,7 @@ namespace Itinero.IO.Osm.Filters
             
         private static IEnumerable<(string key, string value)>? Filter(OsmGeo osmGeo)
         {
-            if (osmGeo.Tags == null) {
+            if (osmGeo.Tags == null || osmGeo.Tags.Count == 0) {
                 return null;
             }
 

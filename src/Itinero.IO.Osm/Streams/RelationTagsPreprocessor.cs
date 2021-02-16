@@ -7,8 +7,11 @@ using OsmSharp.Streams.Filters;
 namespace Itinero.IO.Osm.Streams
 {
     /// <summary>
-    /// 
+    /// A relation tags preprocessor.
     /// </summary>
+    /// <remarks>
+    /// Allows to add tags to relation members based on their membership.
+    /// </remarks>
     internal class RelationTagsPreprocessor : OsmStreamFilter
     {
         private readonly Predicate<Relation> _isRelevant;
