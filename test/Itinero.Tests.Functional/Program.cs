@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.IO.Osm;
 using Itinero.IO.Json.GeoJson;
+using Itinero.Geo.Elevation;
+using Itinero.Instructions;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
@@ -18,7 +21,7 @@ using TraceEventType = Itinero.Logging.TraceEventType;
 
 namespace Itinero.Tests.Functional
 {
-    internal class Program
+    internal static class Program
     {
 
         private static void Main(string[] args)
@@ -26,8 +29,7 @@ namespace Itinero.Tests.Functional
             EnableLogging();
             
             TileParser.DownloadFunc = DownloadHelper.Download;
-
-
+            
             // // create a new srtm data instance.
             // // it accepts a folder to download and cache data into.
             // var srtmCache = new DirectoryInfo("srtm-cache");
@@ -37,7 +39,7 @@ namespace Itinero.Tests.Functional
 
             // // setup elevation integration.
             // var srtmData = new SRTMData(srtmCache.FullName) {
-            //     GetMissingCell = (string path, string name) => {
+            //     GetMissingCell = (path, name) => {
             //         var filename = name + ".hgt.zip";
             //         var hgt = Path.Combine(path, filename);
             //
@@ -48,6 +50,7 @@ namespace Itinero.Tests.Functional
             //         return false;
             //     }
             // };
+            //
             // ElevationHandler.Default = new ElevationHandler((lat, lon) => {
             //     var elevation = srtmData.GetElevation(lat, lon);
             //     if (!elevation.HasValue) {
@@ -56,8 +59,6 @@ namespace Itinero.Tests.Functional
             //
             //     return (short) elevation;
             // });
-
-            TileParser.DownloadFunc = DownloadHelper.Download;
 
             var bicycle = OsmProfiles.Bicycle;
             var pedestrian = OsmProfiles.Pedestrian;
@@ -90,83 +91,15 @@ namespace Itinero.Tests.Functional
                 49.93364075288293).Value;
             var snap2 = latest.Snap().To(5.972356796264648,
                 49.93735597155516).Value;
-            var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            var json = route.Value.ToGeoJson();
-            
-            var instructions = Instructions.Instructions.Default()
-                .Generate(route.Value, "en");
-            
-            //
-            // routerDb.PrepareFor(bicycle);
-            //
-            // snap1 = latest.Snap().To(5.9732794761657715,
-            //     49.93364075288293).Value;
-            // snap2 = latest.Snap().To(5.972356796264648,
-            //     49.93735597155516).Value;
-            // route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            // json = route.Value.ToGeoJson();
-            //
-            // using (var outputStream = File.Open("luxembourg.routerdb", FileMode.Create))
-            // {
-            //     routerDb.WriteTo(outputStream);
-            // }
-            //
-            // latest = routerDb.Latest;
-            //
-            // snap1 = latest.Snap().To(5.9732794761657715,
-            //     49.93364075288293).Value;
-            // snap2 = latest.Snap().To(5.972356796264648,
-            //     49.93735597155516).Value;
-            // route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            // json = route.Value.ToGeoJson();
-            //
-            // using (var inputStream = File.OpenRead("luxembourg.routerdb"))
-            // {
-            //     routerDb = RouterDb.ReadFrom(inputStream);
-            // }
-            //
-            // latest = routerDb.Latest;
-            //
-            // snap1 = latest.Snap().To(5.9732794761657715,
-            //     49.93364075288293).Value;
-            // snap2 = latest.Snap().To(5.972356796264648,
-            //     49.93735597155516).Value;
-            // route = latest.Route(bicycle).From(snap1).To(snap2).Calculate();
-            // json = route.Value.ToGeoJson();
+            var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate().Value.WithInstructions().MergeInstructions();
+            var json = route.ToGeoJson();
 
-            //
-            // var latest = routerDb.Network;
-            // var location1 = SnappingTest.Default.Run((latest, 6.142258644104003, 49.86815622289359,
-            //     bicycle));
-            // var location2 = SnappingTest.Default.Run((latest, 6.151978969573975, 49.86843283237664,
-            //     bicycle));
-            // var route = RouterOneToOneTest.Default.Run((latest, location1, location2, bicycle));
-            // File.WriteAllText(Path.Combine("results", $"{nameof(location1)}-{nameof(location1)}.geojson"), 
-            //     route.ToGeoJson());
 
-            // setup a router db with a routable tiles data provider.
-            // var routerDb = new RouterDb(new RouterDbConfiguration()
+            
+            // snap1 = latest.Snap().To(5.9732794761657715,
+            //     49.93735597155516).Value;
+
             // {
-            //     Zoom = 14
-            // });
-            // routerDb.Mutate(mutable =>
-            // {
-            //     mutable.PrepareFor(bicycle);
-            // });
-            // routerDb.UseRouteableTiles();
-            // var latest = routerDb.Latest;
-            //
-            // var heldergem = SnappingTest.Default.Run((latest, 3.95454, 50.88142, profile: bicycle),
-            //     $"Snapping cold: heldergem");
-            // heldergem = SnappingTest.Default.Run((latest, 3.95454, 50.88142, profile: bicycle),
-            //     $"Snapping hot: heldergem", 1000);
-            // var ninove = SnappingTest.Default.Run((latest, 4.02573, 50.83963, profile: bicycle),
-            //     $"Snapping hot: ninove");
-            // var pepingen = SnappingTest.Default.Run((latest, 4.15887, 50.75932, profile: bicycle),
-            //     $"Snapping hot: pepingen");
-            // var lebbeke = SnappingTest.Default.Run((latest, 4.12864, 50.99926, profile: bicycle),
-            //     $"Snapping cold: lebbeke");
-            // var hamme = SnappingTest.Default.Run((latest, 4.13418, 51.09707, profile: bicycle),
             //     $"Snapping cold: hamme");
             // var stekene = SnappingTest.Default.Run((latest, 4.03705, 51.20637, profile: bicycle),
             //     $"Snapping cold: stekene");

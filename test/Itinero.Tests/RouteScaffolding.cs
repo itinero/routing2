@@ -10,6 +10,11 @@ namespace Itinero.Tests
         {
             return parts;
         }
+        
+        public static (double lon, double lat, float? e)[] G((double lon, double lat)[] parts)
+        {
+            return parts.Select(c => (c.lon, c.lat,(float?) 0)).ToArray();
+        }
 
         public static Route GenerateRoute(
             params ((double lon, double lat, float? e)[] coordinates, List<(string, string)> segmentAttributes)[]

@@ -59,7 +59,7 @@ namespace Itinero.Routing
         /// <returns>The routes.</returns>
         public static IReadOnlyList<Result<Route>> Calculate(this IRouterOneToMany routerOneToMany)
         {
-            return routerOneToMany.Paths().Select(x => RouteBuilder.Default.Build(routerOneToMany.Network,
+            return routerOneToMany.Paths().Select(x => routerOneToMany.Settings.RouteBuilder.Build(routerOneToMany.Network,
                 routerOneToMany.Settings.Profile, x)).ToArray();
         }
 

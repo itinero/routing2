@@ -1,6 +1,9 @@
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types
 {
     /// <summary>
+    ///     A base instruction.
+    /// </summary>
+    /// <remarks>
     ///     An instruction is a piece that describes a traveller how they should behave to reach their destination.
     ///     An instruction applies on one or more segments, and contains two parts:
     ///     - The next meters to travel, e.g. 'follow along road XYZ, which has properties P and Q'
@@ -24,8 +27,8 @@ namespace Itinero.Instructions.Generators
     ///     - Voice instructions, which should be spoken at the right time before the traveller has to make a maneuver
     ///     - Written instructions, on app, which should show the appropriate text at the right time
     ///     - Extra information, e.g. about the street currently travelled, the next street, the upcoming turn, ...
-    /// </summary>
-    internal class BaseInstruction
+    /// </remarks>
+    public class BaseInstruction
     {
         public BaseInstruction(IndexedRoute route,
             int shapeIndex, int shapeIndexEnd, int turnDegrees)
@@ -45,14 +48,12 @@ namespace Itinero.Instructions.Generators
             this.TurnDegrees = turnDegrees.NormalizeDegrees();
             this.Type = Tp(this);
         }
-        
-        /* Important: the below values should be FIELDS and _not_ have accessors with {get;} */
 
         /// <summary>
         ///     The index of the start of the segment this instruction is applicable on; i.e. the traveller arrived at the segment
         ///     which starts at 'ShapeIndex', what should they do next?
         /// </summary>
-        public readonly int ShapeIndex;
+        public int ShapeIndex { get; }
 
         /// <summary>
         ///     The index where the described instruction stops.
@@ -61,22 +62,20 @@ namespace Itinero.Instructions.Generators
         ///         ShapeIndex; some others describe multiple segments
         ///     </remarks>
         /// </summary>
-        public readonly int ShapeIndexEnd;
+        public int ShapeIndexEnd { get; }
 
         /// <summary>
         ///     The amount of degrees to turn at the end of the road.
         ///     0° is straight on, positive is turning left and negative is turning right
         /// </summary>
-        public readonly int TurnDegrees;
+        public int TurnDegrees { get; }
 
         /// <summary>
-        /// Gets the type of instruction.
+        ///     Gets the type of instruction.
         /// </summary>
-        public readonly string Type;
+        public string Type { get; }
 
-        public IndexedRoute Route {
-            get; /* Important - because this is a property, it'll won't be picked up in the substitutions because that one only loads fields */
-        }
+        public IndexedRoute Route { get; }
 
         private static string Tp(object o)
         {
@@ -86,21 +85,7 @@ namespace Itinero.Instructions.Generators
 
         public override string ToString()
         {
-            return $"Follow from p{ShapeIndex} to p{ShapeIndexEnd}, where you turn {TurnDegrees}°";
-        }
-    }
-
-    internal class BaseInstructionGenerator : IInstructionGenerator
-    {
-        public BaseInstruction Generate(IndexedRoute route, int offset)
-        {
-            if (offset + 1 >= route.Last) {
-                // The current offset is already the last index of the shape; this is the endpoint
-                return null;
-            }
-
-            // We are on the end of segment 'offset', what should we do next?
-            return new BaseInstruction(route, offset, route.DirectionChangeAt(offset + 1));
+            return $"Follow from p{this.ShapeIndex} to p{this.ShapeIndexEnd}, where you turn {this.TurnDegrees}°";
         }
     }
 }

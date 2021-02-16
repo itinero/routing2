@@ -1,36 +1,5 @@
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types.Generators
 {
-    internal class RoundaboutInstruction : BaseInstruction
-    {
-        /**
-         * This boolean is here for cases as:  https://www.openstreetmap.org/directions?engine=graphhopper_car&route=50.94569%2C3.15129%3B50.94636%2C3.15186#map=19/50.94623/3.15189
-         */
-        public readonly bool ExitIsOnTheInside;
-
-        /// <summary>
-        ///     The number of the exit to take (one-based)
-        /// </summary>
-        public readonly int ExitNumber;
-
-        public RoundaboutInstruction(
-            IndexedRoute route,
-            int shapeIndex,
-            int shapeIndexEnd,
-            int turnDegrees,
-            int exitNumber,
-            bool exitIsOnTheInside = false) : base(route, shapeIndex, shapeIndexEnd, turnDegrees)
-        {
-            ExitNumber = exitNumber;
-            ExitIsOnTheInside = exitIsOnTheInside;
-        }
-
-        public override string ToString()
-        {
-            return $"Take the roundabout to go {TurnDegrees.DegreesToText()} via the {ExitNumber + 1}th exit."
-                   + (ExitIsOnTheInside ? "WARNING: this exit is on the inner side of the roundabout!" : "");
-        }
-    }
-
     internal class RoundaboutInstructionGenerator : IInstructionGenerator
     {
         public BaseInstruction Generate(IndexedRoute route, int offset)

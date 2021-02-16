@@ -1,6 +1,5 @@
 using System.Linq;
 using Itinero.Routes;
-using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
 
 namespace Itinero.Routing
@@ -35,7 +34,7 @@ namespace Itinero.Routing
         /// <returns>The route.</returns>
         public static Result<Route> Calculate(this IRouterOneToOne oneToOneRouter)
         {
-            return RouteBuilder.Default.Build(oneToOneRouter.Network, oneToOneRouter.Settings.Profile,
+            return oneToOneRouter.Settings.RouteBuilder.Build(oneToOneRouter.Network, oneToOneRouter.Settings.Profile,
                 oneToOneRouter.Path());
         }
 

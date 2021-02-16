@@ -1,19 +1,8 @@
 using System;
 using Itinero.Network.Attributes;
 
-namespace Itinero.Instructions.Generators
+namespace Itinero.Instructions.Types.Generators
 {
-    /**
-     * The follow along is more or less the 'continue along this road' instruction.
-     * It is issued if no single bend is more then 35° (incl) at a time
-     * 
-     */
-    internal class FollowAlongInstruction : BaseInstruction
-    {
-        public FollowAlongInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
-            route, shapeIndex, shapeIndexEnd, turnDegrees) { }
-    }
-
     internal class FollowAlongGenerator : IInstructionGenerator
     {
         public BaseInstruction Generate(IndexedRoute route, int offset)
