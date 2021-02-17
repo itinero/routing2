@@ -83,10 +83,11 @@ namespace Itinero.Tests.IO.Osm
             // include all the data.
             routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s => {
                 s.TagsFilter.Filter = o => {
-                    if (o.Tags == null) return null;
-                    if (!o.Tags.ContainsKey("highway")) return null;
+                    if (o.Type == OsmGeoType.Node) return true;
+                    if (o.Tags == null) return false;
+                    if (!o.Tags.ContainsKey("highway")) return false;
 
-                    return o.Tags.Select(x => (x.Key, x.Value));
+                    return true;
                 };
                 s.TagsFilter.CompleteFilter = null;
                 s.TagsFilter.MemberFilter = null;
@@ -143,10 +144,11 @@ namespace Itinero.Tests.IO.Osm
             // include all the data.
             routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s => {
                 s.TagsFilter.Filter = o => {
-                    if (o.Tags == null) return null;
-                    if (!o.Tags.ContainsKey("highway")) return null;
+                    if (o.Type == OsmGeoType.Node) return true;
+                    if (o.Tags == null) return false;
+                    if (!o.Tags.ContainsKey("highway")) return false;
 
-                    return o.Tags.Select(x => (x.Key, x.Value));
+                    return true;
                 };
                 s.TagsFilter.CompleteFilter = null;
                 s.TagsFilter.MemberFilter = null;

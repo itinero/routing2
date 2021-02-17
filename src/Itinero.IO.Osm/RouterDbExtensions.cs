@@ -34,76 +34,26 @@ namespace Itinero.IO.Osm
             // create settings.
             var settings = new DataProviderSettings();
             configure?.Invoke(settings);
-
-            // get settings.
-            var tagsFilter = settings.TagsFilter;
-            var elevationHandler = settings.ElevationHandler;
             
             // do filtering.
             
             // 1: complete objects.
             if (settings.TagsFilter.CompleteFilter != null) {
-                void CompleteFilterFunc(CompleteOsmGeo completeOsmGeo, OsmGeo osmGeo)
-                {
-                    if (osmGeo.Type == OsmGeoType.Node) return;
-
-                    var t = settings.TagsFilter.CompleteFilter(completeOsmGeo);
-                    if (t == null) return;
-                    
-                    osmGeo.Tags = new TagsCollection(t.Select(x => new Tag(x.key, x.value)));
-                }
-
-                var filter = new CompleteOsmGeoPreprocessor(settings.TagsFilter.FilterAsComplete,
-                    CompleteFilterFunc);
-                filter.RegisterSource(data);
-                data = filter;
+                data = data.ApplyCompleteFilter(settings.TagsFilter.CompleteFilter);
             }
             
             // 2: filter relations.
             if (settings.TagsFilter.MemberFilter != null) {
-                
-                void FilterMember(Relation relation, OsmGeo member)
-                {
-                    var t = settings.TagsFilter.MemberFilter(relation, member);
-                    if (t == null) return;
-
-                    member.Tags = new TagsCollection(t.Select(x => new Tag(x.key, x.value)));
-                }
-
-                var filter = new RelationTagsPreprocessor(settings.TagsFilter.FilterMembers,
-                    FilterMember);
-                filter.RegisterSource(data);
-                data = filter;
+                data = data.ApplyRelationMemberFilter(settings.TagsFilter.MemberFilter);
             }
             
             // 3: filter tags on ways and relations.
             if (settings.TagsFilter.Filter != null) {
-                bool FilterFunc(OsmGeo osmGeo)
-                {
-                    switch (osmGeo.Type) {
-                        case OsmGeoType.Node:
-                            return true;
-                        case OsmGeoType.Way:
-                        case OsmGeoType.Relation:
-                            if (osmGeo?.Tags == null) return false;
-                            
-                            var wt = settings?.TagsFilter.Filter?.Invoke(osmGeo);
-                            if (wt == null) return false;
-
-                            osmGeo.Tags = new TagsCollection(wt.Select(x => new Tag(x.key, x.value)));
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-
-                var filter = new OsmGeoTagsPreprocessor(FilterFunc);
-                filter.RegisterSource(data);
-                data = filter;
+                data = data.ApplyFilter(settings.TagsFilter.Filter);
             }
             
             // use writer to fill router db.
-            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, elevationHandler);
+            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, settings.ElevationHandler);
             routerDbStreamTarget.RegisterSource(data);
             routerDbStreamTarget.Initialize();
             routerDbStreamTarget.Pull();

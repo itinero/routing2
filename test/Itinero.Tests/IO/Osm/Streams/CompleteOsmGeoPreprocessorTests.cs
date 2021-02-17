@@ -26,10 +26,8 @@ namespace Itinero.Tests.IO.Osm.Streams
                 }
             };
 
-            var completeStream = new CompleteOsmGeoPreprocessor( _ => false,
-                (c, o) => {
-                    Assert.True(false);
-                });
+            var completeStream = new CompleteOsmGeoPreprocessor(
+                (c, o) => false);
             completeStream.RegisterSource(os);
 
             var result = completeStream.ToList();
@@ -55,14 +53,16 @@ namespace Itinero.Tests.IO.Osm.Streams
                 }
             };
 
-            var pass = 0;
-            var completeStream = new CompleteOsmGeoPreprocessor( _ => true,
+            var completeStream = new CompleteOsmGeoPreprocessor(
                 (c, o) => {
-                    Assert.Equal(1, pass);
-                    Assert.Equal(2, o.Id);
                     Assert.Equal(2, c.Id);
-                    Assert.IsType<Way>(o);
-                    Assert.IsType<CompleteWay>(c);
+                    Assert.IsType<Way>(c);
+                    if (o != null) {
+                        Assert.Equal(2, o.Id);
+                        Assert.IsType<CompleteWay>(o);
+                    }
+
+                    return true;
                 });
             completeStream.RegisterSource(os);
 
@@ -72,7 +72,6 @@ namespace Itinero.Tests.IO.Osm.Streams
             Assert.Equal(1, result[1]?.Id);
             Assert.Equal(2, result[2]?.Id);
 
-            pass++;
             result = completeStream.ToList();
             Assert.Equal(3, result.Count);
             Assert.Equal(0, result[0]?.Id);
@@ -96,9 +95,10 @@ namespace Itinero.Tests.IO.Osm.Streams
                 }
             };
 
-            var completeStream = new CompleteOsmGeoPreprocessor( _ => true,
+            var completeStream = new CompleteOsmGeoPreprocessor(
                 (c, o) => {
-                    o.Tags = new TagsCollection(new Tag("action", "taken"));
+                    c.Tags = new TagsCollection(new Tag("action", "taken"));
+                    return true;
                 });
             completeStream.RegisterSource(os);
 

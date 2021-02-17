@@ -22,40 +22,47 @@ namespace Itinero.IO.Osm.Filters
     public sealed class TagsFilter
     {
         /// <summary>
-        /// Returns tags to keep for the given way or relation.
+        /// Filters OSM tags and objects.
         /// </summary>
         /// <remarks>
-        /// When null is returned the way is not considered further.
+        /// When false is returned, the object is not included.
         /// </remarks>
-        public Func<OsmGeo, IEnumerable<(string key, string value)>?>? Filter { get; set; }
+        public FilterDelegate? Filter { get; set; }
         
         /// <summary>
-        /// A predicate to decide if an object has to filtered in it's complete form. Only handles way and relations.
+        /// A function signature to define a filter.
+        /// </summary>
+        /// <param name="osmGeo">The OSM object.</param>
+        public delegate bool FilterDelegate(OsmGeo osmGeo);
+        
+        /// <summary>
+        /// Filters OSM tags using a complete version of OSM objects.
         /// </summary>
         /// <remarks>
-        /// When true a complete version of this object will be built and fed to the filter.
+        /// When false is returned, no filter is applied to the given object. This function is called with the complete parameter empty in a first pass.
         /// </remarks>
-        public Predicate<OsmGeo> FilterAsComplete { get; set; } = (_) => false;
+        public CompleteFilterDelegate? CompleteFilter { get; set; }
 
         /// <summary>
-        /// Filters OSM tags to keep from the given complete OSM object.
+        /// A function signature to define a complete filter.
         /// </summary>
-        /// <remarks>
-        /// When null is returned the object is not considered further.
-        /// </remarks>
-        public Func<CompleteOsmGeo, IEnumerable<(string key, string value)>?>? CompleteFilter { get; set; }
-        
-        /// <summary>
-        /// A predicate to decide if a relations members have to be filtered.
-        /// </summary>
-        public Predicate<Relation> FilterMembers { get; set; } = (_) => false;
+        /// <param name="osmGeo">The OSM object.</param>
+        /// <param name="completeOsmGeo">The complete OSM object, if available.</param>
+        public delegate bool CompleteFilterDelegate(OsmGeo osmGeo, CompleteOsmGeo? completeOsmGeo);
 
         /// <summary>
         /// Filters OSM tags on children of OSM objects by applying another specific filter if an object is a child.
         /// </summary>
         /// <remarks>
-        /// When null is returned, no child-specific filter is applied.
+        /// When false is returned, no child-specific filter is applied to the given relation. This function is called with the member parameter empty in a first pass.
         /// </remarks>
-        public Func<Relation, OsmGeo, IEnumerable<(string key, string value)>?>? MemberFilter { get; set; }
+        public FilterRelationMemberDelegate? MemberFilter { get; set; }
+
+        /// <summary>
+        /// A function signature to define a member filter.
+        /// </summary>
+        /// <param name="relation">The relation.</param>
+        /// <param name="member">The member.</param>
+        public delegate bool FilterRelationMemberDelegate(Relation relation, OsmGeo? member);
     }
 }

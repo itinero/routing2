@@ -12,6 +12,7 @@ using Itinero.Profiles.Lua.Osm;
 using Itinero.Routing;
 using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
+using OsmSharp;
 using OsmSharp.Logging;
 using OsmSharp.Streams;
 using OsmSharp.Streams.Filters;
@@ -70,6 +71,8 @@ namespace Itinero.Tests.Functional
 
             routerDb.PrepareFor(bicycle);
             
+            
+            
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
             using (var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
@@ -78,8 +81,6 @@ namespace Itinero.Tests.Functional
                 var progress = new OsmStreamFilterProgress();
                 var osmPbfStream = new PBFOsmStreamSource(osmStream);
                 progress.RegisterSource(osmPbfStream);
-                
-                // 
                 
                 // 
                 routerDb.UseOsmData(progress);

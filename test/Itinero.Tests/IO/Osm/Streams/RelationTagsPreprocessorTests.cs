@@ -25,10 +25,8 @@ namespace Itinero.Tests.IO.Osm.Streams
                 }
             };
 
-            var completeStream = new RelationTagsPreprocessor( _ => false,
-                (c, o) => {
-                    Assert.True(false);
-                });
+            var completeStream = new RelationTagsPreprocessor(
+                (c, o) => false);
             completeStream.RegisterSource(os);
 
             var result = completeStream.ToList();
@@ -54,10 +52,11 @@ namespace Itinero.Tests.IO.Osm.Streams
                 }
             };
 
-            var completeStream = new RelationTagsPreprocessor( _ => true,
+            var completeStream = new RelationTagsPreprocessor(
                 (c, o) => {
                     Assert.Equal(2, c.Id);
-                    Assert.Equal(0, o.Id);
+                    if (o != null) Assert.Equal(0, o.Id);
+                    return true;
                 });
             completeStream.RegisterSource(os);
 
@@ -88,9 +87,10 @@ namespace Itinero.Tests.IO.Osm.Streams
                 }
             };
 
-            var completeStream = new RelationTagsPreprocessor( _ => true,
+            var completeStream = new RelationTagsPreprocessor(
                 (c, o) => {
-                    o.Tags = new TagsCollection(new Tag("id", c.Id.ToInvariantString()));
+                    if (o != null) o.Tags = new TagsCollection(new Tag("id", c.Id.ToInvariantString()));
+                    return true;
                 });
             completeStream.RegisterSource(os);
 

@@ -14,15 +14,13 @@ namespace Itinero.IO.Osm.Streams
     /// </remarks>
     internal class RelationTagsPreprocessor : OsmStreamFilter
     {
-        private readonly Predicate<Relation> _isRelevant;
-        private readonly Action<Relation, OsmGeo> _action;
+        private readonly Func<Relation, OsmGeo?, bool> _action;
         private readonly Dictionary<OsmGeoKey, RelationLinked> _parentRelations;
 
         private OsmGeo? _current;
 
-        public RelationTagsPreprocessor(Predicate<Relation> isRelevant, Action<Relation, OsmGeo> action)
+        public RelationTagsPreprocessor(Func<Relation, OsmGeo?, bool> action)
         {
-            _isRelevant = isRelevant;
             _action = action;
 
             _parentRelations = new Dictionary<OsmGeoKey, RelationLinked>();
@@ -39,7 +37,7 @@ namespace Itinero.IO.Osm.Streams
             switch (_current) {
                 case Relation r:
                     // if not relevant, take no more actions.
-                    if (_isRelevant(r)) {
+                    if (_action(r, null)) {
                         foreach (var m in r.Members) {
                             var key = new OsmGeoKey(m.Type, m.Id);
                             if (!_parentRelations.TryGetValue(key, out var e)) {
@@ -86,8 +84,8 @@ namespace Itinero.IO.Osm.Streams
 
         private class RelationLinked
         {
-            public Relation Relation { get; set; }
-            
+            public Relation Relation { get; set; } = null!;
+
             public RelationLinked? Next { get; set; }
         }
     }

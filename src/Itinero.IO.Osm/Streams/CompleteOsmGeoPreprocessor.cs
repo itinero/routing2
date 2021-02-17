@@ -16,14 +16,11 @@ namespace Itinero.IO.Osm.Streams
     /// </remarks>
     internal class CompleteOsmGeoPreprocessor : OsmStreamFilter
     {
-        private readonly Predicate<OsmGeo> _isRelevant;
-        private readonly Action<CompleteOsmGeo, OsmGeo> _action;
+        private readonly Func<OsmGeo, CompleteOsmGeo?, bool> _action;
         private readonly Children _children = new ();
 
-        public CompleteOsmGeoPreprocessor(Predicate<OsmGeo> isRelevant, 
-            Action<CompleteOsmGeo, OsmGeo> action)
+        public CompleteOsmGeoPreprocessor(Func<OsmGeo, CompleteOsmGeo?, bool> action)
         {
-            _isRelevant = isRelevant;
             _action = action;
         }
 
@@ -40,14 +37,15 @@ namespace Itinero.IO.Osm.Streams
             _children.AddAsChild(_current);
 
             // if not relevant, take no more actions.
-            if (!_isRelevant(_current)) {
+            if (_current.Type == OsmGeoType.Node) return true;
+            if (!_action(_current, null)) {
                 return true;
             }
 
             // see if we can complete object, if so, feed to action.
             var completed = _current.CreateComplete(_children);
             if (completed is CompleteOsmGeo completeOsmGeo) {
-                _action(completeOsmGeo, _current);
+                _action(_current, completeOsmGeo);
             }
 
             // register children to keep.
