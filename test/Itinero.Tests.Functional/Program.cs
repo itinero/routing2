@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.Geo.Elevation;
+using System.Linq;
 using Itinero.Instructions;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
+using Itinero.Lua.PoC;
 using Itinero.Profiles;
-using Itinero.Profiles.Lua.Osm;
 using Itinero.Routing;
 using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
 using OsmSharp.Logging;
+using OsmSharp.Streams;
+using OsmSharp.Streams.Filters;
 using Serilog;
 using Serilog.Events;
 using SRTM;
@@ -26,7 +28,7 @@ namespace Itinero.Tests.Functional
             IReadOnlyCollection<Profile> profiles,
             string remoteSourceUrl = "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf",
             string localTargetFile = "data.routerdb"
-            )
+        )
         {
             // make sure the results folder exists.
             if (!Directory.Exists("results")) {
@@ -60,7 +62,7 @@ namespace Itinero.Tests.Functional
                     return false;
                 }
             };
-            
+            /*
             ElevationHandler.Default = new ElevationHandler((lat, lon) => {
                 var elevation = srtmData.GetElevation(lat, lon);
                 if (!elevation.HasValue) {
@@ -68,15 +70,15 @@ namespace Itinero.Tests.Functional
                 }
 
                 return (short) elevation;
-            });
-            
+            });*/
+
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
 
             using var osmStream = File.OpenRead(Staging.Download.Get(localFile, remoteSourceUrl));
             //using var osmStream = File.OpenRead(args[0]);
-            var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
-            var osmPbfStream = new OsmSharp.Streams.PBFOsmStreamSource(osmStream);
+            var progress = new OsmStreamFilterProgress();
+            var osmPbfStream = new PBFOsmStreamSource(osmStream);
             progress.RegisterSource(osmPbfStream);
             var routerDb = new RouterDb(new RouterDbConfiguration {
                 Zoom = 14
@@ -84,7 +86,7 @@ namespace Itinero.Tests.Functional
             foreach (var profile in profiles) {
                 routerDb.PrepareFor(profile);
             }
-            
+
             routerDb.UseOsmData(progress);
 
             using var outputStream = File.Open(localTargetFile, FileMode.Create);
@@ -93,7 +95,7 @@ namespace Itinero.Tests.Functional
             return routerDb;
         }
 
-        public static void TestInstructions(this RouterDb routerDb, 
+        public static void TestInstructions(this RouterDb routerDb,
             Profile profile,
             InstructionsGenerator instructions,
             string name, (double lon, double lat, float? e) from,
@@ -109,7 +111,7 @@ namespace Itinero.Tests.Functional
             File.WriteAllText(name + ".geojson",
                 new IndexedRoute(route).GeojsonLines());
         }
-        
+
 
         private static void Main(string[] args)
         {
@@ -117,12 +119,14 @@ namespace Itinero.Tests.Functional
 
 
             TileParser.DownloadFunc = DownloadHelper.Download;
+            var profiles = LuaProfile.LoadDirectory("/home/pietervdvn/anyways-open/routing-profiles/itinero2/")
+                .ToArray();
 
             DownloadRouterDb("belgium-latest.osm.pbf",
-                new []{ OsmProfiles.Bicycle, OsmProfiles.Pedestrian },
-                "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf",
-                "belgium-latest.routerdb"
-            );
+                profiles,
+                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf",
+                "luxembourg-latest.routerdb"
+            ); //*/
 
 
             //

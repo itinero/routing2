@@ -25,6 +25,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Folder Include="Profiles\EdgeTypeMap" />
     <Folder Include="Routing\Flavours" />
   </ItemGroup>
 </Project>
