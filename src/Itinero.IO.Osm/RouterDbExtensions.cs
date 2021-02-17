@@ -1,5 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Itinero.IO.Osm.Streams;
+using OsmSharp;
+using OsmSharp.Complete;
 using OsmSharp.Streams;
+using OsmSharp.Tags;
 
 namespace Itinero.IO.Osm
 {
@@ -28,13 +34,26 @@ namespace Itinero.IO.Osm
             // create settings.
             var settings = new DataProviderSettings();
             configure?.Invoke(settings);
-
-            // get settings.
-            var tagsFilter = settings.TagsFilter;
-            var elevationHandler = settings.ElevationHandler;
-
+            
+            // do filtering.
+            
+            // 1: complete objects.
+            if (settings.TagsFilter.CompleteFilter != null) {
+                data = data.ApplyCompleteFilter(settings.TagsFilter.CompleteFilter);
+            }
+            
+            // 2: filter relations.
+            if (settings.TagsFilter.MemberFilter != null) {
+                data = data.ApplyRelationMemberFilter(settings.TagsFilter.MemberFilter);
+            }
+            
+            // 3: filter tags on ways and relations.
+            if (settings.TagsFilter.Filter != null) {
+                data = data.ApplyFilter(settings.TagsFilter.Filter);
+            }
+            
             // use writer to fill router db.
-            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, tagsFilter, elevationHandler);
+            var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, settings.ElevationHandler);
             routerDbStreamTarget.RegisterSource(data);
             routerDbStreamTarget.Initialize();
             routerDbStreamTarget.Pull();

@@ -21,14 +21,12 @@ namespace Itinero.IO.Osm
         private readonly NodeIndex _nodeIndex;
         private readonly RoutingNetworkMutator _mutableRouterDb;
         private readonly RoutingNetworkMutatorEdgeEnumerator _mutableRouterDbEdgeEnumerator;
-        private readonly ITagsFilter _tagsFilter;
         private readonly IElevationHandler? _elevationHandler;
 
         public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
-            ITagsFilter tagsFilter, IElevationHandler? elevationHandler = null)
+            IElevationHandler? elevationHandler = null)
         {
             _mutableRouterDb = mutableRouterDb;
-            _tagsFilter = tagsFilter;
             _elevationHandler = elevationHandler;
 
             _mutableRouterDbEdgeEnumerator = _mutableRouterDb.GetEdgeEnumerator();
@@ -81,10 +79,7 @@ namespace Itinero.IO.Osm
 
         public override void AddWay(Way way)
         {
-            var filteredTags = _tagsFilter.Filter(way);
-            if (filteredTags == null) {
-                return;
-            }
+            var filteredTags = way.Tags?.Select(x => (x.Key, x.Value));
 
             if (_firstPass) { // keep track of nodes that are used as routing nodes.
                 _nodeIndex.AddId(way.Nodes[0]);
