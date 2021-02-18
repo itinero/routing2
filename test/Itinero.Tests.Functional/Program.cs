@@ -5,7 +5,7 @@ using System.Linq;
 using Itinero.Instructions;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
-using Itinero.Lua.PoC;
+using Itinero.Lua.Neo;
 using Itinero.Profiles;
 using Itinero.Routing;
 using Itinero.Snapping;

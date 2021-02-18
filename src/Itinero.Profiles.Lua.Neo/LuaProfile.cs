@@ -5,11 +5,11 @@ using Itinero.Logging;
 using Itinero.Profiles;
 using Neo.IronLua;
 
-namespace Itinero.Lua.PoC
+namespace Itinero.Lua.Neo
 {
     public class LuaProfile : Profile
     {
-        private static readonly Neo.IronLua.Lua _lua = new();
+        private static readonly global::Neo.IronLua.Lua _lua = new();
         private readonly dynamic _env = _lua.CreateEnvironment();
 
         private readonly bool _hasTurnFactor;
