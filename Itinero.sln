@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{A3A9D1F8-A
 		.gitignore = .gitignore
 		NOTICE.md = NOTICE.md
 		LICENSE.md = LICENSE.md
-		SharedAssemblyVersion.cs = SharedAssemblyVersion.cs
 		Itinero.Common.props = Itinero.Common.props
 		.editorconfig = .editorconfig
 	EndProjectSection
@@ -40,8 +39,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Profiles.Lua", "src\Itinero.Profiles.Lua\Itinero.Profiles.Lua.csproj", "{2F07A2DD-C804-452E-BAD3-BBF8D0A5ECD7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Instructions", "src\Itinero.Instructions\Itinero.Instructions.csproj", "{ECF968B9-3710-4A06-A1EC-D056A9520922}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Profiles.Lua.Neo", "src\Itinero.Profiles.Lua.Neo\Itinero.Profiles.Lua.Neo.csproj", "{9D70C786-BA7A-4B24-848D-49C2483D68A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,18 +149,6 @@ Global
 		{ECF968B9-3710-4A06-A1EC-D056A9520922}.Release|x64.Build.0 = Release|Any CPU
 		{ECF968B9-3710-4A06-A1EC-D056A9520922}.Release|x86.ActiveCfg = Release|Any CPU
 		{ECF968B9-3710-4A06-A1EC-D056A9520922}.Release|x86.Build.0 = Release|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Debug|x64.Build.0 = Debug|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Debug|x86.Build.0 = Debug|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Release|x64.ActiveCfg = Release|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Release|x64.Build.0 = Release|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Release|x86.ActiveCfg = Release|Any CPU
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1ACD2D53-1CDC-4F32-84C7-721457181EC7} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
@@ -174,6 +159,5 @@ Global
 		{71EA15B8-8FE1-47DE-8694-FBC964A346B3} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 		{2F07A2DD-C804-452E-BAD3-BBF8D0A5ECD7} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 		{ECF968B9-3710-4A06-A1EC-D056A9520922} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
-		{9D70C786-BA7A-4B24-848D-49C2483D68A4} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 	EndGlobalSection
 EndGlobal

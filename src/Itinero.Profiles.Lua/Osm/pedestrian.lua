@@ -117,11 +117,11 @@ function factor(attributes, result)
         result.direction = 1
     end
     local direction = is_oneway(attributes, "oneway")
-    if direction != nil then
+    if direction ~= nil then
         result.direction = direction
     end
     local direction = is_oneway(attributes, "oneway:foot")
-    if direction != nil then
+    if direction ~= nil then
         result.direction = direction
     end
         

@@ -9,7 +9,6 @@
     <ProjectReference Include="..\..\src\Itinero.Instructions\Itinero.Instructions.csproj" />
     <ProjectReference Include="..\..\src\Itinero.IO.Osm.Tiles\Itinero.IO.Osm.Tiles.csproj" />
     <ProjectReference Include="..\..\src\Itinero.IO.Osm\Itinero.IO.Osm.csproj" />
-    <ProjectReference Include="..\..\src\Itinero.Profiles.Lua.Neo\Itinero.Profiles.Lua.Neo.csproj" />
     <ProjectReference Include="..\..\src\Itinero.Profiles.Lua\Itinero.Profiles.Lua.csproj" />
     <ProjectReference Include="..\..\src\Itinero\Itinero.csproj" />
   </ItemGroup>

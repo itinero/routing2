@@ -6,7 +6,6 @@
         <AssemblyName>Itinero.Instructions</AssemblyName>
         <LangVersion>default</LangVersion>
         <PackageId>Itinero.Instructions</PackageId>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 

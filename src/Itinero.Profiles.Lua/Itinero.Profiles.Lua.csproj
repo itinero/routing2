@@ -8,7 +8,12 @@
         <PackageId>Itinero.Profiles.Lua</PackageId>
         <PackageTags>osm, openstreetmap, routing, mapping</PackageTags>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NeoLua" Version="1.3.11" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Itinero\Itinero.csproj" />
@@ -19,10 +24,6 @@
       <EmbeddedResource Include="Osm\bicycle.lua" />
       <None Remove="Osm\pedestrian.lua" />
       <EmbeddedResource Include="Osm\pedestrian.lua" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="NeoLua" Version="1.3.11" />
     </ItemGroup>
 
 </Project>
