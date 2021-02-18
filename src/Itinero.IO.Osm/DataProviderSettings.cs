@@ -11,7 +11,7 @@ namespace Itinero.IO.Osm
         /// <summary>
         /// Gets or sets the tags filter.
         /// </summary>
-        public ITagsFilter TagsFilter { get; set; } = RoutingTagsFilter.Default;
+        public TagsFilter TagsFilter { get; set; } = RoutingTagsFilter.Default;
 
         /// <summary>
         /// Gets or sets the elevation handler.
