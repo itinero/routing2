@@ -8,6 +8,7 @@ using Itinero.Instructions;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
+using Itinero.Profiles.Lua.Osm;
 using Itinero.Routing;
 using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
