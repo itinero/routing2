@@ -18,14 +18,14 @@
 <tr><th>Assembly:</th><td>Itinero</td></tr>
 <tr><th>File(s):</th><td><a href="#homerunnerworkrouting2routing2srcItineroNetworkAttributesAttributeExtensionscs" class="navigatetohash">/home/runner/work/routing2/routing2/src/Itinero/Network/Attributes/AttributeExtensions.cs</a></td></tr>
 <tr><th>Covered lines:</th><td>36</td></tr>
-<tr><th>Uncovered lines:</th><td>47</td></tr>
-<tr><th>Coverable lines:</th><td>83</td></tr>
-<tr><th>Total lines:</th><td>185</td></tr>
-<tr><th>Line coverage:</th><td>43.3% (36 of 83)</td></tr>
+<tr><th>Uncovered lines:</th><td>57</td></tr>
+<tr><th>Coverable lines:</th><td>93</td></tr>
+<tr><th>Total lines:</th><td>200</td></tr>
+<tr><th>Line coverage:</th><td>38.7% (36 of 93)</td></tr>
 <tr><th>Covered branches:</th><td>7</td></tr>
-<tr><th>Total branches:</th><td>32</td></tr>
-<tr><th>Branch coverage:</th><td>21.8% (7 of 32)</td></tr>
-<tr><th>Tag:</th><td>68_575168382</td></tr>
+<tr><th>Total branches:</th><td>34</td></tr>
+<tr><th>Branch coverage:</th><td>20.5% (7 of 34)</td></tr>
+<tr><th>Tag:</th><td>72_580865356</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -39,6 +39,8 @@
 <tr><td title="AddOrReplace(System.Collections.Generic.List`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;,System.String,System.String)"><a href="#file0_line119" class="navigatetohash">AddOrReplace(...)</a></td><td>0%</td><td>0%</td></tr>
 <tr><td title="WriteAttributesTo(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;,System.IO.Stream)"><a href="#file0_line140" class="navigatetohash">WriteAttributesTo(...)</a></td><td>100%</td><td>100%</td></tr>
 <tr><td title="ReadAttributesFrom(System.IO.Stream)"><a href="#file0_line163" class="navigatetohash">ReadAttributesFrom(...)</a></td><td>100%</td><td>100%</td></tr>
+<tr><td title="GetHash(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line186" class="navigatetohash">GetHash(...)</a></td><td>0%</td><td>0%</td></tr>
+<tr><td title="GetDiffHash(System.ValueTuple`2&lt;System.String,System.String&gt;,System.Int64)"><a href="#file0_line196" class="navigatetohash">GetDiffHash(...)</a></td><td>100%</td><td>0%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -229,11 +231,26 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line181"></a><code>181</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line182"></a><code>182</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;attributes;</code></td></tr>
 <tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line183"></a><code>183</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line184"></a><code>184</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line185"></a><code>185</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line184"></a><code>184</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line185"></a><code>185</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;long&nbsp;GetHash(this&nbsp;IEnumerable&lt;(string&nbsp;key,&nbsp;string&nbsp;value)&gt;&nbsp;attributes)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line186"></a><code>186</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line187"></a><code>187</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;hash&nbsp;=&nbsp;0;</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line188"></a><code>188</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(var&nbsp;attribute&nbsp;in&nbsp;attributes)&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line189"></a><code>189</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hash&nbsp;^=&nbsp;attribute.GetHashCode();</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line190"></a><code>190</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line191"></a><code>191</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line192"></a><code>192</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;hash;</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line193"></a><code>193</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line194"></a><code>194</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line195"></a><code>195</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;long&nbsp;GetDiffHash(this&nbsp;(string&nbsp;key,&nbsp;string&nbsp;value)&nbsp;otherValue,&nbsp;long&nbsp;originalHash)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line196"></a><code>196</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line197"></a><code>197</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;originalHash&nbsp;^&nbsp;otherValue.GetHashCode();</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line198"></a><code>198</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line199"></a><code>199</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line200"></a><code>200</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />02/17/2021 - 14:54:22<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />02/19/2021 - 08:42:36<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -244,6 +261,8 @@
 <a href="#file0_line119" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddOrReplace(...)"><i class="icon-cube"></i>AddOrReplace(...)</a><br />
 <a href="#file0_line140" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - WriteAttributesTo(...)"><i class="icon-cube"></i>WriteAttributesTo(...)</a><br />
 <a href="#file0_line163" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - ReadAttributesFrom(...)"><i class="icon-cube"></i>ReadAttributesFrom(...)</a><br />
+<a href="#file0_line186" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetHash(...)"><i class="icon-cube"></i>GetHash(...)</a><br />
+<a href="#file0_line196" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetDiffHash(...)"><i class="icon-cube"></i>GetDiffHash(...)</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">

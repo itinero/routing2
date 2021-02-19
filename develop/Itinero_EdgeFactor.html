@@ -18,14 +18,14 @@
 <tr><th>Assembly:</th><td>Itinero</td></tr>
 <tr><th>File(s):</th><td><a href="#homerunnerworkrouting2routing2srcItineroProfilesEdgeFactorcs" class="navigatetohash">/home/runner/work/routing2/routing2/src/Itinero/Profiles/EdgeFactor.cs</a></td></tr>
 <tr><th>Covered lines:</th><td>14</td></tr>
-<tr><th>Uncovered lines:</th><td>10</td></tr>
-<tr><th>Coverable lines:</th><td>24</td></tr>
-<tr><th>Total lines:</th><td>84</td></tr>
-<tr><th>Line coverage:</th><td>58.3% (14 of 24)</td></tr>
+<tr><th>Uncovered lines:</th><td>13</td></tr>
+<tr><th>Coverable lines:</th><td>27</td></tr>
+<tr><th>Total lines:</th><td>89</td></tr>
+<tr><th>Line coverage:</th><td>51.8% (14 of 27)</td></tr>
 <tr><th>Covered branches:</th><td>0</td></tr>
 <tr><th>Total branches:</th><td>4</td></tr>
 <tr><th>Branch coverage:</th><td>0% (0 of 4)</td></tr>
-<tr><th>Tag:</th><td>68_575168382</td></tr>
+<tr><th>Tag:</th><td>72_580865356</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -43,6 +43,7 @@
 <tr><td title="get_NoFactor()"><a href="#file0_line64" class="navigatetohash">get_NoFactor()</a></td><td>100%</td><td>0%</td></tr>
 <tr><td title="get_Reverse()"><a href="#file0_line69" class="navigatetohash">get_Reverse()</a></td><td>100%</td><td>100%</td></tr>
 <tr><td title="ToString()"><a href="#file0_line73" class="navigatetohash">ToString()</a></td><td>0%</td><td>0%</td></tr>
+<tr><td title="GetHashCode()"><a href="#file0_line85" class="navigatetohash">GetHashCode()</a></td><td>100%</td><td>0%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -53,7 +54,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line1"></a><code>1</code></td><td></td><td class="lightgray"><code>namespace&nbsp;Itinero.Profiles</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line2"></a><code>2</code></td><td></td><td class="lightgray"><code>{</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line3"></a><code>3</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;summary&gt;</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line4"></a><code>4</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;A&nbsp;factor&nbsp;returned&nbsp;by&nbsp;a&nbsp;vehicle&nbsp;profile&nbsp;to&nbsp;influence&nbsp;routing&nbsp;augmented&nbsp;with&nbsp;estimated&nbsp;speed.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line4"></a><code>4</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;An&nbsp;&#39;EdgeFactor&#39;&nbsp;contains&nbsp;the&nbsp;essential&nbsp;information&nbsp;to&nbsp;perform&nbsp;route&nbsp;planning,&nbsp;such&nbsp;as&nbsp;speed&nbsp;and&nbsp;priority&nbsp;in&nbsp;forw</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line5"></a><code>5</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line6"></a><code>6</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;readonly&nbsp;struct&nbsp;EdgeFactor</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line7"></a><code>7</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
@@ -132,11 +133,16 @@
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line80"></a><code>80</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;backwardSpeed&nbsp;=&nbsp;BackwardSpeed&nbsp;/&nbsp;100.0&nbsp;*&nbsp;3.6;</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line81"></a><code>81</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;$&quot;F:{ForwardFactor:F1}({forwardSpeed:F1}km/h)&nbsp;B:{BackwardFactor:F1}({backwardSpeed:F1}km/h)&quot;;</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line82"></a><code>82</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line83"></a><code>83</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line84"></a><code>84</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line83"></a><code>83</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line84"></a><code>84</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;override&nbsp;int&nbsp;GetHashCode()</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line85"></a><code>85</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line86"></a><code>86</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;(int)&nbsp;(this.ForwardFactor&nbsp;^&nbsp;this.ForwardSpeed&nbsp;&lt;&lt;&nbsp;8&nbsp;^&nbsp;this.BackwardFactor&nbsp;&lt;&lt;&nbsp;16&nbsp;^&nbsp;this.ForwardSpeed&nbsp;&lt;&lt;</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line87"></a><code>87</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line88"></a><code>88</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line89"></a><code>89</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />02/17/2021 - 14:54:22<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />02/19/2021 - 08:42:36<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -151,6 +157,7 @@
 <a href="#file0_line64" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - get_NoFactor()"><i class="icon-cube"></i>get_NoFactor()</a><br />
 <a href="#file0_line69" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_Reverse()"><i class="icon-cube"></i>get_Reverse()</a><br />
 <a href="#file0_line73" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ToString()"><i class="icon-cube"></i>ToString()</a><br />
+<a href="#file0_line85" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetHashCode()"><i class="icon-cube"></i>GetHashCode()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
