@@ -8,17 +8,15 @@ namespace Itinero.IO.Osm.Filters
     /// </summary>
     internal static class RoutingTagsFilter
     {
-        private static readonly Lazy<TagsFilter> LazyTagsFilter = new Lazy<TagsFilter>(() => new TagsFilter() {
-            Filter = RoutingTagsFilter.Filter,
-            MemberFilter = RoutingTagsFilter.ProcessCycleNetwork
-        });
-        
         /// <summary>
         /// Gets the default tags filter.
         /// </summary>
-        public static readonly TagsFilter Default = LazyTagsFilter.Value;
+        public static readonly TagsFilter Default = new TagsFilter() {
+            Filter = RoutingTagsFilter.Filter,
+            MemberFilter = RoutingTagsFilter.ProcessCycleNetwork
+        };
             
-        private static bool Filter(OsmGeo osmGeo)
+        internal static bool Filter(OsmGeo osmGeo)
         {
             switch (osmGeo.Type) {
                 case OsmGeoType.Way:

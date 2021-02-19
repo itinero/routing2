@@ -11,7 +11,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Node_Null_ShouldIncluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Node() {
+            var filter = RoutingTagsFilter.Filter(new Node() {
                 Tags = null
             });
             
@@ -21,7 +21,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Way_Null_ShouldBeExcluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Way() {
+            var filter = RoutingTagsFilter.Filter(new Way() {
                 Tags = null
             });
             
@@ -31,7 +31,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Relation_Null_ShouldBeExcluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Relation() {
+            var filter = RoutingTagsFilter.Filter(new Relation() {
                 Tags = null
             });
             
@@ -41,7 +41,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Node_Empty_ShouldBeIncluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Node() {
+            var filter = RoutingTagsFilter.Filter(new Node() {
                 Tags = new TagsCollection()
             });
             
@@ -51,7 +51,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Way_Empty_ShouldBeExcluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Way() {
+            var filter = RoutingTagsFilter.Filter(new Way() {
                 Tags = new TagsCollection()
             });
             
@@ -61,7 +61,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Relation_Empty_ShouldBeExcluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Relation() {
+            var filter = RoutingTagsFilter.Filter(new Relation() {
                 Tags = new TagsCollection()
             });
             
@@ -71,7 +71,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Way_Building_ShouldBeExcluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Way() {
+            var filter = RoutingTagsFilter.Filter(new Way() {
                 Tags = new TagsCollection(new Tag("building", "yes"))
             });
             
@@ -81,7 +81,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Way_Highway_ShouldBeIncluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Way() {
+            var filter = RoutingTagsFilter.Filter(new Way() {
                 Tags = new TagsCollection(new Tag("highway", "residential"))
             });
             
@@ -91,7 +91,7 @@ namespace Itinero.Tests.IO.Osm.Filters
         [Fact] 
         public void RoutingTagsFilter_Filter_Way_Ferry_ShouldBeIncluded()
         {
-            var filter = RoutingTagsFilter.Default.Filter?.Invoke(new Way() {
+            var filter = RoutingTagsFilter.Filter(new Way() {
                 Tags = new TagsCollection(new Tag("route", "ferry"))
             });
             

@@ -27,7 +27,7 @@ namespace Itinero.IO.Osm.Filters
         /// <remarks>
         /// When false is returned, the object is not included.
         /// </remarks>
-        public FilterDelegate? Filter { get; set; }
+        public Func<OsmGeo, bool>? Filter { get; set; }
         
         /// <summary>
         /// A function signature to define a filter.

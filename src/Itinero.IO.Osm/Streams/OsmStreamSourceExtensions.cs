@@ -1,4 +1,6 @@
+using System;
 using Itinero.IO.Osm.Filters;
+using OsmSharp;
 using OsmSharp.Streams;
 
 namespace Itinero.IO.Osm.Streams
@@ -15,7 +17,7 @@ namespace Itinero.IO.Osm.Streams
         /// <param name="filter">The filter.</param>
         /// <returns>A new filtered source.</returns>
         public static OsmStreamSource ApplyFilter(this OsmStreamSource source,
-            TagsFilter.FilterDelegate filter)
+            Func<OsmGeo, bool> filter)
         {
             var filtered = new OsmGeoTagsPreprocessor(osmGeo =>  filter(osmGeo));
             filtered.RegisterSource(source);
