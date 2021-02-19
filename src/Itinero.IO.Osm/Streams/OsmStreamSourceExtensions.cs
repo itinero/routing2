@@ -17,7 +17,7 @@ namespace Itinero.IO.Osm.Streams
         /// <param name="filter">The filter.</param>
         /// <returns>A new filtered source.</returns>
         public static OsmStreamSource ApplyFilter(this OsmStreamSource source,
-            Func<OsmGeo, bool> filter)
+            TagsFilter.FilterDelegate filter)
         {
             var filtered = new OsmGeoTagsPreprocessor(osmGeo =>  filter(osmGeo));
             filtered.RegisterSource(source);
