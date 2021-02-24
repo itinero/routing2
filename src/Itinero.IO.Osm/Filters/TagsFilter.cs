@@ -26,6 +26,7 @@ namespace Itinero.IO.Osm.Filters
         /// </summary>
         /// <remarks>
         /// When false is returned, the object is not included.
+        /// The delegate is also allowed to rewrite tags of the OsmGeo-object
         /// </remarks>
         public FilterDelegate? Filter { get; set; }
         
@@ -39,7 +40,8 @@ namespace Itinero.IO.Osm.Filters
         /// Filters OSM tags using a complete version of OSM objects.
         /// </summary>
         /// <remarks>
-        /// When false is returned, no filter is applied to the given object. This function is called with the complete parameter empty in a first pass.
+        /// When false is returned, no filter is applied to the given object.
+        /// This function is called with the complete parameter empty in a first pass.
         /// </remarks>
         public CompleteFilterDelegate? CompleteFilter { get; set; }
 

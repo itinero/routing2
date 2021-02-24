@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
+[assembly: InternalsVisibleTo("Itinero.Geo")]
 
 namespace Itinero.Network
 {
