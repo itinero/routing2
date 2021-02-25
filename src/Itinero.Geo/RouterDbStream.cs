@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,18 @@ namespace Itinero.Geo
     internal class RoutingNetworkStream : IEnumerable<IFeature>
     {
         private readonly RoutingNetwork _network;
+        private readonly Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> _preprocessEdgeAttributes;
 
-        public RoutingNetworkStream(RoutingNetwork network)
+        public RoutingNetworkStream(RoutingNetwork network, 
+            Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)> > preprocessEdgeAttributes)
         {
             _network = network;
+            _preprocessEdgeAttributes = preprocessEdgeAttributes;
         }
 
         public IEnumerator<IFeature> GetEnumerator()
         {
-            return new RouterDbEnumerator(_network);
+            return new RoutingNetworkEnumerator(_network,_preprocessEdgeAttributes);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -31,9 +35,10 @@ namespace Itinero.Geo
         }
     }
 
-    internal class RouterDbEnumerator : IEnumerator<IFeature>
+    internal class RoutingNetworkEnumerator : IEnumerator<IFeature>
     {
         private readonly RoutingNetwork _network;
+        private readonly Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)>> _preprocessEdge;
 
         private readonly IEnumerator<VertexId> _vertexIds;
 
@@ -41,9 +46,11 @@ namespace Itinero.Geo
         private bool _verticesAreDepleted;
         private RoutingNetworkEdgeEnumerator _edges;
 
-        public RouterDbEnumerator(RoutingNetwork network)
+        public RoutingNetworkEnumerator(RoutingNetwork network,
+            Func<IEnumerable<(string key, string value)>, IEnumerable<(string key, string value)> > preprocessEdge)
         {
             _network = network;
+            _preprocessEdge = preprocessEdge;
             _vertexIds = network.GetVertices().GetEnumerator();
            _edges = network.GetEdgeEnumerator();
         }
@@ -53,7 +60,7 @@ namespace Itinero.Geo
             _verticesAreDepleted = !_vertexIds.MoveNext();
             if (!_verticesAreDepleted) {
                 var attrs = new AttributesTable{
-                    {"_abs", "" + _vertexIds.Current}
+                    {"_vertix_id", "" + _vertexIds.Current}
                 };
                 _network.TryGetVertex(_vertexIds.Current, out var lon, out var lat, out var el);
                 // 
@@ -68,9 +75,13 @@ namespace Itinero.Geo
                 return false;
             }
 
-            var attr = new AttributesTable();
-            foreach (var kv in _edges.Attributes) {
-                attr.Add(kv.key, kv.value);
+            var attrTable = new AttributesTable();
+            var rawAttr = _edges.Attributes;
+            if (_preprocessEdge != null) {
+                rawAttr = _preprocessEdge.Invoke(rawAttr);
+            }
+            foreach (var kv in rawAttr) {
+                attrTable.Add(kv.key, kv.value);
             }
 
             var shape = _edges.Shape.ToList();
@@ -82,7 +93,7 @@ namespace Itinero.Geo
             }
             
             this.Current = new Feature(
-                new LineString(coors), attr);
+                new LineString(coors), attrTable);
             
             return true;
         }
