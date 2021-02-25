@@ -11,11 +11,11 @@ namespace Itinero.Geo
     /// <summary>
     ///     Converts a routerDB into a stream of geofeatures
     /// </summary>
-    public class RouterDbStream : IEnumerable<IFeature>
+    internal class RoutingNetworkStream : IEnumerable<IFeature>
     {
         private readonly RoutingNetwork _network;
 
-        public RouterDbStream(RoutingNetwork network)
+        public RoutingNetworkStream(RoutingNetwork network)
         {
             _network = network;
         }

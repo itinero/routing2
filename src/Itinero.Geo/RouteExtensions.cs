@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 using Itinero.Routes;
+using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 
 namespace Itinero.Geo
@@ -18,5 +20,6 @@ namespace Itinero.Geo
         {
             return new LineString(route.Shape.Select(x => new Coordinate(x.longitude, x.latitude)).ToArray());
         }
+        
     }
 }
