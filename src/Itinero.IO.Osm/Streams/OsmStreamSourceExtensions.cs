@@ -1,4 +1,6 @@
+using System;
 using Itinero.IO.Osm.Filters;
+using OsmSharp;
 using OsmSharp.Streams;
 
 namespace Itinero.IO.Osm.Streams

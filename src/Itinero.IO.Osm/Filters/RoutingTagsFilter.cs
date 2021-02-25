@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using OsmSharp;
 
 namespace Itinero.IO.Osm.Filters
@@ -13,12 +11,12 @@ namespace Itinero.IO.Osm.Filters
         /// <summary>
         /// Gets the default tags filter.
         /// </summary>
-        public static readonly TagsFilter Default = new () {
+        public static readonly TagsFilter Default = new TagsFilter() {
             Filter = RoutingTagsFilter.Filter,
             MemberFilter = RoutingTagsFilter.ProcessCycleNetwork
         };
             
-        private static bool Filter(OsmGeo osmGeo)
+        internal static bool Filter(OsmGeo osmGeo)
         {
             switch (osmGeo.Type) {
                 case OsmGeoType.Way:

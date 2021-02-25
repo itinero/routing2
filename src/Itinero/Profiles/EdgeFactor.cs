@@ -1,7 +1,7 @@
 namespace Itinero.Profiles
 {
     /// <summary>
-    /// A factor returned by a vehicle profile to influence routing augmented with estimated speed. 
+    /// An 'EdgeFactor' contains the essential information to perform route planning, such as speed and priority in forward and backward direction.
     /// </summary>
     public readonly struct EdgeFactor
     {
@@ -79,6 +79,11 @@ namespace Itinero.Profiles
 
             var backwardSpeed = BackwardSpeed / 100.0 * 3.6;
             return $"F:{ForwardFactor:F1}({forwardSpeed:F1}km/h) B:{BackwardFactor:F1}({backwardSpeed:F1}km/h)";
+        }
+
+        public override int GetHashCode()
+        {
+            return (int) (this.ForwardFactor ^ this.ForwardSpeed << 8 ^ this.BackwardFactor << 16 ^ this.ForwardSpeed << 24);
         }
     }
 }

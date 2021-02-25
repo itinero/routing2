@@ -181,5 +181,20 @@ namespace Itinero.Network.Attributes
 
             return attributes;
         }
+        
+        public static long GetHash(this IEnumerable<(string key, string value)> attributes)
+        {
+            var hash = 0;
+            foreach (var attribute in attributes) {
+                hash ^= attribute.GetHashCode();
+            }
+
+            return hash;
+        }
+
+        public static long GetDiffHash(this (string key, string value) otherValue, long originalHash)
+        {
+            return originalHash ^ otherValue.GetHashCode();
+        }
     }
 }

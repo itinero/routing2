@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{A3A9D1F8-A
 		.gitignore = .gitignore
 		NOTICE.md = NOTICE.md
 		LICENSE.md = LICENSE.md
-		SharedAssemblyVersion.cs = SharedAssemblyVersion.cs
 		Itinero.Common.props = Itinero.Common.props
 		.editorconfig = .editorconfig
 	EndProjectSection

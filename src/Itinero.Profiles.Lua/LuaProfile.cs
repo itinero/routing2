@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Itinero.Logging;
+using Neo.IronLua;
 
 namespace Itinero.Profiles.Lua
 {
@@ -8,147 +11,131 @@ namespace Itinero.Profiles.Lua
     /// </summary>
     public class LuaProfile : Profile
     {
-        private readonly Script _script;
-        private readonly Table _attributesTable;
-        private readonly Table _resultsTable;
+        private static readonly global::Neo.IronLua.Lua _lua = new();
+        private readonly dynamic _env = _lua.CreateEnvironment();
+
+        private readonly bool _hasTurnFactor;
+        
+        private LuaProfile(LuaChunk chunk)
+        {
+            _env.dochunk(chunk);
+            this.Name = _env.name;
+            _hasTurnFactor = _env.turn_cost_factor != null;
+            if (!_hasTurnFactor) {
+                Logger.Log("LuaProfile Turnfactor", TraceEventType.Verbose,
+                    "The profile " + this.Name + " doesn't have a turn_cost_factor defined");
+            }
+        }
+        
+        /// <inheritdoc />
+        public override string Name { get; }
         
         /// <summary>
-        /// Creates a new dynamic profile.
+        /// Loads a profile from a lua script file.
         /// </summary>
-        internal LuaProfile(Script script)
+        /// <param name="path">The path to the lua file.</param>
+        /// <returns>The profile.</returns>
+        public static Profile LoadFromFile(string path)
         {
-            _script = script;
-            
-            _attributesTable = new Table(_script);
-            _resultsTable = new Table(_script);
-            
-            var dynName = _script.Globals.Get("name");
-            this.Name = dynName.String ?? throw new Exception("Dynamic profile doesn't define a name.");
+            var chunk = _lua.CompileChunk(path, new LuaCompileOptions());
+            return new LuaProfile(chunk);
         }
 
         /// <summary>
-        /// Load profile from a raw lua script.
+        /// Loads profile from a raw lua script.
         /// </summary>
         /// <param name="script">The script.</param>
+        /// <param name="name">The name of the script.</param>
         /// <returns>The profile.</returns>
-        public static LuaProfile Load(string script)
+        public static Profile Load(string script, string? name = null)
         {
-            var s = new Script();
-            s.DoString(script);
-            return new LuaProfile(s);
-        }
+            name ??= string.Empty;
 
-        /// <inheritdoc/>
-        public override string Name { get; }
-
-        /// <inheritdoc/>
-        public sealed override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
-        {
-            lock (_script)
-            {
-                // build lua table.
-                _attributesTable.Clear();
-                if (attributes == null)
-                {
-                    return EdgeFactor.NoFactor;
-                }
-                var hasValue = false;
-                foreach (var attribute in attributes)
-                {
-                    hasValue = true;
-                    _attributesTable.Set(attribute.key, DynValue.NewString(attribute.value));
-                }
-                if (!hasValue) return EdgeFactor.NoFactor;
-
-                // call factor function.
-                _resultsTable.Clear();
-                _script.Call(_script.Globals["factor"], _attributesTable, _resultsTable);
-
-                // get the results.
-                if (!_resultsTable.TryGetDouble("forward", out var forwardFactor))
-                {
-                    forwardFactor = 0;
-                }
-                if (!_resultsTable.TryGetDouble("backward", out var backwardFactor))
-                {
-                    backwardFactor = 0;
-                }
-                if (!_resultsTable.TryGetBool("canstop", out var canStop))
-                {
-                    canStop = backwardFactor > 0 || forwardFactor > 0;
-                }
-                
-                // the speeds are supposed to be in m/s.
-                if (!_resultsTable.TryGetDouble("forward_speed", out var speedForward))
-                { // when forward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
-                    speedForward = 0;
-                    if (forwardFactor > 0)
-                    { // convert to m/s.
-                        speedForward =  1.0 / forwardFactor;
-                    }
-                }
-                else
-                { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
-                    speedForward /= 3.6;
-                }
-                if (!_resultsTable.TryGetDouble("backward_speed", out var speedBackward))
-                { // when backward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
-                    speedBackward = 0;
-                    if (backwardFactor > 0)
-                    { // convert to m/s.
-                        speedBackward = 1.0 / backwardFactor;
-                    }
-                }
-                else
-                { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
-                    speedBackward /= 3.6;
-                }
-
-                return new EdgeFactor((uint)(forwardFactor * 100), (uint)(backwardFactor * 100), 
-                    (ushort)(speedForward * 100), (ushort)(speedBackward * 100), canStop);
+            try {
+                var chunk = _lua.CompileChunk(script, name, new LuaCompileOptions());
+                return new LuaProfile(chunk);
+            }
+            catch (Exception e) {
+                throw e;
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
+        public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
+        {
+            var attributesTable = new LuaTable();
+            var resultTable = new LuaTable();
+            foreach (var (k, v) in attributes) {
+                attributesTable[k] = v;
+            }
+
+            _env.factor(attributesTable, resultTable);
+
+            var forward = resultTable.GetDouble("forward") ?? 0;
+            var backward = resultTable.GetDouble("backward") ?? 0;
+            
+            var speedForward = resultTable.GetDouble("forward_speed");
+            if (speedForward == null) {
+                // when forward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
+                speedForward = 0;
+                if (forward > 0) { // convert to m/s.
+                    speedForward = 1.0 / forward;
+                }
+            }
+            else { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
+                speedForward /= 3.6;
+            }
+            
+            var speedBackward = resultTable.GetDouble("backward_speed");
+            if (speedBackward == null) {
+                // when backward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
+                speedBackward = 0;
+                if (backward > 0) { // convert to m/s.
+                    speedBackward = 1.0 / backward;
+                }
+            }
+            else { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
+                speedBackward /= 3.6;
+            }
+
+            var canstop = resultTable.GetBoolean("canstop") ?? (backward > 0 || forward > 0);
+            
+            return new EdgeFactor(
+                (uint) (forward * 100),
+                (uint) (backward * 100),
+                (ushort) (speedForward * 100),
+                (ushort) (speedBackward * 100),
+                canstop
+            );
+        }
+
+        /// <inheritdoc />
         public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
         {
-            lock (_script)
-            {
-                // build lua table.
-                _attributesTable.Clear();
-                if (attributes == null)
-                {
-                    return Profiles.TurnCostFactor.Empty;
-                }
-                var hasValue = false;
-                foreach (var attribute in attributes)
-                {
-                    hasValue = true;
-                    _attributesTable.Set(attribute.key, DynValue.NewString(attribute.value));
-                }
-                if (!hasValue) return Profiles.TurnCostFactor.Empty;
-
-                // call turn_cost_factor function.
-                _resultsTable.Clear();
-                _script.Call(_script.Globals["turn_cost_factor"], _attributesTable, _resultsTable);
-
-                // get the results.
-                if (!_resultsTable.TryGetDouble("factor", out var factor))
-                {
-                    factor = 0;
-                }
-
-                var turnCostFactor = Profiles.TurnCostFactor.Empty;
-                if (factor < 0) 
-                {
-                    turnCostFactor = Profiles.TurnCostFactor.Binary;
-                }
-                else if (factor > 0)
-                {
-                    turnCostFactor = new TurnCostFactor((uint)(factor * 10));
-                }
-                return turnCostFactor;
+            if (!_hasTurnFactor || !attributes.Any()) {
+                return Profiles.TurnCostFactor.Empty;
             }
+
+            var attributesTable = new LuaTable();
+            var resultTable = new LuaTable();
+            foreach (var (k, v) in attributes) {
+                attributesTable[k] = v;
+            }
+
+            _env.turn_cost_factor(attributesTable, resultTable);
+
+            var factor = resultTable.GetDouble("factor") ?? 0;
+
+            var turnCostFactor = Profiles.TurnCostFactor.Empty;
+            if (factor < 0) 
+            {
+                turnCostFactor = Profiles.TurnCostFactor.Binary;
+            }
+            else if (factor > 0)
+            {
+                turnCostFactor = new TurnCostFactor((uint)(factor * 10));
+            }
+            return turnCostFactor;
         }
     }
 }

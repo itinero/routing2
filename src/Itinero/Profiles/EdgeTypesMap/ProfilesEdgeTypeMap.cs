@@ -21,8 +21,10 @@ namespace Itinero.Profiles.EdgeTypesMap
 
             Id = hash;
 
+            var minimizer = new AttributeSetMinimizer(sorted, "highway","oneway","access","surface");
+            
             // create the mapping function.
-            Mapping = a => sorted.GetEdgeProfileFor(a);
+            Mapping = a => minimizer.MinimizeAttributes(a);
         }
     }
 }

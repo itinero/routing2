@@ -1,5 +1,6 @@
 using System.Linq;
 using Itinero.Profiles;
+using Itinero.Profiles.Lua;
 using Xunit;
 
 namespace Itinero.Tests.Profiles.Lua.Osm

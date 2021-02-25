@@ -117,11 +117,11 @@ function factor(attributes, result)
         result.direction = 1
     end
     local direction = is_oneway(attributes, "oneway")
-    if direction != nil then
+    if direction ~= nil then
         result.direction = direction
     end
     local direction = is_oneway(attributes, "oneway:bicycle")
-    if direction != nil then
+    if direction ~= nil then
         result.direction = direction
     end
         
@@ -137,7 +137,7 @@ function turn_cost_factor(attributes, result)
 
     -- get factors for turn restrictions.
     local restriction = attributes.restriction
-    if restriction != "yes" then
+    if restriction ~= "yes" then
         return
     end
     local bicycle = attributes.bicycle
