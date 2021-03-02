@@ -34,8 +34,11 @@ namespace Itinero.Routing
         /// <returns>The route.</returns>
         public static Result<Route> Calculate(this IRouterOneToOne oneToOneRouter)
         {
-            return oneToOneRouter.Settings.RouteBuilder.Build(oneToOneRouter.Network, oneToOneRouter.Settings.Profile,
-                oneToOneRouter.Path());
+            var path = oneToOneRouter.Path();
+            if (path.IsError) {
+                return new Result<Route>(path.ErrorMessage);
+            }
+            return oneToOneRouter.Settings.RouteBuilder.Build(oneToOneRouter.Network, oneToOneRouter.Settings.Profile, path.Value );
         }
 
         /// <summary>
