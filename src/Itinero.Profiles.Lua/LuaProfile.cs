@@ -51,13 +51,8 @@ namespace Itinero.Profiles.Lua
         {
             name ??= string.Empty;
 
-            try {
-                var chunk = _lua.CompileChunk(script, name, new LuaCompileOptions());
-                return new LuaProfile(chunk);
-            }
-            catch (Exception e) {
-                throw e;
-            }
+            var chunk = _lua.CompileChunk(script, name, new LuaCompileOptions());
+            return new LuaProfile(chunk);
         }
 
         /// <inheritdoc />
