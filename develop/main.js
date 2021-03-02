@@ -395,7 +395,7 @@ var assemblies = [
   {
     "name": "Itinero.Profiles.Lua",
     "classes": [
-      { "name": "Itinero.Profiles.Lua.LuaProfile", "rp": "Itinero.Profiles.Lua_LuaProfile.html", "cl": 68, "ucl": 16, "cal": 84, "tl": 141, "ct": "LineCoverage", "mc": "-", "cb": 39, "tb": 52, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Profiles.Lua.LuaProfile", "rp": "Itinero.Profiles.Lua_LuaProfile.html", "cl": 67, "ucl": 14, "cal": 81, "tl": 136, "ct": "LineCoverage", "mc": "-", "cb": 39, "tb": 52, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.Lua.LuaTableExtensions", "rp": "Itinero.Profiles.Lua_LuaTableExtensions.html", "cl": 14, "ucl": 4, "cal": 18, "tl": 39, "ct": "LineCoverage", "mc": "-", "cb": 9, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.Lua.Osm.OsmProfiles", "rp": "Itinero.Profiles.Lua_OsmProfiles.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 38, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 2, "lch": [], "bch": [], "hc": [] },
     ]},
