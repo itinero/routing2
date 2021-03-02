@@ -328,6 +328,14 @@ var assemblies = [
       { "name": "Itinero.Snapping.SnapPointExtensions", "rp": "Itinero_SnapPointExtensions.3.html", "cl": 44, "ucl": 19, "cal": 63, "tl": 173, "ct": "LineCoverage", "mc": "-", "cb": 21, "tb": 38, "lch": [], "bch": [], "hc": [] },
     ]},
   {
+    "name": "Itinero.Geo",
+    "classes": [
+      { "name": "Itinero.Geo.RouteExtensions", "rp": "Itinero.Geo_RouteExtensions.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Geo.RoutingNetworkEnumerator", "rp": "Itinero.Geo_RoutingNetworkEnumerator.html", "cl": 50, "ucl": 13, "cal": 63, "tl": 112, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 16, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Geo.RoutingNetworkExtensions", "rp": "Itinero.Geo_RoutingNetworkExtensions.html", "cl": 6, "ucl": 6, "cal": 12, "tl": 51, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Geo.RoutingNetworkStream", "rp": "Itinero.Geo_RoutingNetworkStream.html", "cl": 10, "ucl": 3, "cal": 13, "tl": 37, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+    ]},
+  {
     "name": "Itinero.Instructions",
     "classes": [
       { "name": "Itinero.Instructions.Box`1", "rp": "Itinero.Instructions_Box_1.html", "cl": 1, "ucl": 0, "cal": 1, "tl": 127, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
