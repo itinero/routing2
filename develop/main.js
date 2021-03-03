@@ -244,7 +244,7 @@ var assemblies = [
       { "name": "Itinero.Network.DataStructures.SparseArray`1", "rp": "Itinero_SparseArray_1.html", "cl": 79, "ucl": 12, "cal": 91, "tl": 178, "ct": "LineCoverage", "mc": "-", "cb": 28, "tb": 36, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.DataStructures.SparseArrayExtensions", "rp": "Itinero_SparseArrayExtensions.html", "cl": 5, "ucl": 0, "cal": 5, "tl": 178, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.EdgeId", "rp": "Itinero_EdgeId.html", "cl": 21, "ucl": 19, "cal": 40, "tl": 134, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 8, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Enumerators.Edges.EdgeEnumerator`1", "rp": "Itinero_EdgeEnumerator_1.html", "cl": 60, "ucl": 13, "cal": 73, "tl": 204, "ct": "LineCoverage", "mc": "-", "cb": 15, "tb": 20, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Enumerators.Edges.EdgeEnumerator`1", "rp": "Itinero_EdgeEnumerator_1.html", "cl": 62, "ucl": 11, "cal": 73, "tl": 204, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Enumerators.Edges.IEdgeEnumeratorExtensions", "rp": "Itinero_IEdgeEnumeratorExtensions.html", "cl": 37, "ucl": 46, "cal": 83, "tl": 173, "ct": "LineCoverage", "mc": "-", "cb": 19, "tb": 52, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Enumerators.Edges.RoutingNetworkEdgeEnumerator", "rp": "Itinero_RoutingNetworkEdgeEnumerator.html", "cl": 1, "ucl": 0, "cal": 1, "tl": 8, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Enumerators.Edges.RoutingNetworkEdgeEnumeratorExtensions", "rp": "Itinero_RoutingNetworkEdgeEnumeratorExtensions.html", "cl": 13, "ucl": 0, "cal": 13, "tl": 59, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -331,7 +331,7 @@ var assemblies = [
     "name": "Itinero.Geo",
     "classes": [
       { "name": "Itinero.Geo.RouteExtensions", "rp": "Itinero.Geo_RouteExtensions.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Geo.RoutingNetworkEnumerator", "rp": "Itinero.Geo_RoutingNetworkEnumerator.html", "cl": 50, "ucl": 13, "cal": 63, "tl": 112, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 16, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Geo.RoutingNetworkEnumerator", "rp": "Itinero.Geo_RoutingNetworkEnumerator.html", "cl": 53, "ucl": 10, "cal": 63, "tl": 112, "ct": "LineCoverage", "mc": "-", "cb": 13, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Geo.RoutingNetworkExtensions", "rp": "Itinero.Geo_RoutingNetworkExtensions.html", "cl": 6, "ucl": 6, "cal": 12, "tl": 51, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Geo.RoutingNetworkStream", "rp": "Itinero.Geo_RoutingNetworkStream.html", "cl": 10, "ucl": 3, "cal": 13, "tl": 37, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
     ]},
