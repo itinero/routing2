@@ -84,7 +84,7 @@ namespace Itinero.Geo
             coors[^1] = new Coordinate(toLon, toLat);
             for (var i = 0; i < shape.Count(); i++) {
                 var shp = shape[i];
-                coors[i] = new Coordinate(shp.longitude, shp.latitude);
+                coors[i + 1] = new Coordinate(shp.longitude, shp.latitude);
             }
 
             this.Current = new Feature(
