@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Itinero.IO.Osm.Streams;
 using OsmSharp;
 using OsmSharp.Complete;
 using OsmSharp.Streams;
 using OsmSharp.Tags;
+
+[assembly: InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
+[assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
 namespace Itinero.IO.Osm
 {

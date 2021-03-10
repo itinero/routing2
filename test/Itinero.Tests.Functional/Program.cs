@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Itinero.IO.Osm;
 using Itinero.IO.Json.GeoJson;
 using Itinero.Geo.Elevation;
 using Itinero.Instructions;
 using Itinero.IO.Osm;
+using Itinero.IO.Osm.Filters;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
+using Itinero.Profiles.EdgeTypesMap;
+using Itinero.Profiles.Lua;
 using Itinero.Profiles.Lua.Osm;
 using Itinero.Routing;
 using Itinero.Snapping;
@@ -29,7 +33,56 @@ namespace Itinero.Tests.Functional
         {
             EnableLogging();
             
-            TileParser.DownloadFunc = DownloadHelper.Download;
+            var bicycle = LuaProfile.LoadFromFile("/data/work/anyways/routing-profiles/itinero2/bicycle.comfort.lua") as LuaProfile;
+            //var bicycle = OsmProfiles.Bicycle;
+
+            var profilesEdgeMap = new ProfilesEdgeTypeMap(new[] {
+                LuaProfile.LoadFromFile("/data/work/anyways/routing-profiles/itinero2/bicycle.b2w.lua"),
+                LuaProfile.LoadFromFile("/data/work/anyways/routing-profiles/itinero2/bicycle.client_network.lua"),
+                LuaProfile.LoadFromFile("/data/work/anyways/routing-profiles/itinero2/bicycle.comfort.lua"),
+                LuaProfile.LoadFromFile("/data/work/anyways/routing-profiles/itinero2/bicycle.comfort_safety.lua"),
+            });
+            
+            using (var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+                 "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"))) {
+                //using var osmStream = File.OpenRead(args[0]);
+                var progress = new OsmStreamFilterProgress();
+                var osmPbfStream = new PBFOsmStreamSource(osmStream);
+                progress.RegisterSource(osmPbfStream);
+
+                var c = 0;
+                var ws = 0;
+                var wsWith = 0;
+                var ticks = DateTime.Now.Ticks;
+                while (progress.MoveNextWay()) {
+                    var w = progress.Current() as Way;
+                    if (w?.Tags == null) continue;
+
+                    if (!RoutingTagsFilter.Default.Filter(w)) continue;
+
+                    ws++;
+                    var r = profilesEdgeMap.Mapping(w.Tags.Select(x => (x.Key, x.Value)));
+                    var hasTag = false;
+                    
+                    foreach (var t in r) {
+                        //Console.WriteLine($"{t.key}={t.value}");
+                        c++;
+                        hasTag = true;
+                    }
+
+                    if (hasTag) {
+                        wsWith++;
+                        //Console.WriteLine("Accepted");
+                    }
+                }
+                
+                Console.WriteLine((new TimeSpan(DateTime.Now.Ticks - ticks)));
+                Console.WriteLine($"Number of ways: {wsWith}/{ws}");
+                //Console.WriteLine($"Calls to Factor:{bicycle.c}");
+                Console.WriteLine(c);
+            }
+            
+            // TileParser.DownloadFunc = DownloadHelper.Download;
             
             // // create a new srtm data instance.
             // // it accepts a folder to download and cache data into.
@@ -60,40 +113,40 @@ namespace Itinero.Tests.Functional
             //
             //     return (short) elevation;
             // });
-
-            var bicycle = OsmProfiles.Bicycle;
-            var pedestrian = OsmProfiles.Pedestrian;
-           
-            // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration() {
-                Zoom = 14
-            });
-
-            routerDb.PrepareFor(bicycle);
-            
+            //
+            // var bicycle = OsmProfiles.Bicycle;
+            // var pedestrian = OsmProfiles.Pedestrian;
+            //
+            // // setup a router db with a local osm file.
+            // var routerDb = new RouterDb(new RouterDbConfiguration() {
+            //     Zoom = 14
+            // });
+            //
+            // routerDb.PrepareFor(bicycle);
+            //
             
             
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            using (var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"))) {
-                //using var osmStream = File.OpenRead(args[0]);
-                var progress = new OsmStreamFilterProgress();
-                var osmPbfStream = new PBFOsmStreamSource(osmStream);
-                progress.RegisterSource(osmPbfStream);
-                
-                // 
-                routerDb.UseOsmData(progress);
-            }
-
-            var latest = routerDb.Latest;
-            
-            var snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            var snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate().Value.WithInstructions().MergeInstructions();
-            var json = route.ToGeoJson();
+            // using (var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+            //     "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"))) {
+            //     //using var osmStream = File.OpenRead(args[0]);
+            //     var progress = new OsmStreamFilterProgress();
+            //     var osmPbfStream = new PBFOsmStreamSource(osmStream);
+            //     progress.RegisterSource(osmPbfStream);
+            //     
+            //     // 
+            //     routerDb.UseOsmData(progress);
+            // }
+            //
+            // var latest = routerDb.Latest;
+            //
+            // var snap1 = latest.Snap().To(5.9732794761657715,
+            //     49.93364075288293).Value;
+            // var snap2 = latest.Snap().To(5.972356796264648,
+            //     49.93735597155516).Value;
+            // var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate().Value.WithInstructions().MergeInstructions();
+            // var json = route.ToGeoJson();
 
 
             

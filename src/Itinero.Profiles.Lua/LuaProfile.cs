@@ -11,8 +11,11 @@ namespace Itinero.Profiles.Lua
     /// </summary>
     public class LuaProfile : Profile
     {
-        private static readonly global::Neo.IronLua.Lua _lua = new();
-        private readonly dynamic _env = _lua.CreateEnvironment();
+        private static readonly global::Neo.IronLua.Lua Lua = new();
+        private readonly dynamic _env = Lua.CreateEnvironment();
+        
+        private readonly LuaTable _attributesTable = new LuaTable();
+        private readonly LuaTable _resultTable = new LuaTable();
 
         private readonly bool _hasTurnFactor;
         
@@ -37,7 +40,7 @@ namespace Itinero.Profiles.Lua
         /// <returns>The profile.</returns>
         public static Profile LoadFromFile(string path)
         {
-            var chunk = _lua.CompileChunk(path, new LuaCompileOptions());
+            var chunk = Lua.CompileChunk(path, new LuaCompileOptions());
             return new LuaProfile(chunk);
         }
 
@@ -52,7 +55,7 @@ namespace Itinero.Profiles.Lua
             name ??= string.Empty;
 
             try {
-                var chunk = _lua.CompileChunk(script, name, new LuaCompileOptions());
+                var chunk = Lua.CompileChunk(script, name, new LuaCompileOptions());
                 return new LuaProfile(chunk);
             }
             catch (Exception e) {
@@ -63,18 +66,23 @@ namespace Itinero.Profiles.Lua
         /// <inheritdoc />
         public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
         {
-            var attributesTable = new LuaTable();
-            var resultTable = new LuaTable();
-            foreach (var (k, v) in attributes) {
-                attributesTable[k] = v;
-            }
-
-            _env.factor(attributesTable, resultTable);
-
-            var forward = resultTable.GetDouble("forward") ?? 0;
-            var backward = resultTable.GetDouble("backward") ?? 0;
+            _attributesTable.Clear();
+            _resultTable.Clear();
             
-            var speedForward = resultTable.GetDouble("forward_speed");
+            //var hasTags = false;
+            foreach (var (k, v) in attributes) {
+                _attributesTable[k] = v;
+                //hasTags = true;
+            }
+            
+            //if (!hasTags) return EdgeFactor.NoFactor;
+
+            _env.factor(_attributesTable, _resultTable);
+
+            var forward = _resultTable.GetDouble("forward") ?? 0;
+            var backward = _resultTable.GetDouble("backward") ?? 0;
+            
+            var speedForward = _resultTable.GetDouble("forward_speed");
             if (speedForward == null) {
                 // when forward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
                 speedForward = 0;
@@ -86,7 +94,7 @@ namespace Itinero.Profiles.Lua
                 speedForward /= 3.6;
             }
             
-            var speedBackward = resultTable.GetDouble("backward_speed");
+            var speedBackward = _resultTable.GetDouble("backward_speed");
             if (speedBackward == null) {
                 // when backward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
                 speedBackward = 0;
@@ -98,7 +106,7 @@ namespace Itinero.Profiles.Lua
                 speedBackward /= 3.6;
             }
 
-            var canstop = resultTable.GetBoolean("canstop") ?? (backward > 0 || forward > 0);
+            var canstop = _resultTable.GetBoolean("canstop") ?? (backward > 0 || forward > 0);
             
             return new EdgeFactor(
                 (uint) (forward * 100),

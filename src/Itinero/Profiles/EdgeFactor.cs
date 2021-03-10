@@ -59,6 +59,11 @@ namespace Itinero.Profiles
         public bool CanStop { get; }
 
         /// <summary>
+        /// Returns true if empty.
+        /// </summary>
+        public bool IsNoFactor => this.ForwardFactor == 0 && this.BackwardFactor == 0;
+
+        /// <summary>
         /// Gets a static no-factor.
         /// </summary>
         public static EdgeFactor NoFactor => new(0, 0, 0, 0);
@@ -81,9 +86,13 @@ namespace Itinero.Profiles
             return $"F:{ForwardFactor:F1}({forwardSpeed:F1}km/h) B:{BackwardFactor:F1}({backwardSpeed:F1}km/h)";
         }
 
+        // public override int GetHashCode()
+        // {
+        //     return (int) (this.ForwardFactor ^ this.ForwardSpeed << 8 ^ this.BackwardFactor << 16 ^ this.BackwardSpeed << 24);
+        // }
         public override int GetHashCode()
         {
-            return (int) (this.ForwardFactor ^ this.ForwardSpeed << 8 ^ this.BackwardFactor << 16 ^ this.ForwardSpeed << 24);
+            return (73247435, this.ForwardFactor, this.ForwardSpeed, this.BackwardFactor, this.BackwardSpeed).GetHashCode();
         }
     }
 }
