@@ -24,6 +24,7 @@ namespace Itinero.Tests.Functional.Tests.TestCases
 {
     public class SnappingTests
     {
+        
         public static void RunTests(RouterDb routerDb, Profile profile)
         { // Belgium
             var latest = routerDb.Latest;
