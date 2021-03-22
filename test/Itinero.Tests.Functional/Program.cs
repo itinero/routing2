@@ -1,21 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Itinero.IO.Osm;
-using Itinero.IO.Json.GeoJson;
-using Itinero.Geo.Elevation;
-using Itinero.Instructions;
-using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua.Osm;
-using Itinero.Routing;
-using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
-using OsmSharp;
+using Itinero.Tests.Functional.Tests.TestCases;
 using OsmSharp.Logging;
-using OsmSharp.Streams;
-using OsmSharp.Streams.Filters;
 using Serilog;
 using Serilog.Events;
 using TraceEventType = Itinero.Logging.TraceEventType;
@@ -24,13 +15,12 @@ namespace Itinero.Tests.Functional
 {
     internal static class Program
     {
-
         private static void Main(string[] args)
         {
             EnableLogging();
-            
+
             TileParser.DownloadFunc = DownloadHelper.Download;
-            
+
             // // create a new srtm data instance.
             // // it accepts a folder to download and cache data into.
             // var srtmCache = new DirectoryInfo("srtm-cache");
@@ -62,100 +52,33 @@ namespace Itinero.Tests.Functional
             // });
 
             var bicycle = OsmProfiles.Bicycle;
-            var pedestrian = OsmProfiles.Pedestrian;
-           
+
             // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration() {
+            var routerDb = new RouterDb(new RouterDbConfiguration {
                 Zoom = 14
             });
 
             routerDb.PrepareFor(bicycle);
-            
-            
-            
+
+
             //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
             //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            using (var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-                "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"))) {
-                //using var osmStream = File.OpenRead(args[0]);
-                var progress = new OsmStreamFilterProgress();
-                var osmPbfStream = new PBFOsmStreamSource(osmStream);
-                progress.RegisterSource(osmPbfStream);
-                
-                // 
-                routerDb.UseOsmData(progress);
-            }
+            //  using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
+            //      "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
+            using var routerDbStream = File.OpenRead("/data/work/data/OSM/test/itinero2/data.routerdb");
+            /* 
+             //using var osmStream = File.OpenRead(args[0]);
+             var progress = new OsmStreamFilterProgress();
+             var osmPbfStream = new PBFOsmStreamSource(osmStream);
+             progress.RegisterSource(osmPbfStream);
+                 
+             // 
+             routerDb.UseOsmData(progress);*/
+            RouterDb.ReadFrom(routerDbStream);
 
-            var latest = routerDb.Latest;
-            
-            var snap1 = latest.Snap().To(5.9732794761657715,
-                49.93364075288293).Value;
-            var snap2 = latest.Snap().To(5.972356796264648,
-                49.93735597155516).Value;
-            var route = latest.Route(bicycle).From(snap1).To(snap2).Calculate().Value.WithInstructions().MergeInstructions();
-            var json = route.ToGeoJson();
+            SnappingTests.RunTests(routerDb, bicycle);
 
 
-            
-            // snap1 = latest.Snap().To(5.9732794761657715,
-            //     49.93735597155516).Value;
-
-            // {
-            //     $"Snapping cold: hamme");
-            // var stekene = SnappingTest.Default.Run((latest, 4.03705, 51.20637, profile: bicycle),
-            //     $"Snapping cold: stekene");
-            // var leuven = SnappingTest.Default.Run((latest, 4.69575, 50.88040, profile: bicycle),
-            //     $"Snapping cold: leuven");
-            // var wechelderzande1 = SnappingTest.Default.Run((latest, 4.80129, 51.26774, profile: bicycle),
-            //     $"Snapping cold: wechelderzande1");
-            // var wechelderzande2 = SnappingTest.Default.Run((latest, 4.794577360153198, 51.26723850107129, profile: bicycle),
-            //     $"Snapping cold: wechelderzande2");
-            // var wechelderzande3 = SnappingTest.Default.Run((latest, 4.783204793930054, 51.266842437522904, profile: bicycle),
-            //     $"Snapping cold: wechelderzande3");
-            // var wechelderzande4 = SnappingTest.Default.Run((latest, 4.796256422996521, 51.261015209797186, profile: bicycle),
-            //     $"Snapping cold: wechelderzande4");
-            // var wechelderzande5 = SnappingTest.Default.Run((latest, 4.795172810554504, 51.267413036466706, profile: bicycle),
-            //     $"Snapping cold: wechelderzande5");
-            // var vorselaar1 = SnappingTest.Default.Run((latest, 4.7668540477752686, 51.23757128291549, profile: bicycle),
-            //     $"Snapping cold: vorselaar1");
-            // var middelburg = SnappingTest.Default.Run((latest, 3.61363, 51.49967, profile: bicycle),
-            //     $"Snapping cold: middelburg");
-            // var hermanTeirlinck = SnappingTest.Default.Run((latest, 4.35016, 50.86595, profile: bicycle),
-            //     $"Snapping cold: herman teirlinck");
-            // hermanTeirlinck = SnappingTest.Default.Run((latest, 4.35016, 50.86595, profile: bicycle),
-            //     $"Snapping hot: hermain teirlinck");
-            // var mechelenNeckerspoel = SnappingTest.Default.Run((latest, 4.48991060256958, 51.0298871358546, profile: bicycle),
-            //     $"Snapping cold: mechelen neckerspoel");
-            // mechelenNeckerspoel = SnappingTest.Default.Run((latest, 4.48991060256958, 51.0298871358546, profile: bicycle),
-            //     $"Snapping hot: mechelen neckerspoel");
-            // var dendermonde = SnappingTest.Default.Run((latest, 4.10142481327057, 51.0227846418863, profile: bicycle),
-            //     $"Snapping cold: dendermonde");
-            // dendermonde = SnappingTest.Default.Run((latest, 4.10142481327057, 51.0227846418863, profile: bicycle),
-            //     $"Snapping hot: dendermonde");
-            // var zellik1 = SnappingTest.Default.Run((latest, 4.27392840385437, 50.884507285755205, profile: bicycle),
-            //     $"Snapping cold: zellik1"); 
-            // zellik1 = SnappingTest.Default.Run((latest, 4.27392840385437, 50.884507285755205, profile: bicycle),
-            //     $"Snapping hot: zellik1"); 
-            // var zellik2 = SnappingTest.Default.Run((latest, 4.275886416435242, 50.88336336674239, profile: bicycle),
-            //     $"Snapping cold: zellik2");
-            // zellik2 = SnappingTest.Default.Run((latest, 4.275886416435242, 50.88336336674239, profile: bicycle),
-            //     $"Snapping hot: zellik2");
-            // var bruggeStation = SnappingTest.Default.Run((latest, 3.214899, 51.195129, profile: bicycle),
-            //     $"Snapping cold: brugge-station");
-            // var stationDuinberge = SnappingTest.Default.Run((latest, 3.26358318328857, 51.3381990351222, profile: bicycle),
-            //     $"Snapping cold: duinberge");
-            // var lesotho1 = SnappingTest.Default.Run((latest, 27.449684143066406, -30.147205394735842, profile: bicycle),
-            //     $"Snapping cold: lesotho1");
-            // var lesotho2 = SnappingTest.Default.Run((latest, 27.464404106140133, -30.153625306867017, profile: bicycle),
-            //     $"Snapping cold: lesotho2");
-            //
-            // Parallel.For(0, 10, (i) =>
-            // {
-            //     SnappingTest.Default.Run((latest, 4.27392840385437, 50.884507285755205, profile: bicycle),
-            //         $"Snapping parallel: zellik1"); 
-            //     SnappingTest.Default.Run((latest, 4.275886416435242, 50.88336336674239, profile: bicycle),
-            //         $"Snapping parallel: zellik2");
-            // });
             //
             // var route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
             //     $"Route cold: {nameof(lesotho1)} -> {nameof(lesotho2)}");

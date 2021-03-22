@@ -16,5 +16,6 @@ namespace Itinero.Snapping
         {
             return snapper.To(new[] {(vertexId, edgeId)}).First();
         }
+        
     }
 }
