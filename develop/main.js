@@ -320,7 +320,7 @@ var assemblies = [
       { "name": "Itinero.Routing.RoutingSettings", "rp": "Itinero_RoutingSettings.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 26, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.RoutingNetworkExtensions", "rp": "Itinero_RoutingNetworkExtensions.html", "cl": 8, "ucl": 3, "cal": 11, "tl": 27, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Snapping.ILocationsSnapperExtensions", "rp": "Itinero_ILocationsSnapperExtensions.html", "cl": 3, "ucl": 3, "cal": 6, "tl": 32, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Snapping.ISnapperExtensions", "rp": "Itinero_ISnapperExtensions.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 20, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Snapping.ISnapperExtensions", "rp": "Itinero_ISnapperExtensions.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 21, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Snapping.LocationsSnapper", "rp": "Itinero_LocationsSnapper.html", "cl": 0, "ucl": 48, "cal": 48, "tl": 92, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Snapping.Snapper", "rp": "Itinero_Snapper.html", "cl": 33, "ucl": 32, "cal": 65, "tl": 109, "ct": "LineCoverage", "mc": "-", "cb": 18, "tb": 28, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Snapping.SnapperSettings", "rp": "Itinero_SnapperSettings.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 23, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
