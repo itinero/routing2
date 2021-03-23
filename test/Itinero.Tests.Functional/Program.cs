@@ -95,6 +95,8 @@ namespace Itinero.Tests.Functional
 
             var bicycle =
                 LuaProfile.LoadFromFile("/home/pietervdvn/anyways-open/routing-profiles/itinero2/bicycle.fast.lua");
+            var rollerSkate =
+                LuaProfile.LoadFromFile("/home/pietervdvn/anyways-open/routing-profiles/itinero2/rollerskate.fastest.lua");
 
             // setup a router db with a local osm file.
             RouterDb routerDb;
@@ -104,7 +106,7 @@ namespace Itinero.Tests.Functional
             
             
            // SnappingTests.RunTests(routerDb, bicycle);
-            routerDb = FromFile("test.routerdb");
+            routerDb = FromFile("/data/work/data/OSM/test/itinero2/data.routerdb");
             SnappingTests.RunTestsBe(routerDb, bicycle);
 
             //

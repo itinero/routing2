@@ -32,6 +32,13 @@ namespace Itinero.Tests.Functional.Tests.TestCases
             SnapPoint snap1;
             SnapPoint snap2;
 
+          var brugge=  routerDb.Latest.Snap().Using(profile).To(
+                new (double longitude, double latitude, float? e)[2] {
+                    (3.2203820473368694, 51.215381552063945, 0f),
+                    (3.2195755643836605, 51.21651607032328, 0f)
+                }
+            );
+
             var stekene = SnappingTest.Default.Run((latest, 4.03705, 51.20637, profile),
                 "Snapping cold: stekene");
             var leuven = SnappingTest.Default.Run((latest, 4.69575, 50.88040, profile),
