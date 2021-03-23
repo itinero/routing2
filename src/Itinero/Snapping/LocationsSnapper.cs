@@ -9,6 +9,10 @@ using Itinero.Profiles;
 
 namespace Itinero.Snapping
 {
+    /// <summary>
+    /// Just like the `Snapper`, it'll snap to a location.
+    /// However, the 'Snapper' will match to any road whereas the `LocationSnapper` will only snap to roads accessible to the selected profiles
+    /// </summary>
     internal class LocationsSnapper : ILocationsSnapper
     {
         private readonly Snapper _snapper;
@@ -68,6 +72,8 @@ namespace Itinero.Snapping
         /// <inheritdoc/>
         public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations)
         {
+            // We need to give 'AcceptableFunc' as function pointer later on
+            // We construct this function only once
             var acceptableFunc = AcceptableFunc();
 
             foreach (var location in locations) {

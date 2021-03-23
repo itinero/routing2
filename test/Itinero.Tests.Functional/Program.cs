@@ -97,12 +97,15 @@ namespace Itinero.Tests.Functional
                 LuaProfile.LoadFromFile("/home/pietervdvn/anyways-open/routing-profiles/itinero2/bicycle.fast.lua");
 
             // setup a router db with a local osm file.
-            var routerDb = FromUrl(bicycle, BelgiumUrl, "belgium-latest.osm.bpf");
-            SnappingTests.RunTests(routerDb, bicycle);
-            ToFile("test.routerdb", routerDb);
+            RouterDb routerDb;
+                /*
+                 routerDb = FromUrl(bicycle, BelgiumUrl, "belgium-latest.osm.bpf");
+            ToFile("test.routerdb", routerDb);//*/
+            
+            
+           // SnappingTests.RunTests(routerDb, bicycle);
             routerDb = FromFile("test.routerdb");
-            SnappingTests.RunTests(routerDb, bicycle);
-            //SnappingTests.RunTestsLux(routerDbRead, bicycle);
+            SnappingTests.RunTestsBe(routerDb, bicycle);
 
             //
             // var route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),

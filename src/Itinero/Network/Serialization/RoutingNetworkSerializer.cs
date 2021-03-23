@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Itinero.IO;
@@ -21,7 +22,6 @@ namespace Itinero.Network.Serialization
             stream.WriteVarUInt32((uint) routingNetworkMutator.GetTiles().Count());
             foreach (var tileId in routingNetworkMutator.GetTiles()) {
                 var tile = routingNetworkMutator.GetTile(tileId);
-
                 tile?.WriteTo(stream);
             }
         }
@@ -38,14 +38,13 @@ namespace Itinero.Network.Serialization
             var zoom = stream.ReadVarInt32();
 
             var tileCount = stream.ReadVarUInt32();
-            var tiles = new SparseArray<NetworkTile?>(0);
+            var tiles = new SparseArray<NetworkTile?>(tileCount);
             for (var t = 0; t < tileCount; t++) {
                 var tile = NetworkTile.ReadFrom(stream);
-
                 tiles.EnsureMinimumSize(tile.TileId);
                 tiles[tile.TileId] = tile;
             }
-
+            
             return new RoutingNetwork(routerDb, tiles, zoom);
         }
     }

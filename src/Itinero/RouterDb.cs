@@ -50,13 +50,13 @@ namespace Itinero
 
             // read edge type map data.
             _edgeTypeIndex = AttributeSetIndex.ReadFrom(stream);
-            _edgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeIndex = AttributeSetIndex.ReadFrom(stream);
-            _turnCostTypeMap = AttributeSetMap.Default;
-
+            
             // read attributes.
             this.Meta = new List<(string key, string value)>(ReadAttributesFrom(stream));
 
+            _edgeTypeMap = AttributeSetMap.Default;
+            _turnCostTypeMap = AttributeSetMap.Default;
             this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }
 
