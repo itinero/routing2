@@ -23,7 +23,16 @@ using Serilog.Events;
 namespace Itinero.Tests.Functional.Tests.TestCases
 {
     public class SnappingTests
-    {
+    { public static void RunTestsLux(RouterDb routerDb, Profile profile)
+        { // Luxembourg
+            var latest = routerDb.Latest;
+            SnapPoint snap1;
+            SnapPoint snap2;
+            var gare = SnappingTest.Default.Run((latest, 6.13655,49.59883, profile),
+                $"Snapping cold: luxembourg gare");
+            var schneider = SnappingTest.Default.Run((latest, 6.03329, 49.63041, profile),
+                $"Snapping cold: Rue Schneider");
+        }
         
         public static void RunTests(RouterDb routerDb, Profile profile)
         { // Belgium

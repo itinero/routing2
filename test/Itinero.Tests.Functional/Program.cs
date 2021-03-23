@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
-using Itinero.Profiles.Lua.Osm;
+using Itinero.Profiles.Lua;
 using Itinero.Tests.Functional.Download;
 using Itinero.Tests.Functional.Tests.TestCases;
 using OsmSharp.Logging;
+using OsmSharp.Streams;
+using OsmSharp.Streams.Filters;
 using Serilog;
 using Serilog.Events;
 using TraceEventType = Itinero.Logging.TraceEventType;
@@ -15,6 +18,45 @@ namespace Itinero.Tests.Functional
 {
     internal static class Program
     {
+        private static readonly string LuxembourgUrl =
+            "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf";
+        private static readonly string BelgiumUrl =
+            "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf";
+
+        private static RouterDb FromFile(string filepath)
+        {
+            Console.WriteLine("Loading from file " + filepath);
+            using var routerDbStream = File.OpenRead(filepath);
+            return RouterDb.ReadFrom(routerDbStream);
+        }
+
+        private static void ToFile(string path, RouterDb routerDb)
+        {
+            Console.WriteLine("Writing to file " + path);
+
+            using var outputStream = File.Open(path, FileMode.Create);
+            routerDb.WriteTo(outputStream);
+        }
+
+        private static RouterDb FromUrl(Profile p, string url, string localFile = "latest.osm.pbf")
+        {
+            Console.WriteLine("Loading from URL " + url);
+            var routerDb = new RouterDb(new RouterDbConfiguration {
+                Zoom = 14
+            });
+
+            routerDb.PrepareFor(p);
+            using var osmStream = File.OpenRead(Staging.Download.Get(localFile, url));
+            var progress = new OsmStreamFilterProgress();
+            var osmPbfStream = new PBFOsmStreamSource(osmStream);
+            progress.RegisterSource(osmPbfStream);
+
+            routerDb.UseOsmData(progress);
+
+            return routerDb;
+        }
+
+
         private static void Main(string[] args)
         {
             EnableLogging();
@@ -51,33 +93,16 @@ namespace Itinero.Tests.Functional
             //     return (short) elevation;
             // });
 
-            var bicycle = OsmProfiles.Bicycle;
+            var bicycle =
+                LuaProfile.LoadFromFile("/home/pietervdvn/anyways-open/routing-profiles/itinero2/bicycle.fast.lua");
 
             // setup a router db with a local osm file.
-            var routerDb = new RouterDb(new RouterDbConfiguration {
-                Zoom = 14
-            });
-
-            routerDb.PrepareFor(bicycle);
-
-
-            //using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-            //    "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            //  using var osmStream = File.OpenRead(Staging.Download.Get("luxembourg-latest.osm.pbf", 
-            //      "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf"));
-            using var routerDbStream = File.OpenRead("/data/work/data/OSM/test/itinero2/data.routerdb");
-            /* 
-             //using var osmStream = File.OpenRead(args[0]);
-             var progress = new OsmStreamFilterProgress();
-             var osmPbfStream = new PBFOsmStreamSource(osmStream);
-             progress.RegisterSource(osmPbfStream);
-                 
-             // 
-             routerDb.UseOsmData(progress);*/
-            RouterDb.ReadFrom(routerDbStream);
-
+            var routerDb = FromUrl(bicycle, BelgiumUrl, "belgium-latest.osm.bpf");
             SnappingTests.RunTests(routerDb, bicycle);
-
+            ToFile("test.routerdb", routerDb);
+            routerDb = FromFile("test.routerdb");
+            SnappingTests.RunTests(routerDb, bicycle);
+            //SnappingTests.RunTestsLux(routerDbRead, bicycle);
 
             //
             // var route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),
