@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Itinero.Instructions.ToText;
+using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 
 namespace Itinero.Instructions
@@ -12,7 +13,7 @@ namespace Itinero.Instructions
     /// </summary>
     public class InstructionsGenerator
     {
-        private static Lazy<InstructionsGenerator> defaultLazy = new Lazy<InstructionsGenerator>(() => {
+        private static Lazy<InstructionsGenerator> defaultLazy = new(() => {
             using var stream =
                 typeof(InstructionsGenerator).Assembly.GetManifestResourceStream(
                     "Itinero.Instructions.ToText.default.json");
@@ -30,6 +31,12 @@ namespace Itinero.Instructions
             ToText = toText;
         }
 
+
+        public string AsText(BaseInstruction instruction, string language = "en")
+        {
+            return ToText[language].ToText(instruction);
+        }
+        
         public static InstructionsGenerator FromConfigFile(string path,
             IEnumerable<IInstructionGenerator>? extraGenerators = null)
         {

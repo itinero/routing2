@@ -7,6 +7,9 @@ using Itinero.Routes;
 [assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
 namespace Itinero.Instructions
 {
+    /// <summary>
+    /// A route which has the capabilities to generate instructions.
+    /// </summary>
     public class RouteWithInstructions
     {
         private readonly InstructionsGenerator _generator;
@@ -136,7 +139,7 @@ namespace Itinero.Instructions
 
 
         /// <summary>
-        ///     Generates all the instructions for this route - mostly used if direct access is needed.
+        ///     Generates all the instructions for this route - mostly used if direct access to the underlying instruction objects is needed.
         ///     You'll probably want to use <see cref="MergeInstructions" />
         /// </summary>
         /// <returns></returns>
