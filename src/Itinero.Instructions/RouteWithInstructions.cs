@@ -15,7 +15,10 @@ namespace Itinero.Instructions
         private readonly InstructionsGenerator _generator;
 
         private readonly Route _route;
-        private IEnumerable<BaseInstruction>? _instructions;
+        /// <summary>
+        /// Caching of the instruction generation
+        /// </summary>
+        private IReadOnlyList<BaseInstruction> _instructions;
 
         internal RouteWithInstructions(Route route, InstructionsGenerator generator)
         {
@@ -37,14 +40,30 @@ namespace Itinero.Instructions
         /// <remarks>
         ///     This returns a new route-object, which is a shallow copy of the previous route object except for the
         ///     'shapeMeta'-objects which are freshly constructed
+        /// Identical to `CalculateAndMergeInstructions(...).route`
         /// </remarks>
         public Route MergeInstructions(IEnumerable<(string key, string language)> add)
         {
-            var instructions = this.GenerateInstructions().ToArray();
+            return CalculateAndMergeInstructions(add).route;
+        }
 
-            var metas = this.MergeShapeMetas(instructions, add, _route.ShapeMeta);
+        /// <summary>
+        ///     Generates the instructions and adds the respective texts for the respective languages, as a shapemeta-tag.
+        ///     The texts will be added to _all_ the underlying shapeMetas of the route.
+        ///     Note that 'distance' and 'Time' are NOT set
+        /// </summary>
+        /// <returns>A route where every segment will contains a shapemeta `key="instruction text for language`</returns>
+        /// <remarks>
+        ///     This returns a new route-object, which is a shallow copy of the previous route object except for the
+        ///     'shapeMeta'-objects which are freshly constructed
+        /// </remarks>
+        public (Route route, IReadOnlyList<BaseInstruction> instructions) CalculateAndMergeInstructions(IEnumerable<(string key, string language)> add)
+        {
+            _instructions ??= _generator.Generator.GenerateInstructions(_route).ToList();
 
-            return new Route {
+            var metas = this.MergeShapeMetas(_instructions, add, _route.ShapeMeta);
+
+            return (new Route {
                 Attributes = _route.Attributes,
                 Branches = _route.Branches,
                 Profile = _route.Profile,
@@ -53,7 +72,7 @@ namespace Itinero.Instructions
                 TotalDistance = _route.TotalDistance,
                 TotalTime = _route.TotalTime,
                 ShapeMeta = metas
-            };
+            }, _instructions);
         }
 
         /// <summary>
@@ -137,16 +156,6 @@ namespace Itinero.Instructions
             return this.MergeInstructions((key, language));
         }
 
-
-        /// <summary>
-        ///     Generates all the instructions for this route - mostly used if direct access to the underlying instruction objects is needed.
-        ///     You'll probably want to use <see cref="MergeInstructions" />
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<BaseInstruction> GenerateInstructions()
-        {
-            _instructions ??= _generator.Generator.GenerateInstructions(_route);
-            return _instructions;
-        }
+        
     }
 }
