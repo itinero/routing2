@@ -33,28 +33,31 @@ namespace Itinero.Routes
         public List<Meta> ShapeMeta { get; set; } = new();
 
         /// <summary>
-        /// Represents a stop.
+        /// A stop is the coordinate where the traveller would like to start or end.
+        /// <remarks>
+        /// In general, this is the coordinate of the point not yet matched to the road network, but it has a certain distance to the actual route.
+        /// </remarks>
         /// </summary>
         public class Stop
         {
             /// <summary>
-            /// Gets or sets the shape index.
+            /// The shape index of the closes point in the route
             /// </summary>
+            /// <remarks>
+            /// This will generally be either '0' or 'route.Coordinates.Length - 1', for the start- and end-positions respectively
+            /// </remarks>
             public int Shape { get; set; }
 
             /// <summary>
-            /// Gets or sets the coordinates.
+            /// The coordinates of the actual point
             /// </summary>
             public (double longitude, double latitude, float? e) Coordinate { get; set; }
 
             /// <summary>
-            /// Gets or sets the attributes.
+            /// Metainformation about the point
             /// </summary>
             public IEnumerable<(string key, string value)> Attributes { get; set; }
 
-            /// <summary>
-            /// Creates a clone of this object.
-            /// </summary>
             public Stop Clone()
             {
                 IEnumerable<(string key, string value)> attributes = null;
@@ -72,18 +75,15 @@ namespace Itinero.Routes
             }
 
             /// <summary>
-            /// The distance in meter.
+            /// The distance (in meter) travelled along the route when reaching this stop.
             /// </summary>
             public double Distance { get; set; }
 
             /// <summary>
-            /// The time in seconds.
+            /// The time (in seconds) travelled along the route when reaching this stop
             /// </summary>
             public double Time { get; set; }
 
-            /// <summary>
-            /// Returns a description of this stop.
-            /// </summary>
             public override string ToString()
             {
                 return $"{Attributes}@{Coordinate} ({Distance}m {Time}s)";
