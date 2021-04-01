@@ -88,7 +88,7 @@ namespace Itinero.Tests.Instructions
             var texts = instructions.Select(toText.ToText).ToList();
 
             Assert.NotEmpty(instructions);
-            Assert.Equal("Turn -57", texts[1]);
+            Assert.Equal("Turn 57", texts[1]);
         }
 
 
@@ -105,9 +105,9 @@ namespace Itinero.Tests.Instructions
             Assert.True(-180 <= s && s < -175 || 175 < s && s <= 180);
 
             var e = Utils.AngleBetween(eflJuli_klaver, straightE);
-            Assert.True(-95 < e && e < -85);
+            Assert.True(85 < e && e < 95);
             var w = Utils.AngleBetween(straightE, eflJuli_klaver);
-            Assert.True(85 <= w && w < 95);
+            Assert.True(-95 <= w && w < -85);
         }
     }
 }

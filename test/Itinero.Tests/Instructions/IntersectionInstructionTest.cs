@@ -119,7 +119,7 @@ namespace Itinero.Tests.Instructions
 
             var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
-            Assert.Equal(0u, instr.ActualIndex);
+            Assert.Equal(2u, instr.ActualIndex);
             Assert.Equal(2, instr.ShapeIndexEnd);
         }
 
@@ -160,7 +160,7 @@ namespace Itinero.Tests.Instructions
 
             var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
-            Assert.Equal(2u, instr.ActualIndex);
+            Assert.Equal(0u, instr.ActualIndex);
             Assert.Equal(2, instr.ShapeIndexEnd);
         }
     }

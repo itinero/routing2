@@ -63,7 +63,7 @@ namespace Itinero.Tests.Instructions
 
             var instructions = gen.GenerateInstructions(route);
             var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
-            Assert.Equal("Start towards -160°", text[0]);
+            Assert.Equal("Start towards 160°", text[0]);
             Assert.Equal("Continue onto Klaverstraat", text[1]);
             Assert.Equal("Fallback: end 0", text[2]);
         }
@@ -91,7 +91,7 @@ namespace Itinero.Tests.Instructions
 
             var instructions = gen.GenerateInstructions(route);
             var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
-            Assert.Equal("Start towards -160°", text[0]);
+            Assert.Equal("Start towards 160°", text[0]);
             Assert.Equal("Continue onto Klaverstraat", text[1]);
             Assert.Equal("Fallback: end 0", text[2]);
         }

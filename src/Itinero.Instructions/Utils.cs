@@ -108,7 +108,7 @@ namespace Itinero.Instructions
             }
 
             var direction = "left";
-            if (degrees < 0) {
+            if (degrees > 0) {
                 direction = "right";
             }
 
