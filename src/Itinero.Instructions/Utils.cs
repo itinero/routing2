@@ -50,14 +50,14 @@ namespace Itinero.Instructions
             var angle =
                 (phi - Math.PI / 2) // Rotate 90° to have the north up
                 * 180 / Math.PI; // Convert to degrees
-
+            angle = -angle;
             // A bit of normalization below:
-            if (angle <= -180) {
+            if (angle < -180) {
                 angle += 360;
             }
 
             if (angle > 180) {
-                angle -= 180;
+                angle -= 360;
             }
 
             return angle;

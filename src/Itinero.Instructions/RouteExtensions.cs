@@ -41,7 +41,7 @@ namespace Itinero.Instructions
         /// <returns></returns>
         public static double? BearingAt(this Route route, int shape)
         {
-            if (route.Shape.Count == shape + 2) { // Plus two, as we'll increase shape later on
+            if (route.Shape.Count > shape + 2) { // Plus two, as we'll increase shape later on
                 return null;
             }
 
