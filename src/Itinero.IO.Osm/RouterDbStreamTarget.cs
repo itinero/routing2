@@ -79,6 +79,8 @@ namespace Itinero.IO.Osm
 
         public override void AddWay(Way way)
         {
+            if (way.Nodes == null || way.Nodes.Length == 0) return;
+
             var filteredTags = way.Tags?.Select(x => (x.Key, x.Value));
 
             if (_firstPass) { // keep track of nodes that are used as routing nodes.
@@ -147,6 +149,8 @@ namespace Itinero.IO.Osm
 
         public override void AddRelation(Relation relation)
         {
+            if (relation.Members == null || relation.Members.Length == 0) return;
+
             var negativeResult = relation.IsNegative();
             if (negativeResult.IsError) {
                 return; // not a valid restriction.
