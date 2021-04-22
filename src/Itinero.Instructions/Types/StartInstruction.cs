@@ -6,7 +6,7 @@ namespace Itinero.Instructions.Types
      * The 'startInstruction' represents the projection from the actual startpoint (e.g. an adress) to the snapped point on the road.
      * It doesn't really have an associated segment.
      */
-    public class StartInstruction : BaseInstruction
+    internal class StartInstruction : BaseInstruction
     {
         internal StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
             uint projectionDistance, BaseInstruction contained = null) :
