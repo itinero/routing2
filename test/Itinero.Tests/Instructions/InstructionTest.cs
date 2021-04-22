@@ -6,7 +6,6 @@ using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 using Itinero.Routes;
 using Xunit;
-using LinearInstructionGenerator = Itinero.Instructions.ToText.LinearInstructionGenerator;
 
 namespace Itinero.Tests.Instructions
 {
@@ -91,6 +90,42 @@ namespace Itinero.Tests.Instructions
             Assert.Equal("Turn 57", texts[1]);
         }
 
+        [Fact]
+        public void TurnLeft_Bearing_IsNegative()
+        {
+            var route = new Route {
+                Profile = "bicycle.something",
+                Shape = new List<(double longitude, double latitude, float? e)> {
+                    (3.220163583755493, 51.21574849678613, 0f), // Elf-julistraat
+                    (3.2203567028045654, 51.2154998401649, 0f), // Turn LEFT
+                    (3.2207429409027095, 51.21557376524662, 0f) // Klaverstraat towards vlamingdam
+                },
+                ShapeMeta = new List<Route.Meta> {
+                    new() {
+                        Distance = 10,
+                        Shape = 1,
+                        Attributes = new[] {
+                            ("name", "Elf-julistraat"), ("highway", "residential")
+                        }
+                    },
+                    new() {
+                        Distance = 20,
+                        Shape = 2,
+                        Attributes = new[] {
+                            ("name", "Klaverstraat"), ("highway", "residential")
+                        }
+                    }
+                }
+            };
+
+            var instructionGenerator = new LinearInstructionGenerator(new BaseInstructionGenerator(),
+                new StartInstructionGenerator(), new EndInstructionGenerator());
+
+            var instructions = instructionGenerator.GenerateInstructions(route).ToList();
+            // The left turn is included in the start instruction
+            var leftTurn = ((StartInstruction) instructions[0]).Then;
+            Assert.True(leftTurn.TurnDegrees < 0);
+        }
 
         [Fact]
         public void Angles_AllOrthoDirections_CorrectAngle()

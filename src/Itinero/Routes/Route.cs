@@ -214,12 +214,12 @@ namespace Itinero.Routes
         }
 
         /// <summary>
-        /// The distance in meter.
+        /// The distance in hectometer.
         /// </summary>
         public double TotalDistance { get; set; }
 
         /// <summary>
-        /// The time in seconds.
+        /// The time in hectoseconds.
         /// </summary>
         public double TotalTime { get; set; }
 
