@@ -11,14 +11,14 @@ namespace Itinero.Instructions.Types
         /// </summary>
         public readonly uint ProjectionDistance;
 
-        public EndInstruction(IndexedRoute route, int turnDegrees, uint projectionDistance, int index, int indexEnd) :
+        internal EndInstruction(IndexedRoute route, int turnDegrees, uint projectionDistance, int index, int indexEnd) :
             base(route, index, indexEnd, turnDegrees)
         {
             ProjectionDistance = projectionDistance;
         }
 
 
-        public EndInstruction(IndexedRoute route) : this(
+        internal EndInstruction(IndexedRoute route) : this(
             route,
             0,
             0,

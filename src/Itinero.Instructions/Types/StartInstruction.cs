@@ -8,7 +8,7 @@ namespace Itinero.Instructions.Types
      */
     public class StartInstruction : BaseInstruction
     {
-        public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
+        internal StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
             uint projectionDistance, BaseInstruction contained = null) :
             base(route, 0, Math.Max(0, contained?.ShapeIndexEnd ?? 0), turnDegrees)
         {
@@ -18,7 +18,7 @@ namespace Itinero.Instructions.Types
         }
 
 
-        public StartInstruction(IndexedRoute route, BaseInstruction contained = null) : this(route,
+        internal StartInstruction(IndexedRoute route, BaseInstruction contained = null) : this(route,
             0,
             route.DepartingDirectionAt(0).NormalizeDegrees(),
             0, contained) { }
