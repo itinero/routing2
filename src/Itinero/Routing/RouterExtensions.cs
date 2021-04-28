@@ -124,5 +124,24 @@ namespace Itinero.Routing
 
             return maxBox;
         }
+
+        internal static ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude,
+            float? e) bottomRight)? MaxBoxFor(this RoutingSettings settings,
+                RoutingNetwork routerDb, SnapPoint sp)
+        {
+            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+                bottomRight)? maxBox =
+                    null;
+
+            if (!(settings.MaxDistance < double.MaxValue)) {
+                return null;
+            }
+
+            var sourceLocation = sp.LocationOnNetwork(routerDb);
+            var sourceBox = sourceLocation.BoxAround(settings.MaxDistance);
+            maxBox = maxBox?.Expand(sourceBox) ?? sourceBox;
+
+            return maxBox;
+        }
     }
 }

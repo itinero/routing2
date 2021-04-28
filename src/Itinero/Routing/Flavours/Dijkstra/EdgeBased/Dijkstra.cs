@@ -41,6 +41,17 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
             return paths[0];
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="network"></param>
+        /// <param name="source"></param>
+        /// <param name="targets"></param>
+        /// <param name="getDijkstraWeight"></param>
+        /// <param name="settled">This Callback is called for every edge for which the minimal cost is known. If this callback returns false, the edge will not be considered further. (Example usage: building an isochrone, and/or limiting the search to a max cost)</param>
+        /// <param name="queued">This callback is called before an edge is loaded. Should not be used to influence route planning (but e.g. to load data when needed)</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public Path[] Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
             DijkstraWeightFunc getDijkstraWeight,
@@ -228,7 +239,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                 }
 
                 if (settled != null && settled((currentVisit.edge, currentVisit.vertex))) {
-                    // break if requested.
+                    // the best cost to this edge has already been found; current visit can not improve this anymore so we continue
                     continue;
                 }
 

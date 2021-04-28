@@ -4,6 +4,7 @@ using Itinero.Geo;
 using Itinero.Geo.Directions;
 using Itinero.Network;
 using Itinero.Routes.Paths;
+using Itinero.Routing.Alternatives;
 using Itinero.Routing.Costs;
 using Itinero.Routing.Flavours.Dijkstra;
 using Itinero.Snapping;
@@ -11,12 +12,12 @@ using Itinero.Snapping;
 namespace Itinero.Routing
 {
     /// <summary>
-    /// Contains extensions for the IRouter interface.
+    ///     Contains extensions for the IRouter interface.
     /// </summary>
     public static class IRouterExtensions
     {
         /// <summary>
-        /// Configures the router to route from the given point.
+        ///     Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="snapPoint">The point to route from.</param>
@@ -27,7 +28,7 @@ namespace Itinero.Routing
         }
 
         /// <summary>
-        /// Configures the router to route from the given point.
+        ///     Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoint">The point to route from.</param>
@@ -40,7 +41,7 @@ namespace Itinero.Routing
         }
 
         /// <summary>
-        /// Configures the router to route from the given point.
+        ///     Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoint">The point to route from.</param>
@@ -52,7 +53,7 @@ namespace Itinero.Routing
         }
 
         /// <summary>
-        /// Configures the router to route from the given point.
+        ///     Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="snapPoints">The points to route from.</param>
@@ -63,7 +64,7 @@ namespace Itinero.Routing
         }
 
         /// <summary>
-        /// Configures the router to route from the given point.
+        ///     Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoints">The points to route from.</param>
@@ -75,7 +76,7 @@ namespace Itinero.Routing
         }
 
         /// <summary>
-        /// Configures the router to route from the given point.
+        ///     Configures the router to route from the given point.
         /// </summary>
         /// <param name="router">The router.</param>
         /// <param name="directedSnapPoints">The points to route from.</param>
@@ -92,12 +93,12 @@ namespace Itinero.Routing
             IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
         {
             var settings = manyToManyRouter.Settings;
-            var routerDb = manyToManyRouter.Network;
+            var routingNetwork = manyToManyRouter.Network;
 
             var profile = settings.Profile;
-            var costFunction = routerDb.GetCostFunctionFor(profile);
+            var costFunction = routingNetwork.GetCostFunctionFor(profile);
 
-            var maxBox = settings.MaxBoxFor(routerDb, sources);
+            var maxBox = settings.MaxBoxFor(routingNetwork, sources);
 
             bool checkMaxDistance(VertexId v)
             {
@@ -105,11 +106,11 @@ namespace Itinero.Routing
                     return false;
                 }
 
-                if (routerDb == null) {
+                if (routingNetwork == null) {
                     throw new Exception("Router cannot be null here.");
                 }
 
-                var vertex = routerDb.GetVertex(v);
+                var vertex = routingNetwork.GetVertex(v);
                 if (!maxBox.Value.Overlaps(vertex)) {
                     return true;
                 }
@@ -120,10 +121,10 @@ namespace Itinero.Routing
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
             for (var s = 0; s < sources.Count; s++) {
                 var source = sources[s];
-                var paths = Dijkstra.Default.Run(routerDb, source, targets,
+                var paths = Dijkstra.Default.Run(routingNetwork, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    (v) => {
-                        routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, v);
+                    v => {
+                        routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
                         return checkMaxDistance(v);
                     });
 
@@ -131,7 +132,7 @@ namespace Itinero.Routing
                 for (var r = 0; r < sourceResults.Length; r++) {
                     var path = paths[r];
                     if (path == null) {
-                        sourceResults[r] = new Result<Path>($"Path not found!");
+                        sourceResults[r] = new Result<Path>("Path not found!");
                     }
                     else {
                         sourceResults[r] = path;
@@ -188,7 +189,7 @@ namespace Itinero.Routing
                 for (var r = 0; r < sourceResults.Length; r++) {
                     var path = paths[r];
                     if (path == null) {
-                        sourceResults[r] = new Result<Path>($"Routes not found!");
+                        sourceResults[r] = new Result<Path>("Routes not found!");
                     }
                     else {
                         sourceResults[r] = path;

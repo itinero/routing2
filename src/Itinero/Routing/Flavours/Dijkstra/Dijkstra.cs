@@ -39,10 +39,26 @@ namespace Itinero.Routing.Flavours.Dijkstra
             return paths[0];
         }
 
+        /// <summary>
+        /// Run a one-to-many Dijkstra search
+        /// </summary>
+        /// <param name="network"></param>
+        /// <param name="source"></param>
+        /// <param name="targets"></param>
+        /// <param name="getDijkstraWeight"></param>
+        /// <param name="settled"></param>
+        /// <param name="queued">Queued notifies listeners when a vertex is queued. If this function returns false, the requested vertex won't be used during routeplanning.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public Path[] Run(RoutingNetwork network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
+            
+            
+            
+            // Returns the worst cost of all targets, i.e. the cost of the most costly target to reach
+            // Will be Double.MAX_VALUE if at least one target hasn't been reached
             double GetWorst((uint pointer, double cost)[] targets)
             {
                 var worst = 0d;
@@ -231,6 +247,8 @@ namespace Itinero.Routing.Flavours.Dijkstra
                     // if the vertex has targets, check if this edge is a match.
                     var neighbourPointer = uint.MaxValue;
                     if (targetsAtVertex != null) {
+                        // We have found a target!
+                        
                         // only consider targets when found for the 'from' vertex.
                         // and when this in not a u-turn.
                         foreach (var t in targetsAtVertex) {
