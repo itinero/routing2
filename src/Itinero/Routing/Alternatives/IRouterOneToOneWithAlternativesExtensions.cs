@@ -91,7 +91,7 @@ namespace Itinero.Routing.Alternatives
             var maxTries = altSettings.MaxNumberOfAlternativeRoutes * 5;
             while (results.Count < altSettings.MaxNumberOfAlternativeRoutes && maxTries > 0) {
                 maxTries--;
-                var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges);
+                var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges, altSettings.AlreadyTakenEdgePenaltyFactor);
                 var altPath = runDijkstra(altCostFunction);
 
                 if (altPath == null) {
