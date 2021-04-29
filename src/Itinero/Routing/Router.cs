@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using Itinero.Network;
+using Itinero.Routing.Alternatives;
 using Itinero.Snapping;
 
 namespace Itinero.Routing
 {
-    internal class Router : IRouter, IRouterOneToOne, IRouterManyToMany, IRouterManyToOne, IRouterOneToMany
+    internal class Router : IRouter, IRouterOneToOne, IRouterManyToMany, IRouterManyToOne, IRouterOneToMany, IRouterOneToOneWithAlternatives
     {
         internal Router(RoutingNetwork network, RoutingSettings settings)
         {
@@ -18,5 +19,7 @@ namespace Itinero.Routing
         public (SnapPoint sp, bool? direction) Target { get; internal set; }
         public IReadOnlyList<(SnapPoint sp, bool? direction)> Sources { get; internal set; } = null!;
         public IReadOnlyList<(SnapPoint sp, bool? direction)> Targets { get; internal set; } = null!;
+
+        public AlternativeRouteSettings AlternativeRouteSettings { get; internal set; } = null!;
     }
 }

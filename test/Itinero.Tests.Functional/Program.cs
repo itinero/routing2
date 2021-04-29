@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua;
+using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
-using Itinero.Tests.Functional.Tests.TestCases;
+using Itinero.Tests.Functional.Tests;
 using OsmSharp.Logging;
 using OsmSharp.Streams;
 using OsmSharp.Streams.Filters;
@@ -20,6 +23,7 @@ namespace Itinero.Tests.Functional
     {
         private static readonly string LuxembourgUrl =
             "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf";
+
         private static readonly string BelgiumUrl =
             "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf";
 
@@ -93,21 +97,30 @@ namespace Itinero.Tests.Functional
             //     return (short) elevation;
             // });
 
-            var bicycle =
-                LuaProfile.LoadFromFile("/home/pietervdvn/anyways-open/routing-profiles/itinero2/bicycle.fast.lua");
-            var rollerSkate =
-                LuaProfile.LoadFromFile("/home/pietervdvn/anyways-open/routing-profiles/itinero2/rollerskate.fastest.lua");
+            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
 
             // setup a router db with a local osm file.
-            RouterDb routerDb;
-                /*
-                 routerDb = FromUrl(bicycle, BelgiumUrl, "belgium-latest.osm.bpf");
-            ToFile("test.routerdb", routerDb);//*/
-            
-            
-           // SnappingTests.RunTests(routerDb, bicycle);
-            routerDb = FromFile("/data/work/data/OSM/test/itinero2/data.routerdb");
-            SnappingTests.RunTestsBe(routerDb, bicycle);
+            RouterDb routerDb = FromUrl(bicycle, LuxembourgUrl, "luxembourg-latest.osm.bpf");
+
+            var lux1 = (6.119298934936523, 49.60962540702068, (float?) 0f);
+            var lux2 = (6.124148368835449, 49.588792167215345, (float?) 0f);
+
+            var latest = routerDb.Latest;
+            var lux1sp = latest.Snap().To(lux1);
+            var lux2sp = latest.Snap().To(lux2);
+
+            var oneToOne = RouterOneToOneTest.Default.Run((latest, lux1sp, lux2sp, bicycle));
+            var oneToOneGeoJson = oneToOne.ToGeoJson();
+            var routes = RouterOneToOneWithAlternativeTest.Default.Run(
+                (latest, lux1sp, lux2sp, bicycle)
+            );
+
+
+            var geoJson = routes.Select(r => r.ToGeoJson()).ToList();
+            Console.WriteLine(geoJson);
+            // SnappingTests.RunTests(routerDb, bicycle);
+            //  routerDb = FromFile("/data/work/data/OSM/test/itinero2/data.routerdb");
+            // SnappingTests.RunTestsBe(routerDb, bicycle);
 
             //
             // var route = RouterOneToOneTest.Default.Run((latest, lesotho1, lesotho2, bicycle),

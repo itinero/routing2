@@ -41,6 +41,8 @@ namespace Itinero.Network
 
             var edgeTypeMap = RouterDb.GetEdgeTypeMap();
             if (tile.EdgeTypeMapId != edgeTypeMap.id) {
+                // tile.EdgeTypeMapId indicates the version of the used edgeTypeMap
+                // If the id is different, the loaded tile needs updating; e.g. because a cost function has been changed
                 tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
                 _tiles[localTileId] = tile;
             }

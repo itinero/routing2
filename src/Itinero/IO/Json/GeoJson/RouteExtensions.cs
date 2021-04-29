@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -21,6 +22,21 @@ namespace Itinero.IO.Json.GeoJson
                 using (var jsonWriter = new Utf8JsonWriter(stream)) {
                     jsonWriter.WriteFeatureCollectionStart();
                     jsonWriter.WriteFeatures(route);
+                    jsonWriter.WriteFeatureCollectionEnd();
+                }
+
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+        }
+        
+        public static string ToGeoJson(this IReadOnlyList<Route> routes)
+        {
+            using (var stream = new MemoryStream()) {
+                using (var jsonWriter = new Utf8JsonWriter(stream)) {
+                    jsonWriter.WriteFeatureCollectionStart();
+                    foreach (var route in routes) {
+                        jsonWriter.WriteFeatures(route);
+                    }
                     jsonWriter.WriteFeatureCollectionEnd();
                 }
 

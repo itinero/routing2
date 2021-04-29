@@ -18,6 +18,11 @@ namespace Itinero
     /// <summary>
     /// Represents a router db.
     /// </summary>
+    /// <remarks>
+    /// This is mostly a wrapper around a RoutingNetwork.
+    /// If an update happens to the underlying routing network, this update will be presented here atomically.
+    /// In other words, to do route planning, use routerDb.getLatest() to get a consistent routing network
+    /// </remarks>
     public sealed partial class RouterDb : IRouterDbMutable
     {
         /// <summary>
