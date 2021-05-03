@@ -6,20 +6,28 @@ namespace Itinero.Tests.Profiles
     internal static class ProfileScaffolding
     {
         public static Profile Any => new SimpleProfile();
+    }
 
-        private class SimpleProfile : Profile
+    internal class SimpleProfile : Profile
+    {
+        public static readonly EdgeFactor DefaultEdgeFactor = new(1, 1, 1, 1);
+        private readonly EdgeFactor _edgeFactor;
+
+        public SimpleProfile(EdgeFactor? edgeFactor = null)
         {
-            public override string Name { get; } = "Test";
+            _edgeFactor = edgeFactor ?? DefaultEdgeFactor;
+        }
 
-            public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
-            {
-                return new(1, 1, 1, 1, true);
-            }
+        public override string Name { get; } = "Test";
 
-            public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
-            {
-                return Itinero.Profiles.TurnCostFactor.Empty;
-            }
+        public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
+        {
+            return _edgeFactor;
+        }
+
+        public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
+        {
+            return Itinero.Profiles.TurnCostFactor.Empty;
         }
     }
 }

@@ -63,7 +63,7 @@ namespace Itinero.Routes.Builders
                 distance = (offset2 - offset1) / (double) ushort.MaxValue * distance;
                 route.TotalDistance += distance;
 
-                var speed = factor.ForwardSpeedMeterPerSecond;
+                var speed = direction ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
                 if (speed <= 0) {
                     // Something is wrong here
                     throw new ArgumentException("Speed is zero! Did you pass a wrong profile to the route builder?");

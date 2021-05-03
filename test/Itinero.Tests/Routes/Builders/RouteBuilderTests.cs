@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Itinero.Profiles;
 using Itinero.Routes.Builders;
 using Itinero.Tests.Profiles;
 using Itinero.Tests.Routes.Paths;
@@ -16,7 +17,7 @@ namespace Itinero.Tests.Routes.Builders
                     (4.801073670387268, 51.268064181900094, (float?) null),
                     (4.801771044731140, 51.268886491558250, (float?) null)
                 },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                     (0, 1, new (double longitude, double latitude, float? e)[0])
                 });
 
@@ -39,7 +40,7 @@ namespace Itinero.Tests.Routes.Builders
                     (4.801073670387268, 51.268064181900094, (float?) null),
                     (4.801771044731140, 51.268886491558250, (float?) null)
                 },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                     (0, 1, new (double longitude, double latitude, float? e)[0])
                 });
 
@@ -62,7 +63,7 @@ namespace Itinero.Tests.Routes.Builders
                     (4.801073670387268, 51.268064181900094, (float?) null),
                     (4.801771044731140, 51.268886491558250, (float?) null)
                 },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                     (0, 1, new (double longitude, double latitude, float? e)[] {
                         (4.800950288772583, 51.268426671236426, (float?) null),
                         (4.801242649555205, 51.268816008449830, (float?) null)
@@ -90,7 +91,7 @@ namespace Itinero.Tests.Routes.Builders
                     (4.801073670387268, 51.268064181900094, (float?) null),
                     (4.801771044731140, 51.268886491558250, (float?) null)
                 },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                     (0, 1, new (double longitude, double latitude, float? e)[] {
                         (4.800950288772583, 51.268426671236426, (float?) null),
                         (4.801242649555205, 51.268816008449830, (float?) null)
@@ -126,7 +127,7 @@ namespace Itinero.Tests.Routes.Builders
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.802438914775848, 51.268097745847655, (float?) null)
                 },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                     (0, 1, new (double longitude, double latitude, float? e)[] {
                         (4.800950288772583, 51.268426671236426, (float?) null),
                         (4.801242649555205, 51.268816008449830, (float?) null)
@@ -165,7 +166,7 @@ namespace Itinero.Tests.Routes.Builders
                     (4.801771044731140, 51.268886491558250, (float?) null),
                     (4.802438914775848, 51.268097745847655, (float?) null)
                 },
-                new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                     (0, 1, new (double longitude, double latitude, float? e)[] {
                         (4.800950288772583, 51.268426671236426, (float?) null),
                         (4.801242649555205, 51.268816008449830, (float?) null)
@@ -193,6 +194,36 @@ namespace Itinero.Tests.Routes.Builders
                 (4.800950288772583, 51.268426671236426, (float?) null),
                 (4.801073670387268, 51.268064181900094, (float?) null)
             }, result.Value);
+        }
+
+        [Fact]
+        public void RouteBuilder_Build_OneEdge_Backward_ShouldUseBackwardSpeel()
+        {
+            var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
+                new (double longitude, double latitude, float? e)[] {
+                    (4.801073670387268, 51.268064181900094, (float?) null),
+                    (4.801771044731140, 51.268886491558250, (float?) null)
+                },
+                new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
+                    (0, 1, new (double longitude, double latitude, float? e)[] {
+                        (4.800950288772583, 51.268426671236426, (float?) null),
+                        (4.801242649555205, 51.268816008449830, (float?) null)
+                    })
+                });
+            var network = routerDb.Latest;
+            var path = network.BuildPath(new[] {
+                (edges[0], false)
+            });
+
+            // This edgeFactor kan move only backward over the edge, e.g. a way with 'oneway=-1'
+            var edgeFactor = new EdgeFactor(0, 1, 0, 10);
+
+            var result = RouteBuilder.Default.Build(network, new SimpleProfile(edgeFactor), path);
+            Assert.NotNull(result);
+            Assert.False(result.IsError);
+            var route = result.Value;
+            var speed = 100 * route.TotalDistance / route.TotalTime;
+            Assert.Equal(10, speed);
         }
     }
 }
