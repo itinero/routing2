@@ -20,7 +20,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap().To(vertex1),
                 latest.Snap().To(vertex2),
                 (e, pe) => (1, 0));
@@ -50,7 +50,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap().To(vertex1),
                 latest.Snap().To(vertex3),
                 (e, ep) => (1, 0));
@@ -85,7 +85,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap().To(vertex1),
                 latest.Snap().To(vertex4),
                 (e, ep) => (1, 0));
@@ -122,7 +122,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var path = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
                 latest.Snap().To(vertex1, edge3),
                 latest.Snap().To(vertex3, edge3),
                 (e, ep) => {
@@ -185,7 +185,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.NotNull(paths);
             Assert.Equal(4, paths.Length);
 
-            var path2 = paths[0];
+            var (path2, _) = paths[0];
             Assert.Equal(0, path2.Offset1);
             Assert.Equal(ushort.MaxValue, path2.Offset2);
             using var enumerator2 = path2.GetEnumerator();
@@ -194,7 +194,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.True(enumerator2.Current.forward);
             Assert.False(enumerator2.MoveNext());
 
-            var path3 = paths[1];
+            var (path3, _) = paths[1];
             Assert.Equal(0, path3.Offset1);
             Assert.Equal(ushort.MaxValue / 4, path3.Offset2);
             using var enumerator3 = path3.GetEnumerator();
@@ -203,7 +203,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.True(enumerator3.Current.forward);
             Assert.False(enumerator3.MoveNext());
 
-            var path4 = paths[2];
+            var (path4, _) = paths[2];
             Assert.Equal(0, path4.Offset1);
             Assert.Equal(ushort.MaxValue / 2, path4.Offset2);
             using var enumerator4 = path4.GetEnumerator();
@@ -212,7 +212,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.True(enumerator4.Current.forward);
             Assert.False(enumerator4.MoveNext());
 
-            var path5 = paths[3];
+            var (path5, _) = paths[3];
             Assert.Equal(0, path5.Offset1);
             Assert.Equal(ushort.MaxValue / 2 + ushort.MaxValue / 4, path5.Offset2);
             using var enumerator5 = path5.GetEnumerator();
@@ -250,7 +250,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.NotNull(paths);
             Assert.Equal(4, paths.Length);
 
-            var path2 = paths[0];
+            var (path2, _) = paths[0];
             Assert.Equal(0, path2.Offset1);
             Assert.Equal(ushort.MaxValue, path2.Offset2);
             using var enumerator2 = path2.GetEnumerator();
@@ -262,7 +262,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.True(enumerator2.Current.forward);
             Assert.False(enumerator2.MoveNext());
 
-            var path3 = paths[1];
+            var (path3, _) = paths[1];
             Assert.Equal(0, path3.Offset1);
             Assert.Equal(ushort.MaxValue / 4, path3.Offset2);
             using var enumerator3 = path3.GetEnumerator();
@@ -274,7 +274,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.True(enumerator3.Current.forward);
             Assert.False(enumerator3.MoveNext());
 
-            var path4 = paths[2];
+            var (path4, _) = paths[2];
             Assert.Equal(0, path4.Offset1);
             Assert.Equal(ushort.MaxValue / 2, path4.Offset2);
             using var enumerator4 = path4.GetEnumerator();
@@ -286,7 +286,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             Assert.True(enumerator4.Current.forward);
             Assert.False(enumerator4.MoveNext());
 
-            var path5 = paths[3];
+            var (path5, _) = paths[3];
             Assert.Equal(0, path5.Offset1);
             Assert.Equal(ushort.MaxValue / 2 + ushort.MaxValue / 4, path5.Offset2);
             using var enumerator5 = path5.GetEnumerator();
