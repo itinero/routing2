@@ -197,7 +197,7 @@ namespace Itinero.Tests.Routes.Builders
         }
 
         [Fact]
-        public void RouteBuilder_Build_OneEdge_Backward_ShouldUseBackwardSpeel()
+        public void RouteBuilder_Build_OneEdge_Backward_ShouldUseBackwardSpeed()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -214,10 +214,10 @@ namespace Itinero.Tests.Routes.Builders
             var path = network.BuildPath(new[] {
                 (edges[0], false)
             });
-
+        
             // This edgeFactor kan move only backward over the edge, e.g. a way with 'oneway=-1'
             var edgeFactor = new EdgeFactor(0, 1, 0, 10);
-
+        
             var result = RouteBuilder.Default.Build(network, new SimpleProfile(edgeFactor), path);
             Assert.NotNull(result);
             Assert.False(result.IsError);

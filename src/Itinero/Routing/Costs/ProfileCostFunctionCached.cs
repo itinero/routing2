@@ -31,11 +31,17 @@ namespace Itinero.Routing.Costs
             else {
                 var edgeFactor = _edgeFactorCache.Get(edgeTypeId.Value);
                 if (edgeFactor == null) {
-                    factor = _profile.FactorInEdgeDirection(edgeEnumerator);
+                    // no cached value, cache forward value.
+                    factor = _profile.Factor(edgeEnumerator.Attributes);
                     _edgeFactorCache.Set(edgeTypeId.Value, factor);
                 }
                 else {
                     factor = edgeFactor.Value;
+                }
+                    
+                // cached value is always forward.
+                if (!edgeEnumerator.Forward) {
+                    factor = factor.Reverse;
                 }
             }
 

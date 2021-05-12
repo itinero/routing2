@@ -100,7 +100,7 @@ namespace Itinero.Tests.Functional
             var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
 
             // setup a router db with a local osm file.
-            RouterDb routerDb = FromUrl(bicycle, LuxembourgUrl, "luxembourg-latest.osm.bpf");
+            RouterDb routerDb = FromUrl(bicycle, LuxembourgUrl, "luxembourg-latest.osm.pbf");
 
             var lux1 = (6.119298934936523, 49.60962540702068, (float?) 0f);
             var lux2 = (6.124148368835449, 49.588792167215345, (float?) 0f);

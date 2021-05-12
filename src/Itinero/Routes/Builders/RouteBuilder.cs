@@ -66,7 +66,7 @@ namespace Itinero.Routes.Builders
                 var speed = direction ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
                 if (speed <= 0) {
                     // Something is wrong here
-                    throw new ArgumentException("Speed is zero! Did you pass a wrong profile to the route builder?");
+                    throw new ArgumentException("Speed is zero! Route is not possible with the given profile.");
                 }
 
                 var time = distance / speed;
