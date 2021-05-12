@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Profiles;
 using Itinero.Routes.Builders;
 using Itinero.Tests.Profiles;
 using Itinero.Tests.Routes.Paths;
@@ -26,7 +27,7 @@ namespace Itinero.Tests.Routes.Builders
             var network = routerDb.Latest;
             var path = network.BuildPath(new[] {(edges[0], true)});
 
-            var result = RouteBuilder.Default.Build(network, ProfileScaffolding.Any, path);
+            var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotEmpty(route.ShapeMeta);
@@ -70,7 +71,7 @@ namespace Itinero.Tests.Routes.Builders
                 (edges[1], true)
             });
 
-            var result = RouteBuilder.Default.Build(network, ProfileScaffolding.Any, path);
+            var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotEmpty(route.ShapeMeta);
@@ -114,7 +115,7 @@ namespace Itinero.Tests.Routes.Builders
                 (edges[0], false)
             });
 
-            var result = RouteBuilder.Default.Build(network, ProfileScaffolding.Any, path);
+            var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotEmpty(route.ShapeMeta);

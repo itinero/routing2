@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Profiles;
 using Itinero.Routes.Builders;
 using Itinero.Tests.Profiles;
 using Itinero.Tests.Routes.Paths;
@@ -39,7 +40,7 @@ namespace Itinero.Tests.Routes.Builders
             var network = routerDb.Latest;
             var path = network.BuildPath(new[] {(edges[3], true), (edges[4], true)});
 
-            var result = RouteBuilder.Default.Build(network, ProfileScaffolding.Any, path);
+            var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
             var route = result.Value;
 
@@ -85,7 +86,7 @@ namespace Itinero.Tests.Routes.Builders
             var network = routerDb.Latest;
             var path = network.BuildPath(new[] {(edges[3], true), (edges[4], true)});
 
-            var result = RouteBuilder.Default.Build(network, ProfileScaffolding.Any, path);
+            var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
             var route = result.Value;
 
@@ -132,7 +133,7 @@ namespace Itinero.Tests.Routes.Builders
             var network = routerDb.Latest;
             var path = network.BuildPath(new[] {(edges[0], true), (edges[3], false), (edges[4], true)});
 
-            var result = RouteBuilder.Default.Build(network, ProfileScaffolding.Any, path);
+            var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
             var route = result.Value;
 

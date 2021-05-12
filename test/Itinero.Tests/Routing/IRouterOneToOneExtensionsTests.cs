@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Itinero.Geo;
+using Itinero.Profiles;
 using Itinero.Routing;
 using Itinero.Snapping;
 using Itinero.Tests.Profiles;
@@ -25,7 +26,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
             var snap2 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
@@ -53,7 +54,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
             var snap2 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
@@ -83,7 +84,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
             var snap2 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
@@ -115,7 +116,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
             var snap2 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
@@ -148,7 +149,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
             var snap2 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
@@ -183,7 +184,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
             var snap2 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
@@ -223,7 +224,7 @@ namespace Itinero.Tests.Routing
             var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
             var snap2 = network.Snap().To((4.802438914775848, 51.268097745847650, (float?) null));
 
-            var result = routerDb.Latest.Route(ProfileScaffolding.Any)
+            var result = routerDb.Latest.Route(new DefaultProfile())
                 .From(snap1).To(snap2).Calculate();
             Assert.False(result.IsError);
             var route = result.Value;
