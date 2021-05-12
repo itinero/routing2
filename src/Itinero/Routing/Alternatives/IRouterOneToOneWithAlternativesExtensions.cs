@@ -13,10 +13,12 @@ namespace Itinero.Routing.Alternatives
 {
     public static class IRouterOneToOneWithAlternativesExtensions
     {
-
-        internal static Result<IReadOnlyList<Path>> CalculatePaths(this IRouterOneToOneWithAlternatives alternativeRouter)
+        internal static Result<IReadOnlyList<Path>> CalculatePaths(
+            this IRouterOneToOneWithAlternatives alternativeRouter)
         {
-             var settings = alternativeRouter.Settings;
+            var penaltyFactor = 2.0;
+            
+            var settings = alternativeRouter.Settings;
             var altSettings = alternativeRouter.AlternativeRouteSettings;
             var routingNetwork = alternativeRouter.Network;
 
@@ -31,7 +33,7 @@ namespace Itinero.Routing.Alternatives
 
             var maxBox = settings.MaxBoxFor(routingNetwork, alternativeRouter.Source.sp);
 
-            bool checkMaxDistance(VertexId v)
+            bool CheckMaxDistance(VertexId v)
             {
                 if (maxBox == null) {
                     return false;
@@ -49,7 +51,7 @@ namespace Itinero.Routing.Alternatives
                 return false;
             }
 
-            Path? runDijkstra(ICostFunction costFunction)
+            (Path? path, double cost) RunDijkstra(ICostFunction costFunction)
             {
                 var source = alternativeRouter.Source;
                 var target = alternativeRouter.Target;
@@ -60,7 +62,7 @@ namespace Itinero.Routing.Alternatives
                         costFunction.GetDijkstraWeightFunc(),
                         v => {
                             routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
-                            return checkMaxDistance(v);
+                            return CheckMaxDistance(v);
                         });
                 }
 
@@ -69,15 +71,16 @@ namespace Itinero.Routing.Alternatives
                     costFunction.GetDijkstraWeightFunc(),
                     v => {
                         routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId);
-                        return checkMaxDistance(v.vertexId);
+                        return CheckMaxDistance(v.vertexId);
                     });
             }
 
-
-            var initialPath = runDijkstra(costFunction);
+            var (initialPath, initialCost) = RunDijkstra(costFunction);
             if (initialPath == null) {
                 return new Result<IReadOnlyList<Path>>("Not a single path found!");
             }
+
+            var costThreshold = initialCost * altSettings.MaxWeightIncreasePercentage;
 
             var results = new List<Path>(altSettings.MaxNumberOfAlternativeRoutes) {
                 initialPath
@@ -91,8 +94,14 @@ namespace Itinero.Routing.Alternatives
             var maxTries = altSettings.MaxNumberOfAlternativeRoutes * 5;
             while (results.Count < altSettings.MaxNumberOfAlternativeRoutes && maxTries > 0) {
                 maxTries--;
-                var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges, altSettings.AlreadyTakenEdgePenaltyFactor);
-                var altPath = runDijkstra(altCostFunction);
+                var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges,
+                    penaltyFactor);
+                var (altPath, altCost) = RunDijkstra(altCostFunction);
+
+                if (altCost > costThreshold) {
+                    // No more alternative routes can be found
+                    break;
+                }
 
                 if (altPath == null) {
                     // No more alternative routes can be found
@@ -110,7 +119,6 @@ namespace Itinero.Routing.Alternatives
                     }
                 }
 
-
                 var overlapPercentage = (double) alreadyKnownEdges / totalEdges;
 
                 if (overlapPercentage > altSettings.MaxPercentageOfEqualEdges) {
@@ -125,7 +133,6 @@ namespace Itinero.Routing.Alternatives
 
         public static Result<IReadOnlyList<Route>> Calculate(this IRouterOneToOneWithAlternatives withAlternatives)
         {
-
             var paths = withAlternatives.CalculatePaths();
 
             if (paths.IsError) {
@@ -139,9 +146,6 @@ namespace Itinero.Routing.Alternatives
             ).ToList();
 
             return new Result<IReadOnlyList<Route>>(routes);
-            
-         
         }
-        
     }
 }

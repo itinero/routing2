@@ -130,7 +130,7 @@ namespace Itinero.Routing
 
                 var sourceResults = new Result<Path>[paths.Length];
                 for (var r = 0; r < sourceResults.Length; r++) {
-                    var path = paths[r];
+                    var (path, _) = paths[r];
                     if (path == null) {
                         sourceResults[r] = new Result<Path>("Path not found!");
                     }
@@ -187,7 +187,7 @@ namespace Itinero.Routing
 
                 var sourceResults = new Result<Path>[paths.Length];
                 for (var r = 0; r < sourceResults.Length; r++) {
-                    var path = paths[r];
+                    var (path, _) = paths[r];
                     if (path == null) {
                         sourceResults[r] = new Result<Path>("Routes not found!");
                     }

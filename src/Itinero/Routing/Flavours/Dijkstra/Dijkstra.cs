@@ -23,20 +23,13 @@ namespace Itinero.Routing.Flavours.Dijkstra
         private readonly HashSet<VertexId> _visits = new();
         private readonly BinaryHeap<uint> _heap = new();
 
-        public Path? Run(RoutingNetwork network, SnapPoint source, SnapPoint target,
+        public (Path? path, double cost) Run(RoutingNetwork network, SnapPoint source, SnapPoint target,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
             var paths = Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
-            if (paths == null) {
-                return null;
-            }
 
-            if (paths.Length < 1) {
-                return null;
-            }
-
-            return paths[0];
+            return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
         }
 
         /// <summary>
@@ -50,16 +43,13 @@ namespace Itinero.Routing.Flavours.Dijkstra
         /// <param name="queued">Queued notifies listeners when a vertex is queued. If this function returns false, the requested vertex won't be used during routeplanning.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public Path[] Run(RoutingNetwork network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
+        public (Path? path, double cost)[] Run(RoutingNetwork network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
             DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
             Func<VertexId, bool>? queued = null)
         {
-            
-            
-            
             // Returns the worst cost of all targets, i.e. the cost of the most costly target to reach
             // Will be Double.MAX_VALUE if at least one target hasn't been reached
-            double GetWorst((uint pointer, double cost)[] targets)
+            static double GetWorst((uint pointer, double cost)[] targets)
             {
                 var worst = 0d;
                 for (var i = 0; i < targets.Length; i++) {
@@ -77,7 +67,6 @@ namespace Itinero.Routing.Flavours.Dijkstra
             }
 
             var enumerator = network.GetEdgeEnumerator();
-            var paths = new Path[targets.Count];
 
             _tree.Clear();
             _visits.Clear();
@@ -301,9 +290,11 @@ namespace Itinero.Routing.Flavours.Dijkstra
                 }
             }
 
+            var paths = new (Path? path, double cost)[targets.Count];
             for (var p = 0; p < paths.Length; p++) {
                 var bestTarget = bestTargets[p];
                 if (bestTarget.pointer == uint.MaxValue) {
+                    paths[p] = (null, double.MaxValue);
                     continue;
                 }
 
@@ -330,7 +321,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
                     ? target.Offset
                     : (ushort) (ushort.MaxValue - target.Offset);
 
-                paths[p] = path;
+                paths[p] = (path, bestTarget.cost);
             }
 
             return paths;

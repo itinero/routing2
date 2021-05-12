@@ -114,8 +114,7 @@ namespace Itinero.Tests.Functional
             var routes = RouterOneToOneWithAlternativeTest.Default.Run(
                 (latest, lux1sp, lux2sp, bicycle)
             );
-
-
+            
             var geoJson = routes.Select(r => r.ToGeoJson()).ToList();
             Console.WriteLine(geoJson);
             // SnappingTests.RunTests(routerDb, bicycle);

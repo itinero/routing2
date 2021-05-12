@@ -23,22 +23,15 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
         private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new();
         private readonly BinaryHeap<uint> _heap = new();
 
-        public Path? Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
+        public (Path? path, double cost) Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
             (SnapPoint sp, bool? direction) target,
             DijkstraWeightFunc getDijkstraWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
         {
-            var paths = Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
-            if (paths == null) {
-                return null;
-            }
+            var paths = this.Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
 
-            if (paths.Length < 1) {
-                return null;
-            }
-
-            return paths[0];
+            return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
         }
 
         /// <summary>
@@ -52,13 +45,13 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
         /// <param name="queued">This callback is called before an edge is loaded. Should not be used to influence route planning (but e.g. to load data when needed)</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public Path[] Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
+        public (Path? path, double cost)[] Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
             DijkstraWeightFunc getDijkstraWeight,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
             Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
         {
-            double GetWorst((uint pointer, double cost)[] targets)
+            static double GetWorst((uint pointer, double cost)[] targets)
             {
                 var worst = 0d;
                 for (var i = 0; i < targets.Length; i++) {
@@ -76,7 +69,6 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
             }
 
             var enumerator = network.GetEdgeEnumerator();
-            var paths = new Path[targets.Count];
 
             _tree.Clear();
             _visits.Clear();
@@ -344,9 +336,11 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                 }
             }
 
+            var paths = new (Path? path, double cost)[targets.Count];
             for (var p = 0; p < paths.Length; p++) {
                 var bestTarget = bestTargets[p];
                 if (bestTarget.pointer == uint.MaxValue) {
+                    paths[p] = (null, double.MaxValue);
                     continue;
                 }
 
@@ -373,7 +367,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     ? target.sp.Offset
                     : (ushort) (ushort.MaxValue - target.sp.Offset);
 
-                paths[p] = path;
+                paths[p] = (path, bestTarget.cost);
             }
 
             return paths;
