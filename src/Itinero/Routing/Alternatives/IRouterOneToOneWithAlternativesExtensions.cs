@@ -80,12 +80,14 @@ namespace Itinero.Routing.Alternatives
                 return new Result<IReadOnlyList<Path>>("Not a single path found!");
             }
 
-            var costThreshold = initialCost * altSettings.MaxWeightIncreasePercentage;
-
             var results = new List<Path>(altSettings.MaxNumberOfAlternativeRoutes) {
                 initialPath
             };
 
+            if (altSettings.MaxNumberOfAlternativeRoutes == 1) return results;
+
+            var costThreshold = initialCost * altSettings.MaxWeightIncreasePercentage;
+            
             var seenEdges = new HashSet<EdgeId>();
             foreach (var (edge, _, _, _) in initialPath) {
                 seenEdges.Add(edge);
