@@ -5,7 +5,7 @@
 
 The new for the v2 routing core. This is part of the work done by the awesome [open planner team](https://openplanner.team/).
 
-## Goals of this project
+## Goals of this project 
 
 To consume routable tiles and make Itinero more flexible. Itinero should be able to update data in the routing graph and be able to handle more dynamic scenarios. Itinero should be able to do route planning using live OSM changes.
 
