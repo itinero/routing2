@@ -59,7 +59,7 @@ namespace Itinero.Routes.Builders
 
                 var attributes = edgeEnumerator.Attributes;
                 var factor = profile.Factor(attributes);
-                var distance = edgeEnumerator.EdgeLength() / 100.0;
+                var distance = edgeEnumerator.EdgeLength();
                 distance = (offset2 - offset1) / (double) ushort.MaxValue * distance;
                 route.TotalDistance += distance;
 

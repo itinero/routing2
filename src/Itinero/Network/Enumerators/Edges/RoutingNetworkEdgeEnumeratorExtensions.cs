@@ -19,7 +19,7 @@ namespace Itinero.Network.Enumerators.Edges
         }
 
         /// <summary>
-        /// Gets the length of an edge in centimeters.
+        /// Gets the length of an edge in meters.
         /// </summary>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns>The length in meters.</returns>
