@@ -41,7 +41,7 @@ namespace Itinero.Network.Tiles
         {
             _zoom = zoom;
             _tileId = tileId;
-            _edgeTypeMapId = 0;
+            _edgeTypeMapId = edgeTypeMapId;
             _nextCrossTileId = 0;
 
             _pointers = new MemoryArray<uint>(0);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Routes.Builders;
 using Itinero.Tests.Profiles;
@@ -223,7 +224,7 @@ namespace Itinero.Tests.Routes.Builders
             Assert.False(result.IsError);
             var route = result.Value;
             var speed = 100 * route.TotalDistance / route.TotalTime;
-            Assert.Equal(10, speed);
+            Assert.Equal(10, speed, 2);
         }
     }
 }

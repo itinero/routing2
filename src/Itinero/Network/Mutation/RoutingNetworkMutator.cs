@@ -80,7 +80,7 @@ namespace Itinero.Network.Mutation
             }
 
             // there is no tile, create a new one.
-            tile = new NetworkTile(_network.Zoom, localTileId);
+            tile = new NetworkTile(_network.Zoom, localTileId, edgeTypeMap.id);
 
             // store in the local tiles.
             _tiles[localTileId] = tile;

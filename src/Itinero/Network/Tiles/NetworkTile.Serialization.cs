@@ -13,6 +13,7 @@ namespace Itinero.Network.Tiles
             // write tile id/zoom.
             stream.WriteVarInt32(_zoom);
             stream.WriteVarUInt32(_tileId);
+            stream.WriteVarInt32(_edgeTypeMapId);
 
             // write vertices and edges.
             WriteEdgesAndVerticesTo(stream);
@@ -34,9 +35,10 @@ namespace Itinero.Network.Tiles
             // read tile id.
             var zoom = stream.ReadVarInt32();
             var tileId = stream.ReadVarUInt32();
+            var edgeTypeMapId = stream.ReadVarInt32();
 
             // create the tile.
-            var graphTile = new NetworkTile(zoom, tileId);
+            var graphTile = new NetworkTile(zoom, tileId, edgeTypeMapId);
 
             // read vertices and edges.
             graphTile.ReadEdgesAndVerticesFrom(stream);
