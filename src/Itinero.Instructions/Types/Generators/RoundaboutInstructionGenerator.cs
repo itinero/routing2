@@ -2,6 +2,8 @@ namespace Itinero.Instructions.Types.Generators
 {
     internal class RoundaboutInstructionGenerator : IInstructionGenerator
     {
+        public string Name { get; } = "roundabout";
+        
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
             // The roundabout instruction starts when the next segment is on the roundabout ("Go on the roundabout...")

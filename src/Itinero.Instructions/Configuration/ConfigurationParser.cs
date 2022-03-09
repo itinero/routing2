@@ -4,12 +4,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
 
 [assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
 
-namespace Itinero.Instructions.ToText
+namespace Itinero.Instructions.Configuration
 {
     internal static class ConfigurationParser
     {
@@ -36,10 +37,8 @@ namespace Itinero.Instructions.ToText
         ///     all explicitely
         /// </param>
         /// <returns>The instruction generator and the to text translators.</returns>
-        public static (LinearInstructionGenerator generator, Dictionary<string, IInstructionToText> toTexts)
-            ParseRouteToInstructions(
-                JsonElement jsonElement,
-                Dictionary<string, IInstructionGenerator> knownGenerators)
+        public static (IReadOnlyList<IInstructionGenerator> generator, Dictionary<string, IInstructionToText> toTexts)
+            ParseRouteToInstructions(JsonElement jsonElement, Dictionary<string, IInstructionGenerator> knownGenerators)
         {
             // parse generator names and instantiate generators.
             var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString())
@@ -50,8 +49,7 @@ namespace Itinero.Instructions.ToText
                 }
 
                 throw new Exception($"Generator not found: {name}");
-            });
-            var generator = new LinearInstructionGenerator(generators);
+            }).ToList();
 
             // parse instructions to text configurations.
             var languages = jsonElement.GetProperty("languages");
@@ -65,7 +63,7 @@ namespace Itinero.Instructions.ToText
                 toTexts[langCode] = whole;
             }
 
-            return (generator, toTexts);
+            return (generators, toTexts);
         }
 
         /**

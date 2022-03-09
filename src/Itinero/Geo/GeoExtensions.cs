@@ -415,5 +415,36 @@ namespace Itinero.Geo
             return box.bottomRight.latitude < coordinate.latitude && coordinate.latitude <= box.topLeft.latitude &&
                    box.topLeft.longitude < coordinate.longitude && coordinate.longitude <= box.bottomRight.longitude;
         }
+
+        /// <summary>
+        /// Given two WGS84 coordinates, if walking from c1 to c2, it gives the angle that one would be following.
+        /// 
+        /// 0° is north, 90° is east, -90° is west, both 180 and -180 are south
+        /// </summary>
+        /// <param name="c1">The first coordinate.</param>
+        /// <param name="c2">The second coordinate.</param>
+        /// <returns>The angle with the meridian in Northern direction.</returns>
+        public static double AngleWithMeridian(this (double longitude, double latitude, float? e) c1,
+            (double longitude, double latitude, float? e) c2)
+        {
+            var dy = c2.latitude - c1.latitude;
+            var dx = Math.Cos(Math.PI / 180 * c1.latitude) * (c2.longitude - c1.longitude);
+            // phi is the angle we search, but with 0 pointing eastwards and in radians
+            var phi = Math.Atan2(dy, dx);
+            var angle =
+                (phi - Math.PI / 2) // Rotate 90° to have the north up
+                * 180 / Math.PI; // Convert to degrees
+            angle = -angle;
+            // A bit of normalization below:
+            if (angle < -180) {
+                angle += 360;
+            }
+
+            if (angle > 180) {
+                angle -= 360;
+            }
+
+            return angle;
+        }
     }
 }

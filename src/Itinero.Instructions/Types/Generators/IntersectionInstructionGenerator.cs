@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using Itinero.Geo;
 
 namespace Itinero.Instructions.Types.Generators
 {
     internal class IntersectionInstructionGenerator : IInstructionGenerator
     {
+        public string Name { get; } = "intersection";
+        
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
             if (route.Last == offset + 1) {
@@ -22,7 +25,7 @@ namespace Itinero.Instructions.Types.Generators
 
             var incomingDirection = route.ArrivingDirectionAt(offset);
             foreach (var branch in branches) {
-                var branchAbsDirection = Utils.AngleBetween(route.Shape[offset], branch.Coordinate);
+                var branchAbsDirection = route.Shape[offset].AngleWithMeridian(branch.Coordinate);
                 var branchRelDirection = branchAbsDirection - incomingDirection;
                 incomingStreets.Add((branchRelDirection.NormalizeDegrees(), branch.Attributes));
             }

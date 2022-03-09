@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="../../Itinero.Common.props"/>
+    <Import Project="../../Itinero.Common.props" />
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -10,11 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Itinero\Itinero.csproj"/>
+        <ProjectReference Include="..\Itinero\Itinero.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="ToText\default.json"/>
+      <EmbeddedResource Include="Configuration\default.json" />
     </ItemGroup>
 
 </Project>

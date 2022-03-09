@@ -67,6 +67,8 @@ namespace Itinero.Tests.Functional
 
             TileParser.DownloadFunc = DownloadHelper.Download;
 
+            //var routerDb = RouterDb.ReadFrom(File.OpenRead("data.routerdb")); 
+
             // // create a new srtm data instance.
             // // it accepts a folder to download and cache data into.
             // var srtmCache = new DirectoryInfo("srtm-cache");

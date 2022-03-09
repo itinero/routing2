@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Instructions;
+using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
@@ -77,8 +78,8 @@ namespace Itinero.Tests.Instructions
             };
 
 
-            var instructionGenerator = new LinearInstructionGenerator(new BaseInstructionGenerator(),
-                new StartInstructionGenerator(), new EndInstructionGenerator());
+            var instructionGenerator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() { new BaseInstructionGenerator(),
+                new StartInstructionGenerator(), new EndInstructionGenerator() });
             var instructions = instructionGenerator.GenerateInstructions(route).ToList();
             var toText = new SubstituteText(new[] {
                 ("Turn ", false),
@@ -118,31 +119,13 @@ namespace Itinero.Tests.Instructions
                 }
             };
 
-            var instructionGenerator = new LinearInstructionGenerator(new BaseInstructionGenerator(),
-                new StartInstructionGenerator(), new EndInstructionGenerator());
+            var instructionGenerator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() { new BaseInstructionGenerator(),
+                new StartInstructionGenerator(), new EndInstructionGenerator() });
 
             var instructions = instructionGenerator.GenerateInstructions(route).ToList();
             // The left turn is included in the start instruction
             var leftTurn = ((StartInstruction) instructions[0]).Then;
             Assert.True(leftTurn.TurnDegrees < 0);
-        }
-
-        [Fact]
-        public void Angles_AllOrthoDirections_CorrectAngle()
-        {
-            var eflJuli_klaver = (3.2203030586242676, 51.215446076394535, (float?) null);
-            var straightN = (3.2203037291765213, 51.21552000156258, (float?) null);
-            var straightE = (3.2204418629407883, 51.215446496424235, (float?) null);
-
-            var n = Utils.AngleBetween(eflJuli_klaver, straightN);
-            Assert.True(-5 < n && n < 5);
-            var s = Utils.AngleBetween(straightN, eflJuli_klaver);
-            Assert.True(-180 <= s && s < -175 || 175 < s && s <= 180);
-
-            var e = Utils.AngleBetween(eflJuli_klaver, straightE);
-            Assert.True(85 < e && e < 95);
-            var w = Utils.AngleBetween(straightE, eflJuli_klaver);
-            Assert.True(-95 <= w && w < -85);
         }
     }
 }

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Itinero.Geo;
+using Itinero.Routes;
 using Xunit;
 
 namespace Itinero.Tests.Geo
@@ -195,6 +197,81 @@ namespace Itinero.Tests.Geo
             Assert.NotNull(project);
             Assert.Equal(project.Value.longitude, center.longitude, 6);
             Assert.Equal(project.Value.latitude, center.latitude, 6);
+        }
+        
+        
+        [Fact]
+        public void GeoExtensions_PointToNorth_AngleWithMeridian_IsZero()
+        {
+            var centerPoint = (3.220367431640625, 51.21547295828757, (float?) null);
+            var toTheNorth = (3.2203634083271027, 51.215595606725316, (float?) null);
+            var angle = centerPoint.AngleWithMeridian(toTheNorth);
+            Assert.True(angle is > -3 and < 3);
+        }
+
+        [Fact]
+        public void GeoExtensions_PointToNorthEast_AngleWithMeridian_IsZero()
+        {
+            var centerPoint = (3.220367431640625, 51.21547295828757, (float?) null);
+            var toTheNorthEast = (   3.220451921224594, 51.21552294176568, (float?) null);
+            var angle = centerPoint.AngleWithMeridian(toTheNorthEast);
+            Assert.True(angle is > 40 and < 50);
+        }
+        
+        [Fact]
+        public void GeoExtensions_PointToEast_AngleWithMeridian_IsZero()
+        {
+            var centerPoint = (3.220367431640625, 51.21547295828757, (float?) null);
+            var toTheEast = (   3.220517635345459, 51.2154742183759, (float?) null);
+            var angle = centerPoint.AngleWithMeridian(toTheEast);
+            Assert.True(angle is > 88 and < 92);
+        }
+        
+        [Fact]
+        public void GeoExtensions_PointToWest_AngleWithMeridian_IsZero()
+        {
+            var centerPoint = (3.220367431640625, 51.21547295828757, (float?) null);
+            var toTheWest = (      3.2202866300940514,
+                51.2154742183759, 0);
+            var angle = centerPoint.AngleWithMeridian(toTheWest);
+            Assert.True(angle is > -92 and < -88);
+        }
+        
+                
+        [Fact]
+        public void GeoExtensions_PointToSouthWest_AngleWithMeridian_IsZero()
+        {
+            var centerPoint = (3.220367431640625, 51.21547295828757, (float?) null);
+            var toTheSouthWest = (      3.2203013822436333, 51.21543473559121, 0);
+            var angle = centerPoint.AngleWithMeridian(toTheSouthWest);
+            Assert.True(angle is > -137 and < -132);
+        }
+
+        [Fact]
+        public void GeoExtensions_PointToSouth_AngleWithMeridian_IsZero()
+        {
+            var centerPoint = (3.220367431640625, 51.21547295828757, (float?) null);
+            var toTheSouth = (     3.22036474943161, 51.21542906518848, (float?) null);
+            var angle = centerPoint.AngleWithMeridian(toTheSouth);
+            Assert.True(angle is >= -180 and < -177 or > 178 and <= 180);
+        }
+
+        [Fact]
+        public void GeoExtensions_Angles_AllOrthoDirections_CorrectAngle()
+        {
+            var eflJuliKlaver = (3.2203030586242676, 51.215446076394535, (float?) null);
+            var straightN = (3.2203037291765213, 51.21552000156258, (float?) null);
+            var straightE = (3.2204418629407883, 51.215446496424235, (float?) null);
+
+            var n = eflJuliKlaver.AngleWithMeridian(straightN);
+            Assert.True(n is > -5 and < 5);
+            var s = straightN.AngleWithMeridian(eflJuliKlaver);
+            Assert.True(s is >= -180 and < -175 or > 175 and <= 180);
+
+            var e = eflJuliKlaver.AngleWithMeridian(straightE);
+            Assert.True(!(85 < e) || !(e < 95));
+            var w = straightE.AngleWithMeridian(eflJuliKlaver);
+            Assert.True(w is >= -95 and < -85);
         }
     }
 }

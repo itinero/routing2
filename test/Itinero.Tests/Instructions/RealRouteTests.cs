@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Itinero.Instructions;
+using Itinero.Instructions.Configuration;
+using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types.Generators;
 using Xunit;
@@ -35,9 +37,9 @@ namespace Itinero.Tests.Instructions
         private static readonly IInstructionToText SimpleToText =
             ConfigurationParser.ParseInstructionToText(JsonDocument.Parse("{" + baseInstructionToLeftRight + "}").RootElement);
 
-        private static readonly LinearInstructionGenerator gen = new(
+        private static readonly LinearInstructionListGenerator gen = new(new List<IInstructionGenerator>() {
             new EndInstructionGenerator(),
-            new BaseInstructionGenerator()
+            new BaseInstructionGenerator() }
         );
 
         [Fact]

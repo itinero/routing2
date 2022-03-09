@@ -30,7 +30,7 @@ namespace Itinero.Instructions.Types
     /// </remarks>
     public class BaseInstruction
     {
-        public BaseInstruction(IndexedRoute route,
+        internal BaseInstruction(IndexedRoute route,
             int shapeIndex, int shapeIndexEnd, int turnDegrees)
         {
             this.Route = route;
@@ -40,7 +40,7 @@ namespace Itinero.Instructions.Types
             this.Type = Tp(this);
         }
 
-        public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
+        internal BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
         {
             this.Route = route;
             this.ShapeIndex = shapeIndex;

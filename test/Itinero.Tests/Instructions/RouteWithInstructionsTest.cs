@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Itinero.Instructions;
 using Itinero.Instructions.Types;
@@ -20,7 +21,6 @@ namespace Itinero.Tests.Instructions
     
     public class RouteWithInstructionsTest
     {
-        
         private static readonly (double, double)[] klaverstraat = {
             (3.2168054580688477, 51.214451435318814), (3.2174867391586304, 51.214683296138816),
             (3.218269944190979, 51.21494203799424), (3.2188761234283447, 51.215093250093716),
@@ -38,26 +38,20 @@ namespace Itinero.Tests.Instructions
                     }
                 ));
 
-            var instructionGenerator = route.WithInstructions(
-                InstructionsGenerator.FromConfig("{\"generators\":[],  \"languages\":{ \"en\": {\"*\":\"$turnDegrees\" } }}")
-            );
-            var newMetas = instructionGenerator.MergeShapeMetas(
-                new List<BaseInstruction> {
-                    new(null, 0, 1, 0), // TurnDegrees is used to exfiltrate the instruction number
-                    new(null, 1, 3, 1),
-                    new(null, 3, 7, 2)
-                },
-                new (string key, string language)[] {
-                    ("instruction", "en")
-                },
-                route.ShapeMeta
-            );
+            var routeAndInstructions = new RouteAndInstructions(route, new List<BaseInstruction> {
+                new(null, 0, 1, 0), // TurnDegrees is used to exfiltrate the instruction number
+                new(null, 1, 3, 1),
+                new(null, 3, 7, 2)
+            }.Select(x => new Instruction(x, new Dictionary<string, string>())).ToList());
+
+            var result = routeAndInstructions.AugmentRoute();
+            var newMetas = result.Route.ShapeMeta;
+            
             Assert.NotEmpty(newMetas);
             Assert.Equal(3, newMetas.Count);
             Assert.Equal(1, newMetas[0].Shape);
             Assert.Equal(3, newMetas[1].Shape);
             Assert.Equal(6, newMetas[2].Shape);
-
             
             for (int i = 0; i < 3; i++) {
                 var a = newMetas[i].Attributes;
@@ -87,18 +81,13 @@ namespace Itinero.Tests.Instructions
                 
                 );
 
-            var instructionGenerator = route.WithInstructions(
-                InstructionsGenerator.FromConfig("{\"generators\":[],  \"languages\":{ \"en\": {\"*\":\"$turnDegrees\" } }}")
-            );
-            var newMetas = instructionGenerator.MergeShapeMetas(
-                new List<BaseInstruction> {
-                    new(null, 0, 7, 0), // TurnDegrees is used to exfiltrate the instruction number
-                },
-                new (string key, string language)[] {
-                    ("instruction", "en")
-                },
-                route.ShapeMeta
-            );
+            var routeAndInstructions = new RouteAndInstructions(route, new List<BaseInstruction> {
+                new(null, 0, 7, 0), // TurnDegrees is used to exfiltrate the instruction number
+            }.Select(x => new Instruction(x, new Dictionary<string, string>())).ToList());
+            
+            var result = routeAndInstructions.AugmentRoute();
+            var newMetas = result.Route.ShapeMeta;
+            
             Assert.NotEmpty(newMetas);
             Assert.Equal(2, newMetas.Count);
            

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Itinero.Geo;
 using Itinero.Routes;
 
 [assembly: InternalsVisibleTo("Itinero.Tests.Instructions")]
@@ -9,10 +10,22 @@ using Itinero.Routes;
 namespace Itinero.Instructions
 {
     /// <summary>
-    ///     Helper class to allow easy access on some parts of the route
+    ///  Helper class to allow easy access on some parts of the route
     /// </summary>
     public class IndexedRoute
     {
+        private readonly Route _route;
+
+        internal IndexedRoute(Route route)
+        {
+            this._route = route;
+            this.Meta = BuildMetaList(route);
+            this.Branches = BuildBranchesList(route);
+        }
+
+        /// <summary>
+        /// Gets branches .
+        /// </summary>
         public List<List<Route.Branch>> Branches { get; }
 
         /// <summary>
@@ -22,25 +35,21 @@ namespace Itinero.Instructions
         /// </summary>
         public List<Route.Meta> Meta { get; }
 
-        public Route Route { get; }
+        /// <summary>
+        /// The shape.
+        /// </summary>
+        public List<(double longitude, double latitude, float? e)> Shape => this._route.Shape;
 
-
-        internal IndexedRoute(Route route)
-        {
-            Route = route;
-            Meta = this.BuildMetaList(route);
-            Branches = BuildBranchesList(route);
-        }
-
-        public List<(double longitude, double latitude, float? e)> Shape => Route.Shape;
+        /// <summary>
+        /// The last shape point.
+        /// </summary>
         public int Last => this.Shape.Count - 1;
 
-
-        private List<Route.Meta> BuildMetaList(Route route)
+        private static List<Route.Meta> BuildMetaList(Route route)
         {
             var metas = new List<Route.Meta>();
             if (route.ShapeMeta == null || route.ShapeMeta.Count == 0) {
-                throw new ArgumentException("Cannot generate route instructions if metainformation is missing");
+                throw new ArgumentException("Cannot generate route instructions if meta information is missing");
             }
 
             foreach (var meta in route.ShapeMeta) {
@@ -53,7 +62,7 @@ namespace Itinero.Instructions
             if (metas.Count + 1 != route.Shape.Count) {
                 throw new Exception("Length of the meta doesn't match. There are " + route.Shape.Count +
                                     " shapes, but the last meta has an index of " +
-                                    route.ShapeMeta[^1].Shape + ", resulting in a metalist of " + metas.Count);
+                                    route.ShapeMeta[^1].Shape + ", resulting in a meta list of " + metas.Count);
             }
 #endif
 
@@ -78,60 +87,46 @@ namespace Itinero.Instructions
             return branches;
         }
 
-        public double DistanceToNextPoint(int offset)
+        /// <summary>
+        /// Returns the distance to the next point.
+        /// </summary>
+        /// <param name="shape">The shape point.</param>
+        /// <returns>The distance to the next shape point.</returns>
+        public double DistanceToNextPoint(int shape)
         {
-            (double longitude, double latitude, float? e) prevPoint;
-            if (offset == -1) {
-                prevPoint = Route.Stops[0].Coordinate;
-            }
-            else {
-                prevPoint = this.Shape[offset];
-            }
+            var prevPoint = 
+                shape == -1 ? this._route.Stops[0].Coordinate : this.Shape[shape];
 
-            (double, double, float? e) nextPoint;
-            if (this.Last == offset) {
-                nextPoint = Route.Stops[Route.Stops.Count - 1].Coordinate;
-            }
-            else {
-                nextPoint = this.Shape[offset + 1];
-            }
+            (double, double, float? e) nextPoint = this.Last == shape ? 
+                this._route.Stops[^1].Coordinate : this.Shape[shape + 1];
 
-            return Utils.DistanceEstimateInMeter(prevPoint, nextPoint);
-        }
-
-        public double DepartingDirectionAt(int offset)
-        {
-            (double, double, float?) nextPoint;
-            if (this.Last == offset) {
-                nextPoint = Route.Stops[^1].Coordinate;
-            }
-            else {
-                nextPoint = this.Shape[offset + 1];
-            }
-
-
-            return Utils.AngleBetween(this.Shape[offset], nextPoint);
+            return prevPoint.DistanceEstimateInMeter(nextPoint);
         }
 
         /// <summary>
-        ///     The absolute angle when arriving
+        /// The departing angle with the meridian.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        public double ArrivingDirectionAt(int offset)
+        /// <param name="shape">The shape point index.</param>
+        /// <returns>The angle.</returns>
+        public double DepartingDirectionAt(int shape)
         {
-            (double longitude, double latitude, float? e) prevPoint;
-            if (offset == 0) {
-                prevPoint = Route.Stops[0].Coordinate;
-            }
-            else {
-                prevPoint = this.Shape[offset - 1];
-            }
-
-            return Utils.AngleBetween(prevPoint, this.Shape[offset]);
+            return this.Shape[shape]
+                .AngleWithMeridian(this.Last == shape ? this._route.Stops[^1].Coordinate : this.Shape[shape + 1]);
         }
-        
- 
+
+        /// <summary>
+        /// The absolute angle when arriving
+        /// </summary>
+        /// <param name="shape"></param>
+        /// <returns>The angle.</returns>
+        public double ArrivingDirectionAt(int shape)
+        {
+            var prevPoint =
+                shape == 0 ? this._route.Stops[0].Coordinate : this.Shape[shape - 1];
+
+            return prevPoint.AngleWithMeridian(this.Shape[shape]);
+        }
+
         /// <summary>
         ///     The direction change at a given shape index.
         ///     Going straight on at this shape will result in 0° here.
@@ -145,43 +140,42 @@ namespace Itinero.Instructions
         {
             return (this.DepartingDirectionAt(shape) - this.ArrivingDirectionAt(shape)).NormalizeDegrees();
         }
-
-        // ReSharper disable once UnusedMember.Global
-        public string GeojsonPoints()
-        {
-            var parts = this.Shape.Select(
-                (s, i) =>
-                    "{ \"type\": \"Feature\", \"properties\": { \"marker-color\": \"#7e7e7e\", \"marker-size\": \"medium\", \"marker-symbol\": \"\", \"index\": \"" +
-                    i + "\" }, \"geometry\": { \"type\": \"Point\", \"coordinates\": [ " + s.longitude + "," +
-                    s.latitude + " ] }}");
-            return string.Join(",\n", parts);
-        }
-
-
-        public string GeojsonLines()
-        {
-            var parts = new List<string>();
-            for (var i = 0; i < this.Shape.Count - 1; i++) {
-                var meta = Meta[i].Attributes.Select(attr => $"\"{attr.key}\": \"{attr.value}\"").ToList();
-                meta.Add($"\"index\": {i}");
-                
-                var coordinates =
-                    $"[ [{Shape[i].longitude}, {Shape[i].latitude}], [{Shape[i + 1].longitude}, {Shape[i + 1].latitude}] ]";
-                var part =
-                    "\n{\"type\":\"Feature\"," +
-                    "\n   \"properties\":{" + string.Join(",",meta) + "}," +
-                    $"\n   \"geometry\":{{\"type\":\"LineString\",\"coordinates\": {coordinates} }}" +
-                    "\n}";
- 
-                parts.Add(part);
-            }
-
-            return InGeoJson(string.Join(",\n", parts));
-        }
-
-        private static string InGeoJson(string contents)
-        {
-            return "{\"type\": \"FeatureCollection\",\"features\": [\n\n" + contents + "\n\n]}";
-        }
+        //
+        // // ReSharper disable once UnusedMember.Global
+        // public string GeojsonPoints()
+        // {
+        //     var parts = this.Shape.Select(
+        //         (s, i) =>
+        //             "{ \"type\": \"Feature\", \"properties\": { \"marker-color\": \"#7e7e7e\", \"marker-size\": \"medium\", \"marker-symbol\": \"\", \"index\": \"" +
+        //             i + "\" }, \"geometry\": { \"type\": \"Point\", \"coordinates\": [ " + s.longitude + "," +
+        //             s.latitude + " ] }}");
+        //     return string.Join(",\n", parts);
+        // }
+        //
+        // public string GeojsonLines()
+        // {
+        //     var parts = new List<string>();
+        //     for (var i = 0; i < this.Shape.Count - 1; i++) {
+        //         var meta = Meta[i].Attributes.Select(attr => $"\"{attr.key}\": \"{attr.value}\"").ToList();
+        //         meta.Add($"\"index\": {i}");
+        //
+        //         var coordinates =
+        //             $"[ [{Shape[i].longitude}, {Shape[i].latitude}], [{Shape[i + 1].longitude}, {Shape[i + 1].latitude}] ]";
+        //         var part =
+        //             "\n{\"type\":\"Feature\"," +
+        //             "\n   \"properties\":{" + string.Join(",", meta) + "}," +
+        //             $"\n   \"geometry\":{{\"type\":\"LineString\",\"coordinates\": {coordinates} }}" +
+        //             "\n}";
+        //
+        //         parts.Add(part);
+        //     }
+        //
+        //     return InGeoJson(string.Join(",\n", parts));
+        // }
+        //
+        // private static string InGeoJson(string contents)
+        // {
+        //     return "{\"type\": \"FeatureCollection\",\"features\": [\n\n" + contents + "\n\n]}";
+        // }
     }
 }

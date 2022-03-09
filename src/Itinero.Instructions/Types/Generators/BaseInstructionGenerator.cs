@@ -2,6 +2,8 @@ namespace Itinero.Instructions.Types.Generators
 {
     internal class BaseInstructionGenerator : IInstructionGenerator
     {
+        public string Name { get; } = "base";
+        
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
             if (offset + 1 >= route.Last) {

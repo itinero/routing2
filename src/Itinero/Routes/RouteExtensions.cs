@@ -495,5 +495,40 @@ namespace Itinero.Routes
         //                new Coordinate(route.Shape[i].Latitude, route.Shape[i].Longitude),
         //                new Coordinate(route.Shape[i + 1].Latitude, route.Shape[i + 1].Longitude));
         //        }
+
+        /// <summary>
+        /// Calculates the distance between two shape points along the route.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <param name="shapeStart">The first shape point index.</param>
+        /// <param name="shapeEnd">The second shape point index.</param>
+        /// <returns></returns>
+        public static double DistanceBetween(this Route route, int shapeStart, int shapeEnd)
+        {
+            var sum = 0.0;
+            for (var i = shapeStart; i < shapeEnd; i++) {
+                sum += route.Shape[i].DistanceEstimateInMeterShape(route.Shape[i + 1]);
+            }
+            return sum;
+        }
+
+        /// <summary>
+        /// Calculates the absolute bearing if travelling from the given shape index towards the next shapeIndex.
+        /// </summary>
+        /// <remarks>0° is north, 90° is east, -90° is west, both 180 and -180 are south. Gives null for the last point</remarks>
+        /// <param name="route">The route.</param>
+        /// <param name="shape">The shape point index.</param>
+        /// <returns></returns>
+        public static double? BearingAt(this Route route, int shape)
+        {
+            if (route.Shape.Count < shape + 2) { // Plus two, as we'll increase shape later on
+                return null;
+            }
+
+            var current = route.Shape[shape];
+            var next = route.Shape[shape + 1];
+
+            return current.AngleWithMeridian(next);
+        }
     }
 }
