@@ -40,9 +40,12 @@ namespace Itinero.Routing
         {
             var paths = manyToManyRouter.Paths();
             return paths.Select(x => {
-                return x.Select(y => 
-                    manyToManyRouter.Settings.RouteBuilder.Build(manyToManyRouter.Network, manyToManyRouter.Settings.Profile, y))
-                    .ToArray();
+                return x.Select(y => {
+                    if (y.IsError) return y.ConvertError<Route>();
+
+                    return manyToManyRouter.Settings.RouteBuilder.Build(manyToManyRouter.Network,
+                        manyToManyRouter.Settings.Profile, y);
+                }).ToArray();
             }).ToArray();
         }
 
