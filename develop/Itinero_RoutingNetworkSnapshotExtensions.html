@@ -22,21 +22,21 @@
 <tr><th>Coverable lines:</th><td>35</td></tr>
 <tr><th>Total lines:</th><td>87</td></tr>
 <tr><th>Line coverage:</th><td>88.5% (31 of 35)</td></tr>
-<tr><th>Covered branches:</th><td>15</td></tr>
-<tr><th>Total branches:</th><td>22</td></tr>
-<tr><th>Branch coverage:</th><td>68.1% (15 of 22)</td></tr>
-<tr><th>Tag:</th><td>111_879861149</td></tr>
+<tr><th>Covered branches:</th><td>13</td></tr>
+<tr><th>Total branches:</th><td>18</td></tr>
+<tr><th>Branch coverage:</th><td>72.2% (13 of 18)</td></tr>
+<tr><th>Tag:</th><td>113_1962152953</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
 <table class="overview table-fixed">
-<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
+<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title="GetVertex(Itinero.Network.RoutingNetwork,Itinero.Network.VertexId)"><a href="#file0_line22" class="navigatetohash">GetVertex(...)</a></td><td>50%</td><td>80%</td></tr>
-<tr><td title="GetVertices()"><a href="#file0_line36" class="navigatetohash">GetVertices()</a></td><td>75%</td><td>100%</td></tr>
-<tr><td title="GetEdges()"><a href="#file0_line49" class="navigatetohash">GetEdges()</a></td><td>80%</td><td>91.66%</td></tr>
-<tr><td title="GetCostFunctionFor(Itinero.Network.RoutingNetwork,Itinero.Profiles.Profile)"><a href="#file0_line67" class="navigatetohash">GetCostFunctionFor(...)</a></td><td>50%</td><td>83.33%</td></tr>
-<tr><td title="GetAttributes(Itinero.Network.RoutingNetwork,Itinero.Network.EdgeId)"><a href="#file0_line78" class="navigatetohash">GetAttributes(...)</a></td><td>50%</td><td>83.33%</td></tr>
+<tr><td title="GetVertex(Itinero.Network.RoutingNetwork,Itinero.Network.VertexId)"><a href="#file0_line22" class="navigatetohash">GetVertex(...)</a></td><td>50%</td><td>2</td><td>80%</td></tr>
+<tr><td title="GetVertices()"><a href="#file0_line36" class="navigatetohash">GetVertices()</a></td><td>100%</td><td>2</td><td>100%</td></tr>
+<tr><td title="GetEdges()"><a href="#file0_line49" class="navigatetohash">GetEdges()</a></td><td>87.5%</td><td>8</td><td>91.66%</td></tr>
+<tr><td title="GetCostFunctionFor(Itinero.Network.RoutingNetwork,Itinero.Profiles.Profile)"><a href="#file0_line67" class="navigatetohash">GetCostFunctionFor(...)</a></td><td>50%</td><td>4</td><td>83.33%</td></tr>
+<tr><td title="GetAttributes(Itinero.Network.RoutingNetwork,Itinero.Network.EdgeId)"><a href="#file0_line78" class="navigatetohash">GetAttributes(...)</a></td><td>50%</td><td>2</td><td>83.33%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -79,7 +79,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;routingNetwork&quot;&gt;The&nbsp;routing&nbsp;network.&lt;/param&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;returns&gt;An&nbsp;enumerable&nbsp;with&nbsp;all&nbsp;vertices.&lt;/returns&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;IEnumerable&lt;VertexId&gt;&nbsp;GetVertices(this&nbsp;RoutingNetwork&nbsp;routingNetwork)</code></td></tr>
-<tr class="coverableline" title="Partially covered (8 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '8', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">8</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Covered (8 visits)" data-coverage="{'AllTestMethods': {'VC': '8', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">8</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Covered (8 visits)" data-coverage="{'AllTestMethods': {'VC': '8', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">8</td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;enumerator&nbsp;=&nbsp;routingNetwork.GetVertexEnumerator();</code></td></tr>
 <tr class="coverableline" title="Covered (32 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '32', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">32</td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(enumerator.MoveNext())&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Covered (12 visits)" data-coverage="{'AllTestMethods': {'VC': '12', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">12</td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;yield&nbsp;return&nbsp;enumerator.Current;</code></td></tr>
@@ -92,7 +92,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line46"></a><code>46</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;routingNetwork&quot;&gt;The&nbsp;routing&nbsp;network.&lt;/param&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line47"></a><code>47</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;returns&gt;An&nbsp;enumerable&nbsp;with&nbsp;all&nbsp;edges.&lt;/returns&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line48"></a><code>48</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;IEnumerable&lt;EdgeId&gt;&nbsp;GetEdges(this&nbsp;RoutingNetwork&nbsp;routingNetwork)</code></td></tr>
-<tr class="coverableline" title="Partially covered (1 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line49"></a><code>49</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line49"></a><code>49</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line50"></a><code>50</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;edgeEnumerator&nbsp;=&nbsp;routingNetwork.GetEdgeEnumerator();</code></td></tr>
 <tr class="coverableline" title="Covered (9 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '9', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">9</td><td class="rightmargin right"><a id="file0_line51"></a><code>51</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(var&nbsp;vertex&nbsp;in&nbsp;routingNetwork.GetVertices())&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Partially covered (2 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line52"></a><code>52</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!edgeEnumerator.MoveTo(vertex))&nbsp;{</code></td></tr>
@@ -133,7 +133,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line87"></a><code>87</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />05/26/2021 - 20:25:04<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />03/10/2022 - 09:08:06<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>

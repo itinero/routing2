@@ -23,18 +23,18 @@
 <tr><th>Total lines:</th><td>64</td></tr>
 <tr><th>Line coverage:</th><td>85.7% (18 of 21)</td></tr>
 <tr><th>Covered branches:</th><td>3</td></tr>
-<tr><th>Total branches:</th><td>8</td></tr>
-<tr><th>Branch coverage:</th><td>37.5% (3 of 8)</td></tr>
-<tr><th>Tag:</th><td>111_879861149</td></tr>
+<tr><th>Total branches:</th><td>6</td></tr>
+<tr><th>Branch coverage:</th><td>50% (3 of 6)</td></tr>
+<tr><th>Tag:</th><td>113_1962152953</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
 <table class="overview table-fixed">
-<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
+<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title="AddVisit(Itinero.Routing.DataStructures.PathTree,Itinero.Network.VertexId,Itinero.Network.EdgeId,System.Nullable`1&lt;System.Byte&gt;,System.UInt32)"><a href="#file0_line20" class="navigatetohash">AddVisit(...)</a></td><td>50%</td><td>100%</td></tr>
-<tr><td title="GetVisit(Itinero.Routing.DataStructures.PathTree,System.UInt32)"><a href="#file0_line39" class="navigatetohash">GetVisit(...)</a></td><td>50%</td><td>100%</td></tr>
-<tr><td title="GetPreviousEdges()"><a href="#file0_line54" class="navigatetohash">GetPreviousEdges()</a></td><td>25%</td><td>57.14%</td></tr>
+<tr><td title="AddVisit(Itinero.Routing.DataStructures.PathTree,Itinero.Network.VertexId,Itinero.Network.EdgeId,System.Nullable`1&lt;System.Byte&gt;,System.UInt32)"><a href="#file0_line20" class="navigatetohash">AddVisit(...)</a></td><td>50%</td><td>2</td><td>100%</td></tr>
+<tr><td title="GetVisit(Itinero.Routing.DataStructures.PathTree,System.UInt32)"><a href="#file0_line39" class="navigatetohash">GetVisit(...)</a></td><td>50%</td><td>2</td><td>100%</td></tr>
+<tr><td title="GetPreviousEdges()"><a href="#file0_line54" class="navigatetohash">GetPreviousEdges()</a></td><td>50%</td><td>2</td><td>57.14%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -95,7 +95,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line51"></a><code>51</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;pointer&quot;&gt;The&nbsp;pointer.&lt;/param&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line52"></a><code>52</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;returns&gt;The&nbsp;edges&nbsp;and&nbsp;their&nbsp;turn.&lt;/returns&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line53"></a><code>53</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;IEnumerable&lt;(EdgeId&nbsp;edge,&nbsp;byte?&nbsp;turn)&gt;&nbsp;GetPreviousEdges(this&nbsp;PathTree&nbsp;tree,&nbsp;uint&nbsp;pointer)</code></td></tr>
-<tr class="coverableline" title="Partially covered (1 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line54"></a><code>54</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line54"></a><code>54</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Partially covered (2 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line55"></a><code>55</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(pointer&nbsp;!=&nbsp;uint.MaxValue)&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Covered (1 visits)" data-coverage="{'AllTestMethods': {'VC': '1', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">1</td><td class="rightmargin right"><a id="file0_line56"></a><code>56</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;(_,&nbsp;edge,&nbsp;head,&nbsp;next)&nbsp;=&nbsp;tree.GetVisit(pointer);</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line57"></a><code>57</code></td><td></td><td class="lightgray"><code></code></td></tr>
@@ -108,7 +108,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line64"></a><code>64</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />05/26/2021 - 20:25:04<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />03/10/2022 - 09:08:06<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>

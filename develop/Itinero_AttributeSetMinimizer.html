@@ -23,21 +23,21 @@
 <tr><th>Total lines:</th><td>158</td></tr>
 <tr><th>Line coverage:</th><td>0% (0 of 83)</td></tr>
 <tr><th>Covered branches:</th><td>0</td></tr>
-<tr><th>Total branches:</th><td>28</td></tr>
-<tr><th>Branch coverage:</th><td>0% (0 of 28)</td></tr>
-<tr><th>Tag:</th><td>111_879861149</td></tr>
+<tr><th>Total branches:</th><td>26</td></tr>
+<tr><th>Branch coverage:</th><td>0% (0 of 26)</td></tr>
+<tr><th>Tag:</th><td>113_1962152953</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
 <table class="overview table-fixed">
-<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
+<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
-<tr><td title=".ctor(System.Collections.Generic.IReadOnlyCollection`1&lt;Itinero.Profiles.Profile&gt;,System.String[])"><a href="#file0_line10" class="navigatetohash">.ctor(...)</a></td><td>0%</td><td>0%</td></tr>
-<tr><td title="MinimizeAttributes(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line44" class="navigatetohash">MinimizeAttributes(...)</a></td><td>0%</td><td>0%</td></tr>
-<tr><td title="AddImportance(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line111" class="navigatetohash">AddImportance(...)</a></td><td>0%</td><td>0%</td></tr>
-<tr><td title="AddNotImportant(System.String)"><a href="#file0_line125" class="navigatetohash">AddNotImportant(...)</a></td><td>0%</td><td>0%</td></tr>
-<tr><td title="ImportanceOf(System.String)"><a href="#file0_line135" class="navigatetohash">ImportanceOf(...)</a></td><td>0%</td><td>0%</td></tr>
-<tr><td title="GetEdgeFactorHash(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line147" class="navigatetohash">GetEdgeFactorHash(...)</a></td><td>0%</td><td>0%</td></tr>
+<tr><td title=".ctor(System.Collections.Generic.IReadOnlyCollection`1&lt;Itinero.Profiles.Profile&gt;,System.String[])"><a href="#file0_line10" class="navigatetohash">.ctor(...)</a></td><td>0%</td><td>2</td><td>0%</td></tr>
+<tr><td title="MinimizeAttributes(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line44" class="navigatetohash">MinimizeAttributes(...)</a></td><td>0%</td><td>14</td><td>0%</td></tr>
+<tr><td title="AddImportance(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line111" class="navigatetohash">AddImportance(...)</a></td><td>0%</td><td>4</td><td>0%</td></tr>
+<tr><td title="AddNotImportant(System.String)"><a href="#file0_line125" class="navigatetohash">AddNotImportant(...)</a></td><td>0%</td><td>2</td><td>0%</td></tr>
+<tr><td title="ImportanceOf(System.String)"><a href="#file0_line135" class="navigatetohash">ImportanceOf(...)</a></td><td>0%</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetEdgeFactorHash(System.Collections.Generic.IEnumerable`1&lt;System.ValueTuple`2&lt;System.String,System.String&gt;&gt;)"><a href="#file0_line147" class="navigatetohash">GetEdgeFactorHash(...)</a></td><td>0%</td><td>2</td><td>0%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -106,7 +106,7 @@
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line59"></a><code>59</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;targetHash&nbsp;=&nbsp;this.GetEdgeFactorHash(attributes);</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line60"></a><code>60</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line61"></a><code>61</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;We&nbsp;make&nbsp;a&nbsp;ranking&nbsp;of&nbsp;what&nbsp;keys&nbsp;are&nbsp;probably&nbsp;important</code></td></tr>
-<tr class="coverableline" title="Not covered (0 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line62"></a><code>62</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;importantKeys&nbsp;=</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line62"></a><code>62</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;importantKeys&nbsp;=</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line63"></a><code>63</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;attributes.Select(attr&nbsp;=&gt;&nbsp;(attr.key,&nbsp;this.ImportanceOf(attr.key)))</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line64"></a><code>64</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.OrderByDescending(attr&nbsp;=&gt;&nbsp;attr.Item2);</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line65"></a><code>65</code></td><td></td><td class="lightgray"><code></code></td></tr>
@@ -205,7 +205,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line158"></a><code>158</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />05/26/2021 - 20:25:04<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />03/10/2022 - 09:08:06<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
