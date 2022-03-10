@@ -269,7 +269,7 @@ namespace Itinero.Tests.Geo
             Assert.True(s is >= -180 and < -175 or > 175 and <= 180);
 
             var e = eflJuliKlaver.AngleWithMeridian(straightE);
-            Assert.True(!(85 < e) || !(e < 95));
+            Assert.True(e is > 85 and < 95);
             var w = straightE.AngleWithMeridian(eflJuliKlaver);
             Assert.True(w is >= -95 and < -85);
         }
