@@ -6,6 +6,7 @@ using System.Text.Json;
 using Itinero.Instructions.Configuration;
 using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types.Generators;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Itinero.Instructions;
 
@@ -17,13 +18,12 @@ public class RouteInstructionGeneratorSettings
     /// <summary>
     /// Individual instruction generators.
     /// </summary>
-    public List<IInstructionGenerator> Generators { get; private set; } = new List<IInstructionGenerator>();
+    public List<IInstructionGenerator> Generators { get; private set; } = new ();
 
     /// <summary>
     /// Text generators per language code.
     /// </summary>
-    public Dictionary<string, IInstructionToText> Languages { get; private set; } =
-        new Dictionary<string, IInstructionToText>();
+    public Dictionary<string, IInstructionToText> Languages { get; private set; } = new ();
     
     private static readonly Lazy<RouteInstructionGeneratorSettings> DefaultLazy = new(() => {
         using var stream =
@@ -46,7 +46,7 @@ public class RouteInstructionGeneratorSettings
     public static RouteInstructionGeneratorSettings FromConfigFile(string path,
         IEnumerable<IInstructionGenerator>? customGenerators = null)
     {
-        return FromStream(File.OpenRead(path));
+        return FromStream(File.OpenRead(path), customGenerators);
     }
     
     /// <summary>
@@ -54,10 +54,23 @@ public class RouteInstructionGeneratorSettings
     /// </summary>
     /// <param name="stream">The stream.</param>
     /// <param name="customGenerators">Any custom generators.</param>
-    /// <returns></returns>
+    /// <returns>The settings.</returns>
     public static RouteInstructionGeneratorSettings FromStream(Stream stream,
         IEnumerable<IInstructionGenerator>? customGenerators = null)
     {
+        using var streamReader = new StreamReader(stream);
+        return FromJson(streamReader.ReadToEnd(), customGenerators);
+    }
+    
+    /// <summary>
+    /// Parses settings from the given json string.
+    /// </summary>
+    /// <param name="json">A string with the json.</param>
+    /// <param name="customGenerators">Any custom generators.</param>
+    /// <returns>The settings.</returns>
+    public static RouteInstructionGeneratorSettings FromJson(string json,
+        IEnumerable<IInstructionGenerator>? customGenerators = null)
+    {        
         // collect all the hardcoded generators.
         var allGenerators = new Dictionary<string, IInstructionGenerator>(AllGenerators.Generators
             .ToDictionary(x => x.Name, x=> x));
@@ -70,10 +83,9 @@ public class RouteInstructionGeneratorSettings
         }
 
         // read settings.
-        using var streamReader = new StreamReader(stream);
         var (generators, translations) =
             ConfigurationParser.ParseRouteToInstructions(
-                JsonDocument.Parse(streamReader.ReadToEnd()).RootElement, allGenerators);
+                JsonDocument.Parse(json).RootElement, allGenerators);
 
         return new RouteInstructionGeneratorSettings() {
             Generators = new List<IInstructionGenerator>(generators),
