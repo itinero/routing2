@@ -5,7 +5,7 @@ namespace Itinero.Instructions.Types.Generators
 {
     internal class FollowAlongGenerator : IInstructionGenerator
     {
-        public string Name { get; } = "follow";
+        public string Name { get; } = "followalong";
         
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
