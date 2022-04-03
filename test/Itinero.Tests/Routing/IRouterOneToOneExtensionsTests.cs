@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Routing;
@@ -11,7 +12,7 @@ namespace Itinero.Tests.Routing
     public class IRouterOneToOneExtensionsTests
     {
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_ShouldMatchEdge()
+        public async Task IRouterOneToOneExtensions_Calculate_OneEdge_ShouldMatchEdge()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
@@ -23,11 +24,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
-            var snap2 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);
@@ -39,7 +40,7 @@ namespace Itinero.Tests.Routing
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_ShouldMatchEdge()
+        public async Task IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_ShouldMatchEdge()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
@@ -51,11 +52,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
-            var snap2 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);
@@ -67,7 +68,7 @@ namespace Itinero.Tests.Routing
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_WithShapePoint_ShouldMatchEdge()
+        public async Task IRouterOneToOneExtensions_Calculate_OneEdge_WithShapePoint_ShouldMatchEdge()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
@@ -81,11 +82,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
-            var snap2 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);
@@ -99,7 +100,7 @@ namespace Itinero.Tests.Routing
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_WithShapePoint_ShouldMatchEdge()
+        public async Task IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_WithShapePoint_ShouldMatchEdge()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
@@ -113,11 +114,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
-            var snap2 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);
@@ -131,7 +132,7 @@ namespace Itinero.Tests.Routing
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_With2ShapePoints_ShouldMatchEdge()
+        public async Task IRouterOneToOneExtensions_Calculate_OneEdge_With2ShapePoints_ShouldMatchEdge()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
@@ -146,11 +147,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
-            var snap2 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);
@@ -166,7 +167,7 @@ namespace Itinero.Tests.Routing
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_With2ShapePoints_ShouldMatchEdge()
+        public async Task IRouterOneToOneExtensions_Calculate_OneEdge_Reverse_With2ShapePoints_ShouldMatchEdge()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801771044731140, 51.268886491558250, (float?) null),
@@ -181,11 +182,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
-            var snap2 = network.Snap().To((4.801771044731140, 51.268886491558250, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);
@@ -201,7 +202,7 @@ namespace Itinero.Tests.Routing
         }
 
         [Fact]
-        public void IRouterOneToOneExtensions_Calculate_TwoEdge_With2ShapePoints_ShouldMatchEdges()
+        public async Task IRouterOneToOneExtensions_Calculate_TwoEdge_With2ShapePoints_ShouldMatchEdges()
         {
             var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
                     (4.801073670387268, 51.268064181900094, (float?) null),
@@ -221,11 +222,11 @@ namespace Itinero.Tests.Routing
 
             var network = routerDb.Latest;
 
-            var snap1 = network.Snap().To((4.801073670387268, 51.268064181900094, (float?) null));
-            var snap2 = network.Snap().To((4.802438914775848, 51.268097745847650, (float?) null));
+            var snap1 = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, (float?) null));
+            var snap2 = await network.Snap().ToAsync((4.802438914775848, 51.268097745847650, (float?) null));
 
-            var result = routerDb.Latest.Route(new DefaultProfile())
-                .From(snap1).To(snap2).Calculate();
+            var result = await routerDb.Latest.Route(new DefaultProfile())
+                .From(snap1).To(snap2).CalculateAsync();
             Assert.False(result.IsError);
             var route = result.Value;
             Assert.NotNull(route.Shape);

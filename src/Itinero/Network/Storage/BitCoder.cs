@@ -333,6 +333,48 @@ namespace Itinero.Network.Storage
             value = FromUnsigned(unsigned);
             return c;
         }
+        
+        public static ulong ToUnsigned(long value)
+        {
+            var unsigned = (ulong)value;
+            if (value < 0)
+            {
+                unsigned = (ulong)-value;
+            }
+
+            unsigned <<= 1;
+            if (value < 0)
+            {
+                unsigned += 1;
+            }
+
+            return unsigned;
+        }
+
+        public static long FromUnsigned(ulong unsigned)
+        {
+            var sign = unsigned & (ulong)1;
+
+            var value = (long)(unsigned >> 1);
+            if (sign == 1)
+            {
+                value = -value;
+            }
+
+            return value;
+        }
+
+        public static long SetDynamicInt64(this ArrayBase<byte> data, long i, long value)
+        {
+            return data.SetDynamicUInt64(i, ToUnsigned(value));
+        }
+
+        public static long GetDynamicInt64(this ArrayBase<byte> data, long i, out long value)
+        {
+            var c = data.GetDynamicUInt64(i, out var unsigned);
+            value = FromUnsigned(unsigned);
+            return c;
+        }
 
         public static long SetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, uint? value)
         {

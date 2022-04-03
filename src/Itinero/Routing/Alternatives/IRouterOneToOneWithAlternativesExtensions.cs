@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Routes;
@@ -13,10 +14,10 @@ namespace Itinero.Routing.Alternatives
 {
     public static class IRouterOneToOneWithAlternativesExtensions
     {
-        internal static Result<IReadOnlyList<Path>> CalculatePaths(
+        internal static async Task<Result<IReadOnlyList<Path>>> CalculatePathsAsync(
             this IRouterOneToOneWithAlternatives alternativeRouter)
         {
-            var penaltyFactor = 2.0;
+            const double penaltyFactor = 2.0;
             
             var settings = alternativeRouter.Settings;
             var altSettings = alternativeRouter.AlternativeRouteSettings;
@@ -24,7 +25,7 @@ namespace Itinero.Routing.Alternatives
 
             if (routingNetwork == null) {
                 throw new NullReferenceException(
-                    "RoutingNetwork is null, cannot do routeplanning without a routing network");
+                    "RoutingNetwork is null, cannot do route planning without a routing network");
             }
 
             var profile = settings.Profile;
@@ -51,31 +52,31 @@ namespace Itinero.Routing.Alternatives
                 return false;
             }
 
-            (Path? path, double cost) RunDijkstra(ICostFunction costFunction)
+            async Task<(Path? path, double cost)> RunDijkstraAsync(ICostFunction costFunction)
             {
                 var source = alternativeRouter.Source;
                 var target = alternativeRouter.Target;
 
                 if (source.direction == null && target.direction == null) {
                     // Run the undirected dijkstra
-                    return Dijkstra.Default.Run(routingNetwork, source.sp, target.sp,
+                    return await Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
                         costFunction.GetDijkstraWeightFunc(),
-                        v => {
-                            routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
+                        async v => {
+                            await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
                             return CheckMaxDistance(v);
                         });
                 }
 
                 // Run directed dijkstra
-                return Flavours.Dijkstra.EdgeBased.Dijkstra.Default.Run(routingNetwork, source, target,
+                return await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, target,
                     costFunction.GetDijkstraWeightFunc(),
-                    v => {
-                        routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId);
+                    async v => {
+                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId);
                         return CheckMaxDistance(v.vertexId);
                     });
             }
 
-            var (initialPath, initialCost) = RunDijkstra(costFunction);
+            var (initialPath, initialCost) = await RunDijkstraAsync(costFunction);
             if (initialPath == null) {
                 return new Result<IReadOnlyList<Path>>("Not a single path found!");
             }
@@ -98,7 +99,7 @@ namespace Itinero.Routing.Alternatives
                 maxTries--;
                 var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges,
                     penaltyFactor);
-                var (altPath, altCost) = RunDijkstra(altCostFunction);
+                var (altPath, altCost) = await RunDijkstraAsync(altCostFunction);
 
                 if (altCost > costThreshold) {
                     // No more alternative routes can be found
@@ -133,9 +134,9 @@ namespace Itinero.Routing.Alternatives
             return results;
         }
 
-        public static Result<IReadOnlyList<Route>> Calculate(this IRouterOneToOneWithAlternatives withAlternatives)
+        public static async Task<Result<IReadOnlyList<Route>>> CalculateAsync(this IRouterOneToOneWithAlternatives withAlternatives)
         {
-            var paths = withAlternatives.CalculatePaths();
+            var paths = await withAlternatives.CalculatePathsAsync();
 
             if (paths.IsError) {
                 return new Result<IReadOnlyList<Route>>(paths.ErrorMessage);

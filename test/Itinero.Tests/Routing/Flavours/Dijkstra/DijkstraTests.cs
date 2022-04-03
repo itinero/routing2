@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Snapping;
 using Xunit;
@@ -7,7 +8,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
     public class DijkstraTests
     {
         [Fact]
-        public void Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath()
+        public async Task Dijkstra_OneToOne_OneHopShortest_ShouldFindOneHopPath()
         {
             var routerDb = new RouterDb();
             EdgeId edge;
@@ -20,9 +21,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap().To(vertex1),
-                latest.Snap().To(vertex2),
+            var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
+                await latest.Snap().ToAsync(vertex1),
+                await latest.Snap().ToAsync(vertex2),
                 (e, pe) => (1, 0));
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -35,7 +36,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath()
+        public async Task Dijkstra_OneToOne_TwoHopsShortest_ShouldFindTwoHopPath()
         {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
@@ -50,9 +51,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap().To(vertex1),
-                latest.Snap().To(vertex3),
+            var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
+                await latest.Snap().ToAsync(vertex1),
+                await latest.Snap().ToAsync(vertex3),
                 (e, ep) => (1, 0));
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -68,7 +69,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath()
+        public async Task Dijkstra_OneToOne_ThreeHopsShortest_ShouldFindThreeHopPath()
         {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
@@ -85,9 +86,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap().To(vertex1),
-                latest.Snap().To(vertex4),
+            var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
+                await latest.Snap().ToAsync(vertex1),
+                await latest.Snap().ToAsync(vertex4),
                 (e, ep) => (1, 0));
             Assert.NotNull(path);
             Assert.Equal(0, path.Offset1);
@@ -106,7 +107,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_OneToOne_PathWithinEdge_NotShortest_ShouldFindShortest()
+        public async Task Dijkstra_OneToOne_PathWithinEdge_NotShortest_ShouldFindShortest()
         {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
@@ -122,9 +123,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var (path, _) = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
-                latest.Snap().To(vertex1, edge3),
-                latest.Snap().To(vertex3, edge3),
+            var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
+                await latest.Snap().ToAsync(vertex1, edge3),
+                await latest.Snap().ToAsync(vertex3, edge3),
                 (e, ep) => {
                     if (e.Id == edge3) {
                         return (10, 0);
@@ -160,7 +161,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths()
+        public async Task Dijkstra_OneToMany_OneHopShortest_ShouldFindOneHopPaths()
         {
             var routerDb = new RouterDb();
             EdgeId edge;
@@ -173,13 +174,13 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var snap1 = latest.Snap().To(vertex1).Value;
-            var snap2 = latest.Snap().To(vertex2).Value;
+            var snap1 = (await latest.Snap().ToAsync(vertex1)).Value;
+            var snap2 = (await latest.Snap().ToAsync(vertex2)).Value;
             var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
             var snap4 = new SnapPoint(edge, ushort.MaxValue / 2);
             var snap5 = new SnapPoint(edge, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
-            var paths = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+            var paths = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
                 snap1, new[] {snap2, snap3, snap4, snap5},
                 (e, ep) => (1, 0));
             Assert.NotNull(paths);
@@ -223,7 +224,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
         }
 
         [Fact]
-        public void Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths()
+        public async Task Dijkstra_OneToMany_TwoHopsShortest_ShouldFindTwoHopPaths()
         {
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
@@ -238,13 +239,13 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             }
 
             var latest = routerDb.Latest;
-            var snap1 = latest.Snap().To(vertex1).Value;
-            var snap2 = latest.Snap().To(vertex3).Value;
+            var snap1 = (await latest.Snap().ToAsync(vertex1)).Value;
+            var snap2 = (await latest.Snap().ToAsync(vertex3)).Value;
             var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);
             var snap4 = new SnapPoint(edge2, ushort.MaxValue / 2);
             var snap5 = new SnapPoint(edge2, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
-            var paths = Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.Run(latest,
+            var paths = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
                 snap1, new[] {snap2, snap3, snap4, snap5},
                 (e, ep) => (1, 0));
             Assert.NotNull(paths);

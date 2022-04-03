@@ -192,6 +192,15 @@ namespace Itinero.Network.Mutation
             tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
         }
 
+        /// <summary>
+        /// Removes all data.
+        /// </summary>
+        public void Clear()
+        {
+            _tiles.Resize(0);
+            _modified.Resize(0);
+        }
+
         internal RoutingNetwork ToRoutingNetwork()
         {
             return new(_network.RouterDb, _tiles, _network.Zoom);

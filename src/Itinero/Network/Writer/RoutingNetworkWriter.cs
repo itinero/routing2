@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network.Tiles;
+// ReSharper disable PossibleMultipleEnumeration
 
 namespace Itinero.Network.Writer
 {
@@ -36,7 +37,8 @@ namespace Itinero.Network.Writer
 
         public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
             IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-            IEnumerable<(string key, string value)>? attributes = null)
+            IEnumerable<(string key, string value)>? attributes = null, uint? edgeTypeId = null,
+            uint? length = null)
         {
             // get the tile (or create it).
             var (tile, edgeTypeMap) = _network.GetTileForWrite(vertex1.TileId);
@@ -45,7 +47,7 @@ namespace Itinero.Network.Writer
             }
 
             // get the edge type id.
-            var edgeTypeId = attributes != null ? (uint?) edgeTypeMap(attributes) : null;
+            edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
 
             // get the edge length in centimeters.
             if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude, out var e)) {
@@ -59,7 +61,7 @@ namespace Itinero.Network.Writer
 
             var vertex2Location = (longitude, latitude, e);
 
-            var length = (uint) (vertex1Location.DistanceEstimateInMeterShape(
+            length ??= (uint) (vertex1Location.DistanceEstimateInMeterShape(
                 vertex2Location, shape) * 100);
 
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
@@ -94,6 +96,16 @@ namespace Itinero.Network.Writer
 
             // add the turn cost table using the type id.
             tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
+        }
+
+        internal void AddTile(NetworkTile tile)
+        {
+            _network.SetTile(tile);
+        }
+
+        internal bool HasTile(uint localTileId)
+        {
+            return _network.HasTile(localTileId);
         }
 
         public void Dispose()

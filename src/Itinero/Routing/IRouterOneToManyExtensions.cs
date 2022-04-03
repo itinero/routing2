@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
@@ -18,14 +19,14 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<Result<Path>> Paths(this IRouterOneToMany routerOneToMany)
+        public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterOneToMany routerOneToMany)
         {
             var source = routerOneToMany.Source;
             var targets = routerOneToMany.Targets;
 
             if (source.direction.HasValue ||
                 !targets.TryToUndirected(out var targetsUndirected)) {
-                var paths = routerOneToMany.Calculate(
+                var paths = await routerOneToMany.CalculateAsync(
                     new (SnapPoint snapPoint, bool? direction)[] {source}, targets);
 
                 if (paths == null) {
@@ -39,7 +40,7 @@ namespace Itinero.Routing
                 return paths[0];
             }
             else {
-                var paths = routerOneToMany.Calculate(new[] {source.sp}, targetsUndirected);
+                var paths = await routerOneToMany.CalculateAsync(new[] {source.sp}, targetsUndirected);
                 if (paths == null) {
                     throw new Exception("Could not calculate routes.");
                 }
@@ -57,9 +58,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The routes.</returns>
-        public static IReadOnlyList<Result<Route>> Calculate(this IRouterOneToMany routerOneToMany)
+        public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterOneToMany routerOneToMany)
         {
-            return routerOneToMany.Paths().Select(x => routerOneToMany.Settings.RouteBuilder.Build(routerOneToMany.Network,
+            return (await routerOneToMany.Paths()).Select(x => routerOneToMany.Settings.RouteBuilder.Build(routerOneToMany.Network,
                 routerOneToMany.Settings.Profile, x)).ToArray();
         }
 
@@ -68,7 +69,7 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The weights.</returns>
-        public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany)
+        public static async Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany)
         {
             return null;
 

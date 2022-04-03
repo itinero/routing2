@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Itinero.Tests.Functional.Performance;
 
 namespace Itinero.Tests.Functional.Tests
@@ -26,7 +27,7 @@ namespace Itinero.Tests.Functional.Tests
         /// Gets or sets the logging flag.
         /// </summary>
         public bool Log { get; set; } = true;
-
+        
         /// <summary>
         /// Executes this test for the given input.
         /// </summary>
@@ -34,10 +35,10 @@ namespace Itinero.Tests.Functional.Tests
         /// <param name="name">The test name.</param>
         /// <param name="count">The count.</param>
         /// <returns>The output.</returns>
-        public TOut Run(TIn input = default, string name = null, int count = 1)
+        public Task<TOut> RunAsync(TIn input = default, string name = null, int count = 1)
         {
             try {
-                return TrackPerformance ? RunPerformance(input, name: name, count: count) : Execute(input);
+                return this.TrackPerformance ? this.RunPerformanceAsync(input, name: name, count: count) : this.ExecuteAsync(input);
             }
             catch (Exception ex) {
                 Serilog.Log.Error(ex, $"Running {Name} with inputs {input} failed");
@@ -53,15 +54,13 @@ namespace Itinero.Tests.Functional.Tests
         /// <param name="count">The # of times to repeat the test.</param>
         /// <param name="name">The test name.</param>
         /// <returns>The output.</returns>
-        public TOut RunPerformance(TIn input, int count = 1, string name = null)
+        public async Task<TOut> RunPerformanceAsync(TIn input, int count = 1, string? name = null)
         {
-            if (name == null) {
-                name = Name;
-            }
+            name ??= this.Name;
 
-            Func<TIn, PerformanceTestResult<TOut>>
-                executeFunc = (i) => new PerformanceTestResult<TOut>(Execute(i));
-            return executeFunc.TestPerf(name, input, count);
+            Func<TIn, Task<PerformanceTestResult<TOut>>>
+                executeFunc = async (i) => new PerformanceTestResult<TOut>(await this.ExecuteAsync(i));
+            return await executeFunc.TestPerfAsync(name, input, count);
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Itinero.Tests.Functional.Tests
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns>The output.</returns>
-        protected abstract TOut Execute(TIn input);
+        protected abstract Task<TOut> ExecuteAsync(TIn input);
 
         /// <summary>
         /// Asserts that the given value is true.

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routes;
@@ -12,12 +13,12 @@ namespace Itinero.Tests.Functional.Tests
     public class RouterManyToOneTest : FunctionalTest<Route[], (RoutingNetwork routerDb, SnapPoint[] sources, SnapPoint
         target, Profile profile)>
     {
-        protected override Route[] Execute(
+        protected override async Task<Route[]> ExecuteAsync(
             (RoutingNetwork routerDb, SnapPoint[] sources, SnapPoint target, Profile profile) input)
         {
             var (routerDb, sources, target, profile) = input;
 
-            var results = routerDb.Route(new RoutingSettings {Profile = profile})
+            var results = await routerDb.Route(new RoutingSettings {Profile = profile})
                 .From(sources)
                 .To(target)
                 .Calculate();

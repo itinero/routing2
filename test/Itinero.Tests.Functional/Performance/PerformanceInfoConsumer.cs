@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Serilog;
 
 namespace Itinero.Tests.Functional.Performance
@@ -268,6 +269,25 @@ namespace Itinero.Tests.Functional.Performance
             var info = new PerformanceInfoConsumer(name);
             info.Start();
             var res = func(a);
+            info.Stop(res.Message);
+            return res.Result;
+        }
+
+        /// <summary>
+        /// Tests performance for the given function.
+        /// </summary>
+        public static async Task<TResult> TestPerfAsync<T, TResult>(this Func<T, Task<PerformanceTestResult<TResult>>> func, string name, T a,
+            int count)
+        {
+            var info = new PerformanceInfoConsumer(name, count);
+            info.Start();
+            var res = await func(a);
+            count--;
+            while (count > 0) {
+                res = await func(a);
+                count--;
+            }
+
             info.Stop(res.Message);
             return res.Result;
         }

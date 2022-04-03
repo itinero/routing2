@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
 using Itinero.Network;
@@ -89,7 +90,7 @@ namespace Itinero.Routing
             };
         }
 
-        internal static IReadOnlyList<IReadOnlyList<Result<Path>>> Calculate(this IRouter manyToManyRouter,
+        internal static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> CalculateAsync(this IRouter manyToManyRouter,
             IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
         {
             var settings = manyToManyRouter.Settings;
@@ -121,10 +122,10 @@ namespace Itinero.Routing
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
             for (var s = 0; s < sources.Count; s++) {
                 var source = sources[s];
-                var paths = Dijkstra.Default.Run(routingNetwork, source, targets,
+                var paths = await Dijkstra.Default.RunAsync(routingNetwork, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    v => {
-                        routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
+                    async v => {
+                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
                         return checkMaxDistance(v);
                     });
 
@@ -145,7 +146,7 @@ namespace Itinero.Routing
             return results;
         }
 
-        internal static IReadOnlyList<IReadOnlyList<Result<Path>>> Calculate(this IRouter manyToManyRouter,
+        internal static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> CalculateAsync(this IRouter manyToManyRouter,
             IReadOnlyList<(SnapPoint snapPoint, bool? direction)> sources,
             IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
         {
@@ -178,10 +179,10 @@ namespace Itinero.Routing
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
             for (var s = 0; s < sources.Count; s++) {
                 var source = sources[s];
-                var paths = Flavours.Dijkstra.EdgeBased.Dijkstra.Default.Run(routerDb, source, targets,
+                var paths = await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routerDb, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    e => {
-                        routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
+                    async e => {
+                        await routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                         return checkMaxDistance(e.vertexId);
                     });
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
@@ -17,17 +18,17 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToMany manyToManyRouter)
+        public static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> Paths(this IRouterManyToMany manyToManyRouter)
         {
             var sources = manyToManyRouter.Sources;
             var targets = manyToManyRouter.Targets;
 
             if (!sources.TryToUndirected(out var sourcesUndirected) ||
                 !targets.TryToUndirected(out var targetsUndirected)) {
-                return manyToManyRouter.Calculate(sources, targets);
+                return await manyToManyRouter.CalculateAsync(sources, targets);
             }
             else {
-                return manyToManyRouter.Calculate(sourcesUndirected, targetsUndirected);
+                return await manyToManyRouter.CalculateAsync(sourcesUndirected, targetsUndirected);
             }
         }
 
@@ -36,9 +37,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToMany manyToManyRouter)
+        public static async Task<IReadOnlyList<IReadOnlyList<Result<Route>>>> Calculate(this IRouterManyToMany manyToManyRouter)
         {
-            var paths = manyToManyRouter.Paths();
+            var paths = await manyToManyRouter.Paths();
             return paths.Select(x => {
                 return x.Select(y => {
                     if (y.IsError) return y.ConvertError<Route>();
@@ -55,7 +56,7 @@ namespace Itinero.Routing
         /// <param name="manyToManyWeightRouter">The router.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static Result<IReadOnlyList<IReadOnlyList<double?>>> Calculate(
+        public static async Task<Result<IReadOnlyList<IReadOnlyList<double?>>>> Calculate(
             this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter)
         {
             return null;

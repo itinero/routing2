@@ -24,6 +24,16 @@ namespace Itinero
             _edgeTypeMap = edgeTypeMap;
         }
 
+        /// <summary>
+        /// Gets the edge type count.
+        /// </summary>
+        public long EdgeTypeCount => _edgeTypeIndex.Count;
+        
+        /// <summary>
+        /// Gets the turn attributes for the given type.
+        /// </summary>
+        /// <param name="id">The id or index.</param>
+        /// <returns>The attributes.</returns>
         internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
         {
             return (_edgeTypeMap.Id,
@@ -33,6 +43,16 @@ namespace Itinero
                 });
         }
 
+        /// <summary>
+        /// Gets the turn cost type count.
+        /// </summary>
+        public long TurnCostTypeCount => _turnCostTypeIndex.Count;
+        
+        /// <summary>
+        /// Gets the turn attributes for the given type.
+        /// </summary>
+        /// <param name="id">The id or index.</param>
+        /// <returns>The attributes.</returns>
         public IEnumerable<(string key, string value)> GetTurnCostType(uint id)
         {
             return _turnCostTypeIndex.GetById(id);

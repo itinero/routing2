@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Routes.Paths;
 using Itinero.Routing.DataStructures;
@@ -23,13 +24,13 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
         private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new();
         private readonly BinaryHeap<uint> _heap = new();
 
-        public (Path? path, double cost) Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
+        public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
             (SnapPoint sp, bool? direction) target,
             DijkstraWeightFunc getDijkstraWeight,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
+            Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
+            Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
         {
-            var paths = this.Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
+            var paths = await this.RunAsync(network, source, new[] {target}, getDijkstraWeight, settled, queued);
 
             return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
         }
@@ -45,11 +46,11 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
         /// <param name="queued">This callback is called before an edge is loaded. Should not be used to influence route planning (but e.g. to load data when needed)</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public (Path? path, double cost)[] Run(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
+        public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
             IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
             DijkstraWeightFunc getDijkstraWeight,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? settled = null,
-            Func<(EdgeId edgeId, VertexId vertexId), bool>? queued = null)
+            Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
+            Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
         {
             static double GetWorst((uint pointer, double cost)[] targets)
             {
@@ -230,7 +231,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     _visits.Add((currentVisit.edge, currentVisit.vertex));
                 }
 
-                if (settled != null && settled((currentVisit.edge, currentVisit.vertex))) {
+                if (settled != null && await settled((currentVisit.edge, currentVisit.vertex))) {
                     // the best cost to this edge has already been found; current visit can not improve this anymore so we continue
                     continue;
                 }
@@ -320,7 +321,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     }
 
                     if (queued != null &&
-                        queued.Invoke((enumerator.Id, enumerator.To))) {
+                        await queued((enumerator.Id, enumerator.To))) {
                         // don't queue this edge if the queued function returns true.
                         continue;
                     }

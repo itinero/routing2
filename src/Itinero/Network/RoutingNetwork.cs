@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Enumerators.Vertices;
@@ -194,6 +195,32 @@ namespace Itinero.Network
             _tiles[localTileId] = tile;
 
             return (tile, edgeTypeMap.func);
+        }
+
+        /// <summary>
+        /// Returns true if this network has the given tile loaded.
+        /// </summary>
+        /// <param name="localTileId"></param>
+        /// <returns></returns>
+        public bool HasTile(uint localTileId)
+        {
+            if (localTileId >= _tiles.Length) return false;
+            
+            return _tiles[localTileId] != null;
+        }
+        
+        void IRoutingNetworkWritable.SetTile(NetworkTile tile)
+        {
+            var edgeTypeMap = RouterDb.GetEdgeTypeMap();
+            if (tile.EdgeTypeMapId != edgeTypeMap.id) throw new ArgumentException("Cannot add an entire tile without a matching edge type map");
+            
+            // ensure minimum size.
+            _tiles.EnsureMinimumSize(tile.TileId);
+            
+            // set tile if not yet there.
+            var existingTile = _tiles[tile.TileId];
+            if (existingTile != null) throw new ArgumentException("Cannot overwrite a tile");
+            _tiles[tile.TileId] = tile;
         }
 
         private void CloneTileIfNeededForMutator(NetworkTile tile)

@@ -76,7 +76,7 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         continue;
                     }
 
-                    var lon = longToken.Value<double>();
+                    var lon = longToken.Value<double>();   
                     if (!(graphObject["geo:lat"] is JToken latToken)) {
                         continue;
                     }

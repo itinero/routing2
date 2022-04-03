@@ -1,0 +1,28 @@
+using System.Threading.Tasks;
+using Itinero.Network;
+
+namespace Itinero.Data.Usage;
+
+/// <summary>
+/// Abstract definition of a data use listener.
+/// </summary>
+public interface IDataUseListener
+{
+    /// <summary>
+    /// Called when a vertex is touched.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="vertex">The vertex that was touched.</param>
+    Task VertexTouched(RoutingNetwork network, VertexId vertex);
+
+
+    /// <summary>
+    /// Called when an area in general is going to be touched.
+    /// </summary>
+    /// <param name="network"></param>
+    /// <param name="box"></param>
+    /// <returns></returns>
+    Task BoxTouched(RoutingNetwork network,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight) box);
+}

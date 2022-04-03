@@ -26,7 +26,7 @@
 //             }
 //
 //             var latest = routerDb.Latest;
-//             var path = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
+//             var path = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
 //                 (latest.Snap().To(vertex1), null),
 //                 (latest.Snap().To(vertex3), null),
 //                 (e, ep) =>
@@ -73,7 +73,7 @@
 //             }
 //
 //             var latest = routerDb.Latest;
-//             var path = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
+//             var path = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
 //                 (latest.Snap().To(vertex1), null),
 //                 (latest.Snap().To(vertex3), null),
 //                 (e, ep) =>
@@ -115,7 +115,7 @@
 //             }
 //
 //             var latest = routerDb.Latest;
-//             var path = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.Run(latest,
+//             var path = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
 //                 (latest.Snap().To(vertex1), null),
 //                 (latest.Snap().To(vertex3), null),
 //                 (e, ep) =>

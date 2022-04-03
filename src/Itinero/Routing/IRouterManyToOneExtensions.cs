@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
@@ -17,14 +18,14 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The paths.</returns>
-        public static IReadOnlyList<Result<Path>> Paths(this IRouterManyToOne routerOneToMany)
+        public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToOne routerOneToMany)
         {
             var sources = routerOneToMany.Sources;
             var target = routerOneToMany.Target;
 
             if (target.direction.HasValue ||
                 !sources.TryToUndirected(out var sourcesUndirected)) {
-                var routes = routerOneToMany.Calculate(
+                var routes = await routerOneToMany.CalculateAsync(
                     sources, new[] {target});
                 if (routes == null) {
                     throw new Exception("Could not calculate routes.");
@@ -38,7 +39,7 @@ namespace Itinero.Routing
                 return manyToOne;
             }
             else {
-                var routes = routerOneToMany.Calculate(sourcesUndirected, new[] {target.sp});
+                var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] {target.sp});
                 if (routes == null) {
                     throw new Exception("Could not calculate routes.");
                 }
@@ -57,9 +58,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerManyToOne">The router.</param>
         /// <returns>The routes.</returns>
-        public static IReadOnlyList<Result<Route>> Calculate(this IRouterManyToOne routerManyToOne)
+        public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToOne routerManyToOne)
         {
-            return routerManyToOne.Paths().Select(x => routerManyToOne.Settings.RouteBuilder.Build(routerManyToOne.Network,
+            return (await routerManyToOne.Paths()).Select(x => routerManyToOne.Settings.RouteBuilder.Build(routerManyToOne.Network,
                 routerManyToOne.Settings.Profile, x)).ToArray();
         }
 
@@ -68,7 +69,7 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerManyToOne">The router.</param>
         /// <returns>The weights.</returns>
-        public static Result<IReadOnlyList<double?>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
+        public static async Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
         {
             return null;
             //

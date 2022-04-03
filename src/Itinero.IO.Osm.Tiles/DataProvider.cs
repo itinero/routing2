@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
+using Itinero.Data.Usage;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Network;
 
@@ -9,7 +10,7 @@ namespace Itinero.IO.Osm.Tiles
     /// <summary>
     /// A data provider loading routable tiles on demand.
     /// </summary>
-    internal class DataProvider
+    internal class DataProvider : IDataUseListener
     {
         private readonly GlobalIdMap _idMap;
         private readonly string _baseUrl;
@@ -31,12 +32,7 @@ namespace Itinero.IO.Osm.Tiles
             _idMap = new GlobalIdMap();
 
             // get notified when a location/area is used.
-            routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
-            routerDb.UsageNotifier.OnBoxTouched += TouchBox;
-
-            // // hook up deserialization.
-            // (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
-            //     this.WriteTo);
+            routerDb.UsageNotifier.AddListener(this);
         }
 
         private DataProvider(RouterDb routerDb, string baseUrl, uint zoom,
@@ -48,15 +44,10 @@ namespace Itinero.IO.Osm.Tiles
             _loadedTiles = loadedTiles;
 
             // get notified when a location/area is used.
-            routerDb.UsageNotifier.OnVertexTouched += VertexTouched;
-            routerDb.UsageNotifier.OnBoxTouched += TouchBox;
-
-            // // hook up deserialization.
-            // (routerDb as ISerializableRouterDb).AddSerializationHook("Itinero.IO.Osm.Tiles.DataProvider",
-            //     this.WriteTo);
+            routerDb.UsageNotifier.AddListener(this);
         }
 
-        internal void VertexTouched(RoutingNetwork network, VertexId vertexId)
+        async Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId)
         {
             if (_loadedTiles.Contains(vertexId.TileId)) {
                 return;
@@ -88,7 +79,7 @@ namespace Itinero.IO.Osm.Tiles
             }
         }
 
-        internal void TouchBox(RoutingNetwork network,
+        async Task IDataUseListener.BoxTouched(RoutingNetwork network,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                 bottomRight) box)
         {

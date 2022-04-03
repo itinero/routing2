@@ -30,6 +30,6 @@ namespace Itinero.Snapping
         /// </summary>
         /// <param name="vertices">The vertices to snap to.</param>
         /// <returns>The results if any. Snapping will fail if a vertex has no edges.</returns>
-        IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices);
+        IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices);
     }
 }

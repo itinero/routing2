@@ -14,6 +14,10 @@ namespace Itinero.Network.Writer
 
         (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) GetTileForWrite(uint localTileId);
 
+        void SetTile(NetworkTile tile);
+
+        bool HasTile(uint localTileId);
+
         void ClearWriter();
     }
 }

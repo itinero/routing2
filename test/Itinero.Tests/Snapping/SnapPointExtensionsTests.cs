@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
 using Itinero.Network;
@@ -66,16 +67,16 @@ namespace Itinero.Tests.Snapping
         }
 
         [Fact]
-        public void Snap_Empty_ShouldFail()
+        public async Task Snap_Empty_ShouldFail()
         {
             var routerDb = new RouterDb();
 
-            var result = routerDb.Latest.Snap().To(new VertexId(0, 1));
+            var result = await routerDb.Latest.Snap().ToAsync(new VertexId(0, 1));
             Assert.True(result.IsError);
         }
 
         [Fact]
-        public void Snap_OneVertex_ShouldFail()
+        public async Task  Snap_OneVertex_ShouldFail()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -83,12 +84,12 @@ namespace Itinero.Tests.Snapping
                 },
                 new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[0]);
 
-            var result = routerDb.Latest.Snap().To(vertices[0]);
+            var result = await routerDb.Latest.Snap().ToAsync(vertices[0]);
             Assert.True(result.IsError);
         }
 
         [Fact]
-        public void Snap_OneEdge_Vertex1_ShouldReturnOffset0()
+        public async Task  Snap_OneEdge_Vertex1_ShouldReturnOffset0()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -99,14 +100,14 @@ namespace Itinero.Tests.Snapping
                     (0, 1, null)
                 });
 
-            var result = routerDb.Latest.Snap().To(vertices[0]);
+            var result = await routerDb.Latest.Snap().ToAsync(vertices[0]);
             Assert.False(result.IsError);
             Assert.Equal(0, result.Value.Offset);
             Assert.Equal(edges[0], result.Value.EdgeId);
         }
 
         [Fact]
-        public void Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
+        public async Task  Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -117,14 +118,14 @@ namespace Itinero.Tests.Snapping
                     (0, 1, null)
                 });
 
-            var result = routerDb.Latest.Snap().To(vertices[1]);
+            var result = await routerDb.Latest.Snap().ToAsync(vertices[1]);
             Assert.False(result.IsError);
             Assert.Equal(ushort.MaxValue, result.Value.Offset);
             Assert.Equal(edges[0], result.Value.EdgeId);
         }
 
         [Fact]
-        public void Snap_OneEdge_Middle_ShouldReturnMiddle()
+        public async Task  Snap_OneEdge_Middle_ShouldReturnMiddle()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -138,14 +139,14 @@ namespace Itinero.Tests.Snapping
             var location = ((3.1074142456054688 + 3.1095707416534424) / 2,
                 (51.31012070202407 + 51.31076453560284) / 2, (float?) null);
             var routerDbLatest = routerDb.Latest;
-            var result = routerDbLatest.Snap().To(location);
+            var result = await routerDbLatest.Snap().ToAsync(location);
             Assert.False(result.IsError);
             Assert.True(result.Value.LocationOnNetwork(routerDbLatest).DistanceEstimateInMeter(location) < 1);
             Assert.Equal(edges[0], result.Value.EdgeId);
         }
 
         [Fact]
-        public void Snap_OneEdgeWithShape_Vertex1_ShouldReturnOffset0()
+        public async Task Snap_OneEdgeWithShape_Vertex1_ShouldReturnOffset0()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -160,14 +161,14 @@ namespace Itinero.Tests.Snapping
                 });
 
             var routerDbLatest = routerDb.Latest;
-            var result = routerDbLatest.Snap().To(routerDbLatest.GetVertex(vertices[0]));
+            var result = await routerDbLatest.Snap().ToAsync(routerDbLatest.GetVertex(vertices[0]));
             Assert.False(result.IsError);
             Assert.Equal(0, result.Value.Offset);
             Assert.Equal(edges[0], result.Value.EdgeId);
         }
 
         [Fact]
-        public void Snap_OneEdgeWithShape_Vertex2_ShouldReturnOffsetMax()
+        public async Task Snap_OneEdgeWithShape_Vertex2_ShouldReturnOffsetMax()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -182,14 +183,14 @@ namespace Itinero.Tests.Snapping
                 });
 
             var routerDbLatest = routerDb.Latest;
-            var result = routerDbLatest.Snap().To(routerDbLatest.GetVertex(vertices[1]));
+            var result = await routerDbLatest.Snap().ToAsync(routerDbLatest.GetVertex(vertices[1]));
             Assert.False(result.IsError);
             Assert.Equal(ushort.MaxValue, result.Value.Offset);
             Assert.Equal(edges[0], result.Value.EdgeId);
         }
 
         [Fact]
-        public void Snap_OneEdgeWithShape_Middle_ShouldReturnMiddle()
+        public async Task Snap_OneEdgeWithShape_Middle_ShouldReturnMiddle()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -205,14 +206,14 @@ namespace Itinero.Tests.Snapping
 
             var routerDbLatest = routerDb.Latest;
             var location = new SnapPoint(edges[0], ushort.MaxValue / 2).LocationOnNetwork(routerDbLatest);
-            var result = routerDbLatest.Snap().To(location);
+            var result = await routerDbLatest.Snap().ToAsync(location);
             Assert.False(result.IsError);
             Assert.True(result.Value.LocationOnNetwork(routerDbLatest).DistanceEstimateInMeter(location) < 1);
             Assert.Equal(edges[0], result.Value.EdgeId);
         }
 
         [Fact]
-        public void Snap_TwoEdgeWithShapes_VertexLocation0_ShouldReturnVertex0()
+        public async Task Snap_TwoEdgeWithShapes_VertexLocation0_ShouldReturnVertex0()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -233,7 +234,7 @@ namespace Itinero.Tests.Snapping
 
             var network = routerDb.Latest;
 
-            var result = network.Snap().To((4.801073670387268, 51.268064181900094, null));
+            var result = await network.Snap().ToAsync((4.801073670387268, 51.268064181900094, null));
             Assert.False(result.IsError);
             Assert.Equal(edges[0], result.Value.EdgeId);
             Assert.True(
@@ -241,7 +242,7 @@ namespace Itinero.Tests.Snapping
         }
 
         [Fact]
-        public void Snap_TwoEdgeWithShapes_VertexLocation1_ShouldReturnVertex1()
+        public async Task Snap_TwoEdgeWithShapes_VertexLocation1_ShouldReturnVertex1()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -262,14 +263,14 @@ namespace Itinero.Tests.Snapping
 
             var network = routerDb.Latest;
 
-            var result = network.Snap().To((4.801771044731140, 51.268886491558250, null));
+            var result = await network.Snap().ToAsync((4.801771044731140, 51.268886491558250, null));
             Assert.False(result.IsError);
             Assert.True(
                 result.Value.LocationOnNetwork(network).DistanceEstimateInMeter(network.GetVertex(vertices[1])) < 1);
         }
 
         [Fact]
-        public void Snap_TwoEdgeWithShapes_VertexLocation2_ShouldReturnVertex2()
+        public async Task Snap_TwoEdgeWithShapes_VertexLocation2_ShouldReturnVertex2()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -290,7 +291,7 @@ namespace Itinero.Tests.Snapping
 
             var network = routerDb.Latest;
 
-            var result = network.Snap().To((4.802438914775848, 51.268097745847655, null));
+            var result = await network.Snap().ToAsync((4.802438914775848, 51.268097745847655, null));
             Assert.False(result.IsError);
             Assert.Equal(edges[1], result.Value.EdgeId);
             Assert.True(

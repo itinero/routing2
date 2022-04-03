@@ -70,7 +70,7 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations)
+        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations)
         {
             // We need to give 'AcceptableFunc' as function pointer later on
             // We construct this function only once
@@ -81,7 +81,7 @@ namespace Itinero.Snapping
                 var box = location.BoxAround(MaxOffsetInMeter);
 
                 // make sure data is loaded.
-                _snapper.RoutingNetwork.RouterDb.UsageNotifier?.NotifyBox(_snapper.RoutingNetwork, box);
+                await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box);
 
                 // snap to closest edge.
                 var snapPoint = _snapper.RoutingNetwork.SnapInBox(box, acceptableFunc);

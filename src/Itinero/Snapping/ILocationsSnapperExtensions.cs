@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Itinero.Network;
 
 namespace Itinero.Snapping
@@ -12,9 +14,13 @@ namespace Itinero.Snapping
         /// <param name="longitude">The longitude.</param>
         /// <param name="latitude">The latitude.</param>
         /// <returns></returns>
-        public static Result<SnapPoint> To(this ILocationsSnapper locationsSnapper, double longitude, double latitude)
+        public static async Task<Result<SnapPoint>> ToAsync(this ILocationsSnapper locationsSnapper, double longitude, double latitude)
         {
-            return locationsSnapper.To(new[] {(longitude, latitude, (float?) null)}).First();
+            var result = locationsSnapper.ToAsync(new[] { (longitude, latitude, (float?)null) });
+            var enumerator = result.GetAsyncEnumerator();
+            if (!await enumerator.MoveNextAsync()) throw new Exception("There should be one item");
+
+            return enumerator.Current;
         }
 
         /// <summary>
@@ -23,10 +29,14 @@ namespace Itinero.Snapping
         /// <param name="locationsSnapper">The snappable.</param>
         /// <param name="location">The location.</param>
         /// <returns></returns>
-        public static Result<SnapPoint> To(this ILocationsSnapper locationsSnapper,
+        public static async Task<Result<SnapPoint>> ToAsync(this ILocationsSnapper locationsSnapper,
             (double longitude, double latitude, float? e) location)
         {
-            return locationsSnapper.To(new[] {location}).First();
+            var result = locationsSnapper.ToAsync(new[] {location});
+            var enumerator = result.GetAsyncEnumerator();
+            if (!await enumerator.MoveNextAsync()) throw new Exception("There should be one item");
+
+            return enumerator.Current;
         }
     }
 }

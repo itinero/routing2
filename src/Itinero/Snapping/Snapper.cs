@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Network.Search;
@@ -12,8 +13,8 @@ namespace Itinero.Snapping
         public Snapper(RoutingNetwork routingNetwork,
             SnapperSettings? settings = null)
         {
-            RoutingNetwork = routingNetwork;
-            Settings = settings ?? new SnapperSettings();
+            this.RoutingNetwork = routingNetwork;
+            this.Settings = settings ?? new SnapperSettings();
         }
 
         internal RoutingNetwork RoutingNetwork { get; }
@@ -26,7 +27,7 @@ namespace Itinero.Snapping
             var s = new SnapperSettings();
             settings?.Invoke(s);
 
-            return new Snapper(RoutingNetwork, s);
+            return new Snapper(this.RoutingNetwork, s);
         }
 
         /// <inheritdoc/>
@@ -43,9 +44,9 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
+        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
         {
-            var enumerator = RoutingNetwork.GetEdgeEnumerator();
+            var enumerator = this.RoutingNetwork.GetEdgeEnumerator();
 
             foreach (var (vertexId, edgeId) in vertices) {
                 if (!enumerator.MoveTo(vertexId)) {
@@ -85,17 +86,17 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Result<SnapPoint>> To(IEnumerable<(double longitude, double latitude, float? e)> locations)
+        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations)
         {
             foreach (var location in locations) {
                 // calculate search box.
-                var box = location.BoxAround(Settings.MaxOffsetInMeter);
+                var box = location.BoxAround(this.Settings.MaxOffsetInMeter);
 
                 // make sure data is loaded.
-                RoutingNetwork.RouterDb.UsageNotifier?.NotifyBox(RoutingNetwork, box);
+                if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box);
 
                 // snap to closest edge.
-                var snapPoint = RoutingNetwork.SnapInBox(box, (_) => true);
+                var snapPoint = this.RoutingNetwork.SnapInBox(box, (_) => true);
                 if (snapPoint.EdgeId != EdgeId.Empty) {
                     yield return snapPoint;
                 }

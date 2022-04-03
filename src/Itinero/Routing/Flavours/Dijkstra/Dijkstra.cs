@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Routes.Paths;
 using Itinero.Routing.DataStructures;
@@ -23,11 +24,11 @@ namespace Itinero.Routing.Flavours.Dijkstra
         private readonly HashSet<VertexId> _visits = new();
         private readonly BinaryHeap<uint> _heap = new();
 
-        public (Path? path, double cost) Run(RoutingNetwork network, SnapPoint source, SnapPoint target,
-            DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
-            Func<VertexId, bool>? queued = null)
+        public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source, SnapPoint target,
+            DijkstraWeightFunc getDijkstraWeight, Func<VertexId, Task<bool>>? settled = null,
+            Func<VertexId, Task<bool>>? queued = null)
         {
-            var paths = Run(network, source, new[] {target}, getDijkstraWeight, settled, queued);
+            var paths = await this.RunAsync(network, source, new[] {target}, getDijkstraWeight, settled, queued);
 
             return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
         }
@@ -43,9 +44,9 @@ namespace Itinero.Routing.Flavours.Dijkstra
         /// <param name="queued">Queued notifies listeners when a vertex is queued. If this function returns false, the requested vertex won't be used during routeplanning.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public (Path? path, double cost)[] Run(RoutingNetwork network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
-            DijkstraWeightFunc getDijkstraWeight, Func<VertexId, bool>? settled = null,
-            Func<VertexId, bool>? queued = null)
+        public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network, SnapPoint source, IReadOnlyList<SnapPoint> targets,
+            DijkstraWeightFunc getDijkstraWeight, Func<VertexId, Task<bool>>? settled = null,
+            Func<VertexId, Task<bool>>? queued = null)
         {
             // Returns the worst cost of all targets, i.e. the cost of the most costly target to reach
             // Will be Double.MAX_VALUE if at least one target hasn't been reached
@@ -191,7 +192,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
                 // log visit.
                 _visits.Add(currentVisit.vertex);
 
-                if (settled != null && settled(currentVisit.vertex)) {
+                if (settled != null && await settled(currentVisit.vertex)) {
                     // break if requested.
                     break;
                 }
@@ -275,7 +276,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
                     }
 
                     if (queued != null &&
-                        queued.Invoke(enumerator.To)) { // don't queue this vertex if the queued function returns true.
+                        await queued(enumerator.To)) { // don't queue this vertex if the queued function returns true.
                         continue;
                     }
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Itinero.Data;
+using Itinero.Data.Usage;
 using Itinero.Indexes;
 using Itinero.IO;
 using Itinero.Network;
