@@ -23,9 +23,9 @@
 <tr><th>Total lines:</th><td>98</td></tr>
 <tr><th>Line coverage:</th><td>0% (0 of 48)</td></tr>
 <tr><th>Covered branches:</th><td>0</td></tr>
-<tr><th>Total branches:</th><td>16</td></tr>
-<tr><th>Branch coverage:</th><td>0% (0 of 16)</td></tr>
-<tr><th>Tag:</th><td>116_1962391466</td></tr>
+<tr><th>Total branches:</th><td>14</td></tr>
+<tr><th>Branch coverage:</th><td>0% (0 of 14)</td></tr>
+<tr><th>Tag:</th><td>117_2084732003</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -37,7 +37,7 @@
 <tr><td title="get_CheckCanStopOn()"><a href="#file0_line35" class="navigatetohash">get_CheckCanStopOn()</a></td><td>100%</td><td>1</td><td>0%</td></tr>
 <tr><td title="get_MaxOffsetInMeter()"><a href="#file0_line40" class="navigatetohash">get_MaxOffsetInMeter()</a></td><td>100%</td><td>1</td><td>0%</td></tr>
 <tr><td title="AcceptableFunc()"><a href="#file0_line43" class="navigatetohash">AcceptableFunc()</a></td><td>0%</td><td>10</td><td>0%</td></tr>
-<tr><td title="To()"><a href="#file0_line74" class="navigatetohash">To()</a></td><td>0%</td><td>6</td><td>0%</td></tr>
+<tr><td title="ToAsync()"><a href="#file0_line74" class="navigatetohash">ToAsync()</a></td><td>0%</td><td>4</td><td>0%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -117,7 +117,7 @@
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line70"></a><code>70</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line71"></a><code>71</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line72"></a><code>72</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;inheritdoc/&gt;</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line73"></a><code>73</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;IEnumerable&lt;Result&lt;SnapPoint&gt;&gt;&nbsp;To(IEnumerable&lt;(double&nbsp;longitude,&nbsp;double&nbsp;latitude,&nbsp;float?&nbsp;e)&gt;&nbsp;locations)</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line73"></a><code>73</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;async&nbsp;IAsyncEnumerable&lt;Result&lt;SnapPoint&gt;&gt;&nbsp;ToAsync(IEnumerable&lt;(double&nbsp;longitude,&nbsp;double&nbsp;latitude,&nbsp;float?&nbsp;</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line74"></a><code>74</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line75"></a><code>75</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;We&nbsp;need&nbsp;to&nbsp;give&nbsp;&#39;AcceptableFunc&#39;&nbsp;as&nbsp;function&nbsp;pointer&nbsp;later&nbsp;on</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line76"></a><code>76</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;We&nbsp;construct&nbsp;this&nbsp;function&nbsp;only&nbsp;once</code></td></tr>
@@ -128,7 +128,7 @@
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line81"></a><code>81</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;box&nbsp;=&nbsp;location.BoxAround(MaxOffsetInMeter);</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line82"></a><code>82</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line83"></a><code>83</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;make&nbsp;sure&nbsp;data&nbsp;is&nbsp;loaded.</code></td></tr>
-<tr class="coverableline" title="Not covered (0 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line84"></a><code>84</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_snapper.RoutingNetwork.RouterDb.UsageNotifier?.NotifyBox(_snapper.RoutingNetwork,&nbsp;box);</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line84"></a><code>84</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await&nbsp;_snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork,&nbsp;box);</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line85"></a><code>85</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line86"></a><code>86</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;snap&nbsp;to&nbsp;closest&nbsp;edge.</code></td></tr>
 <tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line87"></a><code>87</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;snapPoint&nbsp;=&nbsp;_snapper.RoutingNetwork.SnapInBox(box,&nbsp;acceptableFunc);</code></td></tr>
@@ -145,7 +145,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line98"></a><code>98</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />03/10/2022 - 10:00:36<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />04/03/2022 - 08:41:02<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -154,7 +154,7 @@
 <a href="#file0_line35" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - get_CheckCanStopOn()"><i class="icon-cube"></i>get_CheckCanStopOn()</a><br />
 <a href="#file0_line40" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - get_MaxOffsetInMeter()"><i class="icon-cube"></i>get_MaxOffsetInMeter()</a><br />
 <a href="#file0_line43" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AcceptableFunc()"><i class="icon-cube"></i>AcceptableFunc()</a><br />
-<a href="#file0_line74" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - To()"><i class="icon-cube"></i>To()</a><br />
+<a href="#file0_line74" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ToAsync()"><i class="icon-cube"></i>ToAsync()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
