@@ -145,7 +145,7 @@ namespace Itinero.Network
         /// <summary>
         /// Returns true if there is already a writer.
         /// </summary>
-        internal bool HasWriter => _writer != null;
+        public bool HasWriter => _writer != null;
 
         /// <summary>
         /// Gets a writer.
