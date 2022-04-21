@@ -1,3 +1,4 @@
+using System;
 using Itinero.Indexes;
 using Xunit;
 
@@ -10,8 +11,8 @@ namespace Itinero.Tests.Indexes
         {
             var attributeSet = AttributeSetMap.Default;
 
-            Assert.Equal(0, attributeSet.Id);
-            Assert.Empty(attributeSet.Mapping(new (string key, string value)[0]));
+            Assert.Equal(Guid.Empty, attributeSet.Id);
+            Assert.Empty(attributeSet.Map(Array.Empty<(string key, string value)>()));
         }
     }
 }

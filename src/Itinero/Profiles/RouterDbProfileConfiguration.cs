@@ -43,9 +43,14 @@ namespace Itinero.Profiles
 
         private void UpdateEdgeTypeMap()
         {
-            var edgeTypeMap = new ProfilesEdgeTypeMap(_profiles.Values.Select(x => x.profile));
+            // only update the edge type map when it is based on the active profiles.
+            if (_routerDb.EdgeTypeMap is not ProfilesEdgeTypeMap) {
+                return;
+            }
 
-            _routerDb.SetEdgeTypeMap(edgeTypeMap);
+            // update edge type map to include the new profile(s).
+            var edgeTypeMap = new ProfilesEdgeTypeMap(_profiles.Values.Select(x => x.profile));
+            _routerDb.EdgeTypeMap = edgeTypeMap;
         }
 
         public IEnumerable<Profile> Profiles => _profiles.Values.Select(x => x.profile);

@@ -21,18 +21,9 @@ namespace Itinero.Indexes
         private readonly List<IReadOnlyList<(string key, string value)>> _edgeProfiles;
         private readonly Dictionary<IReadOnlyList<(string key, string value)>, uint> _edgeProfilesIndex;
 
-        public AttributeSetIndex()
+        public AttributeSetIndex(List<IReadOnlyList<(string key, string value)>>? edgeProfiles = null)
         {
-            _edgeProfiles = new List<IReadOnlyList<(string key, string value)>> {new (string key, string value)[0]};
-            _edgeProfilesIndex =
-                new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default) {
-                    [_edgeProfiles[0]] = 0
-                };
-        }
-
-        private AttributeSetIndex(List<IReadOnlyList<(string key, string value)>> edgeProfiles)
-        {
-            _edgeProfiles = edgeProfiles;
+            _edgeProfiles = edgeProfiles ?? new List<IReadOnlyList<(string key, string value)>> { Array.Empty<(string key, string value)>() };;
             _edgeProfilesIndex =
                 new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default);
             for (var p = 0; p < _edgeProfiles.Count; p++) {
@@ -52,7 +43,7 @@ namespace Itinero.Indexes
         /// <returns>The attributes in the type.</returns>
         public IEnumerable<(string key, string value)> GetById(uint id)
         {
-            if (id > Count) {
+            if (id > this.Count) {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
 

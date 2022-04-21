@@ -12,10 +12,10 @@ public class StandaloneNetworkTileWriter
 {
     private readonly StandaloneNetworkTile _tile;
     private readonly int _zoom;
-    private readonly (int id, Func<IEnumerable<(string key, string value)>, uint> func) _edgeTypeMap;
+    private readonly (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) _edgeTypeMap;
 
     internal StandaloneNetworkTileWriter(StandaloneNetworkTile tile, int zoom,
-        (int id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
+        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
     {
         _tile = tile;
         _edgeTypeMap = edgeTypeMap;

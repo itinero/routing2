@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Tiles;
@@ -129,7 +130,7 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveNext();
             ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] {("key1", "value1")});
 
-            networkTile = networkTile.CloneForEdgeTypeMap((0, at => 0));
+            networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 0));
 
             enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(networkTile);
@@ -161,7 +162,7 @@ namespace Itinero.Tests.Network.Tiles
             Assert.True(enumerator.MoveNext());
             ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] {("key1", "value1")});
 
-            networkTile = networkTile.CloneForEdgeTypeMap((0, at => 0));
+            networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 0));
 
             enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(networkTile);
@@ -191,7 +192,7 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveNext();
             ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] {("key1", "value1")});
 
-            networkTile = networkTile.CloneForEdgeTypeMap((0, at => 1234));
+            networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 1234));
 
             enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(networkTile);
@@ -223,7 +224,7 @@ namespace Itinero.Tests.Network.Tiles
             Assert.True(enumerator.MoveNext());
             ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] {("key1", "value1")});
 
-            networkTile = networkTile.CloneForEdgeTypeMap((0, at => 1234));
+            networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 1234));
 
             enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(networkTile);
@@ -270,7 +271,7 @@ namespace Itinero.Tests.Network.Tiles
             ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, shape,
                 new[] {("key1", "value1")}, null);
 
-            networkTile = networkTile.CloneForEdgeTypeMap((0, at => 1234));
+            networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 1234));
 
             enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(networkTile);

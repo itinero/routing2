@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace Itinero.IO
@@ -483,6 +484,18 @@ namespace Itinero.IO
         public static void WriteVarInt32(this Stream data, int value)
         {
             data.WriteVarUInt32(ToUnsigned(value));
+        }
+
+        public static void WriteGuid(this Stream data, Guid value)
+        {
+            data.Write(value.ToByteArray());
+        }
+
+        public static Guid ReadGuid(this Stream data)
+        {
+            var buffer = new byte[16];
+            data.Read(buffer);
+            return new Guid(buffer);
         }
 
         public static int? ReadVarInt32Nullable(this Stream data)

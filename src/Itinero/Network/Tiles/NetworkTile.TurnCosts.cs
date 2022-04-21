@@ -126,14 +126,14 @@ namespace Itinero.Network.Tiles
             // make sure there is space in the pointers table.
             // and initialize new slots with null.
             while (_turnCostPointers.Length < vertex.LocalId) {
-                _turnCostPointers.Resize(_turnCostPointers.Length + DefaultSizeIncrease);
+                _turnCostPointers.Resize(_turnCostPointers.Length + DEFAULT_SIZE_INCREASE);
             }
 
             // make sure there is space in the turn cost array.
             // and initialize new slots with null.
             var maxLength = _turnCostPointer + 5 + 1 + count * count * 5 + 5;
             while (_turnCosts.Length < maxLength) {
-                _turnCosts.Resize(_turnCosts.Length + DefaultSizeIncrease);
+                _turnCosts.Resize(_turnCosts.Length + DEFAULT_SIZE_INCREASE);
             }
 
             // update pointer to reflect new data.

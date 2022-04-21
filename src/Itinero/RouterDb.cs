@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Itinero.Data;
 using Itinero.Data.Usage;
@@ -35,8 +36,8 @@ namespace Itinero
             configuration ??= RouterDbConfiguration.Default;
 
             this.Latest = new RoutingNetwork(this, configuration.Zoom);
-            _edgeTypeIndex = new AttributeSetIndex();
-            _edgeTypeMap = AttributeSetMap.Default;
+            _edgeTypeIndex = new AttributeSetIndex(configuration.EdgeTypes);
+            this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default;
             _turnCostTypeIndex = new AttributeSetIndex();
             _turnCostTypeMap = AttributeSetMap.Default;
 
@@ -59,9 +60,9 @@ namespace Itinero
             _turnCostTypeIndex = AttributeSetIndex.ReadFrom(stream);
             
             // read attributes.
-            this.Meta = new List<(string key, string value)>(ReadAttributesFrom(stream));
+            this.Meta = new List<(string key, string value)>(this.ReadAttributesFrom(stream));
 
-            _edgeTypeMap = AttributeSetMap.Default;
+            this.EdgeTypeMap = AttributeSetMap.Default;
             _turnCostTypeMap = AttributeSetMap.Default;
             this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }

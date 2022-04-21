@@ -44,13 +44,13 @@ namespace Itinero.Network.Tiles
                 // don't store elevation.
                 tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
                 _coordinates.EnsureMinimumSize(tileCoordinatePointer + CoordinateSizeInBytes * 2,
-                    DefaultSizeIncrease);
+                    DEFAULT_SIZE_INCREASE);
             }
             else {
                 // store elevation.
                 tileCoordinatePointer = localId * (CoordinateSizeInBytes * 2 + ElevationSizeInBytes);
                 _coordinates.EnsureMinimumSize(tileCoordinatePointer + CoordinateSizeInBytes * 2 + ElevationSizeInBytes,
-                    DefaultSizeIncrease);
+                    DEFAULT_SIZE_INCREASE);
             }
 
             // write coordinates.

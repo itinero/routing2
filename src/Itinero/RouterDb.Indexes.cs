@@ -8,21 +8,25 @@ namespace Itinero
     public sealed partial class RouterDb
     {
         private readonly AttributeSetIndex _edgeTypeIndex;
-        private AttributeSetMap _edgeTypeMap;
         private readonly AttributeSetIndex _turnCostTypeIndex;
-        private AttributeSetMap _turnCostTypeMap;
+        private readonly AttributeSetMap _turnCostTypeMap;
 
         internal RouterDbProfileConfiguration ProfileConfiguration { get; }
 
+        /// <summary>
+        /// Gets the edge type attributes for the given id.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns>The attributes.</returns>
         public IEnumerable<(string key, string value)> GetEdgeType(uint id)
         {
             return _edgeTypeIndex.GetById(id);
         }
 
-        internal void SetEdgeTypeMap(AttributeSetMap edgeTypeMap)
-        {
-            _edgeTypeMap = edgeTypeMap;
-        }
+        /// <summary>
+        /// The edge type map.
+        /// </summary>
+        internal AttributeSetMap EdgeTypeMap { get; set; }
 
         /// <summary>
         /// Gets the edge type count.
@@ -34,11 +38,11 @@ namespace Itinero
         /// </summary>
         /// <param name="id">The id or index.</param>
         /// <returns>The attributes.</returns>
-        internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
+        internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
         {
-            return (_edgeTypeMap.Id,
+            return (this.EdgeTypeMap.Id,
                 a => {
-                    var m = _edgeTypeMap.Mapping(a);
+                    var m = this.EdgeTypeMap.Map(a);
                     return _edgeTypeIndex.Get(m);
                 });
         }
@@ -58,10 +62,10 @@ namespace Itinero
             return _turnCostTypeIndex.GetById(id);
         }
 
-        internal (int id, Func<IEnumerable<(string key, string value)>, uint> func) GetTurnCostTypeMap()
+        internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetTurnCostTypeMap()
         {
             return (_turnCostTypeMap.Id, a => {
-                var m = _turnCostTypeMap.Mapping(a);
+                var m = _turnCostTypeMap.Map(a);
                 return _turnCostTypeIndex.Get(m);
             });
         }
