@@ -70,8 +70,7 @@ namespace Itinero.Network.Writer
             }
 
             // this edge crosses tiles, also add an extra edge to the other tile.
-            (tile, edgeTypeMap) = _network.GetTileForWrite(vertex2.TileId);
-            edgeTypeId = attributes != null ? (uint?) edgeTypeMap(attributes) : null;
+            (tile, _) = _network.GetTileForWrite(vertex2.TileId);
             tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId, length);
 
             return edge1;
