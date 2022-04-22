@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Network;
@@ -15,7 +16,7 @@ namespace Itinero.Routing.Alternatives
     public static class IRouterOneToOneWithAlternativesExtensions
     {
         internal static async Task<Result<IReadOnlyList<Path>>> CalculatePathsAsync(
-            this IRouterOneToOneWithAlternatives alternativeRouter)
+            this IRouterOneToOneWithAlternatives alternativeRouter, CancellationToken cancellationToken)
         {
             const double penaltyFactor = 2.0;
             
@@ -52,7 +53,7 @@ namespace Itinero.Routing.Alternatives
                 return false;
             }
 
-            async Task<(Path? path, double cost)> RunDijkstraAsync(ICostFunction costFunction)
+            async Task<(Path? path, double cost)> RunDijkstraAsync(ICostFunction costFunction, CancellationToken cancellationToken)
             {
                 var source = alternativeRouter.Source;
                 var target = alternativeRouter.Target;
@@ -62,7 +63,8 @@ namespace Itinero.Routing.Alternatives
                     return await Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
                         costFunction.GetDijkstraWeightFunc(),
                         async v => {
-                            await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
+                            await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+                            if (cancellationToken.IsCancellationRequested) return false;
                             return CheckMaxDistance(v);
                         });
                 }
@@ -71,12 +73,13 @@ namespace Itinero.Routing.Alternatives
                 return await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, target,
                     costFunction.GetDijkstraWeightFunc(),
                     async v => {
-                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId);
+                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                        if (cancellationToken.IsCancellationRequested) return false;
                         return CheckMaxDistance(v.vertexId);
                     });
             }
 
-            var (initialPath, initialCost) = await RunDijkstraAsync(costFunction);
+            var (initialPath, initialCost) = await RunDijkstraAsync(costFunction, cancellationToken);
             if (initialPath == null) {
                 return new Result<IReadOnlyList<Path>>("Not a single path found!");
             }
@@ -96,10 +99,12 @@ namespace Itinero.Routing.Alternatives
 
             var maxTries = altSettings.MaxNumberOfAlternativeRoutes * 5;
             while (results.Count < altSettings.MaxNumberOfAlternativeRoutes && maxTries > 0) {
+                if (cancellationToken.IsCancellationRequested) break;
+                
                 maxTries--;
                 var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges,
                     penaltyFactor);
-                var (altPath, altCost) = await RunDijkstraAsync(altCostFunction);
+                var (altPath, altCost) = await RunDijkstraAsync(altCostFunction, cancellationToken);
 
                 if (altCost > costThreshold) {
                     // No more alternative routes can be found
@@ -134,9 +139,9 @@ namespace Itinero.Routing.Alternatives
             return results;
         }
 
-        public static async Task<Result<IReadOnlyList<Route>>> CalculateAsync(this IRouterOneToOneWithAlternatives withAlternatives)
+        public static async Task<Result<IReadOnlyList<Route>>> CalculateAsync(this IRouterOneToOneWithAlternatives withAlternatives, CancellationToken cancellationToken = default)
         {
-            var paths = await withAlternatives.CalculatePathsAsync();
+            var paths = await withAlternatives.CalculatePathsAsync(cancellationToken);
 
             if (paths.IsError) {
                 return new Result<IReadOnlyList<Route>>(paths.ErrorMessage);

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Routes;
 using Itinero.Routes.Paths;
@@ -15,7 +16,7 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="oneToOneRouter">The router.</param>
         /// <returns>The path.</returns>
-        public static async Task<Result<Path>> Path(this IRouterOneToOne oneToOneRouter)
+        public static async Task<Result<Path>> Path(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken)
         {
             var sources = new[] {oneToOneRouter.Source};
             var targets = new[] {oneToOneRouter.Target};
@@ -25,7 +26,7 @@ namespace Itinero.Routing
                 return (await oneToOneRouter.CalculateAsync(sources, targets)).First().First();
             }
 
-            return (await oneToOneRouter.CalculateAsync(sourcesUndirected, targetsUndirected)).First().First();
+            return (await oneToOneRouter.CalculateAsync(sourcesUndirected, targetsUndirected, cancellationToken)).First().First();
         }
 
         /// <summary>
@@ -33,9 +34,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="oneToOneRouter">The router.</param>
         /// <returns>The route.</returns>
-        public static async Task<Result<Route>> CalculateAsync(this IRouterOneToOne oneToOneRouter)
+        public static async Task<Result<Route>> CalculateAsync(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken = default)
         {
-            var path = await oneToOneRouter.Path();
+            var path = await oneToOneRouter.Path(cancellationToken);
             if (path.IsError) {
                 return new Result<Route>(path.ErrorMessage);
             }

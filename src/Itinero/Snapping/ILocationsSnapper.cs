@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Itinero.Snapping
 {
@@ -11,7 +12,9 @@ namespace Itinero.Snapping
         /// Snaps to the given locations.
         /// </summary>
         /// <param name="locations">The locations.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The snapped locations.</returns>
-        IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations);
+        IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations,
+            CancellationToken cancellationToken = default);
     }
 }

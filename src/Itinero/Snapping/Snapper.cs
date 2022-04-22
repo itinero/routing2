@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Network;
@@ -44,7 +46,8 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
+        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var enumerator = this.RoutingNetwork.GetEdgeEnumerator();
 
@@ -86,15 +89,19 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations)
+        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             foreach (var location in locations) {
                 // calculate search box.
                 var box = location.BoxAround(this.Settings.MaxOffsetInMeter);
 
                 // make sure data is loaded.
-                if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box);
-
+                if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box, cancellationToken);
+                
+                // break when cancelled.
+                if (cancellationToken.IsCancellationRequested) break;
+                
                 // snap to closest edge.
                 var snapPoint = this.RoutingNetwork.SnapInBox(box, (_) => true);
                 if (snapPoint.EdgeId != EdgeId.Empty) {

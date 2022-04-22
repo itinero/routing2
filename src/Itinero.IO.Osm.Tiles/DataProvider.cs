@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
+using System.Threading;
 using Itinero.Data.Usage;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Network;
@@ -47,7 +48,7 @@ namespace Itinero.IO.Osm.Tiles
             routerDb.UsageNotifier.AddListener(this);
         }
 
-        async Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId)
+        async Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId, CancellationToken cancellationToken)
         {
             if (_loadedTiles.Contains(vertexId.TileId)) {
                 return;
@@ -81,7 +82,7 @@ namespace Itinero.IO.Osm.Tiles
 
         async Task IDataUseListener.BoxTouched(RoutingNetwork network,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box)
+                bottomRight) box, CancellationToken cancellationToken)
         {
             // build the tile range.
             var tileRange = new TileRange(box, (int) _zoom);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
@@ -91,7 +92,7 @@ namespace Itinero.Routing
         }
 
         internal static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> CalculateAsync(this IRouter manyToManyRouter,
-            IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets)
+            IReadOnlyList<SnapPoint> sources, IReadOnlyList<SnapPoint> targets, CancellationToken cancellationToken)
         {
             var settings = manyToManyRouter.Settings;
             var routingNetwork = manyToManyRouter.Network;
@@ -125,7 +126,7 @@ namespace Itinero.Routing
                 var paths = await Dijkstra.Default.RunAsync(routingNetwork, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
                     async v => {
-                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v);
+                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
                         return checkMaxDistance(v);
                     });
 

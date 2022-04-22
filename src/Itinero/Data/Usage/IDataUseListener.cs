@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
 
@@ -13,7 +14,8 @@ public interface IDataUseListener
     /// </summary>
     /// <param name="network">The network.</param>
     /// <param name="vertex">The vertex that was touched.</param>
-    Task VertexTouched(RoutingNetwork network, VertexId vertex);
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task VertexTouched(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -21,8 +23,9 @@ public interface IDataUseListener
     /// </summary>
     /// <param name="network"></param>
     /// <param name="box"></param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
     Task BoxTouched(RoutingNetwork network,
         ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight) box);
+            bottomRight) box, CancellationToken cancellationToken = default);
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Routes;
 using Itinero.Routes.Builders;
@@ -18,7 +19,7 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerOneToMany">The router.</param>
         /// <returns>The paths.</returns>
-        public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToOne routerOneToMany)
+        public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToOne routerOneToMany, CancellationToken cancellationToken)
         {
             var sources = routerOneToMany.Sources;
             var target = routerOneToMany.Target;
@@ -39,7 +40,7 @@ namespace Itinero.Routing
                 return manyToOne;
             }
             else {
-                var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] {target.sp});
+                var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] {target.sp}, cancellationToken);
                 if (routes == null) {
                     throw new Exception("Could not calculate routes.");
                 }
@@ -58,9 +59,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerManyToOne">The router.</param>
         /// <returns>The routes.</returns>
-        public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToOne routerManyToOne)
+        public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToOne routerManyToOne, CancellationToken cancellationToken = default)
         {
-            return (await routerManyToOne.Paths()).Select(x => routerManyToOne.Settings.RouteBuilder.Build(routerManyToOne.Network,
+            return (await routerManyToOne.Paths(cancellationToken)).Select(x => routerManyToOne.Settings.RouteBuilder.Build(routerManyToOne.Network,
                 routerManyToOne.Settings.Profile, x)).ToArray();
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Routes;
 using Itinero.Routes.Builders;
@@ -18,7 +19,7 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> Paths(this IRouterManyToMany manyToManyRouter)
+        public static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> Paths(this IRouterManyToMany manyToManyRouter, CancellationToken cancellationToken)
         {
             var sources = manyToManyRouter.Sources;
             var targets = manyToManyRouter.Targets;
@@ -28,7 +29,7 @@ namespace Itinero.Routing
                 return await manyToManyRouter.CalculateAsync(sources, targets);
             }
             else {
-                return await manyToManyRouter.CalculateAsync(sourcesUndirected, targetsUndirected);
+                return await manyToManyRouter.CalculateAsync(sourcesUndirected, targetsUndirected, cancellationToken);
             }
         }
 
@@ -37,9 +38,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="manyToManyRouter">The router.</param>
         /// <returns>The paths.</returns>
-        public static async Task<IReadOnlyList<IReadOnlyList<Result<Route>>>> Calculate(this IRouterManyToMany manyToManyRouter)
+        public static async Task<IReadOnlyList<IReadOnlyList<Result<Route>>>> Calculate(this IRouterManyToMany manyToManyRouter, CancellationToken cancellationToken)
         {
-            var paths = await manyToManyRouter.Paths();
+            var paths = await manyToManyRouter.Paths(cancellationToken);
             return paths.Select(x => {
                 return x.Select(y => {
                     if (y.IsError) return y.ConvertError<Route>();
