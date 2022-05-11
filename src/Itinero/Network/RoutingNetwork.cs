@@ -104,7 +104,12 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
     /// <returns>The enumerator.</returns>
     internal RoutingNetworkEdgeEnumerator GetEdgeEnumerator()
     {
-        return new(this);
+        return new RoutingNetworkEdgeEnumerator(this);
+    }
+    
+    RoutingNetworkEdgeEnumerator IRoutingNetworkWritable.GetEdgeEnumerator()
+    {
+        return this.GetEdgeEnumerator();
     }
 
     /// <summary>

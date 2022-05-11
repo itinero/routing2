@@ -4,7 +4,7 @@ using System.Linq;
 using Itinero.IO;
 using Itinero.Profiles;
 using Itinero.Profiles.Serialization;
-using Itinero.Routing.Costs.EdgeTypes;
+using Itinero.Routing.Costs.Caches;
 
 namespace Itinero.Network.Profiles
 {

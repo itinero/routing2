@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Enumerators.Edges;
@@ -6,21 +7,21 @@ namespace Itinero.Network.TurnCosts
 {
     public static class RoutingNetworkEdgeEnumeratorExtensions
     {
-        internal static IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(
+        internal static IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostTo(
             this RoutingNetworkEdgeEnumerator enumerator,
             IEnumerable<(EdgeId edge, byte? turn)> previousEdges)
         {
             using var previousEdgesEnumerator = previousEdges.GetEnumerator();
             if (!previousEdgesEnumerator.MoveNext()) {
-                return Enumerable.Empty<(uint turnCostType, uint cost)>();
+                return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
             }
 
             var fromOrder = previousEdgesEnumerator.Current.turn;
             if (fromOrder == null) {
-                return Enumerable.Empty<(uint turnCostType, uint cost)>();
+                return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
             }
 
-            return enumerator.GetTurnCostTo(fromOrder.Value);
+            return enumerator.GetTurnCostToTail(fromOrder.Value);
         }
     }
 }

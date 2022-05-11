@@ -7,20 +7,29 @@ namespace Itinero.Network.Tiles.Standalone;
 /// </summary>
 public partial class StandaloneNetworkTile
 {
-    private readonly NetworkTile _networkTile;
-    
     internal StandaloneNetworkTile(NetworkTile networkTile)
     {
         _attributes = new MemoryArray<byte>(1024);
         _strings = new MemoryArray<string>(128);
         
-        _networkTile = networkTile;
+        NetworkTile = networkTile;
     }
 
-    internal NetworkTile NetworkTile => _networkTile;
-    
+    internal NetworkTile NetworkTile { get; }
+
+    /// <summary>
+    /// Gets an enumerator to access the non-boundary edges.
+    /// </summary>
+    /// <returns></returns>
+    public IStandaloneNetworkTileEnumerator GetEnumerator()
+    {
+        var enumerator = new NetworkTileEnumerator();
+        enumerator.MoveTo(this.NetworkTile);
+        return enumerator;
+    }
+
     /// <summary>
     /// Gets the tile id.
     /// </summary>
-    public uint TileId => _networkTile.TileId;
+    public uint TileId => NetworkTile.TileId;
 }

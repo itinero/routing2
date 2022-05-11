@@ -1,19 +1,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Profiles.EdgeTypesMap;
-using Itinero.Routing.Costs.EdgeTypes;
+using Itinero.Routing.Costs.Caches;
 
 namespace Itinero.Profiles
 {
     internal class RouterDbProfileConfiguration
     {
-        private readonly Dictionary<string, (Profile profile, EdgeFactorCache cache)> _profiles;
+        private readonly Dictionary<string, (Profile profile, EdgeFactorCache cache, TurnCostFactorCache turnCostFactorCache)> _profiles;
         private readonly RouterDb _routerDb;
 
         public RouterDbProfileConfiguration(RouterDb routerDb)
         {
             _routerDb = routerDb;
-            _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>();
+            _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache, TurnCostFactorCache turnCostFactorCache)>();
         }
 
         public bool HasProfile(string name)
@@ -24,20 +24,22 @@ namespace Itinero.Profiles
         public void AddProfiles(IEnumerable<Profile> profiles)
         {
             foreach (var profile in profiles) {
-                _profiles[profile.Name] = (profile, new EdgeFactorCache());
+                _profiles[profile.Name] = (profile, new EdgeFactorCache(), new TurnCostFactorCache());
             }
 
             UpdateEdgeTypeMap();
         }
 
-        internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache)
+        internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache, out TurnCostFactorCache? turnCostFactorCache)
         {
             cache = null;
+            turnCostFactorCache = null;
             if (!_profiles.TryGetValue(profile.Name, out var profileValue)) {
                 return false;
             }
 
             cache = profileValue.cache;
+            turnCostFactorCache = profileValue.turnCostFactorCache;
             return true;
         }
 

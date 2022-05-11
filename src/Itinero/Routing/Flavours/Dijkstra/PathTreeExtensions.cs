@@ -60,5 +60,18 @@ namespace Itinero.Routing.Flavours.Dijkstra
                 pointer = next;
             }
         }
+        
+        #if DEBUG
+        public static IEnumerable<(VertexId vertexId, EdgeId edge, byte? turn)> GetPathDebug(this PathTree tree, uint pointer)
+        {
+            while (pointer != uint.MaxValue) {
+                var (vertex, edge, head, next) = tree.GetVisit(pointer);
+
+                yield return (vertex, edge, head);
+
+                pointer = next;
+            }
+        }
+        #endif
     }
 }

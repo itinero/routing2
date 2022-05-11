@@ -20,10 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Osm\bicycle.lua" />
-      <EmbeddedResource Include="Osm\bicycle.lua" />
-      <None Remove="Osm\pedestrian.lua" />
-      <EmbeddedResource Include="Osm\pedestrian.lua" />
+      <None Remove="Osm\*.lua" />
+      <EmbeddedResource Include="Osm\*.lua" />
     </ItemGroup>
 
 </Project>

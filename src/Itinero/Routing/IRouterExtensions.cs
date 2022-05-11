@@ -123,16 +123,16 @@ namespace Itinero.Routing
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
             for (var s = 0; s < sources.Count; s++) {
                 var source = sources[s];
-                var paths = await Dijkstra.Default.RunAsync(routingNetwork, source, targets,
+                var pathsAndCosts = await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
                     async v => {
-                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
-                        return checkMaxDistance(v);
+                        await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                        return checkMaxDistance(v.vertexId);
                     });
 
-                var sourceResults = new Result<Path>[paths.Length];
+                var sourceResults = new Result<Path>[pathsAndCosts.Length];
                 for (var r = 0; r < sourceResults.Length; r++) {
-                    var (path, _) = paths[r];
+                    var (path, _) = pathsAndCosts[r];
                     if (path == null) {
                         sourceResults[r] = new Result<Path>("Path not found!");
                     }

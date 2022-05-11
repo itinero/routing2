@@ -96,7 +96,8 @@ namespace Itinero.IO.Json.GeoJson
                 ("vertex1_tile_id", enumerator.From.TileId.ToString()),
                 ("vertex1_local_id", enumerator.From.LocalId.ToString()),
                 ("vertex2_tile_id", enumerator.To.TileId.ToString()),
-                ("vertex2_local_id", enumerator.To.LocalId.ToString())
+                ("vertex2_local_id", enumerator.To.LocalId.ToString()),
+                ("edge_id", enumerator.Id.ToString())
             });
             jsonWriter.WriteProperties(attributes);
             jsonWriter.WritePropertyName("geometry");

@@ -42,17 +42,26 @@ namespace Itinero.Tests.Network
         public IEnumerable<(string key, string value)> Attributes { get; }
         public uint? EdgeTypeId => _edges.Current.edgeTypeId;
         public uint? Length => _edges.Current.length;
-        public byte? Head { get; }
-        public byte? Tail { get; }
-
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        public byte? HeadOrder { get; }
+        public byte? TailOrder { get; }
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(byte sourceOrder)
         {
-            throw new NotImplementedException();
+            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
         }
 
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(byte targetOrder)
         {
-            throw new NotImplementedException();
+            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+        }
+
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(byte sourceOrder)
+        {
+            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+        }
+
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(byte targetOrder)
+        {
+            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
         }
     }
 }

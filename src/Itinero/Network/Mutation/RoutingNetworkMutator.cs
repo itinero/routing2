@@ -174,10 +174,8 @@ namespace Itinero.Network.Mutation
         public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
             EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
         {
-            if (prefix != null) {
-                throw new NotSupportedException($"Turn costs with {nameof(prefix)} not supported.");
-            }
-
+            prefix ??= ArraySegment<EdgeId>.Empty;
+            
             // get the tile (or create it).
             var (tile, _) = GetTileForWrite(vertex.TileId);
             if (tile == null) {
@@ -189,7 +187,7 @@ namespace Itinero.Network.Mutation
             var turnCostTypeId = turnCostFunc.func(attributes);
 
             // add the turn cost table using the type id.
-            tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
+            tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
         }
 
         /// <summary>

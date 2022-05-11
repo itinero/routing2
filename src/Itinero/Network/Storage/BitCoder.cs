@@ -1,3 +1,4 @@
+using System;
 using Reminiscence.Arrays;
 
 namespace Itinero.Network.Storage
@@ -320,6 +321,29 @@ namespace Itinero.Network.Storage
             }
 
             return value;
+        }
+
+        public static long SetGuid(this ArrayBase<byte> data, long i, Guid value)
+        {
+            var bytes = value.ToByteArray();
+            for (var b = 0 ; b < 16; b++)
+            {
+                data[i + b] = bytes[b];
+            }
+
+            return 16;
+        }
+
+        public static long GetGuid(this ArrayBase<byte> data, long i, out Guid value)
+        {
+            var bytes = new byte[16];
+            for (var b = 0 ; b < 16; b++)
+            {
+                bytes[b] = data[i + b];
+            }
+
+            value = new Guid(bytes);
+            return 16;
         }
 
         public static long SetDynamicInt32(this ArrayBase<byte> data, long i, int value)

@@ -33,8 +33,8 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
             Assert.True(enumerator.Forward);
-            Assert.Equal(vertex1, enumerator.Vertex1);
-            Assert.Equal(vertex2, enumerator.Vertex2);
+            Assert.Equal(vertex1, enumerator.Tail);
+            Assert.Equal(vertex2, enumerator.Head);
             Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
@@ -54,8 +54,8 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(vertex2);
             Assert.True(enumerator.MoveNext());
             Assert.False(enumerator.Forward);
-            Assert.Equal(vertex2, enumerator.Vertex1);
-            Assert.Equal(vertex1, enumerator.Vertex2);
+            Assert.Equal(vertex2, enumerator.Tail);
+            Assert.Equal(vertex1, enumerator.Head);
             Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
@@ -116,8 +116,8 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             Assert.True(enumerator.MoveTo(edge, true));
             Assert.True(enumerator.Forward);
-            Assert.Equal(vertex1, enumerator.Vertex1);
-            Assert.Equal(vertex2, enumerator.Vertex2);
+            Assert.Equal(vertex1, enumerator.Tail);
+            Assert.Equal(vertex2, enumerator.Head);
             Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }
@@ -136,8 +136,8 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             Assert.True(enumerator.MoveTo(edge, false));
             Assert.False(enumerator.Forward);
-            Assert.Equal(vertex2, enumerator.Vertex1);
-            Assert.Equal(vertex1, enumerator.Vertex2);
+            Assert.Equal(vertex2, enumerator.Tail);
+            Assert.Equal(vertex1, enumerator.Head);
             Assert.Equal(edge, enumerator.EdgeId);
             Assert.False(enumerator.MoveNext());
         }

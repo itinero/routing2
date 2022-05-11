@@ -2,31 +2,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Storage;
+using Itinero.Network.Tiles.Standalone;
 
 namespace Itinero.Network.Tiles
 {
-    internal class NetworkTileEnumerator
+    internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileEnumerator
     {
         private uint _localId;
         private uint? _nextEdgePointer;
         private uint? _shapePointer;
         private uint? _attributesPointer;
-        private byte? _tail;
-        private byte? _head;
+        private byte? _tailOrder;
+        private byte? _headOrder;
 
         /// <summary>
         /// Creates a new graph tile enumerator.
         /// </summary>
-        internal NetworkTileEnumerator() { }
+        internal NetworkTileEnumerator()
+        {
+        }
 
-        internal NetworkTile? Tile { get; private set; }
+        public NetworkTile? Tile { get; private set; }
 
         /// <summary>
         /// Gets the tile id.
         /// </summary>
-        public uint TileId {
-            get {
-                if (Tile == null) {
+        public uint TileId
+        {
+            get
+            {
+                if (Tile == null)
+                {
                     return uint.MaxValue;
                 }
 
@@ -53,18 +59,20 @@ namespace Itinero.Network.Tiles
         /// <returns>True if the move succeeds and the vertex exists.</returns>
         public bool MoveTo(VertexId vertex)
         {
-            if (Tile == null) {
+            if (Tile == null)
+            {
                 throw new InvalidOperationException("Move to graph tile first.");
             }
 
-            if (vertex.LocalId >= Tile.VertexCount) {
+            if (vertex.LocalId >= Tile.VertexCount)
+            {
                 return false;
             }
 
             _localId = vertex.LocalId;
             _nextEdgePointer = uint.MaxValue;
 
-            Vertex1 = vertex;
+            Tail = vertex;
             return true;
         }
 
@@ -76,17 +84,20 @@ namespace Itinero.Network.Tiles
         /// <returns>True if the move succeeds and the edge exists.</returns>
         public bool MoveTo(EdgeId edge, bool forward)
         {
-            if (Tile == null) {
+            if (Tile == null)
+            {
                 throw new InvalidOperationException("Move to graph tile first.");
             }
 
-            if (TileId != edge.TileId) {
+            if (TileId != edge.TileId)
+            {
                 throw new ArgumentOutOfRangeException(nameof(edge),
                     "Cannot move to edge not in current tile, move to the tile first.");
             }
 
             _nextEdgePointer = edge.LocalId;
-            if (edge.LocalId >= EdgeId.MinCrossId) {
+            if (edge.LocalId >= EdgeId.MinCrossId)
+            {
                 _nextEdgePointer = Tile.GetEdgeCrossPointer(edge.LocalId - EdgeId.MinCrossId);
             }
 
@@ -103,7 +114,8 @@ namespace Itinero.Network.Tiles
             size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
 
-            if (vertex1.TileId != vertex2.TileId) {
+            if (vertex1.TileId != vertex2.TileId)
+            {
                 size = Tile.DecodeEdgeCrossId(_nextEdgePointer.Value, out var edgeCrossId);
                 _nextEdgePointer += size;
 
@@ -121,24 +133,28 @@ namespace Itinero.Network.Tiles
             Length = length;
 
             // get tail and head order.
-            Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
+            Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
             _nextEdgePointer++;
 
             size = Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
             _nextEdgePointer += size;
             size = Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
 
-            if (forward) {
-                Vertex1 = vertex1;
-                Vertex2 = vertex2;
+            if (forward)
+            {
+                Tail = vertex1;
+                Head = vertex2;
                 Forward = true;
 
                 _nextEdgePointer = vp1;
             }
-            else {
-                Vertex1 = vertex2;
-                Vertex2 = vertex1;
+            else
+            {
+                Tail = vertex2;
+                Head = vertex1;
                 Forward = false;
+
+                (_headOrder, _tailOrder) = (_tailOrder, _headOrder);
 
                 _nextEdgePointer = vp2;
             }
@@ -153,11 +169,11 @@ namespace Itinero.Network.Tiles
         /// Reset this enumerator to:
         /// - the first vertex for the currently selected edge.
         /// - the first vertex for the graph tile if there is no selected edge.
-        /// - returns false if there is no data in the current tile or if there is no tile selected.
         /// </remarks>
         public void Reset()
         {
-            if (Tile == null) {
+            if (Tile == null)
+            {
                 throw new InvalidOperationException("Cannot reset an empty enumerator.");
             }
 
@@ -172,16 +188,19 @@ namespace Itinero.Network.Tiles
         /// <returns>True when there is a new edge.</returns>
         public bool MoveNext()
         {
-            if (Tile == null) {
+            if (Tile == null)
+            {
                 throw new InvalidOperationException("Move to graph tile first.");
             }
 
-            if (_nextEdgePointer == uint.MaxValue) {
+            if (_nextEdgePointer == uint.MaxValue)
+            {
                 // move to the first edge.
                 _nextEdgePointer = Tile.VertexEdgePointer(_localId).DecodeNullableData();
             }
 
-            if (_nextEdgePointer == null) {
+            if (_nextEdgePointer == null)
+            {
                 // no more data available.
                 return false;
             }
@@ -199,7 +218,8 @@ namespace Itinero.Network.Tiles
             size = Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
 
-            if (vertex1.TileId != vertex2.TileId) {
+            if (vertex1.TileId != vertex2.TileId)
+            {
                 size = Tile.DecodeEdgeCrossId(_nextEdgePointer.Value, out var edgeCrossId);
                 _nextEdgePointer += size;
 
@@ -217,7 +237,7 @@ namespace Itinero.Network.Tiles
             Length = length;
 
             // get tail and head order.
-            Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tail, ref _head);
+            Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
             _nextEdgePointer++;
 
             // 
@@ -226,17 +246,21 @@ namespace Itinero.Network.Tiles
             size = Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
 
             if (vertex1.TileId == Tile.TileId &&
-                vertex1.LocalId == _localId) {
+                vertex1.LocalId == _localId)
+            {
                 _nextEdgePointer = vp1;
 
-                Vertex2 = vertex2;
+                Head = vertex2;
                 Forward = true;
             }
-            else {
+            else
+            {
                 _nextEdgePointer = vp2;
 
-                Vertex2 = vertex1;
+                Head = vertex1;
                 Forward = false;
+
+                (_headOrder, _tailOrder) = (_tailOrder, _headOrder);
             }
 
             return true;
@@ -245,13 +269,17 @@ namespace Itinero.Network.Tiles
         /// <summary>
         /// Gets the shape of the given edge (not including vertex locations).
         /// </summary>
-        public IEnumerable<(double longitude, double latitude, float? e)> Shape {
-            get {
-                if (Tile == null) {
+        public IEnumerable<(double longitude, double latitude, float? e)> Shape
+        {
+            get
+            {
+                if (Tile == null)
+                {
                     throw new InvalidOperationException("Move to graph tile first.");
                 }
 
-                if (!Forward) {
+                if (!Forward)
+                {
                     return Tile.GetShape(_shapePointer).Reverse();
                 }
 
@@ -262,9 +290,12 @@ namespace Itinero.Network.Tiles
         /// <summary>
         /// Gets the attributes of the given edge.
         /// </summary>
-        public IEnumerable<(string key, string value)> Attributes {
-            get {
-                if (Tile == null) {
+        public IEnumerable<(string key, string value)> Attributes
+        {
+            get
+            {
+                if (Tile == null)
+                {
                     throw new InvalidOperationException("Move to graph tile first.");
                 }
 
@@ -275,12 +306,12 @@ namespace Itinero.Network.Tiles
         /// <summary>
         /// Gets the first vertex.
         /// </summary>
-        public VertexId Vertex1 { get; private set; }
+        public VertexId Tail { get; private set; }
 
         /// <summary>
         /// Gets the second vertex.
         /// </summary>
-        public VertexId Vertex2 { get; private set; }
+        public VertexId Head { get; private set; }
 
         /// <summary>
         /// Gets the local edge id.
@@ -290,6 +321,9 @@ namespace Itinero.Network.Tiles
         /// <summary>
         /// Gets the forward/backward flag.
         /// </summary>
+        /// <remarks>
+        /// When true the attributes can be interpreted normally, when false they represent the direction from tail -> head.
+        /// </remarks>
         public bool Forward { get; private set; }
 
         /// <summary>
@@ -303,51 +337,81 @@ namespace Itinero.Network.Tiles
         public uint? Length { get; private set; }
 
         /// <summary>
-        /// Gets the head index of this edge.
+        /// Gets the head index of this edge in the turn cost table.
         /// </summary>
-        public byte? Head => _head;
+        public byte? HeadOrder => _headOrder;
 
         /// <summary>
-        /// Gets the tail index of this edge.
+        /// Gets the tail index of this edge in the turn cost table.
         /// </summary>
-        public byte? Tail => _tail;
+        public byte? TailOrder => _tailOrder;
 
         /// <summary>
-        /// Gets the turn cost to the current edge given the from order.
+        /// Gets the turn cost at the tail turn (source -> [tail -> head]).
         /// </summary>
-        /// <param name="fromOrder">The order of the source edge.</param>
-        /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        /// <param name="sourceOrder">The order of the source edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+            byte sourceOrder)
         {
-            if (Tile == null) {
-                return Enumerable.Empty<(uint turnCostType, uint cost)>();
-            }
+            if (Tile == null)
+                return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
-            var order = Forward ? _tail : _head;
-            if (order == null) {
-                return Enumerable.Empty<(uint turnCostType, uint cost)>();
-            }
-
-            return Tile.GetTurnCosts(Vertex1, fromOrder, order.Value);
+            var order = _tailOrder;
+            return order == null
+                ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+                : Tile.GetTurnCosts(Tail, sourceOrder, order.Value);
         }
-
+        
         /// <summary>
-        /// Gets the turn cost from the current edge given the to order.
+        /// Gets the turn cost at the tail turn ([head -> tail] -> target).
         /// </summary>
-        /// <param name="toOrder">The order of the target edge.</param>
-        /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        /// <param name="targetOrder">The order of the target edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+            byte targetOrder)
         {
-            if (Tile == null) {
-                return Enumerable.Empty<(uint turnCostType, uint cost)>();
-            }
+            if (Tile == null)
+                return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
-            var order = Forward ? _head : _tail;
-            if (order == null) {
-                return Enumerable.Empty<(uint turnCostType, uint cost)>();
-            }
+            var order = _tailOrder;
+            return order == null
+                ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+                : Tile.GetTurnCosts(Tail, order.Value, targetOrder);
+        }
+        
+        /// <summary>
+        /// Gets the turn cost at the tail turn (source -> [head -> tail]).
+        /// </summary>
+        /// <param name="sourceOrder">The order of the source edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+            byte sourceOrder)
+        {
+            if (Tile == null)
+                return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
-            return Tile.GetTurnCosts(Vertex1, order.Value, toOrder);
+            var order = _headOrder;
+            return order == null
+                ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+                : Tile.GetTurnCosts(Head, sourceOrder, order.Value);
+        }
+        
+        /// <summary>
+        /// Gets the turn cost at the tail turn ([tail -> head] -> target).
+        /// </summary>
+        /// <param name="targetOrder">The order of the target edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+            byte targetOrder)
+        {
+            if (Tile == null)
+                return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+
+            var order = _headOrder;
+            return order == null
+                ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+                : Tile.GetTurnCosts(Head, order.Value, targetOrder);
         }
     }
 }

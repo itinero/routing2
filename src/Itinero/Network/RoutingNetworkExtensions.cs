@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
+using Itinero.Routing.Costs.Caches;
+
 [assembly: InternalsVisibleTo("Itinero.Geo")]
 
 namespace Itinero.Network
@@ -65,12 +67,11 @@ namespace Itinero.Network
 
         internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
         {
-            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache) ||
-                cache == null) {
+            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache, out var turnCostFactorCache)) {
                 return new ProfileCostFunction(profile);
             }
 
-            return new ProfileCostFunctionCached(profile, cache);
+            return new ProfileCostFunctionCached(profile, cache ?? new EdgeFactorCache(), turnCostFactorCache ?? new TurnCostFactorCache());
         }
 
         internal static IEnumerable<(string key, string value)>
@@ -80,7 +81,7 @@ namespace Itinero.Network
             if (!enumerator.MoveToEdge(edge)) {
                 return Enumerable.Empty<(string key, string value)>();
             }
-
+        
             return enumerator.Attributes;
         }
     }

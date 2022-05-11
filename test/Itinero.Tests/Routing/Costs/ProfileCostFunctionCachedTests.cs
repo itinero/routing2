@@ -2,7 +2,7 @@ using System.Linq;
 using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
-using Itinero.Routing.Costs.EdgeTypes;
+using Itinero.Routing.Costs.Caches;
 using Itinero.Tests.Network;
 using Xunit;
 
@@ -15,7 +15,7 @@ namespace Itinero.Tests.Routing.Costs
         {
             // stage.
             var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10,1,10,1));
-            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache());
+            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
             var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
             edgeEnumerator.MoveNext();
             
@@ -35,7 +35,7 @@ namespace Itinero.Tests.Routing.Costs
         {
             // stage.
             var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10,1,10,1));
-            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache());
+            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
             var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, false, 24));
             edgeEnumerator.MoveNext();
             costFunction.Get(edgeEnumerator, true, 
@@ -59,7 +59,7 @@ namespace Itinero.Tests.Routing.Costs
         {
             // stage.
             var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10,1,10,1));
-            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache());
+            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
             var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
             edgeEnumerator.MoveNext();
             
@@ -79,7 +79,7 @@ namespace Itinero.Tests.Routing.Costs
         {
             // stage.
             var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10,1,10,1));
-            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache());
+            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
             var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, false, 24));
             edgeEnumerator.MoveNext();
             
@@ -99,7 +99,7 @@ namespace Itinero.Tests.Routing.Costs
         {
             // stage.
             var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10,1,10,1));
-            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache());
+            var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
             var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
             edgeEnumerator.MoveNext();
             

@@ -3,7 +3,7 @@ using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Profiles;
-using Itinero.Routing.Costs.EdgeTypes;
+using Itinero.Routing.Costs.Caches;
 
 namespace Itinero.Routing.Costs
 {
@@ -11,11 +11,13 @@ namespace Itinero.Routing.Costs
     {
         private readonly Profile _profile;
         private readonly EdgeFactorCache _edgeFactorCache;
+        private readonly TurnCostFactorCache _turnCostFactorCache;
 
-        internal ProfileCostFunctionCached(Profile profile, EdgeFactorCache edgeFactorCache)
+        internal ProfileCostFunctionCached(Profile profile, EdgeFactorCache edgeFactorCache, TurnCostFactorCache turnCostFactorCache)
         {
             _profile = profile;
             _edgeFactorCache = edgeFactorCache;
+            _turnCostFactorCache = turnCostFactorCache;
         }
 
         public (bool canAccess, bool canStop, double cost, double turnCost) Get(
@@ -51,24 +53,26 @@ namespace Itinero.Routing.Costs
             var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
             var canAccess = cost > 0;
 
-            var totalTurnCost = 0.0;
+            var totalTurnCost = 0.0; 
             var (_, turn) = previousEdges.FirstOrDefault();
-            if (turn != null) {
-                var turnCosts = forward
-                    ? edgeEnumerator.GetTurnCostTo(turn.Value)
-                    : edgeEnumerator.GetTurnCostFrom(turn.Value);
+            if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
+            var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
 
-                foreach (var (turnCostType, turnCost) in turnCosts) {
-                    var turnCostAttributes =
-                        edgeEnumerator.Network.RouterDb.GetTurnCostType(turnCostType);
-                    var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
-                    if (turnCostFactor.IsBinary && turnCost > 0) {
-                        totalTurnCost = double.MaxValue;
-                        break;
-                    }
+            foreach (var (turnCostType,attributes, turnCost, prefixEdges) in turnCosts) {
+                // TODO: compare prefix edges with the previous edges.
 
-                    totalTurnCost += turnCostFactor.CostFactor * turnCost;
+                var turnCostFactor = _turnCostFactorCache.Get(turnCostType);
+                if (turnCostFactor == null)
+                {
+                    turnCostFactor = _profile.TurnCostFactor(attributes);
+                    _turnCostFactorCache.Set(turnCostType, turnCostFactor.Value);
                 }
+                if (turnCostFactor.Value.IsBinary && turnCost > 0) {
+                    totalTurnCost = double.MaxValue;
+                    break;
+                }
+
+                totalTurnCost += turnCostFactor.Value.CostFactor * turnCost;
             }
 
             return (canAccess, factor.CanStop, cost, totalTurnCost);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Itinero.Geo;
+using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Tiles;
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -21,6 +22,15 @@ namespace Itinero.Network.Writer
         internal RoutingNetworkWriter(IRoutingNetworkWritable network)
         {
             _network = network;
+        }
+        
+        /// <summary>
+        /// Gets an edge enumerator.
+        /// </summary>
+        /// <returns>The enumerator.</returns>
+        internal RoutingNetworkEdgeEnumerator GetEdgeEnumerator()
+        {
+            return _network.GetEdgeEnumerator();
         }
 
         public VertexId AddVertex(double longitude, double latitude, float? elevation = null)
@@ -77,24 +87,22 @@ namespace Itinero.Network.Writer
         }
 
         public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
-            EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+            EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix, uint? turnCostType = null)
         {
-            if (prefix != null) {
-                throw new NotSupportedException($"Turn costs with {nameof(prefix)} not supported.");
-            }
+            prefix ??= ArraySegment<EdgeId>.Empty;
 
             // get the tile (or create it).
             var (tile, _) = _network.GetTileForWrite(vertex.TileId);
             if (tile == null) {
                 throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
             }
-
+            
             // get the turn cost type id.
             var turnCostMap = _network.RouterDb.GetTurnCostTypeMap();
-            var turnCostTypeId = turnCostMap.func(attributes);
+            turnCostType ??= turnCostMap.func(attributes);
 
             // add the turn cost table using the type id.
-            tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs);
+            tile.AddTurnCosts(vertex, turnCostType.Value, edges, costs, attributes, prefix);
         }
 
         internal void AddTile(NetworkTile tile)

@@ -24,6 +24,14 @@ namespace Itinero.Profiles.Lua.Osm
         /// </summary>
         public static Profile Pedestrian { get; } = LazyPedestrian.Value;
         
+        private static readonly Lazy<Profile> LazyCar = new(() => LuaProfile.Load(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.car.lua"),
+            "Itinero.Profiles.Lua.Osm.car.lua"));
+
+        /// <summary>
+        /// Gets the default car profile.
+        /// </summary>
+        public static Profile Car { get; } = LazyCar.Value;
+        
         /// <summary>
         /// Loads a string from an embedded resource stream.
         /// </summary>

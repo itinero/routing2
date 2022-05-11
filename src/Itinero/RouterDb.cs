@@ -38,8 +38,8 @@ namespace Itinero
             this.Latest = new RoutingNetwork(this, configuration.Zoom);
             _edgeTypeIndex = new AttributeSetIndex(configuration.EdgeTypes);
             this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default;
-            _turnCostTypeIndex = new AttributeSetIndex();
-            _turnCostTypeMap = AttributeSetMap.Default;
+            _turnCostTypeIndex = new AttributeSetIndex(configuration.TurnCostTypes);
+            _turnCostTypeMap = configuration.TurnCostTypeMap ?? AttributeSetMap.Default;
 
             this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
         }

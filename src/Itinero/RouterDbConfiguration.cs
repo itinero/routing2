@@ -14,7 +14,7 @@ public class RouterDbConfiguration
     public int Zoom { get; set; } = 14;
 
     /// <summary>
-    /// Gets or sets the initial edge profiles.
+    /// Gets or sets the initial edge types.
     /// </summary>
     public List<IReadOnlyList<(string key, string value)>>? EdgeTypes { get; set; }
     
@@ -22,6 +22,16 @@ public class RouterDbConfiguration
     /// Gets or sets the edge type map.
     /// </summary>
     public AttributeSetMap? EdgeTypeMap { get; set; }
+
+    /// <summary>
+    /// Gets or sets the initial turn cost types.
+    /// </summary>
+    public List<IReadOnlyList<(string key, string value)>>? TurnCostTypes { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the turn cost type map.
+    /// </summary>
+    public AttributeSetMap? TurnCostTypeMap { get; set; }
 
     /// <summary>
     /// Gets the default configuration.

@@ -104,42 +104,42 @@ namespace Itinero.Tests.Network.Mutation
 
             // verify turn cost edge1 -> edge1.
             enumerator.MoveToEdge(edge1, true);
-            var fromOrder = enumerator.Head;
+            var fromOrder = enumerator.HeadOrder;
             Assert.NotNull(fromOrder);
             var toOrder = fromOrder;
             Assert.NotNull(toOrder);
             enumerator.MoveToEdge(edge1, false);
-            var cost = enumerator.GetTurnCostTo(fromOrder.Value).First();
+            var cost = enumerator.GetTurnCostToTail(fromOrder.Value).First();
             Assert.Equal((byte) 1, cost.cost);
 
             // verify turn cost edge1 -> edge2.
             enumerator.MoveToEdge(edge1, true);
-            fromOrder = enumerator.Head;
+            fromOrder = enumerator.HeadOrder;
             Assert.NotNull(fromOrder);
             enumerator.MoveToEdge(edge2);
-            toOrder = enumerator.Tail;
+            toOrder = enumerator.TailOrder;
             Assert.NotNull(toOrder);
-            cost = enumerator.GetTurnCostTo(fromOrder.Value).First();
+            cost = enumerator.GetTurnCostToTail(fromOrder.Value).First();
             Assert.Equal((byte) 2, cost.cost);
 
             // verify turn cost edge2 -> edge1.
             enumerator.MoveToEdge(edge2, false);
-            fromOrder = enumerator.Tail;
+            fromOrder = enumerator.HeadOrder;
             Assert.NotNull(fromOrder);
             enumerator.MoveToEdge(edge1, false);
-            toOrder = enumerator.Head;
+            toOrder = enumerator.TailOrder;
             Assert.NotNull(toOrder);
-            cost = enumerator.GetTurnCostTo(fromOrder.Value).First();
+            cost = enumerator.GetTurnCostToTail(fromOrder.Value).First();
             Assert.Equal((byte) 3, cost.cost);
 
-            // verify turn cost edg2 -> edge2.
+            // verify turn cost edge2 -> edge2.
             enumerator.MoveToEdge(edge2, false);
-            fromOrder = enumerator.Tail;
+            fromOrder = enumerator.HeadOrder;
             Assert.NotNull(fromOrder);
             toOrder = fromOrder;
             Assert.NotNull(toOrder);
             enumerator.MoveToEdge(edge2, true);
-            cost = enumerator.GetTurnCostTo(fromOrder.Value).First();
+            cost = enumerator.GetTurnCostToTail(fromOrder.Value).First();
             Assert.Equal((byte) 4, cost.cost);
         }
     }

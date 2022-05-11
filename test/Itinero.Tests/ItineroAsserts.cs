@@ -29,11 +29,11 @@ namespace Itinero.Tests
             }
 
             if (vertex1 != null) {
-                Assert.Equal(vertex1, enumerator.Vertex1);
+                Assert.Equal(vertex1, enumerator.Tail);
             }
 
             if (vertex2 != null) {
-                Assert.Equal(vertex2, enumerator.Vertex2);
+                Assert.Equal(vertex2, enumerator.Head);
             }
 
             if (edgeType != uint.MaxValue) {

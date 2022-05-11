@@ -2,6 +2,10 @@ using System.Collections.Generic;
 
 namespace Itinero.Network.Enumerators.Edges
 {
+    /// <summary>
+    /// An edge enumerator.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IEdgeEnumerator<out T>
     {
         /// <summary>
@@ -15,6 +19,9 @@ namespace Itinero.Network.Enumerators.Edges
         /// <returns>True if there is data available.</returns>
         bool MoveNext();
 
+        /// <summary>
+        /// Returns the network.
+        /// </summary>
         T Network { get; }
 
         /// <summary>
@@ -66,25 +73,43 @@ namespace Itinero.Network.Enumerators.Edges
         /// <summary>
         /// Gets the head index.
         /// </summary>
-        byte? Head { get; }
+        byte? HeadOrder { get; }
 
         /// <summary>
         /// Gets the tail index.
         /// </summary>
-        byte? Tail { get; }
+        byte? TailOrder { get; }
 
         /// <summary>
-        /// Gets the turn cost to the current edge given the from order.
+        /// Gets the turn cost at the tail turn (source -> [tail -> head]).
         /// </summary>
-        /// <param name="fromOrder">The order of the source edge.</param>
-        /// <returns>The turn cost if any.</returns>
-        IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder);
+        /// <param name="sourceOrder">The order of the source edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+            byte sourceOrder);
 
         /// <summary>
-        /// Gets the turn cost from the current edge given the to order.
+        /// Gets the turn cost at the tail turn ([head -> tail] -> target).
         /// </summary>
-        /// <param name="toOrder">The order of the target edge.</param>
-        /// <returns>The turn cost if any.</returns>
-        IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder);
+        /// <param name="targetOrder">The order of the target edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+            byte targetOrder);
+
+        /// <summary>
+        /// Gets the turn cost at the tail turn (source -> [head -> tail]).
+        /// </summary>
+        /// <param name="sourceOrder">The order of the source edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+            byte sourceOrder);
+
+        /// <summary>
+        /// Gets the turn cost at the tail turn ([tail -> head] -> target).
+        /// </summary>
+        /// <param name="targetOrder">The order of the target edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+            byte targetOrder);
     }
 }

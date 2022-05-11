@@ -25,24 +25,23 @@ namespace Itinero.Routing.Costs
             var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
             var canAccess = cost > 0;
 
+            // check for turn costs.
             var totalTurnCost = 0.0;
             var (_, turn) = previousEdges.FirstOrDefault();
-            if (turn != null) {
-                var turnCosts = forward
-                    ? edgeEnumerator.GetTurnCostTo(turn.Value)
-                    : edgeEnumerator.GetTurnCostFrom(turn.Value);
-
-                foreach (var (turnCostType, turnCost) in turnCosts) {
-                    var turnCostAttributes =
-                        edgeEnumerator.Network.RouterDb.GetTurnCostType(turnCostType);
-                    var turnCostFactor = _profile.TurnCostFactor(turnCostAttributes);
-                    if (turnCostFactor.IsBinary && turnCost > 0) {
-                        totalTurnCost = double.MaxValue;
-                        break;
-                    }
-
-                    totalTurnCost += turnCostFactor.CostFactor * turnCost;
+            if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
+            
+            // there are turn costs.
+            var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
+            foreach (var (_, attributes, turnCost, prefixEdges) in turnCosts) {
+                // TODO: compare prefix edges with the previous edges.
+                    
+                var turnCostFactor = _profile.TurnCostFactor(attributes);
+                if (turnCostFactor.IsBinary && turnCost > 0) {
+                    totalTurnCost = double.MaxValue;
+                    break;
                 }
+
+                totalTurnCost += turnCostFactor.CostFactor * turnCost;
             }
 
             return (canAccess, factor.CanStop, cost, totalTurnCost);

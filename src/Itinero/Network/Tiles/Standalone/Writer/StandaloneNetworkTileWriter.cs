@@ -12,15 +12,30 @@ public class StandaloneNetworkTileWriter
 {
     private readonly StandaloneNetworkTile _tile;
     private readonly int _zoom;
-    private readonly (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) _edgeTypeMap;
+    private readonly (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) _turnCostTypeMap;
 
     internal StandaloneNetworkTileWriter(StandaloneNetworkTile tile, int zoom,
-        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
+        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap, 
+        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) turnCostTypeMap)
     {
         _tile = tile;
-        _edgeTypeMap = edgeTypeMap;
+        this.EdgeTypeMap = edgeTypeMap;
+        _turnCostTypeMap = turnCostTypeMap;
         _zoom = zoom;
     }
+
+    public INetworkTileEdge GetEdge(EdgeId edgeId, bool forward)
+    {
+        var edge = new NetworkTileEnumerator();
+        edge.MoveTo(this._tile.NetworkTile);
+        edge.MoveTo(edgeId, forward);
+        return edge;
+    }
+    
+    /// <summary>
+    /// Gets the edge type map.
+    /// </summary>
+    public (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) EdgeTypeMap { get; }
 
     /// <summary>
     /// Returns true if the given coordinates are inside the tile boundaries.
@@ -34,6 +49,11 @@ public class StandaloneNetworkTileWriter
         var (x, y) = TileStatic.WorldToTile(longitude, latitude, _zoom);
         return _tile.TileId == TileStatic.ToLocalId(x, y, _zoom);
     }
+
+    /// <summary>
+    /// Gets the tile id.
+    /// </summary>
+    public uint TileId => _tile.TileId;
     
     /// <summary>
     /// Adds a new vertex.
@@ -57,21 +77,19 @@ public class StandaloneNetworkTileWriter
     /// Adds a new edge.
     /// </summary>
     /// <param name="vertex1">The from vertex.</param>
-    /// <param name="vertex2">The to vertex.</param>
+    /// <param name="vertex2">The to vertex.</param>>
+    /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="shape">The shape, if any.</param>
     /// <param name="attributes">The attributes, if any.</param>
     /// <returns>The edge id.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
+    public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, uint edgeTypeId,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
         IEnumerable<(string key, string value)>? attributes = null)
     {
         if (_tile.TileId != vertex1.TileId) throw new ArgumentException("Vertex not in tile");
         if (_tile.TileId != vertex2.TileId) throw new ArgumentException("Vertex not in tile");
-        
-        // get the edge type id.
-        var edgeTypeId = attributes != null ? (uint?) _edgeTypeMap.func(attributes) : null;
 
         // get the edge length in centimeters.
         if (!_tile.NetworkTile.TryGetVertex(vertex1, out var longitude, out var latitude, out var e)) {
@@ -91,19 +109,49 @@ public class StandaloneNetworkTileWriter
         return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
     }
 
+    public void AddGlobalIdFor(EdgeId edgeId, Guid globalEdgeId)
+    {
+        _tile.AddGlobalIdFor(edgeId, globalEdgeId);
+    }
+
+    public void AddGlobalIdFor(BoundaryEdgeId boundaryEdgeId, Guid globalEdgeId)
+    {
+        _tile.AddGlobalIdFor(boundaryEdgeId, globalEdgeId);
+    }
+
+    
+    /// <summary>
+    /// Adds turn costs.
+    /// </summary>
+    /// <param name="vertex">The vertex where the costs are located.</param>
+    /// <param name="attributes">The attributes representing the type of costs.</param>
+    /// <param name="edges">The edges involved in the costs.</param>
+    /// <param name="costs">The costs.</param>
+    /// <param name="prefix">When the costs are only valid after first traversing a sequence of edges.</param>
+    public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+    {
+        prefix ??= ArraySegment<EdgeId>.Empty;
+        
+        // get the turn cost type id.
+        var turnCostTypeId = _turnCostTypeMap.func(attributes);
+
+        // add the turn cost table using the type id.
+        _tile.NetworkTile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
+    }
+
     /// <summary>
     /// Adds a new boundary crossing.
     /// </summary>
     /// <param name="from">The from node and vertex, inside the tile.</param>
     /// <param name="to">The to node.</param>
+    /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="attributes">The attributes.</param>
     /// <param name="length">The length in centimeters.</param>
-    public void AddBoundaryCrossing((VertexId vertex, long node) from, long to,
-        IEnumerable<(string key, string value)> attributes, uint length)
+    public BoundaryEdgeId AddBoundaryCrossing((VertexId vertex, long node) from, long to,
+        uint edgeTypeId, IEnumerable<(string key, string value)> attributes, uint length)
     {
-        var edgeTypeId = _edgeTypeMap.func(attributes);
-        
-        _tile.AddBoundaryCrossing(false, from.node, to, from.vertex, attributes, edgeTypeId, length);
+        return _tile.AddBoundaryCrossing(false, from.node, to, from.vertex, attributes, edgeTypeId, length);
     }
 
     /// <summary>
@@ -111,14 +159,14 @@ public class StandaloneNetworkTileWriter
     /// </summary>
     /// <param name="from">The from node.</param>
     /// <param name="to">The to node and vertex, inside the tile.</param>
+    /// <param name="globalEdgeId">The global edge id.</param>
+    /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="attributes">The attributes.</param>
     /// <param name="length">The length in centimeters.</param>
-    public void AddBoundaryCrossing(long from, (VertexId vertex, long node) to,
-        IEnumerable<(string key, string value)> attributes, uint length)
+    public BoundaryEdgeId AddBoundaryCrossing(long from, (VertexId vertex, long node) to,
+        uint edgeTypeId, IEnumerable<(string key, string value)> attributes, uint length)
     {
-        var edgeTypeId = _edgeTypeMap.func(attributes);
-        
-        _tile.AddBoundaryCrossing(true, from, to.node, to.vertex, attributes, edgeTypeId, length);
+        return _tile.AddBoundaryCrossing(true, from, to.node, to.vertex, attributes, edgeTypeId, length);
     }
 
     /// <summary>

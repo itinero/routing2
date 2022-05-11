@@ -2,7 +2,6 @@ using System;
 
 namespace Itinero.Network
 {
-    // TODO: the internal graph structure bleeds out via the tiled ids.
     /// <summary>
     /// Represents a edge id composed of a tile id and a local id.
     /// </summary>

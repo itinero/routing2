@@ -23,6 +23,9 @@ namespace Itinero.Network.Tiles
 
             // write shapes.
             this.WriteGeoTo(stream);
+            
+            // write turn costs.
+            this.WriteTurnCostsTo(stream);
         }
 
         public static NetworkTile ReadFrom(Stream stream)
@@ -48,6 +51,9 @@ namespace Itinero.Network.Tiles
 
             // read shapes.
             graphTile.ReadGeoFrom(stream);
+            
+            // read turn costs.
+            graphTile.ReadTurnCostsFrom(stream);
 
             return graphTile;
         }

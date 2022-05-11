@@ -107,6 +107,7 @@ namespace Itinero.Network.Enumerators.Edges
             return _tileEnumerator.MoveNext();
         }
 
+        /// <inheritdoc/>
         public T Network { get; }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <summary>
         /// Gets the source vertex.
         /// </summary>
-        public VertexId From => _tileEnumerator.Vertex1;
+        public VertexId From => _tileEnumerator.Tail;
 
         private (double longitude, double latitude, float? e)? _toLocation;
 
@@ -142,7 +143,7 @@ namespace Itinero.Network.Enumerators.Edges
         /// <summary>
         /// Gets the target vertex.
         /// </summary>
-        public VertexId To => _tileEnumerator.Vertex2;
+        public VertexId To => _tileEnumerator.Head;
 
         /// <summary>
         /// Gets the edge id.
@@ -174,31 +175,55 @@ namespace Itinero.Network.Enumerators.Edges
         /// <summary>
         /// Gets the head index.
         /// </summary>
-        public byte? Head => _tileEnumerator.Head;
+        public byte? HeadOrder => _tileEnumerator.HeadOrder;
 
         /// <summary>
         /// Gets the tail index.
         /// </summary>
-        public byte? Tail => _tileEnumerator.Tail;
-
+        public byte? TailOrder => _tileEnumerator.TailOrder;
+        
         /// <summary>
-        /// Gets the turn cost to the current edge given the from order.
+        /// Gets the turn cost at the tail turn (source -> [tail -> head]).
         /// </summary>
-        /// <param name="fromOrder">The order of the source edge.</param>
-        /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostTo(byte fromOrder)
+        /// <param name="sourceOrder">The order of the source edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+            byte sourceOrder)
         {
-            return _tileEnumerator.GetTurnCostTo(fromOrder);
+            return _tileEnumerator.GetTurnCostToTail(sourceOrder);
         }
 
         /// <summary>
-        /// Gets the turn cost from the current edge given the to order.
+        /// Gets the turn cost at the tail turn ([head -> tail] -> target).
         /// </summary>
-        /// <param name="toOrder">The order of the target edge.</param>
-        /// <returns>The turn cost if any.</returns>
-        public IEnumerable<(uint turnCostType, uint cost)> GetTurnCostFrom(byte toOrder)
+        /// <param name="targetOrder">The order of the target edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+            byte targetOrder)
         {
-            return _tileEnumerator.GetTurnCostFrom(toOrder);
+            return _tileEnumerator.GetTurnCostFromTail(targetOrder);
+        }
+
+        /// <summary>
+        /// Gets the turn cost at the tail turn (source -> [head -> tail]).
+        /// </summary>
+        /// <param name="sourceOrder">The order of the source edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+            byte sourceOrder)
+        {
+            return _tileEnumerator.GetTurnCostToHead(sourceOrder);
+        }
+
+        /// <summary>
+        /// Gets the turn cost at the tail turn ([tail -> head] -> target).
+        /// </summary>
+        /// <param name="targetOrder">The order of the target edge.</param>
+        /// <returns>The turn costs if any.</returns>
+        public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+            byte targetOrder)
+        {
+            return _tileEnumerator.GetTurnCostFromHead(targetOrder);
         }
     }
 }
