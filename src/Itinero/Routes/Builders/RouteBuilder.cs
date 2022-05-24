@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -86,6 +87,25 @@ namespace Itinero.Routes.Builders
                     route.Shape.Add(shapeBetween.Current);
                 }
 
+                if (offset1 != 0 ||
+                    offset2 != ushort.MaxValue)
+                {
+                    attributes = attributes.Concat(new (string key, string value)[]
+                    {
+                        ("_segment_offset1",
+                            (offset1 / (double)ushort.MaxValue).ToString(System.Globalization.CultureInfo
+                                .InvariantCulture)),
+                        ("_segment_offset2",
+                            (offset2 / (double)ushort.MaxValue).ToString(System.Globalization.CultureInfo
+                                .InvariantCulture)),
+                    });
+                }
+
+                attributes = attributes.Concat(new (string key, string value)[]
+                {
+                    ("_segment_forward", direction.ToString())
+                });
+                
                 route.ShapeMeta.Add(new Route.Meta {
                     Shape = route.Shape.Count - 1,
                     Attributes = attributes,
