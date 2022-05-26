@@ -182,6 +182,8 @@ namespace Itinero.Network.Storage
 
         public static long GetDynamicUInt32(this ArrayBase<byte> data, long i, out uint value)
         {
+            if (i >= data.Length) throw new ArgumentOutOfRangeException(nameof(i));
+            
             var d = data[i];
             if (d < 128) {
                 value = d;
@@ -353,6 +355,8 @@ namespace Itinero.Network.Storage
 
         public static long GetDynamicInt32(this ArrayBase<byte> data, long i, out int value)
         {
+            if (i >= data.Length) throw new ArgumentOutOfRangeException(nameof(i));
+            
             var c = data.GetDynamicUInt32(i, out var unsigned);
             value = FromUnsigned(unsigned);
             return c;
