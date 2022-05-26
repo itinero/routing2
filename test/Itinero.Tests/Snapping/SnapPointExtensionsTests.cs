@@ -206,7 +206,7 @@ namespace Itinero.Tests.Snapping
 
             var routerDbLatest = routerDb.Latest;
             var location = new SnapPoint(edges[0], ushort.MaxValue / 2).LocationOnNetwork(routerDbLatest);
-            var result = await routerDbLatest.Snap().ToAsync(location);
+            var result = await routerDbLatest.Snap().Using(x => x.OffsetInMeter = 1000).ToAsync(location);
             Assert.False(result.IsError);
             Assert.True(result.Value.LocationOnNetwork(routerDbLatest).DistanceEstimateInMeter(location) < 1);
             Assert.Equal(edges[0], result.Value.EdgeId);
