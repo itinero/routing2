@@ -37,30 +37,43 @@ internal class LocationsSnapper : ILocationsSnapper
     public bool CheckCanStopOn { get; set; } = true;
 
     /// <summary>
-    /// Gets the maximum offset in meter.
+    /// The offset in meter for the bounding box to check for potential edges.
     /// </summary>
-    public double MaxOffsetInMeter { get; set; } = 1000;
+    public double OffsetInMeter { get; set; } = 100;
+        
+    /// <summary>
+    /// The maximum offset in meter for the bounding box to check for potential edges. This is used when there is nothing found and is different from OffsetInMeter.
+    /// </summary>
+    public double OffsetInMeterMax { get; set; } = 100;
 
-    internal Func<IEdgeEnumerator<RoutingNetwork>, bool> AcceptableFunc()
+    private Func<IEdgeEnumerator<RoutingNetwork>, bool>? _acceptableFunc = null;
+
+    private Func<IEdgeEnumerator<RoutingNetwork>, bool> AcceptableFunc()
     {
+        if (_acceptableFunc != null) return _acceptableFunc;
+
         var costFunctions = _profiles.Select(_snapper.RoutingNetwork.GetCostFunctionFor).ToArray();
 
         var hasProfiles = costFunctions.Length > 0;
-        if (!hasProfiles) {
+        if (!hasProfiles)
+        {
             return (_) => true;
         }
 
-        return (eEnum) => {
+        _acceptableFunc = (eEnum) =>
+        {
             var allOk = true;
 
-            foreach (var costFunction in costFunctions) {
+            foreach (var costFunction in costFunctions)
+            {
                 var costs = costFunction.Get(eEnum, true,
                     Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
 
                 var profileIsOk = costs.canAccess &&
                                   (!CheckCanStopOn || costs.canStop);
 
-                if (AnyProfile && profileIsOk) {
+                if (AnyProfile && profileIsOk)
+                {
                     return true;
                 }
 
@@ -69,35 +82,61 @@ internal class LocationsSnapper : ILocationsSnapper
 
             return allOk;
         };
+        return _acceptableFunc;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations,
+    public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(
+        IEnumerable<(double longitude, double latitude, float? e)> locations,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // We need to give 'AcceptableFunc' as function pointer later on
         // We construct this function only once
         var acceptableFunc = AcceptableFunc();
 
-        foreach (var location in locations) {
-            // calculate search box.
-            var box = location.BoxAround(MaxOffsetInMeter);
+        foreach (var location in locations)
+        {
+            var start = DateTime.Now.Ticks;
+            // break when cancelled.
+            if (cancellationToken.IsCancellationRequested) break;
+            
+            // calculate one box for all locations.
+            var box = location.BoxAround(OffsetInMeter);
 
             // make sure data is loaded.
             await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box, cancellationToken);
-                
-            // break when cancelled.
-            if (cancellationToken.IsCancellationRequested) break;
- 
+
             // snap to closest edge.
             var snapPoint = _snapper.RoutingNetwork.SnapInBox(box, acceptableFunc);
-            if (snapPoint.EdgeId != EdgeId.Empty) {
+            if (snapPoint.EdgeId != EdgeId.Empty)
+            {
                 yield return snapPoint;
             }
-            else {
+            else
+            {
+                // retry if requested.
+                if (this.OffsetInMeter < this.OffsetInMeterMax)
+                {
+                    // use bigger box.
+                    box = location.BoxAround(OffsetInMeterMax);
+                    
+                    // make sure data is loaded.
+                    await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box, cancellationToken);
+                    
+                    // snap to closest edge.
+                    snapPoint = _snapper.RoutingNetwork.SnapInBox(box, acceptableFunc);
+                    if (snapPoint.EdgeId != EdgeId.Empty)
+                    {
+                        yield return snapPoint;
+                        continue;
+                    }
+                }
                 yield return new Result<SnapPoint>(
                     $"Could not snap to location: {location.longitude},{location.latitude}");
             }
+
+            var end = DateTime.Now.Ticks;
+            Console.WriteLine($"LocationSnapper.ToAsync - single location: {new TimeSpan(end - start)}");
         }
     }
 }

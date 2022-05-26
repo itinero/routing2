@@ -40,7 +40,10 @@ namespace Itinero.Routing
         /// <returns>The paths.</returns>
         public static async Task<IReadOnlyList<IReadOnlyList<Result<Route>>>> Calculate(this IRouterManyToMany manyToManyRouter, CancellationToken cancellationToken)
         {
+            var start = DateTime.Now.Ticks;
             var paths = await manyToManyRouter.Paths(cancellationToken);
+            var end = DateTime.Now.Ticks;
+            Console.WriteLine(new TimeSpan(end - start));
             return paths.Select(x => {
                 return x.Select(y => {
                     if (y.IsError) return y.ConvertError<Route>();

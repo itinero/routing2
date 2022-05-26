@@ -16,8 +16,13 @@ namespace Itinero.Snapping
         public bool CheckCanStopOn { get; set; } = true;
 
         /// <summary>
-        /// Gets the maximum offset in meter.
+        /// The offset in meter for the bounding box to check for potential edges.
         /// </summary>
-        public double MaxOffsetInMeter { get; set; } = 1000;
+        public double OffsetInMeter { get; set; } = 100;
+        
+        /// <summary>
+        /// The maximum offset in meter for the bounding box to check for potential edges. This is used when there is nothing found and is different from OffsetInMeter.
+        /// </summary>
+        public double OffsetInMeterMax { get; set; } = 100;
     }
 }

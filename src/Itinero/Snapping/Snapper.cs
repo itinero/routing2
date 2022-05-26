@@ -41,7 +41,8 @@ namespace Itinero.Snapping
             return new LocationsSnapper(this, new[] {profile}) {
                 AnyProfile = s.AnyProfile,
                 CheckCanStopOn = s.CheckCanStopOn,
-                MaxOffsetInMeter = s.MaxOffsetInMeter
+                OffsetInMeter = s.OffsetInMeter,
+                OffsetInMeterMax = s.OffsetInMeterMax
             };
         }
 
@@ -94,7 +95,7 @@ namespace Itinero.Snapping
         {
             foreach (var location in locations) {
                 // calculate search box.
-                var box = location.BoxAround(this.Settings.MaxOffsetInMeter);
+                var box = location.BoxAround(this.Settings.OffsetInMeter);
 
                 // make sure data is loaded.
                 if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box, cancellationToken);
