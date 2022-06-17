@@ -296,7 +296,7 @@ public static class OsmTurnRestrictionExtensions
     {
         if (startNode < endNode)
         {
-            for (var n = startNode; n <= endNode; n++)
+            for (var n = startNode + 1; n <= endNode; n++)
             {
                 var edge = getEdgeFor(wayId, startNode, n);
                 if (edge == null) continue;
@@ -307,7 +307,7 @@ public static class OsmTurnRestrictionExtensions
         }
         else
         {
-            for (var n = startNode; n >= endNode; n--)
+            for (var n = startNode - 1; n >= endNode; n--)
             {
                 var edge = getEdgeFor(wayId, startNode, n);
                 if (edge == null) continue;
