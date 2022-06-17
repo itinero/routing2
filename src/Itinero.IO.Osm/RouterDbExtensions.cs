@@ -24,7 +24,8 @@ namespace Itinero.IO.Osm
             Action<DataProviderSettings>? configure = null)
         {
             // get writer.
-            if (routerDb.HasMutableNetwork) {
+            if (routerDb.HasMutableNetwork)
+            {
                 throw new InvalidOperationException(
                     $"Cannot add data to a {nameof(RouterDb)} that is only being written to.");
             }
@@ -34,24 +35,27 @@ namespace Itinero.IO.Osm
             // create settings.
             var settings = new DataProviderSettings();
             configure?.Invoke(settings);
-            
+
             // do filtering.
-            
+
             // 1: complete objects.
-            if (settings.TagsFilter.CompleteFilter != null) {
+            if (settings.TagsFilter.CompleteFilter != null)
+            {
                 data = data.ApplyCompleteFilter(settings.TagsFilter.CompleteFilter);
             }
-            
+
             // 2: filter relations.
-            if (settings.TagsFilter.MemberFilter != null) {
+            if (settings.TagsFilter.MemberFilter != null)
+            {
                 data = data.ApplyRelationMemberFilter(settings.TagsFilter.MemberFilter);
             }
-            
+
             // 3: filter tags on ways and relations.
-            if (settings.TagsFilter.Filter != null) {
+            if (settings.TagsFilter.Filter != null)
+            {
                 data = data.ApplyFilter(settings.TagsFilter.Filter);
             }
-            
+
             // use writer to fill router db.
             var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, settings.ElevationHandler);
             routerDbStreamTarget.RegisterSource(data);

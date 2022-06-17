@@ -121,12 +121,12 @@ internal partial class NetworkTile
             if (enumerator.Forward)
             {
                 // if the edge is forward the tail in the enumerator is also the tail in the edge.
-                SetTailHeadOrder(enumerator.EdgeId, order.Value, null);
+                SetTailHeadOrder(enumerator.EdgePointer, order.Value, null);
             }
             else
             {
                 // if the edge is backward the tail in the enumerator is head in the edge.
-                SetTailHeadOrder(enumerator.EdgeId, null, order.Value);
+                SetTailHeadOrder(enumerator.EdgePointer, null, order.Value);
             }
         }
 
@@ -297,10 +297,8 @@ internal partial class NetworkTile
         }
     }
 
-    private void SetTailHeadOrder(EdgeId edge, byte? tailOrder, byte? headOrder)
+    private void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
     {
-        var pointer = edge.LocalId;
-
         // skip over vertices and next-pointers.
         var size = DecodeVertex(pointer, out _, out var t1);
         pointer += size;

@@ -222,6 +222,8 @@ namespace Itinero.Network.Storage
 
         public static long GetDynamicUInt64(this ArrayBase<byte> data, long i, out ulong value)
         {
+            if (i >= data.Length) throw new ArgumentOutOfRangeException(nameof(i));
+            
             var d = data[i];
             if (d < 128) {
                 value = d;

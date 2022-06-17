@@ -100,10 +100,10 @@ namespace Itinero.Tests.Functional
             //     return (short) elevation;
             // });
 
-            var bicycle = Itinero.Profiles.Lua.Osm.OsmProfiles.Bicycle;
+            var car = Itinero.Profiles.Lua.Osm.OsmProfiles.Car;
 
             // setup a router db with a local osm file.
-            RouterDb routerDb = FromUrl(bicycle, LuxembourgUrl, "luxembourg-latest.osm.pbf");
+            var routerDb = FromUrl(car, LuxembourgUrl, "luxembourg-latest.osm.pbf");
 
             var lux1 = (6.119298934936523, 49.60962540702068, (float?) 0f);
             var lux2 = (6.124148368835449, 49.588792167215345, (float?) 0f);
@@ -112,10 +112,10 @@ namespace Itinero.Tests.Functional
             var lux1sp = await latest.Snap().ToAsync(lux1);
             var lux2sp = await latest.Snap().ToAsync(lux2);
 
-            var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, bicycle));
+            var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
             var oneToOneGeoJson = oneToOne.ToGeoJson();
             var routes = await RouterOneToOneWithAlternativeTest.Default.RunAsync(
-                (latest, lux1sp, lux2sp, bicycle)
+                (latest, lux1sp, lux2sp, car)
             );
             
             var geoJson = routes.Select(r => r.ToGeoJson()).ToList();

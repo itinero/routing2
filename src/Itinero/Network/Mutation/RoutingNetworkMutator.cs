@@ -59,6 +59,22 @@ namespace Itinero.Network.Mutation
             return GetTileForRead(localTileId);
         }
 
+        /// <summary>
+        /// Gets the edge associated with the given id.
+        /// </summary>
+        /// <param name="edgeId">The edge id.</param>
+        /// <param name="forward">The forward flag.</param>
+        /// <returns>The edge details.</returns>
+        public INetworkTileEdge GetEdge(EdgeId edgeId, bool forward)
+        {
+            var (tile, _) = this.GetTileForWrite(edgeId.TileId);
+            
+            var edge = new NetworkTileEnumerator();
+            edge.MoveTo(tile);
+            edge.MoveTo(edgeId, forward);
+            return edge;
+        }
+
         private (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) GetTileForWrite(
             uint localTileId)
         {

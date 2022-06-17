@@ -222,7 +222,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
 
             // keep going until heap is empty.
             while (_heap.Count > 0) {
-                if (_visits.Count > 1 << 15) {
+                if (_visits.Count > 1 << 20) {
                     // TODO: come up with a stop condition that makes more sense to prevent the global network being loaded
                     // when a route is not found.
                     break;

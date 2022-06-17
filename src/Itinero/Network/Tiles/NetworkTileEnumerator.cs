@@ -27,18 +27,7 @@ namespace Itinero.Network.Tiles
         /// <summary>
         /// Gets the tile id.
         /// </summary>
-        public uint TileId
-        {
-            get
-            {
-                if (Tile == null)
-                {
-                    return uint.MaxValue;
-                }
-
-                return Tile.TileId;
-            }
-        }
+        public uint TileId => Tile?.TileId ?? uint.MaxValue;
 
         /// <summary>
         /// Moves to the given tile.
@@ -71,6 +60,7 @@ namespace Itinero.Network.Tiles
 
             _localId = vertex.LocalId;
             _nextEdgePointer = uint.MaxValue;
+            this.EdgePointer = uint.MaxValue;
 
             Tail = vertex;
             return true;
@@ -100,6 +90,7 @@ namespace Itinero.Network.Tiles
             {
                 _nextEdgePointer = Tile.GetEdgeCrossPointer(edge.LocalId - EdgeId.MinCrossId);
             }
+            this.EdgePointer = _nextEdgePointer.Value;
 
             // decode edge data.
             EdgeId = edge;
@@ -177,10 +168,13 @@ namespace Itinero.Network.Tiles
                 throw new InvalidOperationException("Cannot reset an empty enumerator.");
             }
 
+            this.EdgePointer = uint.MaxValue;
             _nextEdgePointer = uint.MaxValue;
         }
 
         public bool IsEmpty => Tile == null;
+
+        internal uint EdgePointer { get; private set; } = uint.MaxValue;
 
         /// <summary>
         /// Moves to the next edge for the current vertex.
@@ -188,6 +182,8 @@ namespace Itinero.Network.Tiles
         /// <returns>True when there is a new edge.</returns>
         public bool MoveNext()
         {
+            this.EdgePointer = uint.MaxValue;
+            
             if (Tile == null)
             {
                 throw new InvalidOperationException("Move to graph tile first.");
@@ -206,6 +202,7 @@ namespace Itinero.Network.Tiles
             }
 
             // decode edge data.
+            this.EdgePointer = _nextEdgePointer.Value;
             EdgeId = new EdgeId(Tile.TileId, _nextEdgePointer.Value);
             var size = Tile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
             var vertex1 = new VertexId(tileId, localId);

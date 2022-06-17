@@ -24,6 +24,12 @@ public class StandaloneNetworkTileWriter
         _zoom = zoom;
     }
 
+    /// <summary>
+    /// Gets the edge associated with the given id.
+    /// </summary>
+    /// <param name="edgeId">The edge id.</param>
+    /// <param name="forward">The forward flag.</param>
+    /// <returns>The edge details.</returns>
     public INetworkTileEdge GetEdge(EdgeId edgeId, bool forward)
     {
         var edge = new NetworkTileEnumerator();
