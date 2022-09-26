@@ -2,10 +2,14 @@ name = "car"
 vehicle_types = { "vehicle", "motorvehicle", "motorcar" }
 
 speed_profile = {
-    ["primary"] = { speed = 120, access = true },
-    ["primary_link"] = { speed = 120, access = true },
-    ["secondary"] = { speed = 90, access = true },
-    ["secondary_link"] = { speed = 90, access = true },
+    ["motorway"] = { speed = 120, access = true },
+    ["motorway_link"] = { speed = 120, access = true },
+    ["trunk"] = { speed = 120, access = true },
+    ["trunk_link"] = { speed = 120, access = true },
+    ["primary"] = { speed = 90, access = true },
+    ["primary_link"] = { speed = 90, access = true },
+    ["secondary"] = { speed = 70, access = true },
+    ["secondary_link"] = { speed = 70, access = true },
     ["tertiary"] = { speed = 70, access = true },
     ["tertiary_link"] = { speed = 70, access = true },
     ["unclassified"] = { speed = 50, access = true },
@@ -75,6 +79,8 @@ end
 function factor(attributes, result)
     result.forward = 0
     result.backward = 0
+    result.forward_speed = 0
+    result.backward_speed = 0
 
     if not attributes then
         return
@@ -91,8 +97,10 @@ function factor(attributes, result)
     -- get speed and access per highway type.
     local highway_speed = speed_profile[highway]
     if highway_speed then
-        result.forward = 1 / (highway_speed.speed / 3.6)
+        result.forward = 1 / (highway_speed.speed / 36)
+        result.forward_speed = highway_speed.speed
         result.backward = result.forward
+        result.backward_speed = highway_speed.speed
         result.access = highway_speed.access
     else
         return
@@ -107,6 +115,8 @@ function factor(attributes, result)
     else
         result.forward = 0
         result.backward = 0
+        result.forward_speed = 0
+        result.backward_speed = 0
         return
     end
 
@@ -123,8 +133,10 @@ function factor(attributes, result)
         
     if result.direction == 1 then
         result.backward = 0
+        result.backward_speed = 0
     elseif result.direction == 2 then
         result.forward = 0
+        result.forward_speed = 0
     end    
 end
 

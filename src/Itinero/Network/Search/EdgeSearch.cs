@@ -55,7 +55,7 @@ namespace Itinero.Network.Search
             const double exactTolerance = 1;
             var bestDistance = double.MaxValue;
             (EdgeId edgeId, ushort offset) bestSnapPoint = (EdgeId.Empty, ushort.MaxValue);
-            while (edgeEnumerator.MoveNext()) {
+            while (edgeEnumerator.MoveNext()) {                
                 if (bestDistance <= 0) {
                     break; // break when exact on an edge.
                 }
@@ -126,7 +126,7 @@ namespace Itinero.Network.Search
                         var originalPrevious = previous;
                         previous = current;
                         if (bestDistance <= 0) {
-                            continue;
+                            break;
                         }
 
                         var projected = line.ProjectOn(center);

@@ -31,13 +31,16 @@ namespace Itinero.Network.Enumerators.Vertices
 
         public bool MoveNext()
         {
-            if (_currentTile == uint.MaxValue) {
-                while (_tiles.MoveNext()) {
+            if (_currentTile == uint.MaxValue)
+            {
+                while (_tiles.MoveNext())
+                {
                     _currentTile = TileStatic.ToLocalId(_tiles.Current.x, _tiles.Current.y, _routingNetwork.Zoom);
                     _currentVertex = 0;
 
                     if (_routingNetwork.TryGetVertex(new VertexId(_currentTile, _currentVertex),
-                        out _currentLongitude, out _currentLatitude, out _currentElevation)) {
+                            out _currentLongitude, out _currentLatitude, out _currentElevation))
+                    {
                         return true;
                     }
                 }
@@ -45,19 +48,28 @@ namespace Itinero.Network.Enumerators.Vertices
                 return false;
             }
 
-            while (true) {
+            while (true)
+            {
                 _currentVertex++;
                 if (_routingNetwork.TryGetVertex(new VertexId(_currentTile, _currentVertex),
-                    out _currentLongitude, out _currentLatitude, out _currentElevation)) {
+                        out _currentLongitude, out _currentLatitude, out _currentElevation))
+                {
                     return true;
                 }
-                else {
-                    if (!_tiles.MoveNext()) {
+                else
+                {
+                    if (!_tiles.MoveNext())
+                    {
                         break;
                     }
 
                     _currentTile = TileStatic.ToLocalId(_tiles.Current.x, _tiles.Current.y, _routingNetwork.Zoom);
                     _currentVertex = 0;
+                    if (_routingNetwork.TryGetVertex(new VertexId(_currentTile, _currentVertex),
+                            out _currentLongitude, out _currentLatitude, out _currentElevation))
+                    {
+                        return true;
+                    }
                 }
             }
 
