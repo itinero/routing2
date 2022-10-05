@@ -55,6 +55,6 @@ public sealed class GlobalVertexIdSet : IEnumerable<(long globalId, VertexId ver
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return GetEnumerator();
+        return this.GetEnumerator();
     }
 }

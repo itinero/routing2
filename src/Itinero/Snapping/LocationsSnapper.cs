@@ -70,9 +70,9 @@ internal class LocationsSnapper : ILocationsSnapper
                     Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
 
                 var profileIsOk = costs.canAccess &&
-                                  (!CheckCanStopOn || costs.canStop);
+                                  (!this.CheckCanStopOn || costs.canStop);
 
-                if (AnyProfile && profileIsOk)
+                if (this.AnyProfile && profileIsOk)
                 {
                     return true;
                 }
@@ -92,7 +92,7 @@ internal class LocationsSnapper : ILocationsSnapper
     {
         // We need to give 'AcceptableFunc' as function pointer later on
         // We construct this function only once
-        var acceptableFunc = AcceptableFunc();
+        var acceptableFunc = this.AcceptableFunc();
 
         foreach (var location in locations)
         {
@@ -101,7 +101,7 @@ internal class LocationsSnapper : ILocationsSnapper
             if (cancellationToken.IsCancellationRequested) break;
 
             // calculate one box for all locations.
-            var box = location.BoxAround(OffsetInMeter);
+            var box = location.BoxAround(this.OffsetInMeter);
 
             // make sure data is loaded.
             await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box, cancellationToken);
@@ -118,7 +118,7 @@ internal class LocationsSnapper : ILocationsSnapper
                 if (this.OffsetInMeter < this.OffsetInMeterMax)
                 {
                     // use bigger box.
-                    box = location.BoxAround(OffsetInMeterMax);
+                    box = location.BoxAround(this.OffsetInMeterMax);
 
                     // make sure data is loaded.
                     await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box, cancellationToken);

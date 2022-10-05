@@ -18,137 +18,136 @@
 
 using System.Collections.Generic;
 
-namespace Itinero.IO.Osm.Collections
+namespace Itinero.IO.Osm.Collections;
+
+/// <summary>
+/// A unique id map, only vertex per id.
+/// </summary>
+public class UniqueIdMap<T>
+    where T : struct
 {
+    private readonly Dictionary<long, Block> _blocks;
+    private readonly int _blockSize;
+    private static T _defaultValue;
+
     /// <summary>
-    /// A unique id map, only vertex per id.
+    /// Creates a new id map.
     /// </summary>
-    public class UniqueIdMap<T>
-        where T : struct
+    public UniqueIdMap(T defaultValue, int blockSize = 32)
     {
-        private readonly Dictionary<long, Block> _blocks;
-        private readonly int _blockSize;
-        private static T _defaultValue;
+        _blocks = new Dictionary<long, Block>();
+        _blockSize = blockSize;
+        _defaultValue = defaultValue;
+    }
 
-        /// <summary>
-        /// Creates a new id map.
-        /// </summary>
-        public UniqueIdMap(T defaultValue, int blockSize = 32)
+    /// <summary>
+    /// Sets a tile id.
+    /// </summary>
+    public void Set(long id, T vertex)
+    {
+        var blockIdx = id / _blockSize;
+        var offset = id - blockIdx * _blockSize;
+
+        if (!_blocks.TryGetValue(blockIdx, out var block))
         {
-            _blocks = new Dictionary<long, Block>();
-            _blockSize = blockSize;
-            _defaultValue = defaultValue;
-        }
-
-        /// <summary>
-        /// Sets a tile id.
-        /// </summary>
-        public void Set(long id, T vertex)
-        {
-            var blockIdx = id / _blockSize;
-            var offset = id - blockIdx * _blockSize;
-
-            if (!_blocks.TryGetValue(blockIdx, out var block))
+            block = new Block
             {
-                block = new Block
-                {
-                    Start = (uint)offset,
-                    End = (uint)offset,
-                    Data = new T[] { vertex }
-                };
-                _blocks[blockIdx] = block;
-            }
-            else
+                Start = (uint)offset,
+                End = (uint)offset,
+                Data = new T[] { vertex }
+            };
+            _blocks[blockIdx] = block;
+        }
+        else
+        {
+            block.Set(offset, vertex);
+            _blocks[blockIdx] = block;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the tile id for the given id.
+    /// </summary>
+    public T this[long id]
+    {
+        get => this.Get(id);
+        set => this.Set(id, value);
+    }
+
+    /// <summary>
+    /// Gets a tile id.
+    /// </summary>
+    public T Get(long id)
+    {
+        var blockIdx = id / _blockSize;
+        var offset = id - blockIdx * _blockSize;
+
+        if (!_blocks.TryGetValue(blockIdx, out var block))
+        {
+            return _defaultValue;
+        }
+
+        return block.Get(offset);
+    }
+
+    /// <summary>
+    /// An enumerable with the non-default indices in this map.
+    /// </summary>
+    public IEnumerable<long> NonDefaultIndices => throw new System.NotImplementedException();
+
+    private struct Block
+    {
+        public uint Start { get; set; }
+
+        public uint End { get; set; }
+
+        public T[] Data { get; set; }
+
+        public T Get(long offset)
+        {
+            if (this.Start > offset)
             {
-                block.Set(offset, vertex);
-                _blocks[blockIdx] = block;
+                return _defaultValue;
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the tile id for the given id.
-        /// </summary>
-        public T this[long id]
-        {
-            get => Get(id);
-            set => Set(id, value);
-        }
-
-        /// <summary>
-        /// Gets a tile id.
-        /// </summary>
-        public T Get(long id)
-        {
-            var blockIdx = id / _blockSize;
-            var offset = id - blockIdx * _blockSize;
-
-            if (!_blocks.TryGetValue(blockIdx, out var block))
+            else if (offset > this.End)
             {
                 return _defaultValue;
             }
 
-            return block.Get(offset);
+            return this.Data[offset - this.Start];
         }
 
-        /// <summary>
-        /// An enumerable with the non-default indices in this map.
-        /// </summary>
-        public IEnumerable<long> NonDefaultIndices => throw new System.NotImplementedException();
-
-        private struct Block
+        public void Set(long offset, T value)
         {
-            public uint Start { get; set; }
-
-            public uint End { get; set; }
-
-            public T[] Data { get; set; }
-
-            public T Get(long offset)
-            {
-                if (Start > offset)
+            if (this.Start > offset)
+            { // expand at the beginning.
+                var newData = new T[this.End - offset + 1];
+                this.Data.CopyTo(newData, (int)(this.Start - offset));
+                for (var i = 1; i < this.Start - offset; i++)
                 {
-                    return _defaultValue;
-                }
-                else if (offset > End)
-                {
-                    return _defaultValue;
+                    newData[i] = _defaultValue;
                 }
 
-                return Data[offset - Start];
+                this.Data = newData;
+                this.Start = (uint)offset;
+                this.Data[0] = value;
             }
-
-            public void Set(long offset, T value)
-            {
-                if (Start > offset)
-                { // expand at the beginning.
-                    var newData = new T[End - offset + 1];
-                    Data.CopyTo(newData, (int)(Start - offset));
-                    for (var i = 1; i < Start - offset; i++)
-                    {
-                        newData[i] = _defaultValue;
-                    }
-
-                    Data = newData;
-                    Start = (uint)offset;
-                    Data[0] = value;
-                }
-                else if (End < offset)
-                { // expand at the end.
-                    var newData = new T[offset - Start + 1];
-                    Data.CopyTo(newData, 0);
-                    for (var i = End + 1 - Start; i < newData.Length - 1; i++)
-                    {
-                        newData[i] = _defaultValue;
-                    }
-
-                    Data = newData;
-                    End = (uint)offset;
-                    Data[offset - Start] = value;
-                }
-                else
+            else if (this.End < offset)
+            { // expand at the end.
+                var newData = new T[offset - this.Start + 1];
+                this.Data.CopyTo(newData, 0);
+                for (var i = this.End + 1 - this.Start; i < newData.Length - 1; i++)
                 {
-                    Data[offset - Start] = value;
+                    newData[i] = _defaultValue;
                 }
+
+                this.Data = newData;
+                this.End = (uint)offset;
+                this.Data[offset - this.Start] = value;
+            }
+            else
+            {
+                this.Data[offset - this.Start] = value;
             }
         }
     }

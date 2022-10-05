@@ -1,60 +1,59 @@
 ﻿using System;
 using Itinero.Routes;
 
-namespace Itinero.Instructions
+namespace Itinero.Instructions;
+
+internal class Box<T>
 {
-    internal class Box<T>
+    public T Content { get; set; }
+}
+
+internal static class Utils
+{
+
+    /**
+     * Normalizes degrees to be between -180 (incl) and 180 (excl)
+     */
+    internal static int NormalizeDegrees(this double degrees)
     {
-        public T Content { get; set; }
+        if (degrees <= -180)
+        {
+            degrees += 360;
+        }
+
+        if (degrees > 180)
+        {
+            degrees -= 360;
+        }
+
+        return (int)degrees;
     }
 
-    internal static class Utils
+    public static string DegreesToText(this int degrees)
     {
-
-        /**
-         * Normalizes degrees to be between -180 (incl) and 180 (excl)
-         */
-        internal static int NormalizeDegrees(this double degrees)
+        var cutoff = 30;
+        if (-cutoff < degrees && degrees < cutoff)
         {
-            if (degrees <= -180)
-            {
-                degrees += 360;
-            }
-
-            if (degrees > 180)
-            {
-                degrees -= 360;
-            }
-
-            return (int)degrees;
+            return "straight on";
         }
 
-        public static string DegreesToText(this int degrees)
+        var direction = "left";
+        if (degrees > 0)
         {
-            var cutoff = 30;
-            if (-cutoff < degrees && degrees < cutoff)
-            {
-                return "straight on";
-            }
-
-            var direction = "left";
-            if (degrees > 0)
-            {
-                direction = "right";
-            }
-
-            degrees = Math.Abs(degrees);
-            if (degrees > 180 - cutoff)
-            {
-                return "sharp " + direction;
-            }
-
-            if (degrees < 2 * cutoff)
-            {
-                return "slightly " + direction;
-            }
-
-            return direction;
+            direction = "right";
         }
+
+        degrees = Math.Abs(degrees);
+        if (degrees > 180 - cutoff)
+        {
+            return "sharp " + direction;
+        }
+
+        if (degrees < 2 * cutoff)
+        {
+            return "slightly " + direction;
+        }
+
+        return direction;
     }
 }

@@ -22,7 +22,7 @@ public partial class StandaloneNetworkTile
 
         // make sure there is space in the turn cost array.
         var maxLength = _turnCostPointer + 5 + 5 + 5 +
-                        edges.Length * (16 + 5) +
+                        (edges.Length * (16 + 5)) +
                         (costs.GetLength(0) * costs.GetLength(1) * 5);
         while (_turnCosts.Length < maxLength)
         {

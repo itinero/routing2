@@ -8,17 +8,17 @@ using Itinero.Instructions.Types.Generators;
 using Itinero.Routes;
 using Xunit;
 
-namespace Itinero.Tests.Instructions
+namespace Itinero.Tests.Instructions;
+
+public class InstructionTest
 {
-    public class InstructionTest
+    [Fact]
+    public void GenerateInstructions_AdvancedRoute_EmitsInstructions()
     {
-        [Fact]
-        public void GenerateInstructions_AdvancedRoute_EmitsInstructions()
+        var route = new Route
         {
-            var route = new Route
-            {
-                Profile = "bicycle.something",
-                Shape = new List<(double longitude, double latitude, float? e)> {
+            Profile = "bicycle.something",
+            Shape = new List<(double longitude, double latitude, float? e)> {
                     // Blokstraat
                     (3.2194970548152924, 51.215430955322816, null), // 0
                     (3.218715190887451, 51.216450776477345, null),
@@ -42,7 +42,7 @@ namespace Itinero.Tests.Instructions
                     // Karel de stoute, even links-rechts
                     (3.2133668661117554, 51.212247019059234, null) // 10
                 },
-                ShapeMeta = new List<Route.Meta> {
+            ShapeMeta = new List<Route.Meta> {
                     new() {
                         Distance = 0,
                         Shape = 3,
@@ -62,51 +62,51 @@ namespace Itinero.Tests.Instructions
                         }
                     }
                 }
-            };
+        };
 
-            var start = new Route.Stop
-            { Coordinate = (3.219408541917801, 51.21541415412617, null), Shape = 0, Distance = 10 };
-            // estimated m between the pinned start point and the snapped startpoint
+        var start = new Route.Stop
+        { Coordinate = (3.219408541917801, 51.21541415412617, null), Shape = 0, Distance = 10 };
+        // estimated m between the pinned start point and the snapped startpoint
 
-            var stop = new Route.Stop
-            {
-                Coordinate = (3.2099054753780365, 51.20692456541283, null),
-                Shape = route.Shape.Count - 1,
-                Distance = 15
-            };
-            // estimated m between the pinned start point and the snapped startpoint
+        var stop = new Route.Stop
+        {
+            Coordinate = (3.2099054753780365, 51.20692456541283, null),
+            Shape = route.Shape.Count - 1,
+            Distance = 15
+        };
+        // estimated m between the pinned start point and the snapped startpoint
 
 
-            route.Stops = new List<Route.Stop> {
+        route.Stops = new List<Route.Stop> {
                 start, stop
             };
 
 
-            var instructionGenerator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() { new BaseInstructionGenerator(),
+        var instructionGenerator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() { new BaseInstructionGenerator(),
                 new StartInstructionGenerator(), new EndInstructionGenerator() });
-            var instructions = instructionGenerator.GenerateInstructions(route).ToList();
-            var toText = new SubstituteText(new[] {
+        var instructions = instructionGenerator.GenerateInstructions(route).ToList();
+        var toText = new SubstituteText(new[] {
                 ("Turn ", false),
                 ("TurnDegrees", true)
             });
-            var texts = instructions.Select(toText.ToText).ToList();
+        var texts = instructions.Select(toText.ToText).ToList();
 
-            Assert.NotEmpty(instructions);
-            Assert.Equal("Turn 57", texts[1]);
-        }
+        Assert.NotEmpty(instructions);
+        Assert.Equal("Turn 57", texts[1]);
+    }
 
-        [Fact]
-        public void TurnLeft_Bearing_IsNegative()
+    [Fact]
+    public void TurnLeft_Bearing_IsNegative()
+    {
+        var route = new Route
         {
-            var route = new Route
-            {
-                Profile = "bicycle.something",
-                Shape = new List<(double longitude, double latitude, float? e)> {
+            Profile = "bicycle.something",
+            Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.220163583755493, 51.21574849678613, 0f), // Elf-julistraat
                     (3.2203567028045654, 51.2154998401649, 0f), // Turn LEFT
                     (3.2207429409027095, 51.21557376524662, 0f) // Klaverstraat towards vlamingdam
                 },
-                ShapeMeta = new List<Route.Meta> {
+            ShapeMeta = new List<Route.Meta> {
                     new() {
                         Distance = 10,
                         Shape = 1,
@@ -122,15 +122,14 @@ namespace Itinero.Tests.Instructions
                         }
                     }
                 }
-            };
+        };
 
-            var instructionGenerator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() { new BaseInstructionGenerator(),
+        var instructionGenerator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() { new BaseInstructionGenerator(),
                 new StartInstructionGenerator(), new EndInstructionGenerator() });
 
-            var instructions = instructionGenerator.GenerateInstructions(route).ToList();
-            // The left turn is included in the start instruction
-            var leftTurn = ((StartInstruction)instructions[0]).Then;
-            Assert.True(leftTurn.TurnDegrees < 0);
-        }
+        var instructions = instructionGenerator.GenerateInstructions(route).ToList();
+        // The left turn is included in the start instruction
+        var leftTurn = ((StartInstruction)instructions[0]).Then;
+        Assert.True(leftTurn.TurnDegrees < 0);
     }
 }

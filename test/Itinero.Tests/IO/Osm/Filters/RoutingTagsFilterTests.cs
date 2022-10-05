@@ -4,107 +4,106 @@ using OsmSharp;
 using OsmSharp.Tags;
 using Xunit;
 
-namespace Itinero.Tests.IO.Osm.Filters
+namespace Itinero.Tests.IO.Osm.Filters;
+
+public class RoutingTagsFilterTests
 {
-    public class RoutingTagsFilterTests
+    [Fact]
+    public void RoutingTagsFilter_Filter_Node_Null_ShouldIncluded()
     {
-        [Fact]
-        public void RoutingTagsFilter_Filter_Node_Null_ShouldIncluded()
+        var filter = RoutingTagsFilter.Filter(new Node()
         {
-            var filter = RoutingTagsFilter.Filter(new Node()
-            {
-                Tags = null
-            });
+            Tags = null
+        });
 
-            Assert.True(filter);
-        }
+        Assert.True(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Way_Null_ShouldBeExcluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Way_Null_ShouldBeExcluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Way()
         {
-            var filter = RoutingTagsFilter.Filter(new Way()
-            {
-                Tags = null
-            });
+            Tags = null
+        });
 
-            Assert.False(filter);
-        }
+        Assert.False(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Relation_Null_ShouldBeExcluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Relation_Null_ShouldBeExcluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Relation()
         {
-            var filter = RoutingTagsFilter.Filter(new Relation()
-            {
-                Tags = null
-            });
+            Tags = null
+        });
 
-            Assert.False(filter);
-        }
+        Assert.False(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Node_Empty_ShouldBeIncluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Node_Empty_ShouldBeIncluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Node()
         {
-            var filter = RoutingTagsFilter.Filter(new Node()
-            {
-                Tags = new TagsCollection()
-            });
+            Tags = new TagsCollection()
+        });
 
-            Assert.True(filter);
-        }
+        Assert.True(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Way_Empty_ShouldBeExcluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Way_Empty_ShouldBeExcluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Way()
         {
-            var filter = RoutingTagsFilter.Filter(new Way()
-            {
-                Tags = new TagsCollection()
-            });
+            Tags = new TagsCollection()
+        });
 
-            Assert.False(filter);
-        }
+        Assert.False(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Relation_Empty_ShouldBeExcluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Relation_Empty_ShouldBeExcluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Relation()
         {
-            var filter = RoutingTagsFilter.Filter(new Relation()
-            {
-                Tags = new TagsCollection()
-            });
+            Tags = new TagsCollection()
+        });
 
-            Assert.False(filter);
-        }
+        Assert.False(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Way_Building_ShouldBeExcluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Way_Building_ShouldBeExcluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Way()
         {
-            var filter = RoutingTagsFilter.Filter(new Way()
-            {
-                Tags = new TagsCollection(new Tag("building", "yes"))
-            });
+            Tags = new TagsCollection(new Tag("building", "yes"))
+        });
 
-            Assert.False(filter);
-        }
+        Assert.False(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Way_Highway_ShouldBeIncluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Way_Highway_ShouldBeIncluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Way()
         {
-            var filter = RoutingTagsFilter.Filter(new Way()
-            {
-                Tags = new TagsCollection(new Tag("highway", "residential"))
-            });
+            Tags = new TagsCollection(new Tag("highway", "residential"))
+        });
 
-            Assert.True(filter);
-        }
+        Assert.True(filter);
+    }
 
-        [Fact]
-        public void RoutingTagsFilter_Filter_Way_Ferry_ShouldBeIncluded()
+    [Fact]
+    public void RoutingTagsFilter_Filter_Way_Ferry_ShouldBeIncluded()
+    {
+        var filter = RoutingTagsFilter.Filter(new Way()
         {
-            var filter = RoutingTagsFilter.Filter(new Way()
-            {
-                Tags = new TagsCollection(new Tag("route", "ferry"))
-            });
+            Tags = new TagsCollection(new Tag("route", "ferry"))
+        });
 
-            Assert.True(filter);
-        }
+        Assert.True(filter);
     }
 }

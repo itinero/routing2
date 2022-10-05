@@ -1,141 +1,140 @@
-﻿namespace Itinero.IO.Osm.Collections
+﻿namespace Itinero.IO.Osm.Collections;
+
+/// <summary>
+/// A cache for node coordinates.
+/// </summary>
+internal sealed class NodeIndex
 {
-    /// <summary>
-    /// A cache for node coordinates.
-    /// </summary>
-    internal sealed class NodeIndex
+    private readonly UnsignedNodeIndex _negativeNodeIndex;
+    private readonly UnsignedNodeIndex _positiveNodeIndex;
+
+    public NodeIndex()
     {
-        private readonly UnsignedNodeIndex _negativeNodeIndex;
-        private readonly UnsignedNodeIndex _positiveNodeIndex;
+        _negativeNodeIndex = new UnsignedNodeIndex();
+        _positiveNodeIndex = new UnsignedNodeIndex();
+    }
 
-        public NodeIndex()
+    /// <summary>
+    /// Adds a node id to the index.
+    /// </summary>
+    public void AddId(long id)
+    {
+        if (id >= 0)
         {
-            _negativeNodeIndex = new UnsignedNodeIndex();
-            _positiveNodeIndex = new UnsignedNodeIndex();
+            _positiveNodeIndex.AddId(id);
         }
-
-        /// <summary>
-        /// Adds a node id to the index.
-        /// </summary>
-        public void AddId(long id)
+        else
         {
-            if (id >= 0)
-            {
-                _positiveNodeIndex.AddId(id);
-            }
-            else
-            {
-                _negativeNodeIndex.AddId(-id);
-            }
+            _negativeNodeIndex.AddId(-id);
         }
+    }
 
-        /// <summary>
-        /// Sorts and converts the index.
-        /// </summary>
-        public void SortAndConvertIndex()
+    /// <summary>
+    /// Sorts and converts the index.
+    /// </summary>
+    public void SortAndConvertIndex()
+    {
+        _positiveNodeIndex.SortAndConvertIndex();
+        _negativeNodeIndex.SortAndConvertIndex();
+    }
+
+    /// <summary>
+    /// Gets the node id at the given index.
+    /// </summary>
+    public long this[long idx]
+    {
+        get
         {
-            _positiveNodeIndex.SortAndConvertIndex();
-            _negativeNodeIndex.SortAndConvertIndex();
+            if (idx >= _negativeNodeIndex.Count)
+            {
+                return _positiveNodeIndex[idx - _negativeNodeIndex.Count];
+            }
+
+            return _negativeNodeIndex[idx];
         }
+    }
 
-        /// <summary>
-        /// Gets the node id at the given index.
-        /// </summary>
-        public long this[long idx]
+    /// <summary>
+    /// Sets a vertex id for the given vertex.
+    /// </summary>
+    public void Set(long id, uint vertex)
+    {
+        if (id >= 0)
         {
-            get
-            {
-                if (idx >= _negativeNodeIndex.Count)
-                {
-                    return _positiveNodeIndex[idx - _negativeNodeIndex.Count];
-                }
-
-                return _negativeNodeIndex[idx];
-            }
+            _positiveNodeIndex.Set(id, vertex);
         }
-
-        /// <summary>
-        /// Sets a vertex id for the given vertex.
-        /// </summary>
-        public void Set(long id, uint vertex)
+        else
         {
-            if (id >= 0)
-            {
-                _positiveNodeIndex.Set(id, vertex);
-            }
-            else
-            {
-                _negativeNodeIndex.Set(-id, vertex);
-            }
+            _negativeNodeIndex.Set(-id, vertex);
         }
+    }
 
-        /// <summary>
-        /// Gets the coordinate for the given node.
-        /// </summary>
-        public long TryGetIndex(long id)
+    /// <summary>
+    /// Gets the coordinate for the given node.
+    /// </summary>
+    public long TryGetIndex(long id)
+    {
+        if (id >= 0)
         {
-            if (id >= 0)
-            {
-                return _positiveNodeIndex.TryGetIndex(id);
-            }
-            else
-            {
-                var result = _negativeNodeIndex.TryGetIndex(-id);
-                if (result == long.MaxValue)
-                {
-                    return long.MaxValue;
-                }
-
-                return -(result + 1);
-            }
+            return _positiveNodeIndex.TryGetIndex(id);
         }
-
-        /// <summary>
-        /// Sets the coordinate for the given index.
-        /// </summary>
-        public void SetIndex(long idx, float latitude, float longitude)
+        else
         {
-            if (idx >= 0)
+            var result = _negativeNodeIndex.TryGetIndex(-id);
+            if (result == long.MaxValue)
             {
-                _positiveNodeIndex.SetIndex(idx, latitude, longitude);
+                return long.MaxValue;
             }
-            else
-            {
-                idx = -idx - 1;
-                _negativeNodeIndex.SetIndex(idx, latitude, longitude);
-            }
+
+            return -(result + 1);
         }
+    }
 
-        /// <summary>
-        /// Tries to get a core node and it's matching vertex.
-        /// </summary>
-        public bool TryGetCoreNode(long id, out uint vertex)
+    /// <summary>
+    /// Sets the coordinate for the given index.
+    /// </summary>
+    public void SetIndex(long idx, float latitude, float longitude)
+    {
+        if (idx >= 0)
         {
-            if (id >= 0)
-            {
-                return _positiveNodeIndex.TryGetCoreNode(id, out vertex);
-            }
-            else
-            {
-                return _negativeNodeIndex.TryGetCoreNode(-id, out vertex);
-            }
+            _positiveNodeIndex.SetIndex(idx, latitude, longitude);
         }
-
-        /// <summary>
-        /// Gets all relevant info on the given node.
-        /// </summary>
-        public bool TryGetValue(long id, out float latitude, out float longitude, out bool isCore, out uint vertex,
-            out long idx)
+        else
         {
-            if (id >= 0)
-            {
-                return _positiveNodeIndex.TryGetValue(id, out latitude, out longitude, out isCore, out vertex, out idx);
-            }
-            else
-            {
-                return _negativeNodeIndex.TryGetValue(-id, out latitude, out longitude, out isCore, out vertex,
-                    out idx);
-            }
+            idx = -idx - 1;
+            _negativeNodeIndex.SetIndex(idx, latitude, longitude);
+        }
+    }
+
+    /// <summary>
+    /// Tries to get a core node and it's matching vertex.
+    /// </summary>
+    public bool TryGetCoreNode(long id, out uint vertex)
+    {
+        if (id >= 0)
+        {
+            return _positiveNodeIndex.TryGetCoreNode(id, out vertex);
+        }
+        else
+        {
+            return _negativeNodeIndex.TryGetCoreNode(-id, out vertex);
+        }
+    }
+
+    /// <summary>
+    /// Gets all relevant info on the given node.
+    /// </summary>
+    public bool TryGetValue(long id, out float latitude, out float longitude, out bool isCore, out uint vertex,
+        out long idx)
+    {
+        if (id >= 0)
+        {
+            return _positiveNodeIndex.TryGetValue(id, out latitude, out longitude, out isCore, out vertex, out idx);
+        }
+        else
+        {
+            return _negativeNodeIndex.TryGetValue(-id, out latitude, out longitude, out isCore, out vertex,
+                out idx);
         }
     }
 }

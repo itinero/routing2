@@ -1,24 +1,23 @@
 ﻿using System;
 
-namespace Itinero.IO.Osm.Tiles
+namespace Itinero.IO.Osm.Tiles;
+
+/// <summary>
+/// Contains extension methods for the router db.
+/// </summary>
+public static class RouterDbExtensions
 {
     /// <summary>
-    /// Contains extension methods for the router db.
+    /// Configures the routeable tiles data provide.
     /// </summary>
-    public static class RouterDbExtensions
+    /// <param name="routerDb">The router db.</param>
+    /// <param name="configure">The configure function.</param>
+    public static void UseRouteableTiles(this RouterDb routerDb, Action<DataProviderSettings>? configure = null)
     {
-        /// <summary>
-        /// Configures the routeable tiles data provide.
-        /// </summary>
-        /// <param name="routerDb">The router db.</param>
-        /// <param name="configure">The configure function.</param>
-        public static void UseRouteableTiles(this RouterDb routerDb, Action<DataProviderSettings> configure = null)
-        {
-            var settings = new DataProviderSettings();
+        var settings = new DataProviderSettings();
 
-            configure?.Invoke(settings);
+        configure?.Invoke(settings);
 
-            var dataProvider = new DataProvider(routerDb, settings.Url, settings.Zoom);
-        }
+        var dataProvider = new DataProvider(routerDb, settings.Url, settings.Zoom);
     }
 }

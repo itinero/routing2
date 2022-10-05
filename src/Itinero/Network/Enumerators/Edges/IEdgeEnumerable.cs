@@ -1,9 +1,8 @@
 ﻿using Itinero.Network.Tiles;
 
-namespace Itinero.Network.Enumerators.Edges
+namespace Itinero.Network.Enumerators.Edges;
+
+public interface IEdgeEnumerable
 {
-    public interface IEdgeEnumerable
-    {
-        internal NetworkTile? GetTileForRead(uint tileId);
-    }
+    internal NetworkTile? GetTileForRead(uint tileId);
 }

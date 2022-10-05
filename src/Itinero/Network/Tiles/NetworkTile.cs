@@ -121,7 +121,7 @@ internal partial class NetworkTile
     public VertexId AddVertex(double longitude, double latitude, float? e = null)
     {
         // set coordinate.
-        SetCoordinate(_nextVertexId, longitude, latitude, e);
+        this.SetCoordinate(_nextVertexId, longitude, latitude, e);
 
         // create id.
         var vertexId = new VertexId(_tileId, _nextVertexId);
@@ -151,7 +151,7 @@ internal partial class NetworkTile
             return false;
         }
 
-        GetCoordinate(vertex.LocalId, out longitude, out latitude, out elevation);
+        this.GetCoordinate(vertex.LocalId, out longitude, out latitude, out elevation);
         return true;
     }
 
@@ -268,7 +268,7 @@ internal partial class NetworkTile
         uint? shapePointer = null;
         if (shape != null)
         {
-            shapePointer = SetShape(shape);
+            shapePointer = this.SetShape(shape);
         }
 
         size = EncodePointer(_edges, _nextEdgeId, shapePointer);
@@ -278,7 +278,7 @@ internal partial class NetworkTile
         uint? attributesPointer = null;
         if (attributes != null)
         {
-            attributesPointer = SetAttributes(attributes);
+            attributesPointer = this.SetAttributes(attributes);
         }
 
         size = EncodePointer(_edges, _nextEdgeId, attributesPointer);
@@ -299,12 +299,12 @@ internal partial class NetworkTile
         while (p < nextEdgeId)
         {
             // read edge data.
-            p += DecodeVertex(p, out var local1Id, out var tile1Id);
+            p += this.DecodeVertex(p, out var local1Id, out var tile1Id);
             var vertex1 = new VertexId(tile1Id, local1Id);
-            p += DecodeVertex(p, out var local2Id, out var tile2Id);
+            p += this.DecodeVertex(p, out var local2Id, out var tile2Id);
             var vertex2 = new VertexId(tile2Id, local2Id);
-            p += DecodePointer(p, out _);
-            p += DecodePointer(p, out _);
+            p += this.DecodePointer(p, out _);
+            p += this.DecodePointer(p, out _);
             uint? crossEdgeId = null;
             if (tile1Id != tile2Id)
             {
@@ -316,11 +316,11 @@ internal partial class NetworkTile
             p += (uint)_edges.GetDynamicUInt32Nullable(p, out var length);
             var tailHeadOrder = _edges[p];
             p++;
-            p += DecodePointer(p, out var shapePointer);
-            p += DecodePointer(p, out var attributePointer);
+            p += this.DecodePointer(p, out var shapePointer);
+            p += this.DecodePointer(p, out var attributePointer);
 
             // generate new edge type id.
-            var newEdgeTypeId = edgeTypeMap.func(GetAttributes(attributePointer));
+            var newEdgeTypeId = edgeTypeMap.func(this.GetAttributes(attributePointer));
 
             // write edge data again.
             var newEdgePointer = newP;

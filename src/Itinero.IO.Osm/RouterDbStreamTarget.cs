@@ -41,12 +41,12 @@ public class RouterDbStreamTarget : OsmStreamTarget
     public override bool OnBeforePull()
     {
         // execute the first pass.
-        DoPull(true, false, false);
+        this.DoPull(true, false, false);
 
         // move to second pass.
         _firstPass = false;
-        Source.Reset();
-        DoPull();
+        this.Source.Reset();
+        this.DoPull();
 
         return false;
     }

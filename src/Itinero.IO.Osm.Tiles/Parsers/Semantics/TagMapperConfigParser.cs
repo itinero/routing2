@@ -4,83 +4,82 @@ using System.IO;
 using Itinero.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
+namespace Itinero.IO.Osm.Tiles.Parsers.Semantics;
+
+public static class TagMapperConfigParser
 {
-    public static class TagMapperConfigParser
+    public static Dictionary<string, TagMapperConfig> Parse(Stream stream)
     {
-        public static Dictionary<string, TagMapperConfig> Parse(Stream stream)
+        var mappings = new Dictionary<string, TagMapperConfig>();
+
+        using (var textReader = new StreamReader(stream))
         {
-            var mappings = new Dictionary<string, TagMapperConfig>();
+            var parsed = JArray.Parse(textReader.ReadToEnd());
 
-            using (var textReader = new StreamReader(stream))
+            foreach (var item in parsed)
             {
-                var parsed = JArray.Parse(textReader.ReadToEnd());
-
-                foreach (var item in parsed)
+                try
                 {
-                    try
+                    var osmKeyValue = item["osm_key"];
+                    if (osmKeyValue == null)
                     {
-                        var osmKeyValue = item["osm_key"];
-                        if (osmKeyValue == null)
-                        {
-                            throw new Exception("osm_key not found.");
-                        }
+                        throw new Exception("osm_key not found.");
+                    }
 
-                        if (osmKeyValue.Type != JTokenType.String)
-                        {
-                            throw new Exception("osm_key not a string.");
-                        }
+                    if (osmKeyValue.Type != JTokenType.String)
+                    {
+                        throw new Exception("osm_key not a string.");
+                    }
 
-                        var osmKey = osmKeyValue.Value<string>();
-                        var predicateValue = item["predicate"];
-                        if (predicateValue == null)
-                        {
-                            throw new Exception("predicate not found.");
-                        }
+                    var osmKey = osmKeyValue.Value<string>();
+                    var predicateValue = item["predicate"];
+                    if (predicateValue == null)
+                    {
+                        throw new Exception("predicate not found.");
+                    }
 
-                        if (predicateValue.Type != JTokenType.String)
-                        {
-                            throw new Exception("predicate not a string.");
-                        }
+                    if (predicateValue.Type != JTokenType.String)
+                    {
+                        throw new Exception("predicate not a string.");
+                    }
 
-                        var predicate = predicateValue.Value<string>();
+                    var predicate = predicateValue.Value<string>();
 
-                        var map = item["mapping"];
-                        Dictionary<string, string> mapping = null;
-                        if (map != null)
+                    var map = item["mapping"];
+                    Dictionary<string, string>? mapping = null;
+                    if (map != null)
+                    {
+                        mapping = new Dictionary<string, string>();
+                        foreach (var child in map.Children())
                         {
-                            mapping = new Dictionary<string, string>();
-                            foreach (var child in map.Children())
+                            if (!(child is JProperty property))
                             {
-                                if (!(child is JProperty property))
-                                {
-                                    continue;
-                                }
+                                continue;
+                            }
 
-                                if (property.Value is JValue val)
-                                {
-                                    mapping[val.Value.ToInvariantString()] = property.Name;
-                                }
+                            if (property.Value is JValue val)
+                            {
+                                mapping[val.Value.ToInvariantString()] = property.Name;
                             }
                         }
+                    }
 
-                        mappings[predicate] = new TagMapperConfig
-                        {
-                            ReverseMapping = mapping,
-                            OsmKey = osmKey,
-                            Predicate = predicate
-                        };
-                    }
-                    catch (Exception ex)
+                    mappings[predicate] = new TagMapperConfig
                     {
-                        Logger.Log($"{nameof(TagMapperConfigParser)}.{nameof(Parse)}", TraceEventType.Error,
-                            "Could not fully parse mapping configuration {0}", ex);
-                        throw;
-                    }
+                        ReverseMapping = mapping,
+                        OsmKey = osmKey,
+                        Predicate = predicate
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"{nameof(TagMapperConfigParser)}.{nameof(Parse)}", TraceEventType.Error,
+                        "Could not fully parse mapping configuration {0}", ex);
+                    throw;
                 }
             }
-
-            return mappings;
         }
+
+        return mappings;
     }
 }

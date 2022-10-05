@@ -1,48 +1,47 @@
-﻿namespace Itinero.Geo.Directions
+﻿namespace Itinero.Geo.Directions;
+
+/// <summary>
+/// Relative direction enumeration.
+/// </summary>
+public enum RelativeDirectionEnum
 {
     /// <summary>
-    /// Relative direction enumeration.
+    /// Left
     /// </summary>
-    public enum RelativeDirectionEnum
-    {
-        /// <summary>
-        /// Left
-        /// </summary>
-        Left,
+    Left,
 
-        /// <summary>
-        /// Sharp left.
-        /// </summary>
-        SharpLeft,
+    /// <summary>
+    /// Sharp left.
+    /// </summary>
+    SharpLeft,
 
-        /// <summary>
-        /// Slightly left.
-        /// </summary>
-        SlightlyLeft,
+    /// <summary>
+    /// Slightly left.
+    /// </summary>
+    SlightlyLeft,
 
-        /// <summary>
-        /// Right.
-        /// </summary>
-        Right,
+    /// <summary>
+    /// Right.
+    /// </summary>
+    Right,
 
-        /// <summary>
-        /// Sharp right.
-        /// </summary>
-        SharpRight,
+    /// <summary>
+    /// Sharp right.
+    /// </summary>
+    SharpRight,
 
-        /// <summary>
-        /// Slightly right.
-        /// </summary>
-        SlightlyRight,
+    /// <summary>
+    /// Slightly right.
+    /// </summary>
+    SlightlyRight,
 
-        /// <summary>
-        /// Straight on.
-        /// </summary>
-        StraightOn,
+    /// <summary>
+    /// Straight on.
+    /// </summary>
+    StraightOn,
 
-        /// <summary>
-        /// Turn back.
-        /// </summary>
-        TurnBack
-    }
+    /// <summary>
+    /// Turn back.
+    /// </summary>
+    TurnBack
 }

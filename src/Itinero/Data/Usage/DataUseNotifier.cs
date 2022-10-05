@@ -4,40 +4,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
 
-namespace Itinero.Data.Usage
+namespace Itinero.Data.Usage;
+
+/// <summary>
+/// Notifies listeners about data use in a router db.
+/// </summary>
+public class DataUseNotifier
 {
+    private readonly HashSet<IDataUseListener> _listeners = new();
+
     /// <summary>
-    /// Notifies listeners about data use in a router db.
+    /// Adds a new listener.
     /// </summary>
-    public class DataUseNotifier
+    /// <param name="listener">The new listener.</param>
+    public void AddListener(IDataUseListener listener)
     {
-        private readonly HashSet<IDataUseListener> _listeners = new();
+        _listeners.Add(listener);
+    }
 
-        /// <summary>
-        /// Adds a new listener.
-        /// </summary>
-        /// <param name="listener">The new listener.</param>
-        public void AddListener(IDataUseListener listener)
+    internal async Task NotifyVertex(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default)
+    {
+        foreach (var listener in _listeners)
         {
-            _listeners.Add(listener);
+            await listener.VertexTouched(network, vertex, cancellationToken);
         }
+    }
 
-        internal async Task NotifyVertex(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default)
+    internal async Task NotifyBox(RoutingNetwork network,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight) box, CancellationToken cancellationToken = default)
+    {
+        foreach (var listener in _listeners)
         {
-            foreach (var listener in _listeners)
-            {
-                await listener.VertexTouched(network, vertex, cancellationToken);
-            }
-        }
-
-        internal async Task NotifyBox(RoutingNetwork network,
-            ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-                bottomRight) box, CancellationToken cancellationToken = default)
-        {
-            foreach (var listener in _listeners)
-            {
-                await listener.BoxTouched(network, box, cancellationToken);
-            }
+            await listener.BoxTouched(network, box, cancellationToken);
         }
     }
 }

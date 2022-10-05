@@ -121,12 +121,12 @@ internal partial class NetworkTile
             if (enumerator.Forward)
             {
                 // if the edge is forward the tail in the enumerator is also the tail in the edge.
-                SetTailHeadOrder(enumerator.EdgePointer, order.Value, null);
+                this.SetTailHeadOrder(enumerator.EdgePointer, order.Value, null);
             }
             else
             {
                 // if the edge is backward the tail in the enumerator is head in the edge.
-                SetTailHeadOrder(enumerator.EdgePointer, null, order.Value);
+                this.SetTailHeadOrder(enumerator.EdgePointer, null, order.Value);
             }
         }
 
@@ -154,7 +154,7 @@ internal partial class NetworkTile
 
         // make sure there is space in the turn cost array.
         // and initialize new slots with null.
-        var maxLength = _turnCostPointer + 5 + 1 + count * count * 5 + 5;
+        var maxLength = _turnCostPointer + 5 + 1 + (count * count * 5) + 5;
         while (_turnCosts.Length <= maxLength)
         {
             _turnCosts.Resize(_turnCosts.Length + DefaultSizeIncrease);
@@ -300,13 +300,13 @@ internal partial class NetworkTile
     private void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
     {
         // skip over vertices and next-pointers.
-        var size = DecodeVertex(pointer, out _, out var t1);
+        var size = this.DecodeVertex(pointer, out _, out var t1);
         pointer += size;
-        size = DecodeVertex(pointer, out _, out var t2);
+        size = this.DecodeVertex(pointer, out _, out var t2);
         pointer += size;
-        size = DecodePointer(pointer, out _);
+        size = this.DecodePointer(pointer, out _);
         pointer += size;
-        size = DecodePointer(pointer, out _);
+        size = this.DecodePointer(pointer, out _);
         pointer += size;
 
         // skip edge id if needed.
@@ -317,15 +317,15 @@ internal partial class NetworkTile
         }
 
         // skip over length/type.
-        size = DecodeEdgePointerId(pointer, out _);
+        size = this.DecodeEdgePointerId(pointer, out _);
         pointer += size;
-        size = DecodeEdgePointerId(pointer, out _);
+        size = this.DecodeEdgePointerId(pointer, out _);
         pointer += size;
 
         // get existing head/tail order.
         byte? existingTailOrder = null;
         byte? existingHeadOrder = null;
-        GetTailHeadOrder(pointer, ref existingTailOrder, ref existingHeadOrder);
+        this.GetTailHeadOrder(pointer, ref existingTailOrder, ref existingHeadOrder);
 
         // set tail order if there is a value.
         if (tailOrder.HasValue)

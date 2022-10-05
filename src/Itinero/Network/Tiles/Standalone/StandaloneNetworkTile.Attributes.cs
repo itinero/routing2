@@ -36,9 +36,9 @@ public partial class StandaloneNetworkTile
                 _attributes.Resize(_attributes.Length + 256);
             }
 
-            var id = AddOrGetString(key);
+            var id = this.AddOrGetString(key);
             p += _attributes.SetDynamicUInt32(p, id);
-            id = AddOrGetString(value);
+            id = this.AddOrGetString(value);
             p += _attributes.SetDynamicUInt32(p, id);
 
             c++;

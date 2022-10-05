@@ -5,36 +5,35 @@ using Itinero.Routes;
 using Itinero.Routing;
 using Itinero.Snapping;
 
-namespace Itinero.Tests.Functional.Tests
+namespace Itinero.Tests.Functional.Tests;
+
+/// <summary>
+/// A one-to-many routing test.
+/// </summary>
+public class RouterOneToManyTest : FunctionalTest<Route[], (RoutingNetwork routerDb, SnapPoint source, SnapPoint[]
+    targets, Profile profile)>
 {
-    /// <summary>
-    /// A one-to-many routing test.
-    /// </summary>
-    public class RouterOneToManyTest : FunctionalTest<Route[], (RoutingNetwork routerDb, SnapPoint source, SnapPoint[]
-        targets, Profile profile)>
+    protected override async Task<Route[]> ExecuteAsync(
+        (RoutingNetwork routerDb, SnapPoint source, SnapPoint[] targets, Profile profile) input)
     {
-        protected override async Task<Route[]> ExecuteAsync(
-            (RoutingNetwork routerDb, SnapPoint source, SnapPoint[] targets, Profile profile) input)
+        var (routerDb, source, targets, profile) = input;
+
+        var results = await routerDb.Route(new RoutingSettings { Profile = profile })
+            .From(source)
+            .To(targets)
+            .Calculate();
+
+        var routes = new Route[targets.Length];
+        for (var r = 0; r < routes.Length; r++)
         {
-            var (routerDb, source, targets, profile) = input;
-
-            var results = await routerDb.Route(new RoutingSettings { Profile = profile })
-                .From(source)
-                .To(targets)
-                .Calculate();
-
-            var routes = new Route[targets.Length];
-            for (var r = 0; r < routes.Length; r++)
-            {
-                routes[r] = results[r].Value;
-            }
-
-            return routes;
+            routes[r] = results[r].Value;
         }
 
-        /// <summary>
-        /// The default point-to-point routing test.
-        /// </summary>
-        public static readonly RouterOneToManyTest Default = new();
+        return routes;
     }
+
+    /// <summary>
+    /// The default point-to-point routing test.
+    /// </summary>
+    public static readonly RouterOneToManyTest Default = new();
 }

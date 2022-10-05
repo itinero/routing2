@@ -15,7 +15,7 @@ public partial class StandaloneNetworkTile
     internal BoundaryEdgeId AddBoundaryCrossing(bool isToTile, long globalIdFrom, long globalIdTo, VertexId vertex,
         IEnumerable<(string key, string value)> attributes, uint edgeTypeId, uint length)
     {
-        if (vertex.TileId != NetworkTile.TileId)
+        if (vertex.TileId != this.NetworkTile.TileId)
             throw new ArgumentException("Can only add boundary crossings that cross into the tile");
 
         var id = new BoundaryEdgeId(_crossingsPointer);
@@ -54,7 +54,7 @@ public partial class StandaloneNetworkTile
             pointer += _crossings.GetDynamicUInt32(pointer, out var a);
 
             yield return (id, direction != 0, globalIdFrom, globalIdTo,
-                new VertexId(NetworkTile.TileId, vertexLocalId), edgeTypeId, length, this.GetAttributes(a));
+                new VertexId(this.NetworkTile.TileId, vertexLocalId), edgeTypeId, length, this.GetAttributes(a));
         }
     }
 }

@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Itinero.Tests.Benchmarks")]
 [assembly: InternalsVisibleTo("Itinero.Tests.Functional")]
 
-namespace Itinero.Instructions.Types.Generators
+namespace Itinero.Instructions.Types.Generators;
+
+internal static class AllGenerators
 {
-    internal static class AllGenerators
-    {
-        public static readonly IReadOnlyList<IInstructionGenerator> Generators = new List<IInstructionGenerator>() {
+    public static readonly IReadOnlyList<IInstructionGenerator> Generators = new List<IInstructionGenerator>() {
             new BaseInstructionGenerator(),
             new EndInstructionGenerator(),
             new StartInstructionGenerator(),
@@ -18,5 +18,4 @@ namespace Itinero.Instructions.Types.Generators
             new FollowAlongGenerator(),
             new FollowBendGenerator()
         };
-    }
 }

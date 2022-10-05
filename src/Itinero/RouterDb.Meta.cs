@@ -3,31 +3,30 @@ using System.IO;
 using System.Linq;
 using Itinero.Network.Attributes;
 
-namespace Itinero
+namespace Itinero;
+
+public sealed partial class RouterDb
 {
-    public sealed partial class RouterDb
+    /// <summary>
+    /// Gets or sets the meta-data attributes list.
+    /// </summary>
+    public List<(string key, string value)> Meta { get; set; } = new();
+
+    private IEnumerable<(string key, string value)> ReadAttributesFrom(Stream stream)
     {
-        /// <summary>
-        /// Gets or sets the meta-data attributes list.
-        /// </summary>
-        public List<(string key, string value)> Meta { get; set; } = new();
-
-        private IEnumerable<(string key, string value)> ReadAttributesFrom(Stream stream)
+        var ver = stream.ReadByte();
+        if (ver == 0)
         {
-            var ver = stream.ReadByte();
-            if (ver == 0)
-            {
-                return Enumerable.Empty<(string key, string value)>();
-            }
-
-            return stream.ReadAttributesFrom();
+            return Enumerable.Empty<(string key, string value)>();
         }
 
-        private void WriteAttributesTo(Stream stream)
-        {
-            stream.WriteByte(1);
+        return stream.ReadAttributesFrom();
+    }
 
-            this.Meta.WriteAttributesTo(stream);
-        }
+    private void WriteAttributesTo(Stream stream)
+    {
+        stream.WriteByte(1);
+
+        this.Meta.WriteAttributesTo(stream);
     }
 }

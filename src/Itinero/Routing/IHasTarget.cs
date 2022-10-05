@@ -1,15 +1,14 @@
 ﻿using Itinero.Snapping;
 
-namespace Itinero.Routing
+namespace Itinero.Routing;
+
+/// <summary>
+/// Abstract representation of a router that has a source.
+/// </summary>
+public interface IHasTarget : IRouter
 {
     /// <summary>
-    /// Abstract representation of a router that has a source.
+    /// Gets the target.
     /// </summary>
-    public interface IHasTarget : IRouter
-    {
-        /// <summary>
-        /// Gets the target.
-        /// </summary>
-        (SnapPoint sp, bool? direction) Target { get; }
-    }
+    (SnapPoint sp, bool? direction) Target { get; }
 }

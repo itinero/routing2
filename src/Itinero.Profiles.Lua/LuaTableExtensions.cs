@@ -1,44 +1,43 @@
 ﻿using Neo.IronLua;
 
-namespace Itinero.Profiles.Lua
+namespace Itinero.Profiles.Lua;
+
+internal static class LuaTableExtensions
 {
-    internal static class LuaTableExtensions
+    internal static double? GetDouble(this LuaTable table, string key)
     {
-        internal static double? GetDouble(this LuaTable table, string key)
+        var obj = table[key];
+        if (obj == null)
         {
-            var obj = table[key];
-            if (obj == null)
-            {
-                return null;
-            }
-
-            if (obj is double d)
-            {
-                return d;
-            }
-
-            if (obj is int i)
-            {
-                return i;
-            }
-
-            return (double)obj;
+            return null;
         }
 
-        internal static bool? GetBoolean(this LuaTable table, string key)
+        if (obj is double d)
         {
-            var obj = table[key];
-            if (obj == null)
-            {
-                return null;
-            }
-
-            if (obj is bool b)
-            {
-                return b;
-            }
-
-            return (bool)obj;
+            return d;
         }
+
+        if (obj is int i)
+        {
+            return i;
+        }
+
+        return (double)obj;
+    }
+
+    internal static bool? GetBoolean(this LuaTable table, string key)
+    {
+        var obj = table[key];
+        if (obj == null)
+        {
+            return null;
+        }
+
+        if (obj is bool b)
+        {
+            return b;
+        }
+
+        return (bool)obj;
     }
 }

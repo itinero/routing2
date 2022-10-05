@@ -33,7 +33,7 @@ public class StandaloneNetworkTileWriter
     public INetworkTileEdge GetEdge(EdgeId edgeId, bool forward)
     {
         var edge = new NetworkTileEnumerator();
-        edge.MoveTo(this._tile.NetworkTile);
+        edge.MoveTo(_tile.NetworkTile);
         edge.MoveTo(edgeId, forward);
         return edge;
     }

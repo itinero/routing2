@@ -4,35 +4,34 @@ using System.Threading;
 using Itinero.Network;
 using Itinero.Profiles;
 
-namespace Itinero.Snapping
+namespace Itinero.Snapping;
+
+/// <summary>
+/// Abstract representation of a snapper.
+/// </summary>
+public interface ISnapper : ILocationsSnapper
 {
     /// <summary>
-    /// Abstract representation of a snapper.
+    /// Use the given settings for snapping.
     /// </summary>
-    public interface ISnapper : ILocationsSnapper
-    {
-        /// <summary>
-        /// Use the given settings for snapping.
-        /// </summary>
-        /// <param name="settings">Function to set the settings.</param>
-        /// <returns>The setup snappable.</returns>
-        ILocationsSnapper Using(Action<SnapperSettings> settings);
+    /// <param name="settings">Function to set the settings.</param>
+    /// <returns>The setup snappable.</returns>
+    ILocationsSnapper Using(Action<SnapperSettings> settings);
 
-        /// <summary>
-        /// Use the given profile for snapping.
-        /// </summary>
-        /// <param name="profile">The profile.</param>
-        /// <param name="settings">Function to set the settings.</param>
-        /// <returns>The setup snappable.</returns>
-        ILocationsSnapper Using(Profile profile, Action<SnapperSettings>? settings = null);
+    /// <summary>
+    /// Use the given profile for snapping.
+    /// </summary>
+    /// <param name="profile">The profile.</param>
+    /// <param name="settings">Function to set the settings.</param>
+    /// <returns>The setup snappable.</returns>
+    ILocationsSnapper Using(Profile profile, Action<SnapperSettings>? settings = null);
 
-        /// <summary>
-        /// Snaps to the given vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices to snap to.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The results if any. Snapping will fail if a vertex has no edges.</returns>
-        IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
-            CancellationToken cancellationToken = default);
-    }
+    /// <summary>
+    /// Snaps to the given vertices.
+    /// </summary>
+    /// <param name="vertices">The vertices to snap to.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The results if any. Snapping will fail if a vertex has no edges.</returns>
+    IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
+        CancellationToken cancellationToken = default);
 }

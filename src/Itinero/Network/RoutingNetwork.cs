@@ -41,7 +41,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
             return null;
         }
 
-        var edgeTypeMap = RouterDb.GetEdgeTypeMap();
+        var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
         if (tile.EdgeTypeMapId != edgeTypeMap.id)
         {
             // tile.EdgeTypeMapId indicates the version of the used edgeTypeMap
@@ -64,7 +64,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
 
     NetworkTile? IEdgeEnumerable.GetTileForRead(uint localTileId)
     {
-        return GetTileForRead(localTileId);
+        return this.GetTileForRead(localTileId);
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
         var localTileId = vertex.TileId;
 
         // get tile.
-        var tile = GetTileForRead(localTileId);
+        var tile = this.GetTileForRead(localTileId);
         if (tile == null)
         {
             longitude = default;
@@ -169,7 +169,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
             if (_writer != null)
             {
                 throw new InvalidOperationException($"Only one writer is allowed at one time." +
-                                                    $"Check {nameof(HasWriter)} to check for a current writer.");
+                                                    $"Check {nameof(this.HasWriter)} to check for a current writer.");
             }
 
             _writer = new RoutingNetworkWriter(this);
@@ -188,7 +188,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
         // ensure minimum size.
         _tiles.EnsureMinimumSize(localTileId);
 
-        var edgeTypeMap = RouterDb.GetEdgeTypeMap();
+        var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
         var tile = _tiles[localTileId];
         if (tile != null)
         {
@@ -200,14 +200,14 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
             else
             {
                 // check if there is a mutable graph.
-                CloneTileIfNeededForMutator(tile);
+                this.CloneTileIfNeededForMutator(tile);
             }
 
             return (tile, edgeTypeMap.func);
         }
 
         // create a new tile.
-        tile = new NetworkTile(Zoom, localTileId, edgeTypeMap.id);
+        tile = new NetworkTile(this.Zoom, localTileId, edgeTypeMap.id);
         _tiles[localTileId] = tile;
 
         return (tile, edgeTypeMap.func);
@@ -227,7 +227,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
 
     void IRoutingNetworkWritable.SetTile(NetworkTile tile)
     {
-        var edgeTypeMap = RouterDb.GetEdgeTypeMap();
+        var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
         if (tile.EdgeTypeMapId != edgeTypeMap.id) throw new ArgumentException("Cannot add an entire tile without a matching edge type map");
 
         // ensure minimum size.

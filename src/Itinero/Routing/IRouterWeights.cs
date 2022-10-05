@@ -1,26 +1,25 @@
-﻿namespace Itinero.Routing
+﻿namespace Itinero.Routing;
+
+/// <summary>
+/// Abstract representation of a router configured for weight calculations.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public interface IRouterWeights<out T>
+    where T : IRouter
 {
     /// <summary>
-    /// Abstract representation of a router configured for weight calculations.
+    /// Gets the router.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IRouterWeights<out T>
-        where T : IRouter
+    T Router { get; }
+}
+
+internal class RouterWeights<T> : IRouterWeights<T>
+    where T : IRouter
+{
+    public RouterWeights(T router)
     {
-        /// <summary>
-        /// Gets the router.
-        /// </summary>
-        T Router { get; }
+        this.Router = router;
     }
 
-    internal class RouterWeights<T> : IRouterWeights<T>
-        where T : IRouter
-    {
-        public RouterWeights(T router)
-        {
-            Router = router;
-        }
-
-        public T Router { get; }
-    }
+    public T Router { get; }
 }

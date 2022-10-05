@@ -56,6 +56,6 @@ public sealed class GlobalEdgeIdSet : IEnumerable<(Guid globalId, EdgeId edgeId)
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return GetEnumerator();
+        return this.GetEnumerator();
     }
 }

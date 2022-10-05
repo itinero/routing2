@@ -62,6 +62,6 @@ public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return GetEnumerator();
+        return this.GetEnumerator();
     }
 }

@@ -12,7 +12,7 @@ public partial class StandaloneNetworkTile
         _attributes = new MemoryArray<byte>(1024);
         _strings = new MemoryArray<string>(128);
 
-        NetworkTile = networkTile;
+        this.NetworkTile = networkTile;
     }
 
     internal NetworkTile NetworkTile { get; }
@@ -31,5 +31,5 @@ public partial class StandaloneNetworkTile
     /// <summary>
     /// Gets the tile id.
     /// </summary>
-    public uint TileId => NetworkTile.TileId;
+    public uint TileId => this.NetworkTile.TileId;
 }

@@ -4,22 +4,21 @@ using Itinero.Routes;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 
-namespace Itinero.Geo
+namespace Itinero.Geo;
+
+/// <summary>
+/// Contains extension methods for the route object.
+/// </summary>
+public static class RouteExtensions
 {
     /// <summary>
-    /// Contains extension methods for the route object.
+    /// Converts the given route to a line string.
     /// </summary>
-    public static class RouteExtensions
+    /// <param name="route">The route.</param>
+    /// <returns>The linestring.</returns>
+    public static LineString ToLineString(this Route route)
     {
-        /// <summary>
-        /// Converts the given route to a line string.
-        /// </summary>
-        /// <param name="route">The route.</param>
-        /// <returns>The linestring.</returns>
-        public static LineString ToLineString(this Route route)
-        {
-            return new LineString(route.Shape.Select(x => new Coordinate(x.longitude, x.latitude)).ToArray());
-        }
-
+        return new LineString(route.Shape.Select(x => new Coordinate(x.longitude, x.latitude)).ToArray());
     }
+
 }

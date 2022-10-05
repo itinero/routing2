@@ -3,23 +3,22 @@ using Itinero.Network;
 using Itinero.Routing.Alternatives;
 using Itinero.Snapping;
 
-namespace Itinero.Routing
+namespace Itinero.Routing;
+
+internal class Router : IRouter, IRouterOneToOne, IRouterManyToMany, IRouterManyToOne, IRouterOneToMany, IRouterOneToOneWithAlternatives
 {
-    internal class Router : IRouter, IRouterOneToOne, IRouterManyToMany, IRouterManyToOne, IRouterOneToMany, IRouterOneToOneWithAlternatives
+    internal Router(RoutingNetwork network, RoutingSettings settings)
     {
-        internal Router(RoutingNetwork network, RoutingSettings settings)
-        {
-            Network = network;
-            Settings = settings;
-        }
-
-        public RoutingNetwork Network { get; }
-        public RoutingSettings Settings { get; }
-        public (SnapPoint sp, bool? direction) Source { get; internal set; }
-        public (SnapPoint sp, bool? direction) Target { get; internal set; }
-        public IReadOnlyList<(SnapPoint sp, bool? direction)> Sources { get; internal set; } = null!;
-        public IReadOnlyList<(SnapPoint sp, bool? direction)> Targets { get; internal set; } = null!;
-
-        public AlternativeRouteSettings AlternativeRouteSettings { get; internal set; } = null!;
+        this.Network = network;
+        this.Settings = settings;
     }
+
+    public RoutingNetwork Network { get; }
+    public RoutingSettings Settings { get; }
+    public (SnapPoint sp, bool? direction) Source { get; internal set; }
+    public (SnapPoint sp, bool? direction) Target { get; internal set; }
+    public IReadOnlyList<(SnapPoint sp, bool? direction)> Sources { get; internal set; } = null!;
+    public IReadOnlyList<(SnapPoint sp, bool? direction)> Targets { get; internal set; } = null!;
+
+    public AlternativeRouteSettings AlternativeRouteSettings { get; internal set; } = null!;
 }

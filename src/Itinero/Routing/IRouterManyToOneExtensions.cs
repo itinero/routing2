@@ -7,82 +7,81 @@ using Itinero.Routes;
 using Itinero.Routes.Builders;
 using Itinero.Routes.Paths;
 
-namespace Itinero.Routing
+namespace Itinero.Routing;
+
+/// <summary>
+/// Many to one extensions.
+/// </summary>
+public static class IRouterManyToOneExtensions
 {
     /// <summary>
-    /// Many to one extensions.
+    /// Calculates the paths.
     /// </summary>
-    public static class IRouterManyToOneExtensions
+    /// <param name="routerOneToMany">The router.</param>
+    /// <returns>The paths.</returns>
+    public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToOne routerOneToMany, CancellationToken cancellationToken)
     {
-        /// <summary>
-        /// Calculates the paths.
-        /// </summary>
-        /// <param name="routerOneToMany">The router.</param>
-        /// <returns>The paths.</returns>
-        public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterManyToOne routerOneToMany, CancellationToken cancellationToken)
-        {
-            var sources = routerOneToMany.Sources;
-            var target = routerOneToMany.Target;
+        var sources = routerOneToMany.Sources;
+        var target = routerOneToMany.Target;
 
-            if (target.direction.HasValue ||
-                !sources.TryToUndirected(out var sourcesUndirected))
+        if (target.direction.HasValue ||
+            !sources.TryToUndirected(out var sourcesUndirected))
+        {
+            var routes = await routerOneToMany.CalculateAsync(
+                sources, new[] { target });
+            if (routes == null)
             {
-                var routes = await routerOneToMany.CalculateAsync(
-                    sources, new[] { target });
-                if (routes == null)
-                {
-                    throw new Exception("Could not calculate routes.");
-                }
-
-                var manyToOne = new Result<Path>[sources.Count];
-                for (var s = 0; s < manyToOne.Length; s++)
-                {
-                    manyToOne[s] = routes[s][0];
-                }
-
-                return manyToOne;
+                throw new Exception("Could not calculate routes.");
             }
-            else
+
+            var manyToOne = new Result<Path>[sources.Count];
+            for (var s = 0; s < manyToOne.Length; s++)
             {
-                var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] { target.sp }, cancellationToken);
-                if (routes == null)
-                {
-                    throw new Exception("Could not calculate routes.");
-                }
-
-                var manyToOne = new Result<Path>[sources.Count];
-                for (var s = 0; s < manyToOne.Length; s++)
-                {
-                    manyToOne[s] = routes[s][0];
-                }
-
-                return manyToOne;
+                manyToOne[s] = routes[s][0];
             }
-        }
 
-        /// <summary>
-        /// Calculates the routes.
-        /// </summary>
-        /// <param name="routerManyToOne">The router.</param>
-        /// <returns>The routes.</returns>
-        public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToOne routerManyToOne, CancellationToken cancellationToken = default)
-        {
-            return (await routerManyToOne.Paths(cancellationToken)).Select(x => routerManyToOne.Settings.RouteBuilder.Build(routerManyToOne.Network,
-                routerManyToOne.Settings.Profile, x)).ToArray();
+            return manyToOne;
         }
+        else
+        {
+            var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] { target.sp }, cancellationToken);
+            if (routes == null)
+            {
+                throw new Exception("Could not calculate routes.");
+            }
 
-        /// <summary>
-        /// Calculates the weights.
-        /// </summary>
-        /// <param name="routerManyToOne">The router.</param>
-        /// <returns>The weights.</returns>
-        public static Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
-        {
-            return Task.FromResult(null);
-            //
-            // var profileHandler = routerManyToOne.Router.Network.GetCostFunctionFor(
-            //     routerManyToOne.Router.Settings.Profile);
-            // return routerManyToOne.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();
+            var manyToOne = new Result<Path>[sources.Count];
+            for (var s = 0; s < manyToOne.Length; s++)
+            {
+                manyToOne[s] = routes[s][0];
+            }
+
+            return manyToOne;
         }
+    }
+
+    /// <summary>
+    /// Calculates the routes.
+    /// </summary>
+    /// <param name="routerManyToOne">The router.</param>
+    /// <returns>The routes.</returns>
+    public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterManyToOne routerManyToOne, CancellationToken cancellationToken = default)
+    {
+        return (await routerManyToOne.Paths(cancellationToken)).Select(x => routerManyToOne.Settings.RouteBuilder.Build(routerManyToOne.Network,
+            routerManyToOne.Settings.Profile, x)).ToArray();
+    }
+
+    /// <summary>
+    /// Calculates the weights.
+    /// </summary>
+    /// <param name="routerManyToOne">The router.</param>
+    /// <returns>The weights.</returns>
+    public static Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
+    {
+        return Task.FromResult(null);
+        //
+        // var profileHandler = routerManyToOne.Router.Network.GetCostFunctionFor(
+        //     routerManyToOne.Router.Settings.Profile);
+        // return routerManyToOne.Router.Paths().Select(x => x.Weight(profileHandler.GetForwardWeight)).ToArray();
     }
 }

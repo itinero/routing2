@@ -1,90 +1,89 @@
-﻿namespace Itinero.Profiles
+﻿namespace Itinero.Profiles;
+
+/// <summary>
+/// An 'EdgeFactor' contains the essential information to perform route planning, such as speed and priority in forward and backward direction.
+/// </summary>
+public readonly struct EdgeFactor
 {
     /// <summary>
-    /// An 'EdgeFactor' contains the essential information to perform route planning, such as speed and priority in forward and backward direction.
+    /// Creates a new edge factor.
     /// </summary>
-    public readonly struct EdgeFactor
+    /// <param name="forwardFactor">The forward factor.</param>
+    /// <param name="backwardFactor">The backward factor.</param>
+    /// <param name="forwardSpeed">The forward speed in ms/s multiplied by 100.</param>
+    /// <param name="backwardSpeed">The backward speed in ms/s multiplied by 100.</param>
+    /// <param name="canStop">The can stop.</param>
+    public EdgeFactor(uint forwardFactor, uint backwardFactor,
+        ushort forwardSpeed, ushort backwardSpeed, bool canStop = true)
     {
-        /// <summary>
-        /// Creates a new edge factor.
-        /// </summary>
-        /// <param name="forwardFactor">The forward factor.</param>
-        /// <param name="backwardFactor">The backward factor.</param>
-        /// <param name="forwardSpeed">The forward speed in ms/s multiplied by 100.</param>
-        /// <param name="backwardSpeed">The backward speed in ms/s multiplied by 100.</param>
-        /// <param name="canStop">The can stop.</param>
-        public EdgeFactor(uint forwardFactor, uint backwardFactor,
-            ushort forwardSpeed, ushort backwardSpeed, bool canStop = true)
+        this.ForwardFactor = forwardFactor;
+        this.BackwardFactor = backwardFactor;
+        this.ForwardSpeed = forwardSpeed;
+        this.BackwardSpeed = backwardSpeed;
+        this.CanStop = canStop;
+    }
+
+    /// <summary>
+    /// Gets the forward factor, multiplied by an edge distance this is the weight.
+    /// </summary>
+    public uint ForwardFactor { get; }
+
+    /// <summary>
+    /// Gets the backward factor, multiplied by an edge distance this is the weight.
+    /// </summary>
+    public uint BackwardFactor { get; }
+
+    /// <summary>
+    /// Gets the backward speed in m/s multiplied by 100.
+    /// </summary>
+    public ushort BackwardSpeed { get; }
+
+    /// <summary>
+    /// Gets the backward speed in m/s.
+    /// </summary>
+    public double BackwardSpeedMeterPerSecond => this.BackwardSpeed / 100.0;
+
+    /// <summary>
+    /// Gets the forward speed in ms/s multiplied by 100.
+    /// </summary>
+    public ushort ForwardSpeed { get; }
+
+    /// <summary>
+    /// Gets the backward speed in m/s.
+    /// </summary>
+    public double ForwardSpeedMeterPerSecond => this.ForwardSpeed / 100.0;
+
+    /// <summary>
+    /// Gets the can stop flag.
+    /// </summary>
+    public bool CanStop { get; }
+
+    /// <summary>
+    /// Gets a static no-factor.
+    /// </summary>
+    public static EdgeFactor NoFactor => new(0, 0, 0, 0);
+
+    /// <summary>
+    /// Gets the exact reverse, switches backward and forward.
+    /// </summary>
+    public EdgeFactor Reverse => new(this.BackwardFactor, this.ForwardFactor, this.BackwardSpeed, this.ForwardSpeed, this.CanStop);
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        var forwardSpeed = this.ForwardSpeed / 100.0 * 3.6;
+        if (this.ForwardFactor == this.BackwardFactor &&
+            this.ForwardSpeed == this.BackwardSpeed)
         {
-            ForwardFactor = forwardFactor;
-            BackwardFactor = backwardFactor;
-            ForwardSpeed = forwardSpeed;
-            BackwardSpeed = backwardSpeed;
-            CanStop = canStop;
+            return $"{this.ForwardFactor:F1}({forwardSpeed:F1}km/h)";
         }
 
-        /// <summary>
-        /// Gets the forward factor, multiplied by an edge distance this is the weight.
-        /// </summary>
-        public uint ForwardFactor { get; }
+        var backwardSpeed = this.BackwardSpeed / 100.0 * 3.6;
+        return $"F:{this.ForwardFactor:F1}({forwardSpeed:F1}km/h) B:{this.BackwardFactor:F1}({backwardSpeed:F1}km/h)";
+    }
 
-        /// <summary>
-        /// Gets the backward factor, multiplied by an edge distance this is the weight.
-        /// </summary>
-        public uint BackwardFactor { get; }
-
-        /// <summary>
-        /// Gets the backward speed in m/s multiplied by 100.
-        /// </summary>
-        public ushort BackwardSpeed { get; }
-
-        /// <summary>
-        /// Gets the backward speed in m/s.
-        /// </summary>
-        public double BackwardSpeedMeterPerSecond => BackwardSpeed / 100.0;
-
-        /// <summary>
-        /// Gets the forward speed in ms/s multiplied by 100.
-        /// </summary>
-        public ushort ForwardSpeed { get; }
-
-        /// <summary>
-        /// Gets the backward speed in m/s.
-        /// </summary>
-        public double ForwardSpeedMeterPerSecond => ForwardSpeed / 100.0;
-
-        /// <summary>
-        /// Gets the can stop flag.
-        /// </summary>
-        public bool CanStop { get; }
-
-        /// <summary>
-        /// Gets a static no-factor.
-        /// </summary>
-        public static EdgeFactor NoFactor => new(0, 0, 0, 0);
-
-        /// <summary>
-        /// Gets the exact reverse, switches backward and forward.
-        /// </summary>
-        public EdgeFactor Reverse => new(BackwardFactor, ForwardFactor, BackwardSpeed, ForwardSpeed, CanStop);
-
-        /// <inheritdoc/>
-        public override string ToString()
-        {
-            var forwardSpeed = ForwardSpeed / 100.0 * 3.6;
-            if (ForwardFactor == BackwardFactor &&
-                ForwardSpeed == BackwardSpeed)
-            {
-                return $"{ForwardFactor:F1}({forwardSpeed:F1}km/h)";
-            }
-
-            var backwardSpeed = BackwardSpeed / 100.0 * 3.6;
-            return $"F:{ForwardFactor:F1}({forwardSpeed:F1}km/h) B:{BackwardFactor:F1}({backwardSpeed:F1}km/h)";
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)(this.ForwardFactor ^ this.ForwardSpeed << 8 ^ this.BackwardFactor << 16 ^ this.ForwardSpeed << 24);
-        }
+    public override int GetHashCode()
+    {
+        return (int)(this.ForwardFactor ^ (this.ForwardSpeed << 8) ^ (this.BackwardFactor << 16) ^ (this.ForwardSpeed << 24));
     }
 }

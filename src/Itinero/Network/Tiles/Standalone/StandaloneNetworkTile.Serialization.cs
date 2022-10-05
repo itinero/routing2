@@ -11,7 +11,7 @@ public partial class StandaloneNetworkTile
         stream.WriteVarInt32(version);
 
         // write base tile.
-        NetworkTile.WriteTo(stream);
+        this.NetworkTile.WriteTo(stream);
 
         // write edges and vertices for boundary crossings.
         this.WriteEdgesAndVerticesTo(stream);

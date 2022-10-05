@@ -3,162 +3,161 @@ using System.Collections.Generic;
 using System.IO;
 using Itinero.Network.Enumerators.Edges;
 
-namespace Itinero.Routes.Paths
+namespace Itinero.Routes.Paths;
+
+/// <summary>
+/// Extensions for path.
+/// </summary>
+public static class PathExtensions
 {
     /// <summary>
-    /// Extensions for path.
+    /// Calculates the weight of the path given the weight function.
     /// </summary>
-    public static class PathExtensions
+    /// <param name="path">The path.</param>
+    /// <param name="getWeight">The weight function.</param>
+    /// <returns>The total weight.</returns>
+    public static double? Weight(this Result<Path> path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
     {
-        /// <summary>
-        /// Calculates the weight of the path given the weight function.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="getWeight">The weight function.</param>
-        /// <returns>The total weight.</returns>
-        public static double? Weight(this Result<Path> path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
+        if (path.IsError)
         {
-            if (path.IsError)
-            {
-                return null;
-            }
-
-            return path.Value.Weight(getWeight);
+            return null;
         }
 
-        /// <summary>
-        /// Calculates the weight of the path given the weight function.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="getWeight">The weight function.</param>
-        /// <returns>The total weight.</returns>
-        public static double Weight(this Path path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
+        return path.Value.Weight(getWeight);
+    }
+
+    /// <summary>
+    /// Calculates the weight of the path given the weight function.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <param name="getWeight">The weight function.</param>
+    /// <returns>The total weight.</returns>
+    public static double Weight(this Path path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
+    {
+        var weight = 0.0;
+
+        var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
+        foreach (var (edge, direction, offset1, offset2) in path)
         {
-            var weight = 0.0;
-
-            var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
-            foreach (var (edge, direction, offset1, offset2) in path)
+            if (!edgeEnumerator.MoveToEdge(edge, direction))
             {
-                if (!edgeEnumerator.MoveToEdge(edge, direction))
-                {
-                    throw new InvalidDataException("An edge in the path is not found!");
-                }
-
-                var edgeWeight = getWeight(edgeEnumerator);
-                if (offset1 != 0 || offset2 != ushort.MaxValue)
-                {
-                    edgeWeight *= (double)(offset2 - offset1) / ushort.MaxValue;
-                }
-
-                weight += edgeWeight;
+                throw new InvalidDataException("An edge in the path is not found!");
             }
 
-            return weight;
+            var edgeWeight = getWeight(edgeEnumerator);
+            if (offset1 != 0 || offset2 != ushort.MaxValue)
+            {
+                edgeWeight *= (double)(offset2 - offset1) / ushort.MaxValue;
+            }
+
+            weight += edgeWeight;
         }
 
-        /// <summary>
-        /// Returns true if the path is next.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="next">The next path.</param>
-        /// <returns>True if the next path</returns>
-        public static bool IsNext(this Path path, Path next)
+        return weight;
+    }
+
+    /// <summary>
+    /// Returns true if the path is next.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <param name="next">The next path.</param>
+    /// <returns>True if the next path</returns>
+    public static bool IsNext(this Path path, Path next)
+    {
+        var last = path.Last;
+        var first = next.First;
+
+        // check if the same edge and if the offsets match.
+        if (last.edge == first.edge &&
+            last.direction == first.direction)
         {
-            var last = path.Last;
-            var first = next.First;
-
-            // check if the same edge and if the offsets match.
-            if (last.edge == first.edge &&
-                last.direction == first.direction)
-            {
-                var offset2 = (ushort)(ushort.MaxValue - next.Offset1);
-                return path.Offset2 == offset2;
-            }
-
-            // check if the same vertices at the end.
-            if (next.Offset1 != 0 ||
-                path.Offset2 != ushort.MaxValue)
-            {
-                return false;
-            }
-
-            var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
-            edgeEnumerator.MoveToEdge(last.edge, last.direction);
-            var lastVertex = edgeEnumerator.Head;
-            edgeEnumerator.MoveToEdge(first.edge, first.direction);
-            var firstVertex = edgeEnumerator.Tail;
-
-            return lastVertex == firstVertex;
+            var offset2 = (ushort)(ushort.MaxValue - next.Offset1);
+            return path.Offset2 == offset2;
         }
 
-        /// <summary>
-        /// Merges the paths.
-        /// </summary>
-        /// <param name="paths">The paths.</param>
-        /// <returns>The merged path.</returns>
-        public static Path? Merge(this IEnumerable<Path> paths)
+        // check if the same vertices at the end.
+        if (next.Offset1 != 0 ||
+            path.Offset2 != ushort.MaxValue)
         {
-            Path? merged = null;
-            RoutingNetworkEdgeEnumerator? enumerator = null;
-            foreach (var path in paths)
-            {
-                merged ??= new Path(path.RouterDb);
-                enumerator ??= path.RouterDb.GetEdgeEnumerator();
+            return false;
+        }
 
-                if (merged.Count == 0)
-                {
-                    merged.Offset1 = path.Offset1;
-                }
-                else if (!merged.IsNext(path))
+        var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
+        edgeEnumerator.MoveToEdge(last.edge, last.direction);
+        var lastVertex = edgeEnumerator.Head;
+        edgeEnumerator.MoveToEdge(first.edge, first.direction);
+        var firstVertex = edgeEnumerator.Tail;
+
+        return lastVertex == firstVertex;
+    }
+
+    /// <summary>
+    /// Merges the paths.
+    /// </summary>
+    /// <param name="paths">The paths.</param>
+    /// <returns>The merged path.</returns>
+    public static Path? Merge(this IEnumerable<Path> paths)
+    {
+        Path? merged = null;
+        RoutingNetworkEdgeEnumerator? enumerator = null;
+        foreach (var path in paths)
+        {
+            merged ??= new Path(path.RouterDb);
+            enumerator ??= path.RouterDb.GetEdgeEnumerator();
+
+            if (merged.Count == 0)
+            {
+                merged.Offset1 = path.Offset1;
+            }
+            else if (!merged.IsNext(path))
+            {
+                throw new InvalidDataException(
+                    $"Paths cannot be concatenated.");
+            }
+
+            foreach (var (edge, direction, _, _) in path)
+            {
+                if (!enumerator.MoveToEdge(edge, direction))
                 {
                     throw new InvalidDataException(
-                        $"Paths cannot be concatenated.");
+                        $"Edge not found.");
                 }
 
-                foreach (var (edge, direction, _, _) in path)
-                {
-                    if (!enumerator.MoveToEdge(edge, direction))
-                    {
-                        throw new InvalidDataException(
-                            $"Edge not found.");
-                    }
-
-                    merged.Append(edge, enumerator.Head);
-                }
-
-                merged.Offset2 = path.Offset2;
+                merged.Append(edge, enumerator.Head);
             }
 
-            return merged;
+            merged.Offset2 = path.Offset2;
         }
 
-        /// <summary>
-        /// Removes the first and/or last edge if they are not part of the path via the offset properties.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        public static void Trim(this Path path)
+        return merged;
+    }
+
+    /// <summary>
+    /// Removes the first and/or last edge if they are not part of the path via the offset properties.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    public static void Trim(this Path path)
+    {
+        if (path.Count <= 1)
         {
-            if (path.Count <= 1)
-            {
-                return;
-            }
+            return;
+        }
 
-            if (path.Offset1 == ushort.MaxValue)
-            {
-                path.RemoveFirst();
-                path.Offset1 = 0;
-            }
+        if (path.Offset1 == ushort.MaxValue)
+        {
+            path.RemoveFirst();
+            path.Offset1 = 0;
+        }
 
-            if (path.Count <= 1)
-            {
-                return;
-            }
+        if (path.Count <= 1)
+        {
+            return;
+        }
 
-            if (path.Offset2 == 0)
-            {
-                path.RemoveLast();
-                path.Offset2 = ushort.MaxValue;
-            }
+        if (path.Offset2 == 0)
+        {
+            path.RemoveLast();
+            path.Offset2 = ushort.MaxValue;
         }
     }
 }

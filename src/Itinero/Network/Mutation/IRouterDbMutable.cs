@@ -1,9 +1,8 @@
 ﻿using Itinero.Profiles;
 
-namespace Itinero.Network.Mutation
+namespace Itinero.Network.Mutation;
+
+internal interface IRouterDbMutable
 {
-    internal interface IRouterDbMutable
-    {
-        internal void Finish(RoutingNetwork network);
-    }
+    internal void Finish(RoutingNetwork network);
 }

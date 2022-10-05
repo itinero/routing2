@@ -1,10 +1,9 @@
 ﻿using Itinero.Network.Mutation;
 
-namespace Itinero.Network.Enumerators.Edges
+namespace Itinero.Network.Enumerators.Edges;
+
+public class RoutingNetworkMutatorEdgeEnumerator : EdgeEnumerator<RoutingNetworkMutator>
 {
-    public class RoutingNetworkMutatorEdgeEnumerator : EdgeEnumerator<RoutingNetworkMutator>
-    {
-        public RoutingNetworkMutatorEdgeEnumerator(RoutingNetworkMutator snapshot)
-            : base(snapshot) { }
-    }
+    public RoutingNetworkMutatorEdgeEnumerator(RoutingNetworkMutator snapshot)
+        : base(snapshot) { }
 }

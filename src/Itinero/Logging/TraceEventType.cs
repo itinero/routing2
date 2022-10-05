@@ -16,36 +16,35 @@
  *  limitations under the License.
  */
 
-namespace Itinero.Logging
+namespace Itinero.Logging;
+
+/// <summary>
+/// Represents different types of trace events.
+/// </summary>
+public enum TraceEventType
 {
     /// <summary>
-    /// Represents different types of trace events.
+    /// Critical.
     /// </summary>
-    public enum TraceEventType
-    {
-        /// <summary>
-        /// Critical.
-        /// </summary>
-        Critical,
+    Critical,
 
-        /// <summary>
-        /// Error.
-        /// </summary>
-        Error,
+    /// <summary>
+    /// Error.
+    /// </summary>
+    Error,
 
-        /// <summary>
-        /// Warning.
-        /// </summary>
-        Warning,
+    /// <summary>
+    /// Warning.
+    /// </summary>
+    Warning,
 
-        /// <summary>
-        /// Verbose.
-        /// </summary>
-        Verbose,
+    /// <summary>
+    /// Verbose.
+    /// </summary>
+    Verbose,
 
-        /// <summary>
-        /// Information.
-        /// </summary>
-        Information
-    }
+    /// <summary>
+    /// Information.
+    /// </summary>
+    Information
 }
