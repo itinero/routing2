@@ -16,7 +16,7 @@ internal static class DownloadHelper
     /// </summary>
     /// <param name="url">The url.</param>
     /// <returns>An open stream for the content at the given url.</returns>
-    public static Stream Download(string url)
+    public static Stream? Download(string url)
     {
         try
         {

@@ -253,7 +253,7 @@ public class GeoExtensionsTests
         var centerPoint = (3.220367431640625, 51.21547295828757, (float?)null);
         var toTheSouth = (3.22036474943161, 51.21542906518848, (float?)null);
         var angle = centerPoint.AngleWithMeridian(toTheSouth);
-        Assert.True(angle is >= -180 and < -177 or > 178 and <= 180);
+        Assert.True(angle is (>= -180 and < -177) or (> 178 and <= 180));
     }
 
     [Fact]
@@ -266,7 +266,7 @@ public class GeoExtensionsTests
         var n = eflJuliKlaver.AngleWithMeridian(straightN);
         Assert.True(n is > -5 and < 5);
         var s = straightN.AngleWithMeridian(eflJuliKlaver);
-        Assert.True(s is >= -180 and < -175 or > 175 and <= 180);
+        Assert.True(s is (>= -180 and < -175) or (> 175 and <= 180));
 
         var e = eflJuliKlaver.AngleWithMeridian(straightE);
         Assert.True(e is > 85 and < 95);

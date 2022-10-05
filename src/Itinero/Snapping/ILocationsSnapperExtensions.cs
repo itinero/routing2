@@ -5,6 +5,9 @@ using Itinero.Network;
 
 namespace Itinero.Snapping;
 
+/// <summary>
+/// Contains extensions for ILocations
+/// </summary>
 public static class ILocationsSnapperExtensions
 {
     /// <summary>

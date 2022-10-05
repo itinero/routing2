@@ -338,7 +338,7 @@ public static class RouteExtensions
     /// <summary>
     /// Gets the shape meta for the given shape index.
     /// </summary>
-    public static Route.Meta ShapeMetaFor(this Route route, int shape)
+    public static Route.Meta? ShapeMetaFor(this Route route, int shape)
     {
         foreach (var shapeMeta in route.ShapeMeta)
         {

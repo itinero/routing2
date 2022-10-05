@@ -131,7 +131,7 @@ public partial class StandaloneNetworkTile
             }
             else
             {
-                yield return (globalEdgeId, null, new BoundaryEdgeId((uint)((-localId) - 1)));
+                yield return (globalEdgeId, null, new BoundaryEdgeId((uint)-localId - 1));
             }
         }
     }

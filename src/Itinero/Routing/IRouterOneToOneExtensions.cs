@@ -15,6 +15,7 @@ public static class IRouterOneToOneExtensions
     /// Calculates the path.
     /// </summary>
     /// <param name="oneToOneRouter">The router.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The path.</returns>
     public static async Task<Result<Path>> Path(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken)
     {
@@ -34,6 +35,7 @@ public static class IRouterOneToOneExtensions
     /// Calculates the route.
     /// </summary>
     /// <param name="oneToOneRouter">The router.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The route.</returns>
     public static async Task<Result<Route>> CalculateAsync(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken = default)
     {
@@ -52,7 +54,7 @@ public static class IRouterOneToOneExtensions
     /// <returns>The weight</returns>
     public static Task<Result<double?>> CalculateAsync(this IRouterWeights<IRouterOneToOne> oneToOneWeightRouter)
     {
-        return Task.FromResult(null);
+        return Task.FromResult(new Result<double?>("Not implemented"));
 
         // var profileHandler = oneToOneWeightRouter.Router.Network.GetCostFunctionFor(
         //     oneToOneWeightRouter.Router.Settings.Profile);

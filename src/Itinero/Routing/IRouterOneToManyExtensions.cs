@@ -19,6 +19,7 @@ public static class IRouterOneToManyExtensions
     /// Calculates the paths.
     /// </summary>
     /// <param name="routerOneToMany">The router.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The paths.</returns>
     public static async Task<IReadOnlyList<Result<Path>>> Paths(this IRouterOneToMany routerOneToMany, CancellationToken cancellationToken)
     {
@@ -64,6 +65,7 @@ public static class IRouterOneToManyExtensions
     /// Calculates the routes.
     /// </summary>
     /// <param name="routerOneToMany">The router.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The routes.</returns>
     public static async Task<IReadOnlyList<Result<Route>>> Calculate(this IRouterOneToMany routerOneToMany, CancellationToken cancellationToken = default)
     {
@@ -78,7 +80,7 @@ public static class IRouterOneToManyExtensions
     /// <returns>The weights.</returns>
     public static Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterOneToMany> routerOneToMany)
     {
-        return Task.FromResult(null);
+        return Task.FromResult(new Result<IReadOnlyList<double?>>("Not implemented"));
 
         // var profileHandler = routerOneToMany.Router.Network.GetCostFunctionFor(
         //     routerOneToMany.Router.Settings.Profile);

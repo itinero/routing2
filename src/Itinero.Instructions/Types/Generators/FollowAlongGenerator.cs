@@ -7,7 +7,7 @@ internal class FollowAlongGenerator : IInstructionGenerator
 {
     public string Name { get; } = "followalong";
 
-    public BaseInstruction Generate(IndexedRoute route, int offset)
+    public BaseInstruction? Generate(IndexedRoute route, int offset)
     {
         if (offset == 0 || offset == route.Last)
         {

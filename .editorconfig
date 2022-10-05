@@ -33,10 +33,10 @@ dotnet_style_qualification_for_event = true:error
 dotnet_style_predefined_type_for_locals_parameters_members = true:error
 dotnet_style_predefined_type_for_member_access = true:error
 # Parentheses preferences
-dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:error
-dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:error
-dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:error
-dotnet_style_parentheses_in_other_operators = never_if_unnecessary:error
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary:silent
 # Modifier preferences
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
 dotnet_style_readonly_field = true:error
@@ -88,6 +88,23 @@ dotnet_naming_rule.private_fields_underscored.severity = error
 dotnet_naming_rule.private_static_fields_none.symbols = private_static_fields
 dotnet_naming_rule.private_static_fields_none.style = underscored
 dotnet_naming_rule.private_static_fields_none.severity = none
+
+# Allow ICamelCaseExtensions
+
+# Define the 'private_fields' symbol group:
+dotnet_naming_symbols.static_class.applicable_kinds = class
+dotnet_naming_symbols.static_class.applicable_accessibilities = *
+dotnet_naming_symbols.static_class.required_modifiers = static
+
+# Define the 'static_interface' naming style
+dotnet_naming_style.interface_extensions.capitalization = pascal_case
+dotnet_naming_style.interface_extensions.required_prefix = I
+dotnet_naming_style.interface_extensions.required_suffix = Extensions
+
+# Define the 'private_fields_underscored' naming rule
+dotnet_naming_rule.interface_extensions.symbols = static_class
+dotnet_naming_rule.interface_extensions.style = interface_extensions
+dotnet_naming_rule.interface_extensions.severity = none
 
 ###############################
 # C# Coding Conventions       #

@@ -36,7 +36,6 @@ public sealed partial class RouterDb
     /// <summary>
     /// Gets the turn attributes for the given type.
     /// </summary>
-    /// <param name="id">The id or index.</param>
     /// <returns>The attributes.</returns>
     internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
     {

@@ -167,7 +167,6 @@ public class StandaloneNetworkTileWriter
     /// </summary>
     /// <param name="from">The from node.</param>
     /// <param name="to">The to node and vertex, inside the tile.</param>
-    /// <param name="globalEdgeId">The global edge id.</param>
     /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="attributes">The attributes.</param>
     /// <param name="length">The length in centimeters.</param>

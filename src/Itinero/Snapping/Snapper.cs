@@ -48,8 +48,7 @@ internal class Snapper : ISnapper
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
     {
         var enumerator = this.RoutingNetwork.GetEdgeEnumerator();
 

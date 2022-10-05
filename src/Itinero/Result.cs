@@ -32,7 +32,7 @@ public class Result<T>
     /// </summary>
     public Result(string errorMessage, Func<string, Exception>? createException)
     {
-        _value = default;
+        _value = default!;
         _createException = createException;
         this.ErrorMessage = errorMessage;
         this.IsError = true;

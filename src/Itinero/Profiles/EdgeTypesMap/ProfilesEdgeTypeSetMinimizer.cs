@@ -23,7 +23,7 @@ internal class ProfileEdgeTypeSetMinimizer
     }
 
     /// <summary>
-    ///     Calculates the smallest attributeset which gives equivalent routing properties for the given profile.
+    ///     Calculates the smallest attribute set which gives equivalent routing properties for the given profile.
     ///     It'll try to remove as much attributes as possible, while keeping the same speeds and factors.
     ///     Thus:
     ///     <code>
@@ -34,7 +34,6 @@ internal class ProfileEdgeTypeSetMinimizer
     /// Assert.Equals(edgeFactors, edgeFactorsPruned);
     /// </code>
     /// </summary>
-    /// <param name="profiles">The profiles where routing should be stable for</param>
     /// <param name="attributes">The attributes to pruned</param>
     /// <returns>A pruned set of attributes</returns>
     public IEnumerable<(string key, string value)> MinimizeAttributes(

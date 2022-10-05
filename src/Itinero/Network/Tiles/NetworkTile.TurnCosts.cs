@@ -255,7 +255,7 @@ internal partial class NetworkTile
                     else
                     {
                         pointer += (uint)_turnCosts.GetDynamicUInt32(pointer, out var tileId);
-                        prefixEdgesList.Add(new EdgeId(tileId, (uint)((-signedLocalId) - 1)));
+                        prefixEdgesList.Add(new EdgeId(tileId, (uint)-signedLocalId - 1));
                     }
 
                     prefixEdgeCount--;

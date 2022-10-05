@@ -149,6 +149,7 @@ public static class AttributeExtensions
     /// Writes the attributes to the given stream starting at the current position of the stream.
     /// </summary>
     /// <param name="attributes">The attributes to write.</param>
+    /// <param name="stream"></param>
     /// <returns>The number of byte written.</returns>
     internal static long WriteAttributesTo(this IEnumerable<(string key, string value)> attributes, Stream stream)
     {

@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{A3A9D1F8-A
 		LICENSE.md = LICENSE.md
 		Itinero.Common.props = Itinero.Common.props
 		.editorconfig = .editorconfig
+		Itinero.sln.DotSettings = Itinero.sln.DotSettings
+		Itinero.sln.DotSettings.user = Itinero.sln.DotSettings.user
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0EFCE06D-E8CE-461C-A1E1-0AECC1BE06E5}"

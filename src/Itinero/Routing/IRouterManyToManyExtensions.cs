@@ -18,6 +18,7 @@ public static class IRouterManyToManyExtensions
     /// Calculates the paths.
     /// </summary>
     /// <param name="manyToManyRouter">The router.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The paths.</returns>
     public static async Task<IReadOnlyList<IReadOnlyList<Result<Path>>>> Paths(this IRouterManyToMany manyToManyRouter, CancellationToken cancellationToken)
     {
@@ -39,6 +40,7 @@ public static class IRouterManyToManyExtensions
     /// Calculates the routes.
     /// </summary>
     /// <param name="manyToManyRouter">The router.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The paths.</returns>
     public static async Task<IReadOnlyList<IReadOnlyList<Result<Route>>>> Calculate(this IRouterManyToMany manyToManyRouter, CancellationToken cancellationToken)
     {
@@ -67,7 +69,7 @@ public static class IRouterManyToManyExtensions
     public static Task<Result<IReadOnlyList<IReadOnlyList<double?>>>> Calculate(
         this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter)
     {
-        return Task.FromResult(null);
+        return Task.FromResult(new Result<IReadOnlyList<IReadOnlyList<double?>>>("Not implemented"));
 
         // var profileHandler = manyToManyWeightRouter.Router.Network.GetCostFunctionFor(
         //     manyToManyWeightRouter.Router.Settings.Profile);

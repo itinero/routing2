@@ -30,8 +30,6 @@ public interface ISnapper : ILocationsSnapper
     /// Snaps to the given vertices.
     /// </summary>
     /// <param name="vertices">The vertices to snap to.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The results if any. Snapping will fail if a vertex has no edges.</returns>
-    IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
-        CancellationToken cancellationToken = default);
+    IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices);
 }

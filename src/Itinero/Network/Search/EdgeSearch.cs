@@ -206,6 +206,7 @@ internal static class EdgeSearch
     /// <summary>
     /// Snaps all points in the given box that could potentially be snapping points.
     /// </summary>
+    /// <param name="routerDb"></param>
     /// <param name="box">The box to snap in.</param>
     /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
     /// <param name="nonOrthogonalEdges">When true the best potential location on each edge is returned, when false only orthogonal projected points.</param>

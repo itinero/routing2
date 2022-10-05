@@ -513,7 +513,7 @@ public static class IRoutePositionExtensions
     /// <summary>
     /// Returns the current meta.
     /// </summary>
-    public static Route.Meta CurrentMeta(this RoutePosition position)
+    public static Route.Meta? CurrentMeta(this RoutePosition position)
     {
         if (position.HasCurrentMeta())
         {
@@ -526,7 +526,7 @@ public static class IRoutePositionExtensions
     /// <summary>
     /// Returns the meta that applies to this position.
     /// </summary>
-    public static Route.Meta Meta(this RoutePosition position)
+    public static Route.Meta? Meta(this RoutePosition position)
     {
         if (position.Route.ShapeMeta != null &&
             position.Route.ShapeMeta.Count > position.MetaIndex)

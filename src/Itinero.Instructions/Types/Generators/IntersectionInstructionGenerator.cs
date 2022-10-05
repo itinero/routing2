@@ -8,7 +8,7 @@ internal class IntersectionInstructionGenerator : IInstructionGenerator
 {
     public string Name { get; } = "intersection";
 
-    public BaseInstruction Generate(IndexedRoute route, int offset)
+    public BaseInstruction? Generate(IndexedRoute route, int offset)
     {
         if (route.Last == offset + 1)
         {
