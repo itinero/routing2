@@ -304,11 +304,33 @@ namespace Itinero.Network.Tiles
         /// Gets the first vertex.
         /// </summary>
         public VertexId Tail { get; private set; }
+        
+        private (double longitude, double latitude, float? e)? _tailLocation;
+        
+        /// <inheritdoc/>
+        public (double longitude, double latitude, float? e) TailLocation {
+            get {
+                _tailLocation ??= GetVertex(Tail);
+
+                return _tailLocation.Value;
+            }
+        }
 
         /// <summary>
         /// Gets the second vertex.
         /// </summary>
         public VertexId Head { get; private set; }
+
+        private (double longitude, double latitude, float? e)? _headLocation;
+
+        /// <inheritdoc/>
+        public (double longitude, double latitude, float? e) HeadLocation {
+            get {
+                _headLocation ??= GetVertex(Head);
+
+                return _headLocation.Value;
+            }
+        }
 
         /// <summary>
         /// Gets the local edge id.
@@ -409,6 +431,19 @@ namespace Itinero.Network.Tiles
             return order == null
                 ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
                 : Tile.GetTurnCosts(Head, order.Value, targetOrder);
+        }
+        
+        private (double longitude, double latitude, float? e) GetVertex(VertexId vertex)
+        {
+            if (Tile == null) {
+                throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
+            }
+
+            if (!Tile.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) {
+                throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
+            }
+
+            return (longitude, latitude, e);
         }
     }
 }

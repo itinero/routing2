@@ -43,19 +43,19 @@ namespace Itinero.IO.Json.GeoJson
 
             var edgeEnumerator = routerDb.SearchEdgesInBox(box);
             while (edgeEnumerator.MoveNext()) {
-                var vertex1 = edgeEnumerator.From;
+                var vertex1 = edgeEnumerator.Tail;
                 if (!vertices.Contains(vertex1)) {
                     jsonWriter.WriteVertexFeature(vertex1, routerDb);
                     vertices.Add(vertex1);
                 }
 
-                var vertex2 = edgeEnumerator.To;
+                var vertex2 = edgeEnumerator.Head;
                 if (!vertices.Contains(vertex2)) {
                     jsonWriter.WriteVertexFeature(vertex2, routerDb);
                     vertices.Add(vertex2);
                 }
 
-                var edge = edgeEnumerator.Id;
+                var edge = edgeEnumerator.EdgeId;
                 if (!edges.Contains(edge)) {
                     jsonWriter.WriteEdgeFeature(edgeEnumerator);
                     edges.Add(edge);
@@ -93,11 +93,11 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WriteFeatureStart();
             var attributes = enumerator.Attributes.ToList();
             attributes.AddRange(new (string key, string value)[] {
-                ("vertex1_tile_id", enumerator.From.TileId.ToString()),
-                ("vertex1_local_id", enumerator.From.LocalId.ToString()),
-                ("vertex2_tile_id", enumerator.To.TileId.ToString()),
-                ("vertex2_local_id", enumerator.To.LocalId.ToString()),
-                ("edge_id", enumerator.Id.ToString())
+                ("vertex1_tile_id", enumerator.Tail.TileId.ToString()),
+                ("vertex1_local_id", enumerator.Tail.LocalId.ToString()),
+                ("vertex2_tile_id", enumerator.Head.TileId.ToString()),
+                ("vertex2_local_id", enumerator.Head.LocalId.ToString()),
+                ("edge_id", enumerator.EdgeId.ToString())
             });
             jsonWriter.WriteProperties(attributes);
             jsonWriter.WritePropertyName("geometry");

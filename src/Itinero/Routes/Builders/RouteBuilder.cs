@@ -52,7 +52,7 @@ namespace Itinero.Routes.Builders
                     if (firstEdgeIsFullyContained) {
                         // We check for branches
                         edgeEnumerator.MoveToEdge(edge, direction);
-                        AddBranches(edgeEnumerator.From, edgeEnumerator, spareEnumerator, 0, branches, allEdgeIds);
+                        AddBranches(edgeEnumerator.Tail, edgeEnumerator, spareEnumerator, 0, branches, allEdgeIds);
                     }
                 }
 
@@ -134,12 +134,12 @@ namespace Itinero.Routes.Builders
                     }
 
                     if (lastEdgeIsFullyContained) {
-                        AddBranches(edgeEnumerator.To,
+                        AddBranches(edgeEnumerator.Head,
                             edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches, allEdgeIds);
                     }
                 }
                 else {
-                    AddBranches(edgeEnumerator.To, edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches,
+                    AddBranches(edgeEnumerator.Head, edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches,
                         allEdgeIds);
                 }
 
@@ -168,7 +168,7 @@ namespace Itinero.Routes.Builders
             while (edgeEnumerator.MoveNext()) {
                 // Iterates over all edges of the endvertex
 
-                if (branchBlacklist.Contains(edgeEnumerator.Id)) {
+                if (branchBlacklist.Contains(edgeEnumerator.EdgeId)) {
                     // We make sure not to pick the current nor the next edge of the path
                     // This is simple as we have a hashset containing _all_ the edge ids ¯\_(ツ)_/¯
                     continue;
@@ -176,7 +176,7 @@ namespace Itinero.Routes.Builders
 
                 // If the vertex of the crossroads are the same as the from, we would walk forward over the branch if we would take it
                 var isForward = edgeEnumerator.Forward;
-                spareEnumerator.MoveToEdge(edgeEnumerator.Id, isForward);
+                spareEnumerator.MoveToEdge(edgeEnumerator.EdgeId, isForward);
                 using var shapeEnum = spareEnumerator.GetShapeBetween(includeVertices: false).GetEnumerator();
                 shapeEnum.MoveNext(); // Init enumerator at first value
                 shapeEnum.MoveNext();

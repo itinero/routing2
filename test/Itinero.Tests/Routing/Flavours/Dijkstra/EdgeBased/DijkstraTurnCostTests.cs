@@ -34,7 +34,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
                 (e, ep) =>
                 {
                     var w = 1;
-                    if (e.Id == edge3) w = 3;
+                    if (e.EdgeId == edge3) w = 3;
 
                     var tcs = e.GetTurnCostTo(ep)
                         .Select(x => (double)x.cost).Sum();
@@ -82,7 +82,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
                 (e, ep) =>
                 {
                     var w = 1;
-                    if (e.Id == edge3) w = 3;
+                    if (e.EdgeId == edge3) w = 3;
 
                     var tcs = e.GetTurnCostTo(ep)
                         .Select(x => (double)x.cost).Sum();

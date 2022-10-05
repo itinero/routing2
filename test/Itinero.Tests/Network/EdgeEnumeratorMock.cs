@@ -33,11 +33,11 @@ namespace Itinero.Tests.Network
 
         public RoutingNetwork Network { get; }
         public bool Forward => _edges.Current.forward;
-        public (double longitude, double latitude, float? e) FromLocation { get; }
-        public VertexId From { get; }
-        public (double longitude, double latitude, float? e) ToLocation { get; }
-        public VertexId To { get; }
-        public EdgeId Id => _edges.Current.edge;
+        public (double longitude, double latitude, float? e) TailLocation { get; }
+        public VertexId Tail { get; }
+        public (double longitude, double latitude, float? e) HeadLocation { get; }
+        public VertexId Head { get; }
+        public EdgeId EdgeId => _edges.Current.edge;
         public IEnumerable<(double longitude, double latitude, float? e)> Shape { get; }
         public IEnumerable<(string key, string value)> Attributes { get; }
         public uint? EdgeTypeId => _edges.Current.edgeTypeId;

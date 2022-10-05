@@ -18,7 +18,7 @@ namespace Itinero.Tests.Routing.Costs
         public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
             IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
         {
-            return (true, true, _mockFunc(edgeEnumerator.Id), 0);
+            return (true, true, _mockFunc(edgeEnumerator.EdgeId), 0);
         }
     }
 }

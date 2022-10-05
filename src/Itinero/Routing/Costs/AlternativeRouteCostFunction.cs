@@ -27,7 +27,7 @@ namespace Itinero.Routing.Costs
         public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
             IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
         {
-            if (_moreCostlyEdges.Contains(edgeEnumerator.Id)) {
+            if (_moreCostlyEdges.Contains(edgeEnumerator.EdgeId)) {
                 var (canAccess, canStop, cost, turnCost) = _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);
                 return (canAccess, canStop, cost * _alreadyVisitedCostFactor, turnCost);
             }

@@ -4,7 +4,7 @@ using OsmSharp;
 using OsmSharp.Tags;
 using Xunit;
 
-namespace Itinero.Tests.IO.Osm.Restrictions;
+namespace Itinero.Tests.IO.Osm.Restrictions.Turns;
 
 public class OsmTurnRestrictionExtensionsTests
 {

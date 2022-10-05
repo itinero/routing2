@@ -35,8 +35,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             var enumerator = network.GetEdgeEnumerator();
             enumerator.MoveTo(vertices[0]);
             Assert.True(enumerator.MoveNext());
-            Assert.Equal(vertices[0], enumerator.From);
-            Assert.Equal(vertices[1], enumerator.To);
+            Assert.Equal(vertices[0], enumerator.Tail);
+            Assert.Equal(vertices[1], enumerator.Head);
             Assert.True(enumerator.Forward);
         }
 
@@ -119,7 +119,7 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             // go for vertex1.
             Assert.True(enumerator.MoveTo(vertices[0]));
             Assert.True(enumerator.MoveNext());
-            Assert.Equal(edges[0], enumerator.Id);
+            Assert.Equal(edges[0], enumerator.EdgeId);
             var shape = enumerator.Shape.ToArray();
             Assert.Equal(2, shape.Length);
             ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?) null), shape[0]);
@@ -128,14 +128,14 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             // got for vertex2.
             Assert.True(enumerator.MoveTo(vertices[1]));
             while (enumerator.MoveNext()) {
-                if (enumerator.Id == edges[0]) {
+                if (enumerator.EdgeId == edges[0]) {
                     // edge1 in reverse.
                     shape = enumerator.Shape.ToArray();
                     Assert.Equal(2, shape.Length);
                     ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?) null), shape[0]);
                     ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?) null), shape[1]);
                 }
-                else if (enumerator.Id == edges[1]) {
+                else if (enumerator.EdgeId == edges[1]) {
                     // edge2 forward.
                     shape = enumerator.Shape.ToArray();
                     Assert.Equal(2, shape.Length);
@@ -145,7 +145,7 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             // go for vertex3.
             Assert.True(enumerator.MoveTo(vertices[2]));
             Assert.True(enumerator.MoveNext());
-            Assert.Equal(edges[1], enumerator.Id);
+            Assert.Equal(edges[1], enumerator.EdgeId);
             shape = enumerator.Shape.ToArray();
             Assert.Equal(2, shape.Length);
             ItineroAsserts.SameLocations((4.801921248435973, 51.268258852454680, (float?) null), shape[0]);

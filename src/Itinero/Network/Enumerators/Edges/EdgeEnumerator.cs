@@ -41,8 +41,8 @@ namespace Itinero.Network.Enumerators.Edges
         /// <returns>True if the vertex exists.</returns>
         public bool MoveTo(VertexId vertex)
         {
-            _fromLocation = null;
-            _toLocation = null;
+            _tailLocation = null;
+            _headLocation = null;
 
             if (_tileEnumerator.TileId == vertex.TileId) {
                 return _tileEnumerator.MoveTo(vertex);
@@ -66,8 +66,8 @@ namespace Itinero.Network.Enumerators.Edges
         /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
         public bool MoveToEdge(EdgeId edgeId, bool forward = true)
         {
-            _fromLocation = null;
-            _toLocation = null;
+            _tailLocation = null;
+            _headLocation = null;
 
             if (_tileEnumerator.TileId == edgeId.TileId) {
                 return _tileEnumerator.MoveTo(edgeId, forward);
@@ -89,8 +89,8 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         public void Reset()
         {
-            _fromLocation = null;
-            _toLocation = null;
+            _tailLocation = null;
+            _headLocation = null;
 
             _tileEnumerator.Reset();
         }
@@ -101,8 +101,8 @@ namespace Itinero.Network.Enumerators.Edges
         /// <returns>True if there is data available.</returns>
         public bool MoveNext()
         {
-            _fromLocation = null;
-            _toLocation = null;
+            _tailLocation = null;
+            _headLocation = null;
 
             return _tileEnumerator.MoveNext();
         }
@@ -115,40 +115,40 @@ namespace Itinero.Network.Enumerators.Edges
         /// </summary>
         public bool Forward => _tileEnumerator.Forward;
 
-        private (double longitude, double latitude, float? e)? _fromLocation;
+        private (double longitude, double latitude, float? e)? _tailLocation;
 
-        public (double longitude, double latitude, float? e) FromLocation {
+        public (double longitude, double latitude, float? e) TailLocation {
             get {
-                _fromLocation ??= GetVertex(From);
+                _tailLocation ??= GetVertex(Tail);
 
-                return _fromLocation.Value;
+                return _tailLocation.Value;
             }
         }
 
         /// <summary>
         /// Gets the source vertex.
         /// </summary>
-        public VertexId From => _tileEnumerator.Tail;
+        public VertexId Tail => _tileEnumerator.Tail;
 
-        private (double longitude, double latitude, float? e)? _toLocation;
+        private (double longitude, double latitude, float? e)? _headLocation;
 
-        public (double longitude, double latitude, float? e) ToLocation {
+        public (double longitude, double latitude, float? e) HeadLocation {
             get {
-                _toLocation ??= GetVertex(To);
+                _headLocation ??= GetVertex(Head);
 
-                return _toLocation.Value;
+                return _headLocation.Value;
             }
         }
 
         /// <summary>
         /// Gets the target vertex.
         /// </summary>
-        public VertexId To => _tileEnumerator.Head;
+        public VertexId Head => _tileEnumerator.Head;
 
         /// <summary>
         /// Gets the edge id.
         /// </summary>
-        public EdgeId Id => _tileEnumerator.EdgeId;
+        public EdgeId EdgeId => _tileEnumerator.EdgeId;
 
         /// <summary>
         /// Gets the shape.

@@ -31,9 +31,9 @@ namespace Itinero.Network.Restrictions
             // enumerate all edges except the u-turn and the original sequence.
             var secondToLast = firstPart[firstPart.Count - 2];
             mutableNetworkEdgeEnumerator.MoveToEdge(secondToLast.edge, secondToLast.forward);
-            mutableNetworkEdgeEnumerator.MoveTo(mutableNetworkEdgeEnumerator.To);
+            mutableNetworkEdgeEnumerator.MoveTo(mutableNetworkEdgeEnumerator.Head);
             while (mutableNetworkEdgeEnumerator.MoveNext()) {
-                var id = mutableNetworkEdgeEnumerator.Id;
+                var id = mutableNetworkEdgeEnumerator.EdgeId;
                 if (id == secondToLast.edge &&
                     mutableNetworkEdgeEnumerator.Forward != secondToLast.forward) {
                     continue;
@@ -45,7 +45,7 @@ namespace Itinero.Network.Restrictions
                 }
 
                 yield return firstPart.Take(firstPart.Count - 1)
-                    .Append((mutableNetworkEdgeEnumerator.Id, mutableNetworkEdgeEnumerator.Forward));
+                    .Append((Id: mutableNetworkEdgeEnumerator.EdgeId, mutableNetworkEdgeEnumerator.Forward));
             }
         }
     }

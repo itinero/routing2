@@ -9,9 +9,12 @@ using Itinero.Network;
 namespace Itinero.IO.Osm.Restrictions;
 
 /// <summary>
-/// A turn restriction on the network.
+/// A restriction on the network.
 /// </summary>
-public class NetworkTurnRestriction : IEnumerable<(EdgeId edge, bool forward)>
+/// <remarks>
+/// A sequence of restricted edges that can either be prohibitive or obligatory. This can be used to represent the classic turn restrictions but also barriers.
+/// </remarks>
+public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
 {
     private readonly List<(EdgeId edge, bool forward)> _sequence;
 
@@ -21,7 +24,7 @@ public class NetworkTurnRestriction : IEnumerable<(EdgeId edge, bool forward)>
     /// <param name="sequence">The sequence that is either prohibited or mandatory.</param>
     /// <param name="isProhibitory">Flag to set the restriction to prohibited or mandatory.</param>
     /// <param name="attributes">The attributes.</param>
-    public NetworkTurnRestriction(IEnumerable<(EdgeId edge, bool forward)> sequence, bool isProhibitory,
+    public NetworkRestriction(IEnumerable<(EdgeId edge, bool forward)> sequence, bool isProhibitory,
         IEnumerable<(string key, string value)> attributes)
     {
         _sequence = new List<(EdgeId edge, bool forward)>(sequence);

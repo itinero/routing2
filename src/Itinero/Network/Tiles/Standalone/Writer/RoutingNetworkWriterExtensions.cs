@@ -91,7 +91,7 @@ public static class RoutingNetworkWriterExtensions
                 var edgeEnumerator = writer.GetEdgeEnumerator();
                 if (!edgeEnumerator.MoveToEdge(edges[^1].Item1, edges[^1].Item2))
                     throw new Exception("edge should exist");
-                var turnCostVertex = edgeEnumerator.From;
+                var turnCostVertex = edgeEnumerator.Tail;
                 
                 writer.AddTurnCosts(turnCostVertex, crossingTurnCosts.attributes,
                     edges.Select(x => x.Item1).ToArray(),

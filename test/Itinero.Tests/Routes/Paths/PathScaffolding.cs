@@ -15,7 +15,7 @@ namespace Itinero.Tests.Routes.Paths
             foreach (var e in edges) {
                 edgeEnumerator.MoveToEdge(e.edge, e.direction);
 
-                path.Append(e.edge, edgeEnumerator.From);
+                path.Append(e.edge, edgeEnumerator.Tail);
             }
 
             return path;

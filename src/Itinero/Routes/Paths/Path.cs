@@ -91,10 +91,10 @@ namespace Itinero.Routes.Paths
                 throw new Exception($"Edge does not exist.");
             }
 
-            if (_edgeEnumerator.From == first) {
+            if (_edgeEnumerator.Tail == first) {
                 AppendInternal(edge, true);
             }
-            else if (_edgeEnumerator.To == first) {
+            else if (_edgeEnumerator.Head == first) {
                 AppendInternal(edge, false);
             }
             else {
@@ -113,10 +113,10 @@ namespace Itinero.Routes.Paths
                 throw new Exception($"Edge does not exist.");
             }
 
-            if (_edgeEnumerator.From == last) {
+            if (_edgeEnumerator.Tail == last) {
                 PrependInternal(edge, false);
             }
-            else if (_edgeEnumerator.To == last) {
+            else if (_edgeEnumerator.Head == last) {
                 PrependInternal(edge, true);
             }
             else {
@@ -170,7 +170,7 @@ namespace Itinero.Routes.Paths
             if (_edges.Count > 0) { // there is a first edge.
                 var first = _edges[0];
                 _edgeEnumerator.MoveToEdge(first.edge, first.forward);
-                builder.Append($"[{_edgeEnumerator.From}]");
+                builder.Append($"[{_edgeEnumerator.Tail}]");
                 builder.Append("->");
                 if (Offset1 != 0) {
                     builder.Append(OffsetPer(Offset1, true));
@@ -188,12 +188,12 @@ namespace Itinero.Routes.Paths
                     }
 
                     builder.Append("->");
-                    builder.Append($"[{_edgeEnumerator.To}]");
+                    builder.Append($"[{_edgeEnumerator.Head}]");
                     return builder.ToString();
                 }
 
                 builder.Append("->");
-                builder.Append($"[{_edgeEnumerator.To}]");
+                builder.Append($"[{_edgeEnumerator.Head}]");
             }
 
             for (var e = 1; e < _edges.Count - 1; e++) {
@@ -203,7 +203,7 @@ namespace Itinero.Routes.Paths
                 builder.Append($"{edgeAndDirection.edge}");
                 builder.Append(edgeAndDirection.forward ? "F" : "B");
                 builder.Append("->");
-                builder.Append($"[{_edgeEnumerator.To}]");
+                builder.Append($"[{_edgeEnumerator.Head}]");
             }
 
             if (_edges.Count > 0) { // there is a last edge.
@@ -218,7 +218,7 @@ namespace Itinero.Routes.Paths
 
                 _edgeEnumerator.MoveToEdge(last.edge, last.forward);
                 builder.Append("->");
-                builder.Append($"[{_edgeEnumerator.To}]");
+                builder.Append($"[{_edgeEnumerator.Head}]");
                 return builder.ToString();
             }
 

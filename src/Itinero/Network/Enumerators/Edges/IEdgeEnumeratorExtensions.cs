@@ -17,14 +17,14 @@ namespace Itinero.Network.Enumerators.Edges
             where T : IEdgeEnumerator<S>
             where S : IEdgeEnumerable
         {
-            yield return enumerator.FromLocation;
+            yield return enumerator.TailLocation;
 
             var shape = enumerator.Shape;
             foreach (var s in shape) {
                 yield return s;
             }
 
-            yield return enumerator.ToLocation;
+            yield return enumerator.HeadLocation;
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Itinero.Network.Enumerators.Edges
             // calculate coordinate shape.
             var before = offset1 > 0; // when there is a start offset.
             var length = 0.0;
-            var previous = enumerator.FromLocation;
+            var previous = enumerator.TailLocation;
             if (offset1 == 0 && includeVertices) {
                 yield return previous;
             }
@@ -91,7 +91,7 @@ namespace Itinero.Network.Enumerators.Edges
                 }
                 else {
                     // the last location.
-                    next = enumerator.ToLocation;
+                    next = enumerator.HeadLocation;
                 }
 
                 var segmentLength = previous.DistanceEstimateInMeter(next);

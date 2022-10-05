@@ -69,11 +69,11 @@ namespace Itinero.Network.Search
         public RoutingNetwork Network { get; }
 
         public bool Forward => RoutingNetworkEdgeEnumerator.Forward;
-        public VertexId From => RoutingNetworkEdgeEnumerator.From;
-        public (double longitude, double latitude, float? e) FromLocation => RoutingNetworkEdgeEnumerator.FromLocation;
-        public VertexId To => RoutingNetworkEdgeEnumerator.To;
-        public (double longitude, double latitude, float? e) ToLocation => RoutingNetworkEdgeEnumerator.ToLocation;
-        public EdgeId Id => RoutingNetworkEdgeEnumerator.Id;
+        public VertexId Tail => RoutingNetworkEdgeEnumerator.Tail;
+        public (double longitude, double latitude, float? e) TailLocation => RoutingNetworkEdgeEnumerator.TailLocation;
+        public VertexId Head => RoutingNetworkEdgeEnumerator.Head;
+        public (double longitude, double latitude, float? e) HeadLocation => RoutingNetworkEdgeEnumerator.HeadLocation;
+        public EdgeId EdgeId => RoutingNetworkEdgeEnumerator.EdgeId;
         public IEnumerable<(double longitude, double latitude, float? e)> Shape => RoutingNetworkEdgeEnumerator.Shape;
         public IEnumerable<(string key, string value)> Attributes => RoutingNetworkEdgeEnumerator.Attributes;
         public uint? EdgeTypeId => RoutingNetworkEdgeEnumerator.EdgeTypeId;

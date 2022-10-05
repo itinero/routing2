@@ -78,9 +78,9 @@ namespace Itinero.Routes.Paths
 
             var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
             edgeEnumerator.MoveToEdge(last.edge, last.direction);
-            var lastVertex = edgeEnumerator.To;
+            var lastVertex = edgeEnumerator.Head;
             edgeEnumerator.MoveToEdge(first.edge, first.direction);
-            var firstVertex = edgeEnumerator.From;
+            var firstVertex = edgeEnumerator.Tail;
 
             return lastVertex == firstVertex;
         }
@@ -112,7 +112,7 @@ namespace Itinero.Routes.Paths
                             $"Edge not found.");
                     }
 
-                    merged.Append(edge, enumerator.To);
+                    merged.Append(edge, enumerator.Head);
                 }
 
                 merged.Offset2 = path.Offset2;

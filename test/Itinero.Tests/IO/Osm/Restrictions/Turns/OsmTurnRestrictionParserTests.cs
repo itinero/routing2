@@ -1,11 +1,10 @@
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Itinero.IO.Osm.Restrictions;
 using OsmSharp;
 using OsmSharp.Tags;
 using Xunit;
 
-namespace Itinero.Tests.IO.Osm.Restrictions;
+namespace Itinero.Tests.IO.Osm.Restrictions.Turns;
 
 public class OsmTurnRestrictionParserTests
 {

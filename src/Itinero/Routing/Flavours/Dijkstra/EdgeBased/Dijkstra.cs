@@ -109,7 +109,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     // can traverse edge in the forward direction.
                     var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
                     sourceForwardVisit =
-                        _tree.AddVisit(enumerator.To, source.sp.EdgeId, enumerator.HeadOrder, uint.MaxValue);
+                        _tree.AddVisit(enumerator.Head, source.sp.EdgeId, enumerator.HeadOrder, uint.MaxValue);
                     _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
                 }
             }
@@ -127,7 +127,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     // can traverse edge in the backward direction.
                     var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
                     sourceBackwardVisit =
-                        _tree.AddVisit(enumerator.To, source.sp.EdgeId, enumerator.HeadOrder, uint.MaxValue);
+                        _tree.AddVisit(enumerator.Head, source.sp.EdgeId, enumerator.HeadOrder, uint.MaxValue);
                     _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
                 }
             }
@@ -148,9 +148,9 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     var targetCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>())
                         .cost;
                     if (targetCostForward > 0) {
-                        if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex)) {
+                        if (!targetsPerVertex.TryGetValue(enumerator.Tail, out var targetsAtVertex)) {
                             targetsAtVertex = new List<int>();
-                            targetsPerVertex[enumerator.From] = targetsAtVertex;
+                            targetsPerVertex[enumerator.Tail] = targetsAtVertex;
                         }
 
                         targetsAtVertex.Add(t);
@@ -166,9 +166,9 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     var targetCostBackward =
                         getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
                     if (targetCostBackward > 0) {
-                        if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex)) {
+                        if (!targetsPerVertex.TryGetValue(enumerator.Tail, out var targetsAtVertex)) {
                             targetsAtVertex = new List<int>();
-                            targetsPerVertex[enumerator.From] = targetsAtVertex;
+                            targetsPerVertex[enumerator.Tail] = targetsAtVertex;
                         }
 
                         targetsAtVertex.Add(t);
@@ -275,7 +275,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
 
                 while (enumerator.MoveNext()) {
                     // filter out if u-turns or visits on the same edge.
-                    var neighbourEdge = enumerator.Id;
+                    var neighbourEdge = enumerator.EdgeId;
                     if (neighbourEdge == currentVisit.edge) {
                         continue;
                     }
@@ -329,8 +329,8 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                             }
 
                             // this is an improvement.
-                            neighbourPointer = _tree.AddVisit(enumerator.To,
-                                enumerator.Id, enumerator.HeadOrder, currentPointer);
+                            neighbourPointer = _tree.AddVisit(enumerator.Head,
+                                enumerator.EdgeId, enumerator.HeadOrder, currentPointer);
                             bestTargets[t] = (neighbourPointer, targetCost);
 
                             // update worst.
@@ -339,7 +339,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     }
 
                     if (queued != null &&
-                        await queued((enumerator.Id, enumerator.To))) {
+                        await queued((enumerator.EdgeId, enumerator.Head))) {
                         // don't queue this edge if the queued function returns true.
                         continue;
                     }
@@ -347,7 +347,7 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased
                     // add visit if not added yet.
                     if (neighbourPointer == uint.MaxValue) {
                         neighbourPointer =
-                            _tree.AddVisit(enumerator.To, enumerator.Id, enumerator.HeadOrder, currentPointer);
+                            _tree.AddVisit(enumerator.Head, enumerator.EdgeId, enumerator.HeadOrder, currentPointer);
                     }
 
                     // add visit to heap.

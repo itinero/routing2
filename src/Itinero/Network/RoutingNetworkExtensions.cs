@@ -60,7 +60,7 @@ namespace Itinero.Network
                         continue;
                     }
 
-                    yield return edgeEnumerator.Id;
+                    yield return edgeEnumerator.EdgeId;
                 }
             }
         }

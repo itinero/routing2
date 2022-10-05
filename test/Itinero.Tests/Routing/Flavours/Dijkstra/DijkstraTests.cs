@@ -127,7 +127,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
                 await latest.Snap().ToAsync(vertex1, edge3),
                 await latest.Snap().ToAsync(vertex3, edge3),
                 (e, ep) => {
-                    if (e.Id == edge3) {
+                    if (e.EdgeId == edge3) {
                         return (10, 0);
                     }
 

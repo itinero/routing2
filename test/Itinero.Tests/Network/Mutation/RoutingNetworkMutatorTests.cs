@@ -23,8 +23,8 @@ namespace Itinero.Tests.Network.Mutation
             var enumerator = routerDbLatest.GetEdgeEnumerator();
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
-            Assert.Equal(vertex1, enumerator.From);
-            Assert.Equal(vertex2, enumerator.To);
+            Assert.Equal(vertex1, enumerator.Tail);
+            Assert.Equal(vertex2, enumerator.Head);
             Assert.True(enumerator.Forward);
         }
 

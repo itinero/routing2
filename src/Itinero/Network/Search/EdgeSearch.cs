@@ -82,7 +82,7 @@ namespace Itinero.Network.Search
                         }
 
                         bestDistance = distance;
-                        localSnapPoint = (edgeEnumerator.Id, 0);
+                        localSnapPoint = (edgeEnumerator.EdgeId, 0);
                     }
 
                     // loop over all pairs.
@@ -104,7 +104,7 @@ namespace Itinero.Network.Search
                             }
 
                             bestDistance = distance;
-                            localSnapPoint = (edgeEnumerator.Id, length + segmentLength);
+                            localSnapPoint = (edgeEnumerator.EdgeId, length + segmentLength);
                         }
 
                         // update length.
@@ -149,7 +149,7 @@ namespace Itinero.Network.Search
                         }
 
                         bestDistance = distance;
-                        localSnapPoint = (edgeEnumerator.Id,
+                        localSnapPoint = (edgeEnumerator.EdgeId,
                             startLength + originalPrevious.DistanceEstimateInMeter(projected.Value));
                     }
                 }
@@ -213,11 +213,11 @@ namespace Itinero.Network.Search
             var center = box.Center();
 
             while (edgeEnumerator.MoveNext()) {
-                if (edges.Contains(edgeEnumerator.Id)) {
+                if (edges.Contains(edgeEnumerator.EdgeId)) {
                     continue;
                 }
 
-                edges.Add(edgeEnumerator.Id);
+                edges.Add(edgeEnumerator.EdgeId);
 
                 // search for the best snap point for the current edge.
                 (EdgeId edgeId, double offset, bool isOrthoganal, double distance) bestEdgeSnapPoint =
@@ -237,7 +237,7 @@ namespace Itinero.Network.Search
                             continue;
                         }
 
-                        bestEdgeSnapPoint = (edgeEnumerator.Id, 0, false, distance);
+                        bestEdgeSnapPoint = (edgeEnumerator.EdgeId, 0, false, distance);
                     }
 
                     // loop over all pairs.
@@ -254,7 +254,7 @@ namespace Itinero.Network.Search
                                 break;
                             }
 
-                            bestEdgeSnapPoint = (edgeEnumerator.Id, length + segmentLength, false, distance);
+                            bestEdgeSnapPoint = (edgeEnumerator.EdgeId, length + segmentLength, false, distance);
                         }
 
                         // update length.
@@ -272,7 +272,7 @@ namespace Itinero.Network.Search
                             if (distance < bestEdgeSnapPoint.distance) {
                                 isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
                                 if (isAcceptable.Value) {
-                                    bestEdgeSnapPoint = (edgeEnumerator.Id,
+                                    bestEdgeSnapPoint = (edgeEnumerator.EdgeId,
                                         startLength + originalPrevious.DistanceEstimateInMeter(projected.Value),
                                         true, distance);
                                 }

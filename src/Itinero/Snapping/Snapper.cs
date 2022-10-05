@@ -61,15 +61,15 @@ namespace Itinero.Snapping
                 var found = false;
                 while (enumerator.MoveNext()) {
                     if (edgeId != null &&
-                        enumerator.Id != edgeId.Value) {
+                        enumerator.EdgeId != edgeId.Value) {
                         continue;
                     }
 
                     if (enumerator.Forward) {
-                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.Id, 0));
+                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, 0));
                     }
                     else {
-                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.Id, ushort.MaxValue));
+                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, ushort.MaxValue));
                     }
 
                     found = true;

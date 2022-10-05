@@ -19,7 +19,7 @@ public static class OsmTurnRestrictionExtensions
     /// <param name="osmTurnRestriction">The OSM turn restriction.</param>
     /// <param name="getEdgeFor">A function to get edges for pairs of nodes for a given way.</param>
     /// <returns>The restriction using network edges and vertices.</returns>
-    public static Result<IEnumerable<NetworkTurnRestriction>> ToNetworkRestrictions(
+    public static Result<IEnumerable<NetworkRestriction>> ToNetworkRestrictions(
         this OsmTurnRestriction osmTurnRestriction,
         GetEdgeFor getEdgeFor)
     {
@@ -37,7 +37,7 @@ public static class OsmTurnRestrictionExtensions
 
         if (fromEdges.Count == 0)
         {
-            return new Result<IEnumerable<NetworkTurnRestriction>>(
+            return new Result<IEnumerable<NetworkRestriction>>(
                 "could not parse any part of the from-part of the restriction");
         }
 
@@ -55,14 +55,14 @@ public static class OsmTurnRestrictionExtensions
 
         if (toEdges.Count == 0)
         {
-            return new Result<IEnumerable<NetworkTurnRestriction>>(
+            return new Result<IEnumerable<NetworkRestriction>>(
                 "could not parse any part of the to-part of the restriction");
         }
 
         // get the in between sequence.
         var viaEdges = new List<(EdgeId edgeId, bool forward)>();
         var viaSequences = osmTurnRestriction.GetViaHops();
-        if (viaSequences.IsError) return viaSequences.ConvertError<IEnumerable<NetworkTurnRestriction>>();
+        if (viaSequences.IsError) return viaSequences.ConvertError<IEnumerable<NetworkRestriction>>();
         foreach (var hop in viaSequences.Value)
         {
             var (way, startNode, endNode) = hop;
@@ -72,7 +72,7 @@ public static class OsmTurnRestrictionExtensions
             viaEdges.AddRange(edge);
         }
 
-        var networkRestrictions = new List<NetworkTurnRestriction>();
+        var networkRestrictions = new List<NetworkRestriction>();
         foreach (var fromEdge in fromEdges)
         foreach (var toEdge in toEdges)
         {
@@ -80,7 +80,7 @@ public static class OsmTurnRestrictionExtensions
             sequence.AddRange(viaEdges);
             sequence.Add(toEdge);
 
-            networkRestrictions.Add(new NetworkTurnRestriction(sequence, osmTurnRestriction.IsProbibitory,
+            networkRestrictions.Add(new NetworkRestriction(sequence, osmTurnRestriction.IsProbibitory,
                 osmTurnRestriction.Attributes));
         }
 

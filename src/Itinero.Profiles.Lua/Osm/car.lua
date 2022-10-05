@@ -141,7 +141,14 @@ function factor(attributes, result)
 end
 
 function turn_cost_factor(attributes, result)
-    result.factor = 0;
+    result.factor = 0
+    
+    -- get factors for barriers, if any.
+    local barrier = attributes.barrier
+    if barrier ~= nil then
+        result.factor = -1
+        return
+    end
 
     -- get factors for turn restrictions.
     local type = attributes.type

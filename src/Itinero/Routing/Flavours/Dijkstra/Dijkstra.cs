@@ -91,7 +91,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
             {
                 // can traverse edge in the forward direction.
                 var sourceOffsetCostForward = sourceCostForward * (1 - source.OffsetFactor());
-                sourceForwardVisit = _tree.AddVisit(enumerator.To, source.EdgeId, enumerator.HeadOrder, uint.MaxValue);
+                sourceForwardVisit = _tree.AddVisit(enumerator.Head, source.EdgeId, enumerator.HeadOrder, uint.MaxValue);
                 _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
             }
 
@@ -107,7 +107,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
             {
                 // can traverse edge in the backward direction.
                 var sourceOffsetCostBackward = sourceCostBackward * source.OffsetFactor();
-                sourceBackwardVisit = _tree.AddVisit(enumerator.To, source.EdgeId, enumerator.HeadOrder, uint.MaxValue);
+                sourceBackwardVisit = _tree.AddVisit(enumerator.Head, source.EdgeId, enumerator.HeadOrder, uint.MaxValue);
                 _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
             }
 
@@ -125,17 +125,17 @@ namespace Itinero.Routing.Flavours.Dijkstra
                     throw new Exception($"Edge in target {target} not found!");
                 }
 
-                if (!targetsPerVertex.TryGetValue(enumerator.From, out var targetsAtVertex))
+                if (!targetsPerVertex.TryGetValue(enumerator.Tail, out var targetsAtVertex))
                 {
                     targetsAtVertex = new List<int>();
-                    targetsPerVertex[enumerator.From] = targetsAtVertex;
+                    targetsPerVertex[enumerator.Tail] = targetsAtVertex;
                 }
 
                 targetsAtVertex.Add(t);
-                if (!targetsPerVertex.TryGetValue(enumerator.To, out targetsAtVertex))
+                if (!targetsPerVertex.TryGetValue(enumerator.Head, out targetsAtVertex))
                 {
                     targetsAtVertex = new List<int>();
-                    targetsPerVertex[enumerator.To] = targetsAtVertex;
+                    targetsPerVertex[enumerator.Head] = targetsAtVertex;
                 }
 
                 targetsAtVertex.Add(t);
@@ -245,7 +245,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
                 while (enumerator.MoveNext())
                 {
                     // filter out if u-turns or visits on the same edge.
-                    var neighbourEdge = enumerator.Id;
+                    var neighbourEdge = enumerator.EdgeId;
                     if (neighbourEdge == currentVisit.edge)
                     {
                         continue;
@@ -302,8 +302,8 @@ namespace Itinero.Routing.Flavours.Dijkstra
                             }
 
                             // this is an improvement.
-                            neighbourPointer = _tree.AddVisit(enumerator.To,
-                                enumerator.Id, enumerator.HeadOrder, currentPointer);
+                            neighbourPointer = _tree.AddVisit(enumerator.Head,
+                                enumerator.EdgeId, enumerator.HeadOrder, currentPointer);
                             bestTargets[t] = (neighbourPointer, targetCost);
 
                             // update worst.
@@ -312,7 +312,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
                     }
 
                     if (queued != null &&
-                        await queued(enumerator.To))
+                        await queued(enumerator.Head))
                     {
                         // don't queue this vertex if the queued function returns true.
                         continue;
@@ -321,8 +321,8 @@ namespace Itinero.Routing.Flavours.Dijkstra
                     // add visit if not added yet.
                     if (neighbourPointer == uint.MaxValue)
                     {
-                        neighbourPointer = _tree.AddVisit(enumerator.To,
-                            enumerator.Id, enumerator.HeadOrder, currentPointer);
+                        neighbourPointer = _tree.AddVisit(enumerator.Head,
+                            enumerator.EdgeId, enumerator.HeadOrder, currentPointer);
                     }
 
                     // add visit to heap.
