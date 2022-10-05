@@ -50,13 +50,13 @@ public static class StandaloneNetworkTileExtensions
         {
             // write vertex features.
             jsonWriter.WriteVertexFeature(vertex, edgeEnumerator.TailLocation);
-            
+
             // iterate over all edges.
             while (edgeEnumerator.MoveNext())
             {
                 if (edges.Contains(edgeEnumerator.EdgeId)) continue;
                 edges.Add(edgeEnumerator.EdgeId);
-                
+
                 // write edge features.
                 jsonWriter.WriteEdgeFeature(edgeEnumerator);
 
@@ -93,7 +93,7 @@ public static class StandaloneNetworkTileExtensions
                         }
                     }
                 }
-                
+
                 if (edgeEnumerator.TailOrder != null)
                 {
                     // check out turn costs at tail location.

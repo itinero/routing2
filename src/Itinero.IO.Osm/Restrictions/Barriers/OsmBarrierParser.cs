@@ -30,7 +30,7 @@ public class OsmBarrierParser
     public bool TryParse(Node node, [NotNullWhen(returnValue: true)] out OsmBarrier? barrier)
     {
         if (node.Id == null) throw new ArgumentException("Node with id null cannot be a barrier");
-        
+
         barrier = null;
 
         if (!this.IsBarrier(node)) return false;
