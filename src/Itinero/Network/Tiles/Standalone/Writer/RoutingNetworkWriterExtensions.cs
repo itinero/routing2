@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Data;
@@ -92,7 +92,7 @@ public static class RoutingNetworkWriterExtensions
                 if (!edgeEnumerator.MoveToEdge(edges[^1].Item1, edges[^1].Item2))
                     throw new Exception("edge should exist");
                 var turnCostVertex = edgeEnumerator.Tail;
-                
+
                 writer.AddTurnCosts(turnCostVertex, crossingTurnCosts.attributes,
                     edges.Select(x => x.Item1).ToArray(),
                     crossingTurnCosts.costs, null, crossingTurnCosts.turnCostType);

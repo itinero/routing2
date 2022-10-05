@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
@@ -41,12 +41,14 @@ namespace Itinero.Network.Mutation
 
             // check if there is already a modified version.
             var tile = _tiles[localTileId];
-            if (tile == null) {
+            if (tile == null)
+            {
                 return null;
             }
 
             // update the tile if needed.
-            if (tile.EdgeTypeMapId == edgeTypeMap.id) {
+            if (tile.EdgeTypeMapId == edgeTypeMap.id)
+            {
                 return tile;
             }
 
@@ -68,7 +70,7 @@ namespace Itinero.Network.Mutation
         public INetworkTileEdge GetEdge(EdgeId edgeId, bool forward)
         {
             var (tile, _) = this.GetTileForWrite(edgeId.TileId);
-            
+
             var edge = new NetworkTileEnumerator();
             edge.MoveTo(tile);
             edge.MoveTo(edgeId, forward);
@@ -85,8 +87,10 @@ namespace Itinero.Network.Mutation
 
             // check if there is already a modified version.
             var tile = _tiles[localTileId];
-            if (tile != null) {
-                if (tile.EdgeTypeMapId == edgeTypeMap.id) {
+            if (tile != null)
+            {
+                if (tile.EdgeTypeMapId == edgeTypeMap.id)
+                {
                     return (tile, edgeTypeMap.func);
                 }
 
@@ -110,12 +114,14 @@ namespace Itinero.Network.Mutation
 
         internal IEnumerable<uint> GetTiles()
         {
-            foreach (var (i, value) in _tiles) {
-                if (value == null) {
+            foreach (var (i, value) in _tiles)
+            {
+                if (value == null)
+                {
                     continue;
                 }
 
-                yield return (uint) i;
+                yield return (uint)i;
             }
         }
 
@@ -147,7 +153,8 @@ namespace Itinero.Network.Mutation
             var localTileId = vertex.TileId;
 
             // get tile.
-            if (_tiles.Length <= localTileId) {
+            if (_tiles.Length <= localTileId)
+            {
                 longitude = default;
                 latitude = default;
                 e = null;
@@ -155,7 +162,8 @@ namespace Itinero.Network.Mutation
             }
 
             var tile = GetTileForRead(localTileId);
-            if (tile == null) {
+            if (tile == null)
+            {
                 longitude = default;
                 latitude = default;
                 e = null;
@@ -171,16 +179,18 @@ namespace Itinero.Network.Mutation
             IEnumerable<(string key, string value)>? attributes = null)
         {
             var (tile, edgeTypeFunc) = GetTileForWrite(vertex1.TileId);
-            if (tile == null) {
+            if (tile == null)
+            {
                 throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
             }
 
-            var edgeTypeId = attributes != null ? (uint?) edgeTypeFunc(attributes) : null;
+            var edgeTypeId = attributes != null ? (uint?)edgeTypeFunc(attributes) : null;
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId);
-            if (vertex1.TileId != vertex2.TileId) {
+            if (vertex1.TileId != vertex2.TileId)
+            {
                 // this edge crosses tiles, also add an extra edge to the other tile.
                 (tile, edgeTypeFunc) = GetTileForWrite(vertex2.TileId);
-                edgeTypeId = attributes != null ? (uint?) edgeTypeFunc(attributes) : null;
+                edgeTypeId = attributes != null ? (uint?)edgeTypeFunc(attributes) : null;
                 tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId);
             }
 
@@ -191,10 +201,11 @@ namespace Itinero.Network.Mutation
             EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
         {
             prefix ??= ArraySegment<EdgeId>.Empty;
-            
+
             // get the tile (or create it).
             var (tile, _) = GetTileForWrite(vertex.TileId);
-            if (tile == null) {
+            if (tile == null)
+            {
                 throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
             }
 

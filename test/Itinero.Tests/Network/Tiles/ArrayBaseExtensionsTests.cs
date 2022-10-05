@@ -1,4 +1,4 @@
-using Itinero.Network.Tiles;
+﻿using Itinero.Network.Tiles;
 using Reminiscence.Arrays;
 using Xunit;
 

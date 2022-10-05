@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Routing.DataStructures;
 
@@ -39,7 +39,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
         {
             tree.Get(pointer, out var data0, out var data1, out var data2, out var data3, out var data4, out var data5);
 
-            var head = data4 == uint.MaxValue ? null : (byte?) data4;
+            var head = data4 == uint.MaxValue ? null : (byte?)data4;
 
             return (new VertexId(data0, data1), new EdgeId(data2, data3), head, data5);
         }
@@ -52,7 +52,8 @@ namespace Itinero.Routing.Flavours.Dijkstra
         /// <returns>The edges and their turn.</returns>
         public static IEnumerable<(EdgeId edge, byte? turn)> GetPreviousEdges(this PathTree tree, uint pointer)
         {
-            while (pointer != uint.MaxValue) {
+            while (pointer != uint.MaxValue)
+            {
                 var (_, edge, head, next) = tree.GetVisit(pointer);
 
                 yield return (edge, head);
@@ -60,11 +61,12 @@ namespace Itinero.Routing.Flavours.Dijkstra
                 pointer = next;
             }
         }
-        
-        #if DEBUG
+
+#if DEBUG
         public static IEnumerable<(VertexId vertexId, EdgeId edge, byte? turn)> GetPathDebug(this PathTree tree, uint pointer)
         {
-            while (pointer != uint.MaxValue) {
+            while (pointer != uint.MaxValue)
+            {
                 var (vertex, edge, head, next) = tree.GetVisit(pointer);
 
                 yield return (vertex, edge, head);
@@ -72,6 +74,6 @@ namespace Itinero.Routing.Flavours.Dijkstra
                 pointer = next;
             }
         }
-        #endif
+#endif
     }
 }

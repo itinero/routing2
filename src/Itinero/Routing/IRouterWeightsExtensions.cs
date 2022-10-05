@@ -1,4 +1,4 @@
-namespace Itinero.Routing
+﻿namespace Itinero.Routing
 {
     /// <summary>
     /// Contains extension methods for weight routers.

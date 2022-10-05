@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Routes.Builders;
@@ -23,7 +23,7 @@ namespace Itinero.Tests.Routes.Builders
                 });
 
             var network = routerDb.Latest;
-            var path = network.BuildPath(new[] {(edges[0], true)});
+            var path = network.BuildPath(new[] { (edges[0], true) });
 
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
@@ -46,7 +46,7 @@ namespace Itinero.Tests.Routes.Builders
                 });
 
             var network = routerDb.Latest;
-            var path = network.BuildPath(new[] {(edges[0], false)});
+            var path = network.BuildPath(new[] { (edges[0], false) });
 
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
@@ -72,7 +72,7 @@ namespace Itinero.Tests.Routes.Builders
                 });
 
             var network = routerDb.Latest;
-            var path = network.BuildPath(new[] {(edges[0], true)});
+            var path = network.BuildPath(new[] { (edges[0], true) });
 
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
@@ -100,7 +100,7 @@ namespace Itinero.Tests.Routes.Builders
                 });
 
             var network = routerDb.Latest;
-            var path = network.BuildPath(new[] {(edges[0], false)});
+            var path = network.BuildPath(new[] { (edges[0], false) });
 
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
@@ -113,10 +113,10 @@ namespace Itinero.Tests.Routes.Builders
 
             var route = result.Value;
             Assert.Equal(4, route.Shape.Count);
-            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?) null), route.Shape[0]);
-            ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?) null), route.Shape[1]);
-            ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?) null), route.Shape[2]);
-            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?) null), route.Shape[3]);
+            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?)null), route.Shape[0]);
+            ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?)null), route.Shape[1]);
+            ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?)null), route.Shape[2]);
+            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?)null), route.Shape[3]);
         }
 
         [Fact]
@@ -215,10 +215,10 @@ namespace Itinero.Tests.Routes.Builders
             var path = network.BuildPath(new[] {
                 (edges[0], false)
             });
-        
+
             // This edgeFactor kan move only backward over the edge, e.g. a way with 'oneway=-1'
             var edgeFactor = new EdgeFactor(0, 1, 0, 10);
-        
+
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(getEdgeFactor: (_) => edgeFactor), path);
             Assert.NotNull(result);
             Assert.False(result.IsError);

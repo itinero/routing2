@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -34,14 +34,14 @@ public static class OsmBarrierExtensions
         }
 
         if (edges.Count < 2) return new Result<IEnumerable<NetworkRestriction>>(ArraySegment<NetworkRestriction>.Empty);
-        
+
         // for each two edges create one restriction.
         var restrictions = new List<NetworkRestriction>();
         foreach (var from in edges)
-        foreach (var to in edges)
-        {
-            restrictions.Add(new NetworkRestriction(new []{ from, to}, true,osmBarrier.Attributes));
-        }
+            foreach (var to in edges)
+            {
+                restrictions.Add(new NetworkRestriction(new[] { from, to }, true, osmBarrier.Attributes));
+            }
 
         return new Result<IEnumerable<NetworkRestriction>>(restrictions);
     }

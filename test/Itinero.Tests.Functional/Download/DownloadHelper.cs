@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -21,50 +21,58 @@ namespace Itinero.Tests.Functional.Download
             var fileName = HttpUtility.UrlEncode(url) + ".tile.zip";
             fileName = Path.Combine(".", "cache", fileName);
 
-            if (File.Exists(fileName)) {
+            if (File.Exists(fileName))
+            {
                 return new GZipStream(File.OpenRead(fileName), CompressionMode.Decompress);
             }
 
             var redirectFileName = HttpUtility.UrlEncode(url) + ".tile.redirect";
             redirectFileName = Path.Combine(".", "cache", redirectFileName);
 
-            if (File.Exists(redirectFileName)) {
+            if (File.Exists(redirectFileName))
+            {
                 var newUrl = File.ReadAllText(redirectFileName);
                 return Download(newUrl);
             }
 
-            try {
-                var handler = new HttpClientHandler {AllowAutoRedirect = false};
+            try
+            {
+                var handler = new HttpClientHandler { AllowAutoRedirect = false };
 
                 var client = new HttpClient(handler);
                 client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 var response = client.GetAsync(url);
-                switch (response.Result.StatusCode) {
+                switch (response.Result.StatusCode)
+                {
                     case HttpStatusCode.NotFound:
                         return null;
-                    case HttpStatusCode.Moved: {
-                        return Download(response.Result.Headers.Location.ToString());
-                    }
-                    case HttpStatusCode.Redirect: {
-                        var uri = new Uri(url);
-                        var redirected = new Uri($"{uri.Scheme}://{uri.Host}{response.Result.Headers.Location}");
+                    case HttpStatusCode.Moved:
+                        {
+                            return Download(response.Result.Headers.Location.ToString());
+                        }
+                    case HttpStatusCode.Redirect:
+                        {
+                            var uri = new Uri(url);
+                            var redirected = new Uri($"{uri.Scheme}://{uri.Host}{response.Result.Headers.Location}");
 
-                        using var stream = File.Open(redirectFileName, FileMode.Create);
-                        using var streamWriter = new StreamWriter(stream);
-                        streamWriter.Write(redirected);
+                            using var stream = File.Open(redirectFileName, FileMode.Create);
+                            using var streamWriter = new StreamWriter(stream);
+                            streamWriter.Write(redirected);
 
-                        return Download(redirected.ToString());
-                    }
+                            return Download(redirected.ToString());
+                        }
                 }
 
                 var temp = $"{Guid.NewGuid()}.temp";
                 using (var stream = response.GetAwaiter().GetResult().Content.ReadAsStreamAsync().GetAwaiter()
                     .GetResult())
-                using (var fileStream = File.Open(temp, FileMode.Create)) {
+                using (var fileStream = File.Open(temp, FileMode.Create))
+                {
                     stream.CopyTo(fileStream);
                 }
 
-                if (File.Exists(fileName)) {
+                if (File.Exists(fileName))
+                {
                     File.Delete(fileName);
                 }
 
@@ -73,7 +81,8 @@ namespace Itinero.Tests.Functional.Download
                 Logger.Log(nameof(DownloadHelper), TraceEventType.Verbose,
                     $"Downloaded from {url}.");
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.Log(nameof(DownloadHelper), TraceEventType.Warning,
                     $"Failed to download from {url}: {ex}.");
                 return null;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Itinero.Network;
@@ -32,7 +32,7 @@ namespace Itinero.Snapping
         public static async Task<Result<SnapPoint>> ToAsync(this ILocationsSnapper locationsSnapper,
             (double longitude, double latitude, float? e) location)
         {
-            var result = locationsSnapper.ToAsync(new[] {location});
+            var result = locationsSnapper.ToAsync(new[] { location });
             var enumerator = result.GetAsyncEnumerator();
             if (!await enumerator.MoveNextAsync()) throw new Exception("There should be one item");
 

@@ -1,4 +1,4 @@
-namespace Itinero.Tests
+﻿namespace Itinero.Tests
 {
     internal static class GlobalSettings
     {

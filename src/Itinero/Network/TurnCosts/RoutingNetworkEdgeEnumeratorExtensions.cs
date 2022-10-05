@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Enumerators.Edges;
@@ -12,12 +12,14 @@ namespace Itinero.Network.TurnCosts
             IEnumerable<(EdgeId edge, byte? turn)> previousEdges)
         {
             using var previousEdgesEnumerator = previousEdges.GetEnumerator();
-            if (!previousEdgesEnumerator.MoveNext()) {
+            if (!previousEdgesEnumerator.MoveNext())
+            {
                 return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
             }
 
             var fromOrder = previousEdgesEnumerator.Current.turn;
-            if (fromOrder == null) {
+            if (fromOrder == null)
+            {
                 return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
             }
 

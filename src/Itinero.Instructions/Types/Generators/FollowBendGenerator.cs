@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Itinero.Geo;
 using Itinero.Network.Attributes;
 
@@ -7,16 +7,18 @@ namespace Itinero.Instructions.Types.Generators;
 internal class FollowBendGenerator : IInstructionGenerator
 {
     public string Name { get; } = "followbend";
-    
+
     private static bool DoesFollowBend(IndexedRoute route, int shapeI, double dAngle, int angleSign)
     {
         // We aren't allowed to have branches on the inner side, to avoid confusing situations
 
-        if (shapeI >= route.Branches.Count) {
+        if (shapeI >= route.Branches.Count)
+        {
             return true;
         }
 
-        foreach (var branch in route.Branches[shapeI]) {
+        foreach (var branch in route.Branches[shapeI])
+        {
             // What is the angle-difference of the branch?
             // This resembles the route.DirectionChangeAt-definition
             var dBranchAngle =
@@ -24,7 +26,8 @@ internal class FollowBendGenerator : IInstructionGenerator
                 .NormalizeDegrees();
 
             // With the angle in hand, we can ask ourselves: lies it on the inner side?
-            if (Math.Sign(dBranchAngle) != angleSign) {
+            if (Math.Sign(dBranchAngle) != angleSign)
+            {
                 // It lies on the other side; this branch doesn't pose a problem
                 continue;
             }
@@ -34,7 +37,8 @@ internal class FollowBendGenerator : IInstructionGenerator
             var dBranchAbs = Math.Abs(dBranchAngle);
 
             // If the turning angle of the route is bigger, then the branch lies on the outer side
-            if (dBranchAbs < dAngleAbs) {
+            if (dBranchAbs < dAngleAbs)
+            {
                 continue;
             }
 
@@ -49,7 +53,8 @@ internal class FollowBendGenerator : IInstructionGenerator
 
     public BaseInstruction? Generate(IndexedRoute route, int offset)
     {
-        if (offset == 0 || offset == route.Last) {
+        if (offset == 0 || offset == route.Last)
+        {
             // We never have a bend at first or as last...
             return null;
         }
@@ -65,28 +70,33 @@ internal class FollowBendGenerator : IInstructionGenerator
 
         var totalDistance = 0.0;
         // We walk forward and detect a true gentle bend:
-        while (offset + usedShapes < route.Last) {
+        while (offset + usedShapes < route.Last)
+        {
             var distance = route.DistanceToNextPoint(offset + usedShapes);
-            if (distance > 35) {
+            if (distance > 35)
+            {
                 // a gentle bent must have pieces that are not too long at a time
                 break;
             }
 
             var dAngle = route.DirectionChangeAt(offset + usedShapes);
-            if (Math.Sign(route.DirectionChangeAt(offset + usedShapes)) != angleSign) {
+            if (Math.Sign(route.DirectionChangeAt(offset + usedShapes)) != angleSign)
+            {
                 // The gentle bend should turn in the same direction as the first angle
                 // Here, it doesn't have that...
                 break;
             }
 
 
-            if (!DoesFollowBend(route, offset + usedShapes, dAngle, angleSign)) {
+            if (!DoesFollowBend(route, offset + usedShapes, dAngle, angleSign))
+            {
                 // 
                 break;
             }
 
             route.Meta[offset + usedShapes].Attributes.TryGetValue("name", out var newName);
-            if (name != newName) {
+            if (name != newName)
+            {
                 // Different street
                 break;
             }
@@ -99,16 +109,19 @@ internal class FollowBendGenerator : IInstructionGenerator
         }
 
 
-        if (usedShapes <= 2) {
+        if (usedShapes <= 2)
+        {
             // A 'bend' isn't a bend if there is only one point, otherwise it is a turn...
             return null;
         }
 
 
         // A gentle bend also does turn, at least a few degrees per meter
-        if (Math.Abs(angleDiff) < 45) {
+        if (Math.Abs(angleDiff) < 45)
+        {
             // There is little change - does it at least turn a bit?
-            if (Math.Abs(angleDiff) / totalDistance < 2.5) {
+            if (Math.Abs(angleDiff) / totalDistance < 2.5)
+            {
                 // Nope, we turn only 2.5° per meter - that isn't a lot
                 return null;
             }

@@ -1,4 +1,4 @@
-// namespace Itinero.Network.Tiles
+﻿// namespace Itinero.Network.Tiles
 // {
 //     public static class TileRangeStatic
 //     {

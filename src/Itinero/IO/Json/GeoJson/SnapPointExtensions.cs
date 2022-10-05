@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -22,7 +22,8 @@ namespace Itinero.IO.Json.GeoJson
         {
             using var stream = new MemoryStream();
 
-            using (var jsonWriter = new Utf8JsonWriter(stream)) {
+            using (var jsonWriter = new Utf8JsonWriter(stream))
+            {
                 jsonWriter.WriteFeatureCollectionStart();
                 WriteFeatures(jsonWriter, snapPoint, routerDb);
                 jsonWriter.WriteFeatureCollectionEnd();

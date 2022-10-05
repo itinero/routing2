@@ -48,8 +48,10 @@ namespace Itinero.Logging
         /// </summary>
         public void Log(TraceEventType type, string message, params object[] args)
         {
-            if (LogAction == null) {
-                LogAction = (o, level, localmessage, parameters) => {
+            if (LogAction == null)
+            {
+                LogAction = (o, level, localmessage, parameters) =>
+                {
                     System.Diagnostics.Debug.WriteLine($"[{o}] {level} - {localmessage}");
                 };
             }
@@ -62,8 +64,10 @@ namespace Itinero.Logging
         /// </summary>
         public static void Log(string name, TraceEventType type, string message, params object[] args)
         {
-            if (LogAction == null) {
-                LogAction = (o, level, localmessage, parameters) => {
+            if (LogAction == null)
+            {
+                LogAction = (o, level, localmessage, parameters) =>
+                {
                     System.Diagnostics.Debug.WriteLine($"[{o}] {level} - {localmessage}");
                 };
             }

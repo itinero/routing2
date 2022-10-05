@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Itinero.IO.Osm.Filters;
 using OsmSharp;
 using OsmSharp.Streams;
@@ -19,11 +19,11 @@ namespace Itinero.IO.Osm.Streams
         public static OsmStreamSource ApplyFilter(this OsmStreamSource source,
             TagsFilter.FilterDelegate filter)
         {
-            var filtered = new OsmGeoTagsPreprocessor(osmGeo =>  filter(osmGeo));
+            var filtered = new OsmGeoTagsPreprocessor(osmGeo => filter(osmGeo));
             filtered.RegisterSource(source);
             return filtered;
         }
-        
+
         /// <summary>
         /// Applies a complete to the given source and returns a new filtered source.
         /// </summary>
@@ -33,7 +33,7 @@ namespace Itinero.IO.Osm.Streams
         public static OsmStreamSource ApplyCompleteFilter(this OsmStreamSource source,
             TagsFilter.CompleteFilterDelegate filter)
         {
-            var filtered = new CompleteOsmGeoPreprocessor((geo, osmGeo) =>  filter(geo, osmGeo));
+            var filtered = new CompleteOsmGeoPreprocessor((geo, osmGeo) => filter(geo, osmGeo));
             filtered.RegisterSource(source);
             return filtered;
         }

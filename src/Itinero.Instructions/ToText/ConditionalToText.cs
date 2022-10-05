@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Itinero.Instructions.Types;
@@ -29,8 +29,10 @@ namespace Itinero.Instructions.ToText
 
         public string ToText(BaseInstruction instruction)
         {
-            foreach (var option in _options) {
-                if (option.predicate(instruction)) {
+            foreach (var option in _options)
+            {
+                if (option.predicate(instruction))
+                {
                     return option.toText.ToText(instruction);
                 }
             }

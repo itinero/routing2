@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo.Elevation;
 
@@ -36,7 +36,8 @@ namespace Itinero.Geo
             (double longitude, double latitude, float? e) coordinate2,
             IEnumerable<(double longitude, double latitude, float? e)>? shape = null)
         {
-            if (shape == null) {
+            if (shape == null)
+            {
                 return coordinate1.DistanceEstimateInMeter(coordinate2);
             }
 
@@ -45,7 +46,8 @@ namespace Itinero.Geo
             using var shapeEnumerator = shape.GetEnumerator();
             var previous = coordinate1;
 
-            while (shapeEnumerator.MoveNext()) {
+            while (shapeEnumerator.MoveNext())
+            {
                 var current = shapeEnumerator.Current;
                 distance += previous.DistanceEstimateInMeter(current);
                 previous = current;
@@ -70,7 +72,8 @@ namespace Itinero.Geo
             shapeEnumerator.MoveNext();
             var previous = shapeEnumerator.Current;
 
-            while (shapeEnumerator.MoveNext()) {
+            while (shapeEnumerator.MoveNext())
+            {
                 var current = shapeEnumerator.Current;
                 distance += previous.DistanceEstimateInMeter(current);
                 previous = current;
@@ -131,8 +134,9 @@ namespace Itinero.Geo
             var longitude = coordinate1.longitude + (coordinate2.longitude - coordinate1.longitude) * offset;
             float? e = null;
             if (coordinate1.e.HasValue &&
-                coordinate2.e.HasValue) {
-                e = (float) (coordinate1.e.Value - (coordinate2.e.Value - coordinate1.e.Value) * offset);
+                coordinate2.e.HasValue)
+            {
+                e = (float)(coordinate1.e.Value - (coordinate2.e.Value - coordinate1.e.Value) * offset);
             }
 
             return (longitude, latitude).AddElevation(e);
@@ -156,7 +160,8 @@ namespace Itinero.Geo
 
             // TODO: do we need to calculate the expensive length in meter, this can be done more easily.
             var lengthInMeters = line.coordinate1.DistanceEstimateInMeter(line.coordinate2);
-            if (lengthInMeters < E) {
+            if (lengthInMeters < E)
+            {
                 return null;
             }
 
@@ -166,20 +171,23 @@ namespace Itinero.Geo
 
             // increase this line in length if needed.
             var longerLine = line;
-            if (lengthInMeters < 50) {
+            if (lengthInMeters < 50)
+            {
                 longerLine = (coordinate1, (diffLon + coordinate.longitude, diffLat + coordinate.latitude, null));
             }
 
             // rotate 90°, offset y with x, and x with y.
             var xLength = longerLine.coordinate1.DistanceEstimateInMeter((longerLine.coordinate2.longitude,
                 longerLine.coordinate1.latitude, null));
-            if (longerLine.coordinate1.longitude > longerLine.coordinate2.longitude) {
+            if (longerLine.coordinate1.longitude > longerLine.coordinate2.longitude)
+            {
                 xLength = -xLength;
             }
 
             var yLength = longerLine.coordinate1.DistanceEstimateInMeter((longerLine.coordinate1.longitude,
                 longerLine.coordinate2.latitude, null));
-            if (longerLine.coordinate1.latitude > longerLine.coordinate2.latitude) {
+            if (longerLine.coordinate1.latitude > longerLine.coordinate2.latitude)
+            {
                 yLength = -yLength;
             }
 
@@ -193,7 +201,8 @@ namespace Itinero.Geo
             var projected = longerLine.Intersect(other, false);
 
             // check if coordinate is on this line.
-            if (!projected.HasValue) {
+            if (!projected.HasValue)
+            {
                 return null;
             }
 
@@ -201,13 +210,15 @@ namespace Itinero.Geo
             var dist = line.A() * line.A() + line.B() * line.B();
             var line1 = (projected.Value, coordinate1);
             var distTo1 = line1.A() * line1.A() + line1.B() * line1.B();
-            if (distTo1 > dist) {
+            if (distTo1 > dist)
+            {
                 return null;
             }
 
             var line2 = (projected.Value, coordinate2);
             var distTo2 = line2.A() * line2.A() + line2.B() * line2.B();
-            if (distTo2 > dist) {
+            if (distTo2 > dist)
+            {
                 return null;
             }
 
@@ -225,7 +236,8 @@ namespace Itinero.Geo
         {
             float? e = null;
             if (box.topLeft.e.HasValue &&
-                box.bottomRight.e.HasValue) {
+                box.bottomRight.e.HasValue)
+            {
                 e = box.topLeft.e.Value + box.bottomRight.e.Value;
             }
 
@@ -247,36 +259,42 @@ namespace Itinero.Geo
                 ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                     bottomRight) other)
         {
-            if (!box.Overlaps(other.topLeft)) {
+            if (!box.Overlaps(other.topLeft))
+            {
                 var center = box.Center();
 
                 // handle left.
                 var left = box.topLeft.longitude;
-                if (!box.Overlaps((other.topLeft.longitude, center.latitude, null))) {
+                if (!box.Overlaps((other.topLeft.longitude, center.latitude, null)))
+                {
                     left = other.topLeft.longitude;
                 }
 
                 // handle top.
                 var top = box.topLeft.longitude;
-                if (!box.Overlaps((center.longitude, other.topLeft.latitude, null))) {
+                if (!box.Overlaps((center.longitude, other.topLeft.latitude, null)))
+                {
                     top = other.topLeft.latitude;
                 }
 
                 box = ((left, top, null), box.bottomRight);
             }
 
-            if (!box.Overlaps(other.bottomRight)) {
+            if (!box.Overlaps(other.bottomRight))
+            {
                 var center = box.Center();
 
                 // handle right.
                 var right = box.bottomRight.longitude;
-                if (!box.Overlaps((other.bottomRight.longitude, center.latitude, null))) {
+                if (!box.Overlaps((other.bottomRight.longitude, center.latitude, null)))
+                {
                     right = other.bottomRight.longitude;
                 }
 
                 // handle bottom.
                 var bottom = box.bottomRight.latitude;
-                if (!box.Overlaps((center.longitude, other.bottomRight.latitude, null))) {
+                if (!box.Overlaps((center.longitude, other.bottomRight.latitude, null)))
+                {
                     bottom = other.bottomRight.latitude;
                 }
 
@@ -299,59 +317,70 @@ namespace Itinero.Geo
             ((double longitude, double latitude, float? e) coordinate1,
                 (double longitude, double latitude, float? e) coordinate2) line, bool checkSegment = true)
         {
-            var det = (double) (line.A() * thisLine.B() - thisLine.A() * line.B());
-            if (Math.Abs(det) <= E) { // lines are parallel; no intersections.
+            var det = (double)(line.A() * thisLine.B() - thisLine.A() * line.B());
+            if (Math.Abs(det) <= E)
+            { // lines are parallel; no intersections.
                 return null;
             }
-            else { // lines are not the same and not parallel so they will intersect.
+            else
+            { // lines are not the same and not parallel so they will intersect.
                 var x = (thisLine.B() * line.C() - line.B() * thisLine.C()) / det;
                 var y = (line.A() * thisLine.C() - thisLine.A() * line.C()) / det;
 
-                (double latitude, double longitude, float? e) coordinate = (x, y, (float?) null);
+                (double latitude, double longitude, float? e) coordinate = (x, y, (float?)null);
 
                 // check if the coordinate is on this line.
-                if (checkSegment) {
+                if (checkSegment)
+                {
                     var dist = thisLine.A() * thisLine.A() + thisLine.B() * thisLine.B();
                     var line1 = (coordinate, thisLine.coordinate1);
                     var distTo1 = line1.A() * line1.A() + line1.B() * line1.B();
-                    if (distTo1 > dist) {
+                    if (distTo1 > dist)
+                    {
                         return null;
                     }
 
                     var line2 = (coordinate, thisLine.coordinate2);
                     var distTo2 = line2.A() * line2.A() + line2.B() * line2.B();
-                    if (distTo2 > dist) {
+                    if (distTo2 > dist)
+                    {
                         return null;
                     }
                 }
 
-                if (thisLine.coordinate1.e == null || thisLine.coordinate2.e == null) {
+                if (thisLine.coordinate1.e == null || thisLine.coordinate2.e == null)
+                {
                     return coordinate;
                 }
 
                 float? e = null;
-                if (Math.Abs(thisLine.coordinate1.e.Value - thisLine.coordinate2.e.Value) < E) {
+                if (Math.Abs(thisLine.coordinate1.e.Value - thisLine.coordinate2.e.Value) < E)
+                {
                     // don't calculate anything, elevation is identical.
                     e = thisLine.coordinate1.e;
                 }
-                else if (Math.Abs(thisLine.A()) < E && Math.Abs(thisLine.B()) < E) {
+                else if (Math.Abs(thisLine.A()) < E && Math.Abs(thisLine.B()) < E)
+                {
                     // tiny segment, not stable to calculate offset
                     e = thisLine.coordinate1.e;
                 }
-                else { // calculate offset and calculate an estimate of the elevation.
-                    if (Math.Abs(thisLine.A()) > Math.Abs(thisLine.B())) {
+                else
+                { // calculate offset and calculate an estimate of the elevation.
+                    if (Math.Abs(thisLine.A()) > Math.Abs(thisLine.B()))
+                    {
                         var diffLat = Math.Abs(thisLine.A());
                         var diffLatIntersection = Math.Abs(coordinate.latitude - thisLine.coordinate1.latitude);
 
-                        e = (float) ((thisLine.coordinate2.e - thisLine.coordinate1.e) *
+                        e = (float)((thisLine.coordinate2.e - thisLine.coordinate1.e) *
                                      (diffLatIntersection / diffLat) +
                                      thisLine.coordinate1.e);
                     }
-                    else {
+                    else
+                    {
                         var diffLon = Math.Abs(thisLine.B());
                         var diffLonIntersection = Math.Abs(coordinate.longitude - thisLine.coordinate1.longitude);
 
-                        e = (float) ((thisLine.coordinate2.e - thisLine.coordinate1.e) *
+                        e = (float)((thisLine.coordinate2.e - thisLine.coordinate1.e) *
                                      (diffLonIntersection / diffLon) +
                                      thisLine.coordinate1.e);
                     }
@@ -390,8 +419,8 @@ namespace Itinero.Geo
             e) bottomRight)
             BoxAround(this (double longitude, double latitude, float? e) coordinate, double sizeInMeters)
         {
-            var offsetLat = (coordinate.longitude, coordinate.latitude + 0.1, (float?) null);
-            var offsetLon = (coordinate.longitude + 0.1, coordinate.latitude, (float?) null);
+            var offsetLat = (coordinate.longitude, coordinate.latitude + 0.1, (float?)null);
+            var offsetLon = (coordinate.longitude + 0.1, coordinate.latitude, (float?)null);
             var latDistance = offsetLat.DistanceEstimateInMeter(coordinate);
             var lonDistance = offsetLon.DistanceEstimateInMeter(coordinate);
 
@@ -436,11 +465,13 @@ namespace Itinero.Geo
                 * 180 / Math.PI; // Convert to degrees
             angle = -angle;
             // A bit of normalization below:
-            if (angle < -180) {
+            if (angle < -180)
+            {
                 angle += 360;
             }
 
-            if (angle > 180) {
+            if (angle > 180)
+            {
                 angle -= 360;
             }
 

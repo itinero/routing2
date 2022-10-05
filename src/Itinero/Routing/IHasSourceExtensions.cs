@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Geo.Directions;
 using Itinero.Snapping;
 
@@ -17,7 +17,8 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource, SnapPoint target)
         {
-            return new Router(hasSource.Network, hasSource.Settings) {
+            return new Router(hasSource.Network, hasSource.Settings)
+            {
                 Source = hasSource.Source,
                 Target = (target, null)
             };
@@ -32,7 +33,8 @@ namespace Itinero.Routing
         public static IRouterOneToOne To(this IHasSource hasSource,
             (SnapPoint snapPoint, DirectionEnum? direction) target)
         {
-            return new Router(hasSource.Network, hasSource.Settings) {
+            return new Router(hasSource.Network, hasSource.Settings)
+            {
                 Source = hasSource.Source,
                 Target = target.ToDirected(hasSource.Network)
             };
@@ -46,7 +48,8 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterOneToOne To(this IHasSource hasSource, (SnapPoint snapPoint, bool? direction) target)
         {
-            return new Router(hasSource.Network, hasSource.Settings) {
+            return new Router(hasSource.Network, hasSource.Settings)
+            {
                 Source = hasSource.Source,
                 Target = target
             };
@@ -84,7 +87,8 @@ namespace Itinero.Routing
         public static IRouterOneToMany To(this IHasSource hasSource,
             IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
         {
-            return new Router(hasSource.Network, hasSource.Settings) {
+            return new Router(hasSource.Network, hasSource.Settings)
+            {
                 Source = hasSource.Source,
                 Targets = targets
             };

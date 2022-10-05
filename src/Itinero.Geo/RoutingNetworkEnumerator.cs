@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace Itinero.Geo
 
         private readonly IEnumerator<VertexId> _vertexIds;
 
-        private readonly HashSet<EdgeId> _seenVertices = new ();
+        private readonly HashSet<EdgeId> _seenVertices = new();
 
 
         private readonly RoutingNetworkEdgeEnumerator _edges;
@@ -36,9 +36,11 @@ namespace Itinero.Geo
 
         public bool MoveNext()
         {
-            if (!_edgesAreInitiated) {
+            if (!_edgesAreInitiated)
+            {
                 var hasNext = _vertexIds.MoveNext();
-                if (!hasNext) {
+                if (!hasNext)
+                {
                     return false;
                 }
 
@@ -55,11 +57,13 @@ namespace Itinero.Geo
             }
 
             var hasNextEdge = false;
-            do {
+            do
+            {
                 hasNextEdge = _edges.MoveNext();
             } while (_seenVertices.Contains(_edges.EdgeId) && hasNextEdge);
 
-            if (!hasNextEdge) {
+            if (!hasNextEdge)
+            {
                 _edgesAreInitiated = false;
                 return this.MoveNext();
             }
@@ -68,21 +72,24 @@ namespace Itinero.Geo
 
             var attrTable = new AttributesTable();
             var rawAttr = _edges.Attributes;
-            if (_preprocessEdge != null) {
+            if (_preprocessEdge != null)
+            {
                 rawAttr = _preprocessEdge.Invoke(rawAttr);
             }
 
-            foreach (var kv in rawAttr) {
+            foreach (var kv in rawAttr)
+            {
                 attrTable.Add(kv.key, kv.value);
             }
 
             var shape = _edges.Shape.ToList();
             var coors = new Coordinate[shape.Count + 2];
             var (frLon, frLat, _) = _edges.TailLocation;
-            coors[0] = new Coordinate( frLon, frLat);
+            coors[0] = new Coordinate(frLon, frLat);
             var (toLon, toLat, _) = _edges.HeadLocation;
             coors[^1] = new Coordinate(toLon, toLat);
-            for (var i = 0; i < shape.Count(); i++) {
+            for (var i = 0; i < shape.Count(); i++)
+            {
                 var shp = shape[i];
                 coors[i + 1] = new Coordinate(shp.longitude, shp.latitude);
             }

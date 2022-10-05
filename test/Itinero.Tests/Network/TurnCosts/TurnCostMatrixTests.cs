@@ -1,4 +1,4 @@
-// using Itinero.Data.Graphs.TurnCosts;
+﻿// using Itinero.Data.Graphs.TurnCosts;
 // using Xunit;
 //
 // namespace Itinero.Tests.Data.Graphs.TurnCosts

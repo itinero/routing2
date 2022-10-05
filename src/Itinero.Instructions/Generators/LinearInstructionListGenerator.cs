@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Instructions.Types;
 using Itinero.Routes;
@@ -34,13 +34,16 @@ internal class LinearInstructionListGenerator : IInstructionListGenerator
         var instructions = new List<BaseInstruction>();
 
         var currentIndex = 0;
-        while (currentIndex < indexedRoute.Last) {
+        while (currentIndex < indexedRoute.Last)
+        {
             var instruction = this.ConstructNext(indexedRoute, currentIndex);
             instructions.Add(instruction);
-            if (instruction.ShapeIndexEnd == currentIndex) {
+            if (instruction.ShapeIndexEnd == currentIndex)
+            {
                 currentIndex++;
             }
-            else {
+            else
+            {
                 currentIndex = instruction.ShapeIndexEnd;
             }
         }
@@ -52,9 +55,11 @@ internal class LinearInstructionListGenerator : IInstructionListGenerator
 
     private BaseInstruction ConstructNext(IndexedRoute r, int currentOffset)
     {
-        foreach (var constructor in _constructors) {
+        foreach (var constructor in _constructors)
+        {
             var instruction = constructor.Generate(r, currentOffset);
-            if (instruction != null) {
+            if (instruction != null)
+            {
                 return instruction;
             }
         }

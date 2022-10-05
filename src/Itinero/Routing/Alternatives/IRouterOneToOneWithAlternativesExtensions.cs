@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -19,12 +19,13 @@ namespace Itinero.Routing.Alternatives
             this IRouterOneToOneWithAlternatives alternativeRouter, CancellationToken cancellationToken)
         {
             const double penaltyFactor = 2.0;
-            
+
             var settings = alternativeRouter.Settings;
             var altSettings = alternativeRouter.AlternativeRouteSettings;
             var routingNetwork = alternativeRouter.Network;
 
-            if (routingNetwork == null) {
+            if (routingNetwork == null)
+            {
                 throw new NullReferenceException(
                     "RoutingNetwork is null, cannot do route planning without a routing network");
             }
@@ -37,16 +38,19 @@ namespace Itinero.Routing.Alternatives
 
             bool CheckMaxDistance(VertexId v)
             {
-                if (maxBox == null) {
+                if (maxBox == null)
+                {
                     return false;
                 }
 
-                if (routingNetwork == null) {
+                if (routingNetwork == null)
+                {
                     throw new Exception("Router cannot be null here.");
                 }
 
                 var vertex = routingNetwork.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex)) {
+                if (!maxBox.Value.Overlaps(vertex))
+                {
                     return true;
                 }
 
@@ -58,11 +62,13 @@ namespace Itinero.Routing.Alternatives
                 var source = alternativeRouter.Source;
                 var target = alternativeRouter.Target;
 
-                if (source.direction == null && target.direction == null) {
+                if (source.direction == null && target.direction == null)
+                {
                     // Run the undirected dijkstra
                     return await Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
                         costFunction.GetDijkstraWeightFunc(),
-                        async v => {
+                        async v =>
+                        {
                             await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
                             if (cancellationToken.IsCancellationRequested) return false;
                             return CheckMaxDistance(v);
@@ -72,7 +78,8 @@ namespace Itinero.Routing.Alternatives
                 // Run directed dijkstra
                 return await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, target,
                     costFunction.GetDijkstraWeightFunc(),
-                    async v => {
+                    async v =>
+                    {
                         await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                         if (cancellationToken.IsCancellationRequested) return false;
                         return CheckMaxDistance(v.vertexId);
@@ -80,7 +87,8 @@ namespace Itinero.Routing.Alternatives
             }
 
             var (initialPath, initialCost) = await RunDijkstraAsync(costFunction, cancellationToken);
-            if (initialPath == null) {
+            if (initialPath == null)
+            {
                 return new Result<IReadOnlyList<Path>>("Not a single path found!");
             }
 
@@ -91,27 +99,31 @@ namespace Itinero.Routing.Alternatives
             if (altSettings.MaxNumberOfAlternativeRoutes == 1) return results;
 
             var costThreshold = initialCost * altSettings.MaxWeightIncreasePercentage;
-            
+
             var seenEdges = new HashSet<EdgeId>();
-            foreach (var (edge, _, _, _) in initialPath) {
+            foreach (var (edge, _, _, _) in initialPath)
+            {
                 seenEdges.Add(edge);
             }
 
             var maxTries = altSettings.MaxNumberOfAlternativeRoutes * 5;
-            while (results.Count < altSettings.MaxNumberOfAlternativeRoutes && maxTries > 0) {
+            while (results.Count < altSettings.MaxNumberOfAlternativeRoutes && maxTries > 0)
+            {
                 if (cancellationToken.IsCancellationRequested) break;
-                
+
                 maxTries--;
                 var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges,
                     penaltyFactor);
                 var (altPath, altCost) = await RunDijkstraAsync(altCostFunction, cancellationToken);
 
-                if (altCost > costThreshold) {
+                if (altCost > costThreshold)
+                {
                     // No more alternative routes can be found
                     break;
                 }
 
-                if (altPath == null) {
+                if (altPath == null)
+                {
                     // No more alternative routes can be found
                     break;
                 }
@@ -119,17 +131,20 @@ namespace Itinero.Routing.Alternatives
                 var totalEdges = 0;
                 var alreadyKnownEdges = 0;
 
-                foreach (var (edge, _, _, _) in altPath) {
+                foreach (var (edge, _, _, _) in altPath)
+                {
                     totalEdges++;
-                    if (!seenEdges.Add(edge)) {
+                    if (!seenEdges.Add(edge))
+                    {
                         // Already seen!
                         alreadyKnownEdges++;
                     }
                 }
 
-                var overlapPercentage = (double) alreadyKnownEdges / totalEdges;
+                var overlapPercentage = (double)alreadyKnownEdges / totalEdges;
 
-                if (overlapPercentage > altSettings.MaxPercentageOfEqualEdges) {
+                if (overlapPercentage > altSettings.MaxPercentageOfEqualEdges)
+                {
                     continue;
                 }
 
@@ -143,7 +158,8 @@ namespace Itinero.Routing.Alternatives
         {
             var paths = await withAlternatives.CalculatePathsAsync(cancellationToken);
 
-            if (paths.IsError) {
+            if (paths.IsError)
+            {
                 return new Result<IReadOnlyList<Route>>(paths.ErrorMessage);
             }
 

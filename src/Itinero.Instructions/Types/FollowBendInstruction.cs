@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Itinero.Geo;
 using Itinero.Instructions.Types.Generators;
 using Itinero.Network.Attributes;
@@ -16,6 +16,7 @@ namespace Itinero.Instructions.Types
     internal class FollowBendInstruction : BaseInstruction
     {
         public FollowBendInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
-            route, shapeIndex, shapeIndexEnd, turnDegrees) { }
+            route, shapeIndex, shapeIndexEnd, turnDegrees)
+        { }
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using OsmSharp;
 
 namespace Itinero.IO.Osm.Restrictions.Barriers;
@@ -13,12 +13,12 @@ public class OsmBarrier
         this.Node = node;
         this.Attributes = attributes;
     }
-    
+
     /// <summary>
     /// The node where the barrier exists at.
     /// </summary>
     public long Node { get; }
-    
+
     /// <summary>
     /// The attributes associated with the barrier.
     /// </summary>

@@ -1,4 +1,4 @@
-namespace Itinero.Network.Tiles.Standalone;
+﻿namespace Itinero.Network.Tiles.Standalone;
 
 public struct BoundaryEdgeId
 {
@@ -6,6 +6,6 @@ public struct BoundaryEdgeId
     {
         this.LocalId = localId;
     }
-    
+
     public uint LocalId { get; }
 }

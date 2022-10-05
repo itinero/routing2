@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua;
 using Xunit;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Indexes;
 
 namespace Itinero;
@@ -17,7 +17,7 @@ public class RouterDbConfiguration
     /// Gets or sets the initial edge types.
     /// </summary>
     public List<IReadOnlyList<(string key, string value)>>? EdgeTypes { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the edge type map.
     /// </summary>
@@ -27,7 +27,7 @@ public class RouterDbConfiguration
     /// Gets or sets the initial turn cost types.
     /// </summary>
     public List<IReadOnlyList<(string key, string value)>>? TurnCostTypes { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the turn cost type map.
     /// </summary>

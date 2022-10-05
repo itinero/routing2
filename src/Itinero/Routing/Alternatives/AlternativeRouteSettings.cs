@@ -1,4 +1,4 @@
-namespace Itinero.Routing.Alternatives
+﻿namespace Itinero.Routing.Alternatives
 {
     /// <summary>
     /// The alternative route settings.
@@ -12,7 +12,7 @@ namespace Itinero.Routing.Alternatives
         /// It is possible less alternatives are returned depending on the other settings.
         /// </remarks>
         public int MaxNumberOfAlternativeRoutes { get; set; } = 3;
-        
+
         /// <summary>
         /// The percentage of edges that are allowed to be overlapping with any other route.
         /// </summary>

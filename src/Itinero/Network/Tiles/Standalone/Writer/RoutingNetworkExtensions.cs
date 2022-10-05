@@ -1,4 +1,4 @@
-namespace Itinero.Network.Tiles.Standalone.Writer;
+﻿namespace Itinero.Network.Tiles.Standalone.Writer;
 
 /// <summary>
 /// Extensions related to standalone network tile writing.
@@ -19,7 +19,7 @@ public static class RoutingNetworkExtensions
         var localTileId = TileStatic.ToLocalId(x, y, zoom);
         var edgeTypeMap = network.RouterDb.GetEdgeTypeMap();
         var turnCostTypeMap = network.RouterDb.GetTurnCostTypeMap();
-        
+
         var tile = new NetworkTile(zoom, localTileId, edgeTypeMap.id);
         var standaloneTile = new StandaloneNetworkTile(tile);
 

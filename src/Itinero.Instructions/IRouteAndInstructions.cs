@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Routes;
 
 namespace Itinero.Instructions;
@@ -12,7 +12,7 @@ public interface IRouteAndInstructions
     /// The route.
     /// </summary>
     Route Route { get; }
-    
+
     /// <summary>
     /// The instructions per language.
     /// </summary>
@@ -27,6 +27,6 @@ internal class RouteAndInstructions : IRouteAndInstructions
         this.Instructions = instructions;
     }
     public Route Route { get; }
-    
+
     public IReadOnlyList<Instruction> Instructions { get; }
 }

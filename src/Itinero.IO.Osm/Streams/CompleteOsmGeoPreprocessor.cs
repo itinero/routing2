@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using OsmSharp;
 using OsmSharp.Complete;
@@ -17,7 +17,7 @@ namespace Itinero.IO.Osm.Streams
     internal class CompleteOsmGeoPreprocessor : OsmStreamFilter
     {
         private readonly Func<OsmGeo, CompleteOsmGeo?, bool> _action;
-        private readonly Children _children = new ();
+        private readonly Children _children = new();
 
         public CompleteOsmGeoPreprocessor(Func<OsmGeo, CompleteOsmGeo?, bool> action)
         {
@@ -38,27 +38,32 @@ namespace Itinero.IO.Osm.Streams
 
             // if not relevant, take no more actions.
             if (_current.Type == OsmGeoType.Node) return true;
-            if (!_action(_current, null)) {
+            if (!_action(_current, null))
+            {
                 return true;
             }
 
             // see if we can complete object, if so, feed to action.
             var completed = _current.CreateComplete(_children);
-            if (completed is CompleteOsmGeo completeOsmGeo) {
+            if (completed is CompleteOsmGeo completeOsmGeo)
+            {
                 _action(_current, completeOsmGeo);
             }
 
             // register children to keep.
-            switch (_current) {
+            switch (_current)
+            {
                 case Way w:
                     if (w.Nodes == null) return true;
-                    foreach (var n in w.Nodes) {
+                    foreach (var n in w.Nodes)
+                    {
                         _children.RegisterAsChild(new OsmGeoKey(OsmGeoType.Node, n));
                     }
 
                     break;
                 case Relation r:
-                    foreach (var m in r.Members) {
+                    foreach (var m in r.Members)
+                    {
                         _children.RegisterAsChild(new OsmGeoKey(m.Type, m.Id));
                     }
 
@@ -73,7 +78,7 @@ namespace Itinero.IO.Osm.Streams
             if (_current == null)
                 throw new InvalidOperationException(
                     $"Current is null, do {nameof(MoveNext)} first.");
-            
+
             return _current;
         }
 
@@ -86,7 +91,7 @@ namespace Itinero.IO.Osm.Streams
 
         private class Children : IOsmGeoSource
         {
-            private readonly Dictionary<OsmGeoKey, OsmGeo?> _children = new ();
+            private readonly Dictionary<OsmGeoKey, OsmGeo?> _children = new();
 
             public void RegisterAsChild(OsmGeoKey key)
             {
@@ -94,7 +99,7 @@ namespace Itinero.IO.Osm.Streams
 
                 _children[key] = null;
             }
-            
+
             public void AddAsChild(OsmGeo osmGeo)
             {
                 var key = new OsmGeoKey(osmGeo);
@@ -102,7 +107,7 @@ namespace Itinero.IO.Osm.Streams
 
                 _children[key] = osmGeo;
             }
-            
+
             public OsmGeo? Get(OsmGeoType type, long id)
             {
                 if (!_children.TryGetValue(new OsmGeoKey(type, id), out var c)) return null;

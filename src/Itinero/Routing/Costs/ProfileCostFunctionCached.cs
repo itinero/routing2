@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network;
@@ -28,38 +28,44 @@ namespace Itinero.Routing.Costs
             // get edge factor and length.
             EdgeFactor factor;
             var edgeTypeId = edgeEnumerator.EdgeTypeId;
-            if (edgeTypeId == null) {
+            if (edgeTypeId == null)
+            {
                 factor = _profile.FactorInEdgeDirection(edgeEnumerator);
             }
-            else {
+            else
+            {
                 var edgeFactor = _edgeFactorCache.Get(edgeTypeId.Value);
-                if (edgeFactor == null) {
+                if (edgeFactor == null)
+                {
                     // no cached value, cache forward value.
                     factor = _profile.Factor(edgeEnumerator.Attributes);
                     _edgeFactorCache.Set(edgeTypeId.Value, factor);
                 }
-                else {
+                else
+                {
                     factor = edgeFactor.Value;
                 }
-                    
+
                 // cached value is always forward.
-                if (!edgeEnumerator.Forward) {
+                if (!edgeEnumerator.Forward)
+                {
                     factor = factor.Reverse;
                 }
             }
 
             var lengthNullable = edgeEnumerator.Length;
             var length = lengthNullable ??
-                         (uint) (edgeEnumerator.EdgeLength<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>() * 100);
+                         (uint)(edgeEnumerator.EdgeLength<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>() * 100);
             var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
             var canAccess = cost > 0;
 
-            var totalTurnCost = 0.0; 
+            var totalTurnCost = 0.0;
             var (_, turn) = previousEdges.FirstOrDefault();
             if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
             var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
 
-            foreach (var (turnCostType,attributes, turnCost, prefixEdges) in turnCosts) {
+            foreach (var (turnCostType, attributes, turnCost, prefixEdges) in turnCosts)
+            {
                 // TODO: compare prefix edges with the previous edges.
 
                 var turnCostFactor = _turnCostFactorCache.Get(turnCostType);
@@ -68,7 +74,8 @@ namespace Itinero.Routing.Costs
                     turnCostFactor = _profile.TurnCostFactor(attributes);
                     _turnCostFactorCache.Set(turnCostType, turnCostFactor.Value);
                 }
-                if (turnCostFactor.Value.IsBinary && turnCost > 0) {
+                if (turnCostFactor.Value.IsBinary && turnCost > 0)
+                {
                     totalTurnCost = double.MaxValue;
                     break;
                 }

@@ -74,7 +74,8 @@ namespace Itinero.Network
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) {
+            if (ReferenceEquals(null, obj))
+            {
                 return false;
             }
 
@@ -83,8 +84,9 @@ namespace Itinero.Network
 
         public override int GetHashCode()
         {
-            unchecked {
-                return ((int) TileId * 397) ^ (int) LocalId;
+            unchecked
+            {
+                return ((int)TileId * 397) ^ (int)LocalId;
             }
         }
 
@@ -94,7 +96,7 @@ namespace Itinero.Network
         /// <returns>An encoded version of this vertex.</returns>
         internal ulong Encode()
         {
-            return ((ulong) TileId << 32) + LocalId;
+            return ((ulong)TileId << 32) + LocalId;
         }
 
         /// <summary>
@@ -106,9 +108,9 @@ namespace Itinero.Network
         /// <returns>The decoded version of the vertex.</returns>
         internal static void Decode(ulong encoded, out uint tileId, out uint localId)
         {
-            tileId = (uint) (encoded >> 32);
-            var tileOffset = (ulong) tileId << 32;
-            localId = (uint) (encoded - tileOffset);
+            tileId = (uint)(encoded >> 32);
+            var tileOffset = (ulong)tileId << 32;
+            localId = (uint)(encoded - tileOffset);
         }
 
         /// <summary>

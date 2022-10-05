@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using OsmSharp;
 
@@ -33,7 +33,7 @@ public class OsmTurnRestriction
             Attributes = attributes
         };
     }
-    
+
     /// <summary>
     /// Creates a restriction with a via-node.
     /// </summary>
@@ -58,12 +58,12 @@ public class OsmTurnRestriction
             Attributes = attributes
         };
     }
-    
+
     /// <summary>
     /// A flag set to true when this restriction is prohibitory, false when mandatory.
     /// </summary>
     public bool IsProbibitory { get; private set; }
-    
+
     /// <summary>
     /// The attributes associated with the turn.
     /// </summary>
@@ -73,17 +73,17 @@ public class OsmTurnRestriction
     /// The from way(s).
     /// </summary>
     public IEnumerable<Way> From { get; private set; }
-    
+
     /// <summary>
     /// The via way(s), if any.
     /// </summary>
     public IEnumerable<Way> Via { get; private set; }
-    
+
     /// <summary>
     /// The via node id, if any.
     /// </summary>
     public long? ViaNodeId { get; private set; }
-    
+
     /// <summary>
     /// The to way(s).
     /// </summary>

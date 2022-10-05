@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +11,7 @@ namespace Itinero.Data.Usage
     /// </summary>
     public class DataUseNotifier
     {
-        private readonly HashSet<IDataUseListener> _listeners = new ();
+        private readonly HashSet<IDataUseListener> _listeners = new();
 
         /// <summary>
         /// Adds a new listener.
@@ -24,7 +24,8 @@ namespace Itinero.Data.Usage
 
         internal async Task NotifyVertex(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default)
         {
-            foreach (var listener in _listeners) {
+            foreach (var listener in _listeners)
+            {
                 await listener.VertexTouched(network, vertex, cancellationToken);
             }
         }
@@ -33,7 +34,8 @@ namespace Itinero.Data.Usage
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                 bottomRight) box, CancellationToken cancellationToken = default)
         {
-            foreach (var listener in _listeners) {
+            foreach (var listener in _listeners)
+            {
                 await listener.BoxTouched(network, box, cancellationToken);
             }
         }

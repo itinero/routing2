@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Instructions;
 using Itinero.Instructions.Generators;
@@ -15,7 +15,8 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void GenerateInstructions_AdvancedRoute_EmitsInstructions()
         {
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     // Blokstraat
@@ -64,11 +65,14 @@ namespace Itinero.Tests.Instructions
             };
 
             var start = new Route.Stop
-                {Coordinate = (3.219408541917801, 51.21541415412617, null), Shape = 0, Distance = 10};
+            { Coordinate = (3.219408541917801, 51.21541415412617, null), Shape = 0, Distance = 10 };
             // estimated m between the pinned start point and the snapped startpoint
 
-            var stop = new Route.Stop {
-                Coordinate = (3.2099054753780365, 51.20692456541283, null), Shape = route.Shape.Count - 1, Distance = 15
+            var stop = new Route.Stop
+            {
+                Coordinate = (3.2099054753780365, 51.20692456541283, null),
+                Shape = route.Shape.Count - 1,
+                Distance = 15
             };
             // estimated m between the pinned start point and the snapped startpoint
 
@@ -94,7 +98,8 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void TurnLeft_Bearing_IsNegative()
         {
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.220163583755493, 51.21574849678613, 0f), // Elf-julistraat
@@ -124,7 +129,7 @@ namespace Itinero.Tests.Instructions
 
             var instructions = instructionGenerator.GenerateInstructions(route).ToList();
             // The left turn is included in the start instruction
-            var leftTurn = ((StartInstruction) instructions[0]).Then;
+            var leftTurn = ((StartInstruction)instructions[0]).Then;
             Assert.True(leftTurn.TurnDegrees < 0);
         }
     }

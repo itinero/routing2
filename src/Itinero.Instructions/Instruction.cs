@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Instructions.Types;
 
 namespace Itinero.Instructions;
@@ -18,7 +18,7 @@ public class Instruction
     /// The base instruction, the details about the type manoeuvre to make.
     /// </summary>
     public BaseInstruction BaseInstruction { get; }
-    
+
     /// <summary>
     /// The textual representation of the instruction for a user to follow.
     /// </summary>

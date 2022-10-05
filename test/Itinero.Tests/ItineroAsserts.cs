@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network;
@@ -24,27 +24,33 @@ namespace Itinero.Tests
             uint? edgeType = uint.MaxValue,
             IEqualityComparer<(double longitude, double latitude, float? e)>? coordinateComparer = null)
         {
-            if (edge != null) {
+            if (edge != null)
+            {
                 Assert.Equal(edge, enumerator.EdgeId);
             }
 
-            if (vertex1 != null) {
+            if (vertex1 != null)
+            {
                 Assert.Equal(vertex1, enumerator.Tail);
             }
 
-            if (vertex2 != null) {
+            if (vertex2 != null)
+            {
                 Assert.Equal(vertex2, enumerator.Head);
             }
 
-            if (edgeType != uint.MaxValue) {
+            if (edgeType != uint.MaxValue)
+            {
                 Assert.Equal(edgeType, enumerator.EdgeTypeId);
             }
 
-            if (attributes != null) {
+            if (attributes != null)
+            {
                 Assert.Equal(attributes, enumerator.Attributes);
             }
 
-            if (shape != null) {
+            if (shape != null)
+            {
                 coordinateComparer ??= GetCoordinateComparer();
                 Assert.Equal(shape, enumerator.Shape, coordinateComparer);
             }
@@ -55,7 +61,8 @@ namespace Itinero.Tests
             double toleranceInMeters = 1)
         {
             var distance = expected.DistanceEstimateInMeter(actual);
-            if (distance > toleranceInMeters) {
+            if (distance > toleranceInMeters)
+            {
                 Assert.True(false, "Coordinates are too far apart to be considered at the same location.");
             }
         }
@@ -81,7 +88,8 @@ namespace Itinero.Tests
         {
             Assert.Equal(shape.Length, route.Shape.Count);
 
-            for (var s = 0; s < shape.Length; s++) {
+            for (var s = 0; s < shape.Length; s++)
+            {
                 SameLocations(shape[s], route.Shape[s]);
             }
         }
@@ -99,18 +107,18 @@ namespace Itinero.Tests
         public bool Equals((double longitude, double latitude, float? e) x,
             (double longitude, double latitude, float? e) y)
         {
-            var xlon = Math.Round((decimal) x.longitude, _tolerance);
-            var xlat = Math.Round((decimal) x.latitude, _tolerance);
-            var ylon = Math.Round((decimal) y.longitude, _tolerance);
-            var ylat = Math.Round((decimal) y.latitude, _tolerance);
+            var xlon = Math.Round((decimal)x.longitude, _tolerance);
+            var xlat = Math.Round((decimal)x.latitude, _tolerance);
+            var ylon = Math.Round((decimal)y.longitude, _tolerance);
+            var ylat = Math.Round((decimal)y.latitude, _tolerance);
 
             return xlon == ylon && xlat == ylat;
         }
 
         public int GetHashCode((double longitude, double latitude, float? e) obj)
         {
-            var lon = Math.Round((decimal) obj.longitude, _tolerance);
-            var lat = Math.Round((decimal) obj.latitude, _tolerance);
+            var lon = Math.Round((decimal)obj.longitude, _tolerance);
+            var lat = Math.Round((decimal)obj.latitude, _tolerance);
 
             return HashCode.Combine(lon, lat);
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Indexes;
 using Itinero.Profiles;
@@ -32,7 +32,7 @@ namespace Itinero
         /// Gets the edge type count.
         /// </summary>
         public long EdgeTypeCount => _edgeTypeIndex.Count;
-        
+
         /// <summary>
         /// Gets the turn attributes for the given type.
         /// </summary>
@@ -41,17 +41,19 @@ namespace Itinero
         internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
         {
             return (this.EdgeTypeMap.Id,
-                a => {
+                a =>
+                {
                     var m = this.EdgeTypeMap.Map(a);
                     return _edgeTypeIndex.Get(m);
-                });
+                }
+            );
         }
 
         /// <summary>
         /// Gets the turn cost type count.
         /// </summary>
         public long TurnCostTypeCount => _turnCostTypeIndex.Count;
-        
+
         /// <summary>
         /// Gets the turn attributes for the given type.
         /// </summary>
@@ -64,10 +66,12 @@ namespace Itinero
 
         internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetTurnCostTypeMap()
         {
-            return (_turnCostTypeMap.Id, a => {
+            return (_turnCostTypeMap.Id, a =>
+            {
                 var m = _turnCostTypeMap.Map(a);
                 return _turnCostTypeIndex.Get(m);
-            });
+            }
+            );
         }
     }
 }

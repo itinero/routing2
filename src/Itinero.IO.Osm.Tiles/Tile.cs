@@ -65,21 +65,23 @@ namespace Itinero.IO.Osm.Tiles
         /// <param name="localId">The local tile id.</param>
         public void UpdateToLocalId(ulong localId)
         {
-            var xMax = (ulong) (1 << (int) Zoom);
+            var xMax = (ulong)(1 << (int)Zoom);
 
-            X = (uint) (localId % xMax);
-            Y = (uint) (localId / xMax);
+            X = (uint)(localId % xMax);
+            Y = (uint)(localId / xMax);
         }
 
         /// <summary>
         /// Gets the local tile id.
         /// </summary>
         /// <remarks>This is the id relative to the zoom level.</remarks>
-        public uint LocalId {
-            get {
-                var xMax = 1 << (int) Zoom;
+        public uint LocalId
+        {
+            get
+            {
+                var xMax = 1 << (int)Zoom;
 
-                return (uint) (Y * xMax + X);
+                return (uint)(Y * xMax + X);
             }
         }
 
@@ -91,10 +93,10 @@ namespace Itinero.IO.Osm.Tiles
         /// <returns>The tile.</returns>
         public static Tile FromLocalId(ulong localId, int zoom)
         {
-            var xMax = (ulong) (1 << zoom);
+            var xMax = (ulong)(1 << zoom);
 
-            return new Tile((uint) (localId % xMax),
-                (uint) (localId / xMax), zoom);
+            return new Tile((uint)(localId % xMax),
+                (uint)(localId / xMax), zoom);
         }
 
         /// <summary>
@@ -104,7 +106,7 @@ namespace Itinero.IO.Osm.Tiles
         /// <returns>The maximum local id for the given zoom level</returns>
         public static ulong MaxLocalId(int zoom)
         {
-            var xMax = (ulong) (1 << zoom);
+            var xMax = (ulong)(1 << zoom);
 
             return xMax * xMax;
         }
@@ -123,7 +125,7 @@ namespace Itinero.IO.Osm.Tiles
             var top = Top;
             var left = Left;
 
-            return ((int) ((longitude - left) / lonStep), (int) ((top - latitude) / latStep));
+            return ((int)((longitude - left) / lonStep), (int)((top - latitude) / latStep));
         }
 
         /// <summary> 
@@ -152,12 +154,12 @@ namespace Itinero.IO.Osm.Tiles
         /// <returns>The tile a the given coordinates.</returns>
         public static Tile WorldToTile(double longitude, double latitude, int zoom)
         {
-            var n = (int) Math.Floor(Math.Pow(2, zoom)); // replace by bitshifting?
+            var n = (int)Math.Floor(Math.Pow(2, zoom)); // replace by bitshifting?
 
             var rad = latitude / 180d * Math.PI;
 
-            var x = (uint) ((longitude + 180.0f) / 360.0f * n);
-            var y = (uint) (
+            var x = (uint)((longitude + 180.0f) / 360.0f * n);
+            var y = (uint)(
                 (1.0f - Math.Log(Math.Tan(rad) + 1.0f / Math.Cos(rad))
                     / Math.PI) / 2f * n);
 

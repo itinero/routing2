@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json;
 
 namespace Itinero.IO.Json.GeoJson
@@ -64,7 +64,8 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WriteStartArray();
             jsonWriter.WriteNumberValue(location.longitude);
             jsonWriter.WriteNumberValue(location.latitude);
-            if (location.e != null) {
+            if (location.e != null)
+            {
                 jsonWriter.WriteNumberValue(location.e.Value);
             }
 
@@ -85,7 +86,8 @@ namespace Itinero.IO.Json.GeoJson
             jsonWriter.WritePropertyName("coordinates");
 
             jsonWriter.WriteStartArray();
-            foreach (var c in coordinates) {
+            foreach (var c in coordinates)
+            {
                 jsonWriter.WriteStartArray();
                 jsonWriter.WriteNumberValue(c.longitude);
                 jsonWriter.WriteNumberValue(c.latitude);
@@ -110,7 +112,8 @@ namespace Itinero.IO.Json.GeoJson
         {
             jsonWriter.WritePropertyName("properties");
             jsonWriter.WriteStartObject();
-            foreach (var a in attributes) {
+            foreach (var a in attributes)
+            {
                 jsonWriter.WriteString(a.key, a.value);
             }
 

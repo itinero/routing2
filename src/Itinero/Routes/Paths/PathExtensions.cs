@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Network.Enumerators.Edges;
@@ -18,7 +18,8 @@ namespace Itinero.Routes.Paths
         /// <returns>The total weight.</returns>
         public static double? Weight(this Result<Path> path, Func<RoutingNetworkEdgeEnumerator, double> getWeight)
         {
-            if (path.IsError) {
+            if (path.IsError)
+            {
                 return null;
             }
 
@@ -36,14 +37,17 @@ namespace Itinero.Routes.Paths
             var weight = 0.0;
 
             var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
-            foreach (var (edge, direction, offset1, offset2) in path) {
-                if (!edgeEnumerator.MoveToEdge(edge, direction)) {
+            foreach (var (edge, direction, offset1, offset2) in path)
+            {
+                if (!edgeEnumerator.MoveToEdge(edge, direction))
+                {
                     throw new InvalidDataException("An edge in the path is not found!");
                 }
 
                 var edgeWeight = getWeight(edgeEnumerator);
-                if (offset1 != 0 || offset2 != ushort.MaxValue) {
-                    edgeWeight *= (double) (offset2 - offset1) / ushort.MaxValue;
+                if (offset1 != 0 || offset2 != ushort.MaxValue)
+                {
+                    edgeWeight *= (double)(offset2 - offset1) / ushort.MaxValue;
                 }
 
                 weight += edgeWeight;
@@ -65,14 +69,16 @@ namespace Itinero.Routes.Paths
 
             // check if the same edge and if the offsets match.
             if (last.edge == first.edge &&
-                last.direction == first.direction) {
-                var offset2 = (ushort) (ushort.MaxValue - next.Offset1);
+                last.direction == first.direction)
+            {
+                var offset2 = (ushort)(ushort.MaxValue - next.Offset1);
                 return path.Offset2 == offset2;
             }
 
             // check if the same vertices at the end.
             if (next.Offset1 != 0 ||
-                path.Offset2 != ushort.MaxValue) {
+                path.Offset2 != ushort.MaxValue)
+            {
                 return false;
             }
 
@@ -94,20 +100,25 @@ namespace Itinero.Routes.Paths
         {
             Path? merged = null;
             RoutingNetworkEdgeEnumerator? enumerator = null;
-            foreach (var path in paths) {
+            foreach (var path in paths)
+            {
                 merged ??= new Path(path.RouterDb);
                 enumerator ??= path.RouterDb.GetEdgeEnumerator();
 
-                if (merged.Count == 0) {
+                if (merged.Count == 0)
+                {
                     merged.Offset1 = path.Offset1;
                 }
-                else if (!merged.IsNext(path)) {
+                else if (!merged.IsNext(path))
+                {
                     throw new InvalidDataException(
                         $"Paths cannot be concatenated.");
                 }
 
-                foreach (var (edge, direction, _, _) in path) {
-                    if (!enumerator.MoveToEdge(edge, direction)) {
+                foreach (var (edge, direction, _, _) in path)
+                {
+                    if (!enumerator.MoveToEdge(edge, direction))
+                    {
                         throw new InvalidDataException(
                             $"Edge not found.");
                     }
@@ -127,20 +138,24 @@ namespace Itinero.Routes.Paths
         /// <param name="path">The path.</param>
         public static void Trim(this Path path)
         {
-            if (path.Count <= 1) {
+            if (path.Count <= 1)
+            {
                 return;
             }
 
-            if (path.Offset1 == ushort.MaxValue) {
+            if (path.Offset1 == ushort.MaxValue)
+            {
                 path.RemoveFirst();
                 path.Offset1 = 0;
             }
 
-            if (path.Count <= 1) {
+            if (path.Count <= 1)
+            {
                 return;
             }
 
-            if (path.Offset2 == 0) {
+            if (path.Offset2 == 0)
+            {
                 path.RemoveLast();
                 path.Offset2 = ushort.MaxValue;
             }

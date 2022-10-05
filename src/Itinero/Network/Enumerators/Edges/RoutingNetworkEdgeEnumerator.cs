@@ -1,4 +1,4 @@
-namespace Itinero.Network.Enumerators.Edges
+﻿namespace Itinero.Network.Enumerators.Edges
 {
     public class RoutingNetworkEdgeEnumerator : EdgeEnumerator<RoutingNetwork>
     {

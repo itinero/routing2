@@ -1,4 +1,4 @@
-using Itinero.Snapping;
+﻿using Itinero.Snapping;
 
 namespace Itinero.Routing.Flavours.Dijkstra
 {
@@ -11,7 +11,7 @@ namespace Itinero.Routing.Flavours.Dijkstra
         /// <returns>The factor.</returns>
         internal static double OffsetFactor(this SnapPoint snapPoint)
         {
-            return snapPoint.Offset / (double) ushort.MaxValue;
+            return snapPoint.Offset / (double)ushort.MaxValue;
         }
     }
 }

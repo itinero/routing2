@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types;
 using Itinero.Routes;
@@ -14,12 +14,12 @@ public interface IRouteAndBaseInstructions
     /// The route.
     /// </summary>
     Route Route { get; }
-    
+
     /// <summary>
     /// The base instructions.
     /// </summary>
     IReadOnlyList<BaseInstruction> BaseInstructions { get; }
-    
+
     /// <summary>
     /// The supported languages.
     /// </summary>
@@ -37,8 +37,8 @@ internal class RouteAndBaseInstructions : IRouteAndBaseInstructions
     }
 
     public Route Route { get; }
-    
+
     public IReadOnlyList<BaseInstruction> BaseInstructions { get; }
-    
+
     public IReadOnlyDictionary<string, IInstructionToText> Languages { get; }
 }

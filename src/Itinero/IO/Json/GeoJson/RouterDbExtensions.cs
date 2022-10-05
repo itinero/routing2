@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,7 +19,8 @@ namespace Itinero.IO.Json.GeoJson
                 bottomRight) box)
         {
             using var stream = new MemoryStream();
-            using (var jsonWriter = new Utf8JsonWriter(stream)) {
+            using (var jsonWriter = new Utf8JsonWriter(stream))
+            {
                 jsonWriter.WriteFeatureCollectionStart();
                 jsonWriter.WriteFeatures(routerDb, box);
                 jsonWriter.WriteFeatureCollectionEnd();
@@ -42,21 +43,25 @@ namespace Itinero.IO.Json.GeoJson
             var edges = new HashSet<EdgeId>();
 
             var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-            while (edgeEnumerator.MoveNext()) {
+            while (edgeEnumerator.MoveNext())
+            {
                 var vertex1 = edgeEnumerator.Tail;
-                if (!vertices.Contains(vertex1)) {
+                if (!vertices.Contains(vertex1))
+                {
                     jsonWriter.WriteVertexFeature(vertex1, routerDb);
                     vertices.Add(vertex1);
                 }
 
                 var vertex2 = edgeEnumerator.Head;
-                if (!vertices.Contains(vertex2)) {
+                if (!vertices.Contains(vertex2))
+                {
                     jsonWriter.WriteVertexFeature(vertex2, routerDb);
                     vertices.Add(vertex2);
                 }
 
                 var edge = edgeEnumerator.EdgeId;
-                if (!edges.Contains(edge)) {
+                if (!edges.Contains(edge))
+                {
                     jsonWriter.WriteEdgeFeature(edgeEnumerator);
                     edges.Add(edge);
                 }

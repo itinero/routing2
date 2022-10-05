@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Itinero.Indexes;
@@ -30,7 +30,7 @@ namespace Itinero.Tests.Indexes
         {
             var attributeSetIndex = new AttributeSetIndex();
 
-            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] {("highway", "residential")});
+            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] { ("highway", "residential") });
             Assert.Equal(1U, attributeSetId);
 
             var edgeTypeAttributes = attributeSetIndex.GetById(attributeSetId).ToArray();
@@ -43,8 +43,8 @@ namespace Itinero.Tests.Indexes
         {
             var attributeSetIndex = new AttributeSetIndex();
 
-            attributeSetIndex.Get(new (string key, string value)[] {("highway", "residential")});
-            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] {("highway", "primary")});
+            attributeSetIndex.Get(new (string key, string value)[] { ("highway", "residential") });
+            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] { ("highway", "primary") });
             Assert.Equal(2U, attributeSetId);
 
             var edgeTypeAttributes = attributeSetIndex.GetById(attributeSetId).ToArray();
@@ -57,8 +57,8 @@ namespace Itinero.Tests.Indexes
         {
             var attributeSetIndex = new AttributeSetIndex();
 
-            attributeSetIndex.Get(new (string key, string value)[] {("highway", "residential")});
-            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] {("highway", "residential")});
+            attributeSetIndex.Get(new (string key, string value)[] { ("highway", "residential") });
+            var attributeSetId = attributeSetIndex.Get(new (string key, string value)[] { ("highway", "residential") });
             Assert.Equal(1U, attributeSetId);
 
             var edgeTypeAttributes = attributeSetIndex.GetById(attributeSetId).ToArray();
@@ -71,7 +71,7 @@ namespace Itinero.Tests.Indexes
         {
             var attributeSetIndex = new AttributeSetIndex();
 
-            attributeSetIndex.Get(new (string key, string value)[] {("highway", "residential"), ("maxspeed", "50")});
+            attributeSetIndex.Get(new (string key, string value)[] { ("highway", "residential"), ("maxspeed", "50") });
             var attributeSetId = attributeSetIndex.Get(new (string key, string value)[]
                 {("maxspeed", "50"), ("highway", "residential")});
             Assert.Equal(1U, attributeSetId);
@@ -99,7 +99,7 @@ namespace Itinero.Tests.Indexes
         public void AttributeSetIndex_Serialize_One_ShouldDeserializeOne()
         {
             var expected = new AttributeSetIndex();
-            var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
+            var type1 = expected.Get(new (string key, string value)[] { ("highway", "residential") });
 
             var stream = new MemoryStream();
             expected.WriteTo(stream);
@@ -115,8 +115,8 @@ namespace Itinero.Tests.Indexes
         public void AttributeSetIndex_Serialize_Two_ShouldDeserializeTwo()
         {
             var expected = new AttributeSetIndex();
-            var type1 = expected.Get(new (string key, string value)[] {("highway", "residential")});
-            var type2 = expected.Get(new (string key, string value)[] {("highway", "primary"), ("maxspeed", "50")});
+            var type1 = expected.Get(new (string key, string value)[] { ("highway", "residential") });
+            var type2 = expected.Get(new (string key, string value)[] { ("highway", "primary"), ("maxspeed", "50") });
 
             var stream = new MemoryStream();
             expected.WriteTo(stream);

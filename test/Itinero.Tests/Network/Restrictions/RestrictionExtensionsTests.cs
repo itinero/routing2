@@ -1,7 +1,7 @@
+﻿using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Restrictions;
 using Xunit;
-using System.Linq;
 
 namespace Itinero.Tests.Network.Restrictions
 {
@@ -13,14 +13,14 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
 
-            var sequence = new (EdgeId edge, bool forward)[] {(edge1, true), (edge2, true)};
+            var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, true) };
             var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
 
             Assert.Empty(inverse);
@@ -32,16 +32,16 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
             var edge3 = mutable.AddEdge(vertex2, vertex4);
 
-            var sequence = new (EdgeId edge, bool forward)[] {(edge1, true), (edge2, true)};
+            var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, true) };
             var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
 
             Assert.Single(inverse);
@@ -58,16 +58,16 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex2, vertex1);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
             var edge3 = mutable.AddEdge(vertex2, vertex4);
 
-            var sequence = new (EdgeId edge, bool forward)[] {(edge1, false), (edge2, true)};
+            var sequence = new (EdgeId edge, bool forward)[] { (edge1, false), (edge2, true) };
             var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
 
             Assert.Single(inverse);
@@ -84,16 +84,16 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex3, vertex2);
             var edge3 = mutable.AddEdge(vertex2, vertex4);
 
-            var sequence = new (EdgeId edge, bool forward)[] {(edge1, true), (edge2, false)};
+            var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, false) };
             var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
 
             Assert.Single(inverse);
@@ -110,18 +110,18 @@ namespace Itinero.Tests.Network.Restrictions
             var routerDb = new RouterDb();
 
             using var mutable = routerDb.GetMutableNetwork();
-            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-            var vertex5 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex5 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
             var edge1 = mutable.AddEdge(vertex1, vertex2);
             var edge2 = mutable.AddEdge(vertex2, vertex3);
             var edge3 = mutable.AddEdge(vertex4, vertex2);
             var edge4 = mutable.AddEdge(vertex2, vertex5);
 
-            var sequence = new (EdgeId edge, bool forward)[] {(edge1, true), (edge2, true)};
+            var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, true) };
             var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
 
             Assert.Equal(2, inverse.Count);

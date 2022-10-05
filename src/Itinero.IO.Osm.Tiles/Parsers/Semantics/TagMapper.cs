@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
@@ -14,20 +14,24 @@ namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
         public static (string key, string value)? Map(this JProperty property,
             Dictionary<string, TagMapperConfig> reverseMappings)
         {
-            if (!reverseMappings.TryGetValue(property.Name, out var mapperConfig)) {
+            if (!reverseMappings.TryGetValue(property.Name, out var mapperConfig))
+            {
                 return null;
             }
 
-            if (property.Value == null) {
+            if (property.Value == null)
+            {
                 return (mapperConfig.OsmKey, null);
             }
 
             var valueString = property.Value.ToInvariantString();
-            if (mapperConfig.ReverseMapping == null) {
+            if (mapperConfig.ReverseMapping == null)
+            {
                 return (mapperConfig.OsmKey, valueString);
             }
 
-            if (mapperConfig.ReverseMapping.TryGetValue(valueString, out var reverseMapped)) {
+            if (mapperConfig.ReverseMapping.TryGetValue(valueString, out var reverseMapped))
+            {
                 return (mapperConfig.OsmKey, reverseMapped);
             }
 

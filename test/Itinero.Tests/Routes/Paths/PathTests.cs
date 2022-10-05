@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Itinero.Network;
 using Itinero.Routes.Paths;
 using Xunit;
@@ -23,9 +23,10 @@ namespace Itinero.Tests.Routes.Paths
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge = writer.AddEdge(vertex1, vertex2);
             }
@@ -45,10 +46,11 @@ namespace Itinero.Tests.Routes.Paths
             EdgeId edge2;
             VertexId vertex1;
             VertexId vertex2;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-                var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -71,10 +73,11 @@ namespace Itinero.Tests.Routes.Paths
             EdgeId edge2;
             VertexId vertex1;
             VertexId vertex2;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-                var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -97,9 +100,10 @@ namespace Itinero.Tests.Routes.Paths
             EdgeId edge1;
             VertexId vertex1;
             VertexId vertex2;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
             }
@@ -117,10 +121,11 @@ namespace Itinero.Tests.Routes.Paths
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -141,10 +146,11 @@ namespace Itinero.Tests.Routes.Paths
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -167,10 +173,11 @@ namespace Itinero.Tests.Routes.Paths
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);
@@ -195,10 +202,11 @@ namespace Itinero.Tests.Routes.Paths
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
-                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?) null);
-                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
-                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?) null);
+            using (var writer = routerDb.GetMutableNetwork())
+            {
+                vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+                vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+                vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
                 edge1 = writer.AddEdge(vertex1, vertex2);
                 edge2 = writer.AddEdge(vertex2, vertex3);

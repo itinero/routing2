@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -25,28 +25,34 @@ namespace Itinero.Routing
             var target = routerOneToMany.Target;
 
             if (target.direction.HasValue ||
-                !sources.TryToUndirected(out var sourcesUndirected)) {
+                !sources.TryToUndirected(out var sourcesUndirected))
+            {
                 var routes = await routerOneToMany.CalculateAsync(
-                    sources, new[] {target});
-                if (routes == null) {
+                    sources, new[] { target });
+                if (routes == null)
+                {
                     throw new Exception("Could not calculate routes.");
                 }
 
                 var manyToOne = new Result<Path>[sources.Count];
-                for (var s = 0; s < manyToOne.Length; s++) {
+                for (var s = 0; s < manyToOne.Length; s++)
+                {
                     manyToOne[s] = routes[s][0];
                 }
 
                 return manyToOne;
             }
-            else {
-                var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] {target.sp}, cancellationToken);
-                if (routes == null) {
+            else
+            {
+                var routes = await routerOneToMany.CalculateAsync(sourcesUndirected, new[] { target.sp }, cancellationToken);
+                if (routes == null)
+                {
                     throw new Exception("Could not calculate routes.");
                 }
 
                 var manyToOne = new Result<Path>[sources.Count];
-                for (var s = 0; s < manyToOne.Length; s++) {
+                for (var s = 0; s < manyToOne.Length; s++)
+                {
                     manyToOne[s] = routes[s][0];
                 }
 
@@ -70,9 +76,9 @@ namespace Itinero.Routing
         /// </summary>
         /// <param name="routerManyToOne">The router.</param>
         /// <returns>The weights.</returns>
-        public static async Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
+        public static Task<Result<IReadOnlyList<double?>>> Calculate(this IRouterWeights<IRouterManyToOne> routerManyToOne)
         {
-            return null;
+            return Task.FromResult(null);
             //
             // var profileHandler = routerManyToOne.Router.Network.GetCostFunctionFor(
             //     routerManyToOne.Router.Settings.Profile);

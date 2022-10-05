@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
-[assembly:InternalsVisibleTo("Itinero.Tests")]
+[assembly: InternalsVisibleTo("Itinero.Tests")]
 namespace Itinero.Routing.Costs
 {
     /// <summary>

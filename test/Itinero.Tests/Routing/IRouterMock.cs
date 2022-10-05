@@ -1,4 +1,4 @@
-using Itinero.Network;
+﻿using Itinero.Network;
 using Itinero.Routing;
 
 namespace Itinero.Tests.Routing

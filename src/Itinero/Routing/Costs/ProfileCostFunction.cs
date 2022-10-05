@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -21,7 +21,7 @@ namespace Itinero.Routing.Costs
         {
             var factor = _profile.FactorInEdgeDirection(edgeEnumerator);
             var length = edgeEnumerator.Length ??
-                         (uint) (edgeEnumerator.EdgeLength<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>() * 100);
+                         (uint)(edgeEnumerator.EdgeLength<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>() * 100);
             var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
             var canAccess = cost > 0;
 
@@ -29,14 +29,16 @@ namespace Itinero.Routing.Costs
             var totalTurnCost = 0.0;
             var (_, turn) = previousEdges.FirstOrDefault();
             if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
-            
+
             // there are turn costs.
             var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
-            foreach (var (_, attributes, turnCost, prefixEdges) in turnCosts) {
+            foreach (var (_, attributes, turnCost, prefixEdges) in turnCosts)
+            {
                 // TODO: compare prefix edges with the previous edges.
-                    
+
                 var turnCostFactor = _profile.TurnCostFactor(attributes);
-                if (turnCostFactor.IsBinary && turnCost > 0) {
+                if (turnCostFactor.IsBinary && turnCost > 0)
+                {
                     totalTurnCost = double.MaxValue;
                     break;
                 }

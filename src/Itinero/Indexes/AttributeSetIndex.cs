@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,18 +23,19 @@ namespace Itinero.Indexes
 
         public AttributeSetIndex(List<IReadOnlyList<(string key, string value)>>? edgeProfiles = null)
         {
-            _edgeProfiles = edgeProfiles ?? new List<IReadOnlyList<(string key, string value)>> { Array.Empty<(string key, string value)>() };;
+            _edgeProfiles = edgeProfiles ?? new List<IReadOnlyList<(string key, string value)>> { Array.Empty<(string key, string value)>() }; ;
             _edgeProfilesIndex =
                 new Dictionary<IReadOnlyList<(string key, string value)>, uint>(EdgeProfileEqualityComparer.Default);
-            for (var p = 0; p < _edgeProfiles.Count; p++) {
-                _edgeProfilesIndex[_edgeProfiles[p]] = (uint) p;
+            for (var p = 0; p < _edgeProfiles.Count; p++)
+            {
+                _edgeProfilesIndex[_edgeProfiles[p]] = (uint)p;
             }
         }
 
         /// <summary>
         /// Gets the number of distinct sets.
         /// </summary>
-        public uint Count => (uint) _edgeProfiles.Count;
+        public uint Count => (uint)_edgeProfiles.Count;
 
         /// <summary>
         /// Gets the attributes for the given id.
@@ -43,11 +44,12 @@ namespace Itinero.Indexes
         /// <returns>The attributes in the type.</returns>
         public IEnumerable<(string key, string value)> GetById(uint id)
         {
-            if (id > this.Count) {
+            if (id > this.Count)
+            {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
 
-            return _edgeProfiles[(int) id];
+            return _edgeProfiles[(int)id];
         }
 
         /// <summary>
@@ -63,12 +65,13 @@ namespace Itinero.Indexes
             Array.Sort(attributeSet, (x, y) => x.CompareTo(y));
 
             // check if profile already there.
-            if (_edgeProfilesIndex.TryGetValue(attributeSet, out var edgeProfileId)) {
+            if (_edgeProfilesIndex.TryGetValue(attributeSet, out var edgeProfileId))
+            {
                 return edgeProfileId;
             }
 
             // add new profile.
-            edgeProfileId = (uint) _edgeProfiles.Count;
+            edgeProfileId = (uint)_edgeProfiles.Count;
             _edgeProfiles.Add(attributeSet);
             _edgeProfilesIndex.Add(attributeSet, edgeProfileId);
 
@@ -82,15 +85,18 @@ namespace Itinero.Indexes
             public bool Equals(IReadOnlyList<(string key, string value)> x,
                 IReadOnlyList<(string key, string value)> y)
             {
-                if (x.Count != y.Count) {
+                if (x.Count != y.Count)
+                {
                     return false;
                 }
 
-                for (var i = 0; i < x.Count; i++) {
+                for (var i = 0; i < x.Count; i++)
+                {
                     var xPair = x[i];
                     var yPair = y[i];
 
-                    if (xPair != yPair) {
+                    if (xPair != yPair)
+                    {
                         return false;
                     }
                 }
@@ -102,7 +108,8 @@ namespace Itinero.Indexes
             {
                 var hash = obj.Count.GetHashCode();
 
-                foreach (var pair in obj) {
+                foreach (var pair in obj)
+                {
                     hash ^= pair.GetHashCode();
                 }
 
@@ -117,9 +124,11 @@ namespace Itinero.Indexes
 
             // write pairs.
             stream.WriteVarInt32(_edgeProfiles.Count);
-            foreach (var attributes in _edgeProfiles) {
+            foreach (var attributes in _edgeProfiles)
+            {
                 stream.WriteVarInt32(attributes.Count);
-                foreach (var (key, value) in attributes) {
+                foreach (var (key, value) in attributes)
+                {
                     stream.WriteWithSize(key);
                     stream.WriteWithSize(value);
                 }
@@ -130,17 +139,20 @@ namespace Itinero.Indexes
         {
             // get version #.
             var version = stream.ReadVarInt32();
-            if (version != 1) {
+            if (version != 1)
+            {
                 throw new InvalidDataException("Unexpected version #.");
             }
 
             // read pairs.
             var count = stream.ReadVarInt32();
             var edgeTypes = new List<IReadOnlyList<(string key, string value)>>(count);
-            for (var i = 0; i < count; i++) {
+            for (var i = 0; i < count; i++)
+            {
                 var c = stream.ReadVarInt32();
                 var attribute = new (string key, string value)[c];
-                for (var a = 0; a < c; a++) {
+                for (var a = 0; a < c; a++)
+                {
                     var key = stream.ReadWithSizeString();
                     var value = stream.ReadWithSizeString();
                     attribute[a] = (key, value);

@@ -1,4 +1,4 @@
-using Itinero.Network.Mutation;
+﻿using Itinero.Network.Mutation;
 
 namespace Itinero.Network.Enumerators.Edges
 {

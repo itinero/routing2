@@ -1,4 +1,4 @@
-namespace Itinero.Geo.Elevation
+﻿namespace Itinero.Geo.Elevation
 {
     /// <summary>
     /// Abstract representation of an elevation handler.

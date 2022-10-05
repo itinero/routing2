@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
@@ -23,7 +23,7 @@ namespace Itinero.Network.Writer
         {
             _network = network;
         }
-        
+
         /// <summary>
         /// Gets an edge enumerator.
         /// </summary>
@@ -52,7 +52,8 @@ namespace Itinero.Network.Writer
         {
             // get the tile (or create it).
             var (tile, edgeTypeMap) = _network.GetTileForWrite(vertex1.TileId);
-            if (tile == null) {
+            if (tile == null)
+            {
                 throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
             }
 
@@ -60,22 +61,25 @@ namespace Itinero.Network.Writer
             edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
 
             // get the edge length in centimeters.
-            if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude, out var e)) {
+            if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude, out var e))
+            {
                 throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex1} not found.");
             }
 
             var vertex1Location = (longitude, latitude, e);
-            if (!_network.TryGetVertex(vertex2, out longitude, out latitude, out e)) {
+            if (!_network.TryGetVertex(vertex2, out longitude, out latitude, out e))
+            {
                 throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex2} not found.");
             }
 
             var vertex2Location = (longitude, latitude, e);
 
-            length ??= (uint) (vertex1Location.DistanceEstimateInMeterShape(
+            length ??= (uint)(vertex1Location.DistanceEstimateInMeterShape(
                 vertex2Location, shape) * 100);
 
             var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
-            if (vertex1.TileId == vertex2.TileId) {
+            if (vertex1.TileId == vertex2.TileId)
+            {
                 return edge1;
             }
 
@@ -93,10 +97,11 @@ namespace Itinero.Network.Writer
 
             // get the tile (or create it).
             var (tile, _) = _network.GetTileForWrite(vertex.TileId);
-            if (tile == null) {
+            if (tile == null)
+            {
                 throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
             }
-            
+
             // get the turn cost type id.
             var turnCostMap = _network.RouterDb.GetTurnCostTypeMap();
             turnCostType ??= turnCostMap.func(attributes);

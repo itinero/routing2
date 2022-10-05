@@ -1,10 +1,11 @@
-namespace Itinero.Network.Tiles
+﻿namespace Itinero.Network.Tiles
 {
     internal static class DataHelpers
     {
         public static uint? DecodeNullableData(this uint data)
         {
-            if (data == 0) {
+            if (data == 0)
+            {
                 return null;
             }
 
@@ -13,7 +14,8 @@ namespace Itinero.Network.Tiles
 
         public static uint EncodeAsNullableData(this uint? data)
         {
-            if (!data.HasValue) {
+            if (!data.HasValue)
+            {
                 return 0;
             }
 
@@ -27,7 +29,8 @@ namespace Itinero.Network.Tiles
 
         public static ulong EncodeAsNullableData(this ulong? data)
         {
-            if (!data.HasValue) {
+            if (!data.HasValue)
+            {
                 return 0;
             }
 
@@ -36,7 +39,8 @@ namespace Itinero.Network.Tiles
 
         public static ulong? DecodeNullableData(this ulong data)
         {
-            if (data == 0) {
+            if (data == 0)
+            {
                 return null;
             }
 

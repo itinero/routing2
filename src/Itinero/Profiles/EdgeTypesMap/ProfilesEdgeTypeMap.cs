@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Itinero.Profiles.EdgeTypesMap;
 internal class ProfilesEdgeTypeMap : AttributeSetMap
 {
     private readonly ProfileEdgeTypeSetMinimizer _profileEdgeTypeSetMinimizer;
-    
+
     public ProfilesEdgeTypeMap(IEnumerable<Profile> profiles)
         : base(GenerateGuidFromHash(profiles))
     {

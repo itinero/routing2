@@ -1,4 +1,4 @@
-using Itinero.Instructions.Types;
+﻿using Itinero.Instructions.Types;
 
 namespace Itinero.Instructions.ToText;
 

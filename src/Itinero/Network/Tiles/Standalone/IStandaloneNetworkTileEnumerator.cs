@@ -1,4 +1,4 @@
-using Itinero.Network.Enumerators.Edges;
+﻿using Itinero.Network.Enumerators.Edges;
 
 namespace Itinero.Network.Tiles.Standalone;
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Logging;
@@ -15,21 +15,22 @@ namespace Itinero.Profiles.Lua
         private readonly dynamic _env = _lua.CreateEnvironment();
 
         private readonly bool _hasTurnFactor;
-        
+
         private LuaProfile(LuaChunk chunk)
         {
             _env.dochunk(chunk);
             this.Name = _env.name;
             _hasTurnFactor = _env.turn_cost_factor != null;
-            if (!_hasTurnFactor) {
+            if (!_hasTurnFactor)
+            {
                 Logger.Log("LuaProfile Turnfactor", TraceEventType.Verbose,
                     "The profile " + this.Name + " doesn't have a turn_cost_factor defined");
             }
         }
-        
+
         /// <inheritdoc />
         public override string Name { get; }
-        
+
         /// <summary>
         /// Loads a profile from a lua script file.
         /// </summary>
@@ -60,7 +61,8 @@ namespace Itinero.Profiles.Lua
         {
             var attributesTable = new LuaTable();
             var resultTable = new LuaTable();
-            foreach (var (k, v) in attributes) {
+            foreach (var (k, v) in attributes)
+            {
                 attributesTable[k] = v;
             }
 
@@ -68,38 +70,44 @@ namespace Itinero.Profiles.Lua
 
             var forward = resultTable.GetDouble("forward") ?? 0;
             var backward = resultTable.GetDouble("backward") ?? 0;
-            
+
             var speedForward = resultTable.GetDouble("forward_speed");
-            if (speedForward == null) {
+            if (speedForward == null)
+            {
                 // when forward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
                 speedForward = 0;
-                if (forward > 0) { // convert to m/s.
+                if (forward > 0)
+                { // convert to m/s.
                     speedForward = 1.0 / forward;
                 }
             }
-            else { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
+            else
+            { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
                 speedForward /= 3.6;
             }
-            
+
             var speedBackward = resultTable.GetDouble("backward_speed");
-            if (speedBackward == null) {
+            if (speedBackward == null)
+            {
                 // when backward_speed isn't explicitly filled, the assumption is that factors are in 1/(m/s)
                 speedBackward = 0;
-                if (backward > 0) { // convert to m/s.
+                if (backward > 0)
+                { // convert to m/s.
                     speedBackward = 1.0 / backward;
                 }
             }
-            else { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
+            else
+            { // when forward_speed is filled, it's assumed to be in km/h, it needs to be convert to m/s.
                 speedBackward /= 3.6;
             }
 
             var canstop = resultTable.GetBoolean("canstop") ?? (backward > 0 || forward > 0);
-            
+
             return new EdgeFactor(
-                (uint) (forward * 100),
-                (uint) (backward * 100),
-                (ushort) (speedForward * 100),
-                (ushort) (speedBackward * 100),
+                (uint)(forward * 100),
+                (uint)(backward * 100),
+                (ushort)(speedForward * 100),
+                (ushort)(speedBackward * 100),
                 canstop
             );
         }
@@ -107,13 +115,15 @@ namespace Itinero.Profiles.Lua
         /// <inheritdoc />
         public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
         {
-            if (!_hasTurnFactor || !attributes.Any()) {
+            if (!_hasTurnFactor || !attributes.Any())
+            {
                 return Profiles.TurnCostFactor.Empty;
             }
 
             var attributesTable = new LuaTable();
             var resultTable = new LuaTable();
-            foreach (var (k, v) in attributes) {
+            foreach (var (k, v) in attributes)
+            {
                 attributesTable[k] = v;
             }
 
@@ -122,7 +132,7 @@ namespace Itinero.Profiles.Lua
             var factor = resultTable.GetDouble("factor") ?? 0;
 
             var turnCostFactor = Profiles.TurnCostFactor.Empty;
-            if (factor < 0) 
+            if (factor < 0)
             {
                 turnCostFactor = Profiles.TurnCostFactor.Binary;
             }

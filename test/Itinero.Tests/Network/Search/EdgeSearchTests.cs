@@ -1,4 +1,4 @@
-// using System.Linq;
+﻿// using System.Linq;
 // using Itinero.Network;
 // using Xunit;
 // using Itinero.Network.Search;

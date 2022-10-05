@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Itinero.Profiles;
 
 namespace Itinero.Network.Mutation
@@ -15,7 +15,8 @@ namespace Itinero.Network.Mutation
         public static (double longitude, double latitude, float? e) GetVertex(this RoutingNetworkMutator routingNetwork,
             VertexId vertex)
         {
-            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) {
+            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e))
+            {
                 throw new ArgumentOutOfRangeException(nameof(vertex));
             }
 

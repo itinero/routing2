@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Itinero.Network.Enumerators.Edges;
 
@@ -112,7 +112,7 @@ public interface IEdgeEnumerator
     IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
         byte targetOrder);
 }
-    
+
 
 /// <summary>
 /// An edge enumerator.

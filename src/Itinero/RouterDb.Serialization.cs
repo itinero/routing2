@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Itinero.IO;
 using Itinero.Network.Serialization;
 
@@ -26,7 +26,8 @@ namespace Itinero
             stream.WriteVarInt32(1);
 
             // write network.
-            using (var mutable = GetMutableNetwork()) {
+            using (var mutable = GetMutableNetwork())
+            {
                 mutable.WriteTo(stream);
             }
 

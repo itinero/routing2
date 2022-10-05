@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -18,8 +18,10 @@ namespace Itinero.IO.Json.GeoJson
         /// <returns>A geojson string.</returns>
         public static string ToGeoJson(this Route route)
         {
-            using (var stream = new MemoryStream()) {
-                using (var jsonWriter = new Utf8JsonWriter(stream)) {
+            using (var stream = new MemoryStream())
+            {
+                using (var jsonWriter = new Utf8JsonWriter(stream))
+                {
                     jsonWriter.WriteFeatureCollectionStart();
                     jsonWriter.WriteFeatures(route);
                     jsonWriter.WriteFeatureCollectionEnd();
@@ -28,13 +30,16 @@ namespace Itinero.IO.Json.GeoJson
                 return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
-        
+
         public static string ToGeoJson(this IReadOnlyList<Route> routes)
         {
-            using (var stream = new MemoryStream()) {
-                using (var jsonWriter = new Utf8JsonWriter(stream)) {
+            using (var stream = new MemoryStream())
+            {
+                using (var jsonWriter = new Utf8JsonWriter(stream))
+                {
                     jsonWriter.WriteFeatureCollectionStart();
-                    foreach (var route in routes) {
+                    foreach (var route in routes)
+                    {
                         jsonWriter.WriteFeatures(route);
                     }
                     jsonWriter.WriteFeatureCollectionEnd();
@@ -51,7 +56,8 @@ namespace Itinero.IO.Json.GeoJson
         /// <param name="jsonWriter">The json writer.</param>
         public static void WriteFeatures(this Utf8JsonWriter jsonWriter, Route route)
         {
-            if (route.Shape != null) {
+            if (route.Shape != null)
+            {
                 jsonWriter.WriteFeatureStart();
 
                 jsonWriter.WritePropertyName("properties");
@@ -64,7 +70,8 @@ namespace Itinero.IO.Json.GeoJson
                 jsonWriter.WriteString("type", "LineString");
                 jsonWriter.WritePropertyName("coordinates");
                 jsonWriter.WriteStartArray();
-                for (var i = 0; i < route.Shape.Count; i++) {
+                for (var i = 0; i < route.Shape.Count; i++)
+                {
                     jsonWriter.WriteStartArray();
                     jsonWriter.WriteNumberValue(route.Shape[i].longitude);
                     jsonWriter.WriteNumberValue(route.Shape[i].latitude);

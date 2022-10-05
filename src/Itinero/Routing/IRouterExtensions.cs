@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, SnapPoint snapPoint)
         {
-            return router.From((snapPoint, (bool?) null));
+            return router.From((snapPoint, (bool?)null));
         }
 
         /// <summary>
@@ -37,7 +37,8 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IHasSource From(this IRouter router, (SnapPoint snapPoint, bool? direction) directedSnapPoint)
         {
-            return new Router(router.Network, router.Settings) {
+            return new Router(router.Network, router.Settings)
+            {
                 Source = directedSnapPoint
             };
         }
@@ -86,7 +87,8 @@ namespace Itinero.Routing
         public static IHasSources From(this IRouter router,
             IReadOnlyList<(SnapPoint snapPoint, bool? direction)> directedSnapPoints)
         {
-            return new Router(router.Network, router.Settings) {
+            return new Router(router.Network, router.Settings)
+            {
                 Sources = directedSnapPoints
             };
         }
@@ -104,16 +106,19 @@ namespace Itinero.Routing
 
             bool checkMaxDistance(VertexId v)
             {
-                if (maxBox == null) {
+                if (maxBox == null)
+                {
                     return false;
                 }
 
-                if (routingNetwork == null) {
+                if (routingNetwork == null)
+                {
                     throw new Exception("Router cannot be null here.");
                 }
 
                 var vertex = routingNetwork.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex)) {
+                if (!maxBox.Value.Overlaps(vertex))
+                {
                     return true;
                 }
 
@@ -121,22 +126,27 @@ namespace Itinero.Routing
             }
 
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
-            for (var s = 0; s < sources.Count; s++) {
+            for (var s = 0; s < sources.Count; s++)
+            {
                 var source = sources[s];
                 var pathsAndCosts = await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    async v => {
+                    async v =>
+                    {
                         await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                         return checkMaxDistance(v.vertexId);
                     });
 
                 var sourceResults = new Result<Path>[pathsAndCosts.Length];
-                for (var r = 0; r < sourceResults.Length; r++) {
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
                     var (path, _) = pathsAndCosts[r];
-                    if (path == null) {
+                    if (path == null)
+                    {
                         sourceResults[r] = new Result<Path>("Path not found!");
                     }
-                    else {
+                    else
+                    {
                         sourceResults[r] = path;
                     }
                 }
@@ -161,16 +171,19 @@ namespace Itinero.Routing
 
             bool checkMaxDistance(VertexId v)
             {
-                if (maxBox == null) {
+                if (maxBox == null)
+                {
                     return false;
                 }
 
-                if (routerDb == null) {
+                if (routerDb == null)
+                {
                     throw new Exception("Router cannot be null here.");
                 }
 
                 var vertex = routerDb.GetVertex(v);
-                if (!maxBox.Value.Overlaps(vertex)) {
+                if (!maxBox.Value.Overlaps(vertex))
+                {
                     return true;
                 }
 
@@ -178,22 +191,27 @@ namespace Itinero.Routing
             }
 
             var results = new IReadOnlyList<Result<Path>>[sources.Count];
-            for (var s = 0; s < sources.Count; s++) {
+            for (var s = 0; s < sources.Count; s++)
+            {
                 var source = sources[s];
                 var paths = await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routerDb, source, targets,
                     costFunction.GetDijkstraWeightFunc(),
-                    async e => {
+                    async e =>
+                    {
                         await routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                         return checkMaxDistance(e.vertexId);
                     });
 
                 var sourceResults = new Result<Path>[paths.Length];
-                for (var r = 0; r < sourceResults.Length; r++) {
+                for (var r = 0; r < sourceResults.Length; r++)
+                {
                     var (path, _) = paths[r];
-                    if (path == null) {
+                    if (path == null)
+                    {
                         sourceResults[r] = new Result<Path>("Routes not found!");
                     }
-                    else {
+                    else
+                    {
                         sourceResults[r] = path;
                     }
                 }

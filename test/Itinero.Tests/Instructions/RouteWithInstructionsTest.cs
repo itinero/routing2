@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,7 +15,8 @@ namespace Itinero.Tests.Instructions
         public static void AssertTag(this IEnumerable<(string key, string value)> attributes, string key,
             string expectedValue)
         {
-            if (!attributes.TryGetValue(key, out var v)) {
+            if (!attributes.TryGetValue(key, out var v))
+            {
                 throw new KeyNotFoundException($"The expected key {key} was not found");
             }
 
@@ -59,7 +60,8 @@ namespace Itinero.Tests.Instructions
             Assert.Equal(3, newMetas[1].Shape);
             Assert.Equal(6, newMetas[2].Shape);
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
                 var a = newMetas[i].Attributes;
                 a.AssertTag("name", "klaverstraat");
                 a.AssertTag("highway", "residential");

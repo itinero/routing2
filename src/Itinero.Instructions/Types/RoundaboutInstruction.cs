@@ -1,4 +1,4 @@
-// ReSharper disable UnusedAutoPropertyAccessor.Global
+﻿// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable MemberCanBePrivate.Global
 namespace Itinero.Instructions.Types
 {
@@ -18,7 +18,7 @@ namespace Itinero.Instructions.Types
             this.ExitNumber = exitNumber;
             this.ExitIsOnTheInside = exitIsOnTheInside;
         }
-        
+
         /// <summary>
         /// True when the exit leads to the inside of the roundabout.
         /// </summary>
@@ -31,7 +31,7 @@ namespace Itinero.Instructions.Types
         /// The number of the exit to take (one-based).
         /// </summary>
         public int ExitNumber { get; }
-        
+
         //
         // public override string ToString()
         // {

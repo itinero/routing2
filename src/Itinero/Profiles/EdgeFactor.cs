@@ -1,4 +1,4 @@
-namespace Itinero.Profiles
+﻿namespace Itinero.Profiles
 {
     /// <summary>
     /// An 'EdgeFactor' contains the essential information to perform route planning, such as speed and priority in forward and backward direction.
@@ -73,7 +73,8 @@ namespace Itinero.Profiles
         {
             var forwardSpeed = ForwardSpeed / 100.0 * 3.6;
             if (ForwardFactor == BackwardFactor &&
-                ForwardSpeed == BackwardSpeed) {
+                ForwardSpeed == BackwardSpeed)
+            {
                 return $"{ForwardFactor:F1}({forwardSpeed:F1}km/h)";
             }
 
@@ -83,7 +84,7 @@ namespace Itinero.Profiles
 
         public override int GetHashCode()
         {
-            return (int) (this.ForwardFactor ^ this.ForwardSpeed << 8 ^ this.BackwardFactor << 16 ^ this.ForwardSpeed << 24);
+            return (int)(this.ForwardFactor ^ this.ForwardSpeed << 8 ^ this.BackwardFactor << 16 ^ this.ForwardSpeed << 24);
         }
     }
 }

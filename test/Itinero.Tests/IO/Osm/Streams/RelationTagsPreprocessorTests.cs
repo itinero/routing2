@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Itinero.IO.Osm.Streams;
 using OsmSharp;
 using OsmSharp.Streams;
@@ -9,7 +9,7 @@ namespace Itinero.Tests.IO.Osm.Streams
 {
     public class RelationTagsPreprocessorTests
     {
-        [Fact] 
+        [Fact]
         public void RelationTagsPreprocessor_NoRelevant_ShouldEnumerateAll()
         {
             var os = new OsmGeo[] {
@@ -35,8 +35,8 @@ namespace Itinero.Tests.IO.Osm.Streams
             Assert.Equal(1, result[1]?.Id);
             Assert.Equal(2, result[2]?.Id);
         }
-        
-        [Fact] 
+
+        [Fact]
         public void RelationTagsPreprocessor_1Relevant_ShouldCallbackOnSecondPass()
         {
             var os = new OsmGeo[] {
@@ -53,7 +53,8 @@ namespace Itinero.Tests.IO.Osm.Streams
             };
 
             var completeStream = new RelationTagsPreprocessor(
-                (c, o) => {
+                (c, o) =>
+                {
                     Assert.Equal(2, c.Id);
                     if (o != null) Assert.Equal(0, o.Id);
                     return true;
@@ -64,7 +65,7 @@ namespace Itinero.Tests.IO.Osm.Streams
             Assert.Equal(2, result.Count);
             Assert.Equal(0, result[0]?.Id);
             Assert.Equal(2, result[1]?.Id);
-            
+
             result = completeStream.ToList();
             Assert.Equal(2, result.Count);
             Assert.Equal(0, result[0]?.Id);
@@ -88,7 +89,8 @@ namespace Itinero.Tests.IO.Osm.Streams
             };
 
             var completeStream = new RelationTagsPreprocessor(
-                (c, o) => {
+                (c, o) =>
+                {
                     if (o != null) o.Tags = new TagsCollection(new Tag("id", c.Id.ToInvariantString()));
                     return true;
                 });
@@ -98,12 +100,12 @@ namespace Itinero.Tests.IO.Osm.Streams
             Assert.Equal(2, result.Count);
             Assert.Equal(0, result[0]?.Id);
             Assert.Equal(2, result[1]?.Id);
-            
+
             result = completeStream.ToList();
             Assert.Equal(2, result.Count);
             Assert.Equal(0, result[0]?.Id);
             Assert.NotNull(result[0].Tags);
-            Assert.Equal(new Tag[] { new ("id", "2") }, result[0].Tags);
+            Assert.Equal(new Tag[] { new("id", "2") }, result[0].Tags);
             Assert.Equal(2, result[1]?.Id);
         }
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -59,7 +59,8 @@ namespace Itinero.Routes.Paths
 
         internal void RemoveFirst()
         {
-            if (_edges.Count == 0) {
+            if (_edges.Count == 0)
+            {
                 throw new InvalidOperationException("Cannot remove first from an already empty path.");
             }
 
@@ -68,7 +69,8 @@ namespace Itinero.Routes.Paths
 
         internal void RemoveLast()
         {
-            if (_edges.Count == 0) {
+            if (_edges.Count == 0)
+            {
                 throw new InvalidOperationException("Cannot remove last from an already empty path.");
             }
 
@@ -87,17 +89,21 @@ namespace Itinero.Routes.Paths
         /// <param name="first">The vertex that should occur first.</param>
         public void Append(EdgeId edge, VertexId first)
         {
-            if (!_edgeEnumerator.MoveToEdge(edge)) {
+            if (!_edgeEnumerator.MoveToEdge(edge))
+            {
                 throw new Exception($"Edge does not exist.");
             }
 
-            if (_edgeEnumerator.Tail == first) {
+            if (_edgeEnumerator.Tail == first)
+            {
                 AppendInternal(edge, true);
             }
-            else if (_edgeEnumerator.Head == first) {
+            else if (_edgeEnumerator.Head == first)
+            {
                 AppendInternal(edge, false);
             }
-            else {
+            else
+            {
                 throw new Exception($"Cannot append edge, the given vertex is not part of it.");
             }
         }
@@ -109,17 +115,21 @@ namespace Itinero.Routes.Paths
         /// <param name="last">The vertex that should occur last.</param>
         public void Prepend(EdgeId edge, VertexId last)
         {
-            if (!_edgeEnumerator.MoveToEdge(edge)) {
+            if (!_edgeEnumerator.MoveToEdge(edge))
+            {
                 throw new Exception($"Edge does not exist.");
             }
 
-            if (_edgeEnumerator.Tail == last) {
+            if (_edgeEnumerator.Tail == last)
+            {
                 PrependInternal(edge, false);
             }
-            else if (_edgeEnumerator.Head == last) {
+            else if (_edgeEnumerator.Head == last)
+            {
                 PrependInternal(edge, true);
             }
-            else {
+            else
+            {
                 throw new Exception($"Cannot prepend edge, the given vertex is not part of it.");
             }
         }
@@ -136,16 +146,19 @@ namespace Itinero.Routes.Paths
 
         public IEnumerator<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> GetEnumerator()
         {
-            for (var i = 0; i < Count; i++) {
+            for (var i = 0; i < Count; i++)
+            {
                 var edge = _edges[i];
-                var offset1 = (ushort) 0;
+                var offset1 = (ushort)0;
                 var offset2 = ushort.MaxValue;
 
-                if (i == 0) {
+                if (i == 0)
+                {
                     offset1 = Offset1;
                 }
 
-                if (i == Count - 1) {
+                if (i == Count - 1)
+                {
                     offset2 = Offset2;
                 }
 
@@ -167,12 +180,14 @@ namespace Itinero.Routes.Paths
             // 1 edge with offsets:            [0]->10%-21543F-20%->[4]
             var builder = new StringBuilder();
 
-            if (_edges.Count > 0) { // there is a first edge.
+            if (_edges.Count > 0)
+            { // there is a first edge.
                 var first = _edges[0];
                 _edgeEnumerator.MoveToEdge(first.edge, first.forward);
                 builder.Append($"[{_edgeEnumerator.Tail}]");
                 builder.Append("->");
-                if (Offset1 != 0) {
+                if (Offset1 != 0)
+                {
                     builder.Append(OffsetPer(Offset1, true));
                     builder.Append("-");
                 }
@@ -180,9 +195,11 @@ namespace Itinero.Routes.Paths
                 builder.Append($"{first.edge}");
                 builder.Append(first.forward ? "F" : "B");
 
-                if (_edges.Count == 1) {
+                if (_edges.Count == 1)
+                {
                     if (first.forward && Offset2 != ushort.MaxValue ||
-                        !first.forward && Offset2 != 0) {
+                        !first.forward && Offset2 != 0)
+                    {
                         builder.Append("-");
                         builder.Append(OffsetPer(Offset2, first.forward));
                     }
@@ -196,7 +213,8 @@ namespace Itinero.Routes.Paths
                 builder.Append($"[{_edgeEnumerator.Head}]");
             }
 
-            for (var e = 1; e < _edges.Count - 1; e++) {
+            for (var e = 1; e < _edges.Count - 1; e++)
+            {
                 var edgeAndDirection = _edges[e];
                 _edgeEnumerator.MoveToEdge(edgeAndDirection.edge, edgeAndDirection.forward);
                 builder.Append("->");
@@ -206,12 +224,14 @@ namespace Itinero.Routes.Paths
                 builder.Append($"[{_edgeEnumerator.Head}]");
             }
 
-            if (_edges.Count > 0) { // there is a last edge.
+            if (_edges.Count > 0)
+            { // there is a last edge.
                 var last = _edges[_edges.Count - 1];
                 builder.Append("->");
                 builder.Append($"{last.edge}");
                 builder.Append(last.forward ? "F" : "B");
-                if (Offset2 != ushort.MaxValue) {
+                if (Offset2 != ushort.MaxValue)
+                {
                     builder.Append("-");
                     builder.Append(OffsetPer(Offset2, true));
                 }
@@ -227,11 +247,12 @@ namespace Itinero.Routes.Paths
             // Declare a local function.
             string OffsetPer(ushort offset, bool forward)
             {
-                if (forward) {
-                    return $"{(double) offset / ushort.MaxValue * 100:F1}%";
+                if (forward)
+                {
+                    return $"{(double)offset / ushort.MaxValue * 100:F1}%";
                 }
 
-                return $"{(double) (ushort.MaxValue - offset) / ushort.MaxValue * 100:F1}%";
+                return $"{(double)(ushort.MaxValue - offset) / ushort.MaxValue * 100:F1}%";
             }
         }
     }

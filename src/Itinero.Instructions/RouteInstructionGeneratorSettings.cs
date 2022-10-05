@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,20 +18,21 @@ public class RouteInstructionGeneratorSettings
     /// <summary>
     /// Individual instruction generators.
     /// </summary>
-    public List<IInstructionGenerator> Generators { get; private set; } = new ();
+    public List<IInstructionGenerator> Generators { get; private set; } = new();
 
     /// <summary>
     /// Text generators per language code.
     /// </summary>
-    public Dictionary<string, IInstructionToText> Languages { get; private set; } = new ();
-    
-    private static readonly Lazy<RouteInstructionGeneratorSettings> DefaultLazy = new(() => {
+    public Dictionary<string, IInstructionToText> Languages { get; private set; } = new();
+
+    private static readonly Lazy<RouteInstructionGeneratorSettings> DefaultLazy = new(() =>
+    {
         using var stream =
             typeof(IndexedRoute).Assembly.GetManifestResourceStream(
                 "Itinero.Instructions.Configuration.default.json");
         return FromStream(stream ?? throw new InvalidOperationException("Default not found"));
     });
-    
+
     /// <summary>
     /// Gets the default settings.
     /// </summary>
@@ -48,7 +49,7 @@ public class RouteInstructionGeneratorSettings
     {
         return FromStream(File.OpenRead(path), customGenerators);
     }
-    
+
     /// <summary>
     /// Parses settings from the given stream.
     /// </summary>
@@ -61,7 +62,7 @@ public class RouteInstructionGeneratorSettings
         using var streamReader = new StreamReader(stream);
         return FromJson(streamReader.ReadToEnd(), customGenerators);
     }
-    
+
     /// <summary>
     /// Parses settings from the given json string.
     /// </summary>
@@ -70,14 +71,16 @@ public class RouteInstructionGeneratorSettings
     /// <returns>The settings.</returns>
     public static RouteInstructionGeneratorSettings FromJson(string json,
         IEnumerable<IInstructionGenerator>? customGenerators = null)
-    {        
+    {
         // collect all the hardcoded generators.
         var allGenerators = new Dictionary<string, IInstructionGenerator>(AllGenerators.Generators
-            .ToDictionary(x => x.Name, x=> x));
-        
+            .ToDictionary(x => x.Name, x => x));
+
         // add custom generators.
-        if (customGenerators != null) {
-            foreach (var customGenerator in customGenerators) {
+        if (customGenerators != null)
+        {
+            foreach (var customGenerator in customGenerators)
+            {
                 allGenerators[customGenerator.Name] = customGenerator;
             }
         }
@@ -87,7 +90,8 @@ public class RouteInstructionGeneratorSettings
             ConfigurationParser.ParseRouteToInstructions(
                 JsonDocument.Parse(json).RootElement, allGenerators);
 
-        return new RouteInstructionGeneratorSettings() {
+        return new RouteInstructionGeneratorSettings()
+        {
             Generators = new List<IInstructionGenerator>(generators),
             Languages = translations
         };

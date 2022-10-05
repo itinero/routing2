@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Itinero.Profiles;
 using Itinero.Snapping;
@@ -10,8 +10,6 @@ namespace Itinero.Tests.Functional.Tests.TestCases
         public static async Task RunTestsLux(RouterDb routerDb, Profile profile)
         { // Luxembourg
             var latest = routerDb.Latest;
-            SnapPoint snap1;
-            SnapPoint snap2;
             var gare = await SnappingTest.Default.RunAsync((latest, 6.13655, 49.59883, profile),
                 "Snapping cold: luxembourg gare");
             var schneider = await SnappingTest.Default.RunAsync((latest, 6.03329, 49.63041, profile),
@@ -21,8 +19,6 @@ namespace Itinero.Tests.Functional.Tests.TestCases
         public static async Task RunTestsNl(RouterDb routerDb, Profile profile)
         {
             var latest = routerDb.Latest;
-            SnapPoint snap1;
-            SnapPoint snap2;
             var middelburg = await SnappingTest.Default.RunAsync((latest, 3.61363, 51.49967, profile),
                 "Snapping cold: middelburg");
         }
@@ -30,15 +26,13 @@ namespace Itinero.Tests.Functional.Tests.TestCases
         public static async Task RunTestsBe(RouterDb routerDb, Profile profile)
         { // Belgium
             var latest = routerDb.Latest;
-            SnapPoint snap1;
-            SnapPoint snap2;
 
-          var brugge = routerDb.Latest.Snap().Using(profile).ToAsync(
-                new (double longitude, double latitude, float? e)[2] {
+            var brugge = routerDb.Latest.Snap().Using(profile).ToAsync(
+                  new (double longitude, double latitude, float? e)[2] {
                     (3.2203820473368694, 51.215381552063945, 0f),
                     (3.2195755643836605, 51.21651607032328, 0f)
-                }
-            );
+                  }
+              );
 
             var stekene = await SnappingTest.Default.RunAsync((latest, 4.03705, 51.20637, profile),
                 "Snapping cold: stekene");
@@ -81,7 +75,8 @@ namespace Itinero.Tests.Functional.Tests.TestCases
             var stationDuinberge = await SnappingTest.Default.RunAsync((latest, 3.26358318328857, 51.3381990351222, profile),
                 "Snapping cold: duinberge");
 
-            await Parallel.ForEachAsync(Enumerable.Range(0, 10), async (_, _) => {
+            await Parallel.ForEachAsync(Enumerable.Range(0, 10), async (_, _) =>
+            {
                 await SnappingTest.Default.RunAsync((latest, 4.27392840385437, 50.884507285755205, profile),
                     "Snapping parallel: zellik1");
                 await SnappingTest.Default.RunAsync((latest, 4.275886416435242, 50.88336336674239, profile),

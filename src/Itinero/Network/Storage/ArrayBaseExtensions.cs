@@ -1,4 +1,4 @@
-using Reminiscence.Arrays;
+﻿using Reminiscence.Arrays;
 
 namespace Itinero.Network.Storage
 {

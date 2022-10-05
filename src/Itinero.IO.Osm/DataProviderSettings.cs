@@ -1,4 +1,4 @@
-using Itinero.Geo.Elevation;
+﻿using Itinero.Geo.Elevation;
 using Itinero.IO.Osm.Filters;
 
 namespace Itinero.IO.Osm

@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Types.Generators
+﻿namespace Itinero.Instructions.Types.Generators
 {
     /// <summary>
     /// Abstract representation of generator that generates individual instructions.
@@ -22,7 +22,7 @@ namespace Itinero.Instructions.Types.Generators
         /// <param name="offset"></param>
         /// <returns>The appropriate instruction; null otherwise</returns>
         BaseInstruction? Generate(IndexedRoute route, int offset);
-        
+
         /// <summary>
         /// The the name of this generator.
         /// </summary>

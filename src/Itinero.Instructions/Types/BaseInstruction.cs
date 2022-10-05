@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Types
+﻿namespace Itinero.Instructions.Types
 {
     /// <summary>
     ///     A base instruction.

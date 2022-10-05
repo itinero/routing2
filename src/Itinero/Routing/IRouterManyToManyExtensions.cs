@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -25,10 +25,12 @@ namespace Itinero.Routing
             var targets = manyToManyRouter.Targets;
 
             if (!sources.TryToUndirected(out var sourcesUndirected) ||
-                !targets.TryToUndirected(out var targetsUndirected)) {
+                !targets.TryToUndirected(out var targetsUndirected))
+            {
                 return await manyToManyRouter.CalculateAsync(sources, targets);
             }
-            else {
+            else
+            {
                 return await manyToManyRouter.CalculateAsync(sourcesUndirected, targetsUndirected, cancellationToken);
             }
         }
@@ -44,8 +46,10 @@ namespace Itinero.Routing
             var paths = await manyToManyRouter.Paths(cancellationToken);
             var end = DateTime.Now.Ticks;
             Console.WriteLine(new TimeSpan(end - start));
-            return paths.Select(x => {
-                return x.Select(y => {
+            return paths.Select(x =>
+            {
+                return x.Select(y =>
+                {
                     if (y.IsError) return y.ConvertError<Route>();
 
                     return manyToManyRouter.Settings.RouteBuilder.Build(manyToManyRouter.Network,
@@ -60,10 +64,10 @@ namespace Itinero.Routing
         /// <param name="manyToManyWeightRouter">The router.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<Result<IReadOnlyList<IReadOnlyList<double?>>>> Calculate(
+        public static Task<Result<IReadOnlyList<IReadOnlyList<double?>>>> Calculate(
             this IRouterWeights<IRouterManyToMany> manyToManyWeightRouter)
         {
-            return null;
+            return Task.FromResult(null);
 
             // var profileHandler = manyToManyWeightRouter.Router.Network.GetCostFunctionFor(
             //     manyToManyWeightRouter.Router.Settings.Profile);

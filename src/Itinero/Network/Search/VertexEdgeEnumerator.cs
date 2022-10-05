@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
@@ -26,10 +26,14 @@ namespace Itinero.Network.Search
 
         public bool MoveNext()
         {
-            if (!_firstEdge) {
-                while (_vertexEnumerator.MoveNext()) {
-                    while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current)) {
-                        if (!RoutingNetworkEdgeEnumerator.MoveNext()) {
+            if (!_firstEdge)
+            {
+                while (_vertexEnumerator.MoveNext())
+                {
+                    while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
+                    {
+                        if (!RoutingNetworkEdgeEnumerator.MoveNext())
+                        {
                             break;
                         }
 
@@ -41,21 +45,27 @@ namespace Itinero.Network.Search
                 return false;
             }
 
-            while (true) {
-                if (RoutingNetworkEdgeEnumerator.MoveNext()) {
+            while (true)
+            {
+                if (RoutingNetworkEdgeEnumerator.MoveNext())
+                {
                     return true;
                 }
 
-                if (!_vertexEnumerator.MoveNext()) {
+                if (!_vertexEnumerator.MoveNext())
+                {
                     return false;
                 }
 
-                while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current)) {
-                    if (RoutingNetworkEdgeEnumerator.MoveNext()) {
+                while (RoutingNetworkEdgeEnumerator.MoveTo(_vertexEnumerator.Current))
+                {
+                    if (RoutingNetworkEdgeEnumerator.MoveNext())
+                    {
                         return true;
                     }
 
-                    if (!_vertexEnumerator.MoveNext()) {
+                    if (!_vertexEnumerator.MoveNext())
+                    {
                         return false;
                     }
                 }

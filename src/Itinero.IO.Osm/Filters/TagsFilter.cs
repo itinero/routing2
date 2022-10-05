@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OsmSharp;
@@ -29,13 +29,13 @@ public sealed class TagsFilter
     /// The delegate is also allowed to rewrite tags of the OsmGeo-object
     /// </remarks>
     public FilterDelegate? Filter { get; set; }
-        
+
     /// <summary>
     /// A function signature to define a filter.
     /// </summary>
     /// <param name="osmGeo">The OSM object.</param>
     public delegate bool FilterDelegate(OsmGeo osmGeo);
-        
+
     /// <summary>
     /// Filters OSM tags using a complete version of OSM objects.
     /// </summary>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -18,11 +18,13 @@ namespace Itinero.IO.Osm.Tiles.Download
         /// <returns>An open stream for the content at the given url.</returns>
         public static Stream Download(string url)
         {
-            try {
+            try
+            {
                 var client = new HttpClient();
                 client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
                 var response = client.GetAsync(url);
-                if (response.Result.StatusCode == HttpStatusCode.NotFound) {
+                if (response.Result.StatusCode == HttpStatusCode.NotFound)
+                {
                     return null;
                 }
 
@@ -32,7 +34,8 @@ namespace Itinero.IO.Osm.Tiles.Download
                     $"Downloaded from {url}.");
                 return new GZipStream(stream, CompressionMode.Decompress);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.Log(nameof(DownloadHelper), TraceEventType.Warning,
                     $"Failed to download from {url}: {ex}.");
                 return null;

@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Itinero.Data.Usage;
 using Itinero.IO.Osm.Tiles.Parsers;
 using Itinero.Network;
@@ -48,47 +48,55 @@ namespace Itinero.IO.Osm.Tiles
             routerDb.UsageNotifier.AddListener(this);
         }
 
-        async Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId, CancellationToken cancellationToken)
+        Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId, CancellationToken cancellationToken)
         {
-            if (_loadedTiles.Contains(vertexId.TileId)) {
-                return;
+            if (_loadedTiles.Contains(vertexId.TileId))
+            {
+                return Task.CompletedTask;
             }
 
-            lock (_loadedTiles) {
-                if (_loadedTiles.Contains(vertexId.TileId)) {
-                    // tile was already loaded.
-                    return;
+            lock (_loadedTiles)
+            {
+                if (_loadedTiles.Contains(vertexId.TileId))
+                {
+                    return Task.CompletedTask;
                 }
 
                 // download the tile.
-                var tile = Tile.FromLocalId(vertexId.TileId, (int) _zoom);
+                var tile = Tile.FromLocalId(vertexId.TileId, (int)_zoom);
                 var url = _baseUrl + $"/{tile.Zoom}/{tile.X}/{tile.Y}";
                 using var stream = TileParser.DownloadFunc(url);
 
                 // parse the tile.
                 var parse = stream?.Parse(tile);
-                if (parse == null) {
-                    return;
+                if (parse == null)
+                {
+                    return Task.CompletedTask;
                 }
 
                 // add the data from the tile.
-                using (var routerDbInstanceWriter = network.GetWriter()) {
+                using (var routerDbInstanceWriter = network.GetWriter())
+                {
                     routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
                 }
 
                 _loadedTiles.Add(vertexId.TileId);
             }
+
+            return Task.CompletedTask;
         }
 
-        async Task IDataUseListener.BoxTouched(RoutingNetwork network,
+        Task IDataUseListener.BoxTouched(RoutingNetwork network,
             ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
                 bottomRight) box, CancellationToken cancellationToken)
         {
             // build the tile range.
-            var tileRange = new TileRange(box, (int) _zoom);
+            var tileRange = new TileRange(box, (int)_zoom);
 
-            Parallel.ForEach(tileRange, (tile) => {
-                if (_loadedTiles.Contains(tile.LocalId)) {
+            Parallel.ForEach(tileRange, (tile) =>
+            {
+                if (_loadedTiles.Contains(tile.LocalId))
+                {
                     return;
                 }
 
@@ -97,13 +105,16 @@ namespace Itinero.IO.Osm.Tiles
                 using var stream = TileParser.DownloadFunc(url);
 
                 var parse = stream?.Parse(tile);
-                if (parse == null) {
+                if (parse == null)
+                {
                     return;
                 }
 
-                lock (_loadedTiles) {
+                lock (_loadedTiles)
+                {
                     // add the data from the tile.
-                    using (var routerDbInstanceWriter = network.GetWriter()) {
+                    using (var routerDbInstanceWriter = network.GetWriter())
+                    {
                         routerDbInstanceWriter.AddOsmTile(_idMap, tile, parse);
                     }
 
@@ -111,6 +122,7 @@ namespace Itinero.IO.Osm.Tiles
                     _loadedTiles.Add(tile.LocalId);
                 }
             });
+            return Task.CompletedTask;
         }
 
         internal void WriteTo(Stream stream)
@@ -124,12 +136,14 @@ namespace Itinero.IO.Osm.Tiles
             stream.WriteVarUInt32(_zoom);
 
             // write global id map.
-            lock (_loadedTiles) {
+            lock (_loadedTiles)
+            {
                 _idMap.WriteTo(stream);
 
                 // write loaded tiles.
                 stream.WriteVarInt64(_loadedTiles.Count);
-                foreach (var tileId in _loadedTiles) {
+                foreach (var tileId in _loadedTiles)
+                {
                     stream.WriteVarUInt32(tileId);
                 }
             }
@@ -140,11 +154,13 @@ namespace Itinero.IO.Osm.Tiles
             // read & verify header.
             var header = stream.ReadWithSizeString();
             var version = stream.ReadVarInt32();
-            if (header != nameof(DataProvider)) {
+            if (header != nameof(DataProvider))
+            {
                 throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Header invalid.");
             }
 
-            if (version != 1) {
+            if (version != 1)
+            {
                 throw new InvalidDataException($"Cannot read {nameof(DataProvider)}: Version # invalid.");
             }
 
@@ -158,7 +174,8 @@ namespace Itinero.IO.Osm.Tiles
             // read loaded tiles.
             var loadedTileCount = stream.ReadVarInt64();
             var loadedTiles = new HashSet<uint>();
-            for (var t = 0; t < loadedTileCount; t++) {
+            for (var t = 0; t < loadedTileCount; t++)
+            {
                 loadedTiles.Add(stream.ReadVarUInt32());
             }
 

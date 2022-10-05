@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Types
+﻿namespace Itinero.Instructions.Types
 {
     /**
      * The follow along is more or less the 'continue along this road' instruction.
@@ -8,6 +8,7 @@ namespace Itinero.Instructions.Types
     internal class FollowAlongInstruction : BaseInstruction
     {
         public FollowAlongInstruction(IndexedRoute route, int shapeIndex, int shapeIndexEnd, int turnDegrees) : base(
-            route, shapeIndex, shapeIndexEnd, turnDegrees) { }
+            route, shapeIndex, shapeIndexEnd, turnDegrees)
+        { }
     }
 }

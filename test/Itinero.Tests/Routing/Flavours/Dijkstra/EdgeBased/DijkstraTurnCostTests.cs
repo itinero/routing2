@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Network.TurnCosts;
@@ -40,7 +40,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
                         .Select(x => (double)x.cost).Sum();
                     return (w, tcs);
                 });
-            
+
             Assert.NotNull(path);
             path.Trim();
             Assert.Equal(0, path.Offset1);
@@ -54,7 +54,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             Assert.True(enumerator.Current.forward);
             Assert.False(enumerator.MoveNext());
         }
-        
+
         [Fact]
         public async Task Dijkstra_OneToOne_OneHopsShortest_OnlyWithTurnCost_ShouldFindOneHopPath()
         {
@@ -70,9 +70,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
                 edge1 = mutable.AddEdge(vertex1, vertex2);
                 edge2 = mutable.AddEdge(vertex2, vertex3);
                 edge3 = mutable.AddEdge(vertex1, vertex3);
-                
-                mutable.AddTurnCosts(vertex2, Enumerable.Empty<(string key, string value)>(), 
-                    new [] { edge1, edge2 }, new uint[,] {{0,10},{10,0}});
+
+                mutable.AddTurnCosts(vertex2, Enumerable.Empty<(string key, string value)>(),
+                    new[] { edge1, edge2 }, new uint[,] { { 0, 10 }, { 10, 0 } });
             }
 
             var latest = routerDb.Latest;
@@ -97,7 +97,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
             Assert.Equal(edge3, enumerator.Current.edge);
             Assert.True(enumerator.Current.forward);
         }
-        
+
         [Fact]
         public async Task Dijkstra_OneToOne_TwoHopsShortest_InfiniteTurnCost_ShouldFindNoPath()
         {
@@ -112,9 +112,9 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased
 
                 edge1 = mutable.AddEdge(vertex1, vertex2);
                 edge2 = mutable.AddEdge(vertex2, vertex3);
-                
-                mutable.AddTurnCosts(vertex2, Enumerable.Empty<(string key, string value)>(), 
-                    new [] { edge1, edge2 }, new uint[,] {{0,1},{0,0}});
+
+                mutable.AddTurnCosts(vertex2, Enumerable.Empty<(string key, string value)>(),
+                    new[] { edge1, edge2 }, new uint[,] { { 0, 1 }, { 0, 0 } });
             }
 
             var latest = routerDb.Latest;

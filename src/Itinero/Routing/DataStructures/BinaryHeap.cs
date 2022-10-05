@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Itinero.Routing.DataStructures
 {
@@ -44,7 +44,8 @@ namespace Itinero.Routing.DataStructures
             _count++; // another item was added!
 
             // increase size if needed.
-            if (_latestIndex == _priorities.Length - 1) {
+            if (_latestIndex == _priorities.Length - 1)
+            {
                 // time to increase size!
                 Array.Resize(ref _heap, _heap.Length + 100);
                 Array.Resize(ref _priorities, _priorities.Length + 100);
@@ -57,10 +58,12 @@ namespace Itinero.Routing.DataStructures
             // ... and let it 'bubble' up.
             var bubbleIndex = _latestIndex;
             _latestIndex++;
-            while (bubbleIndex != 1) {
+            while (bubbleIndex != 1)
+            {
                 // bubble until the index is one.
                 var parentIdx = bubbleIndex / 2;
-                if (_priorities[bubbleIndex] < _priorities[parentIdx]) {
+                if (_priorities[bubbleIndex] < _priorities[parentIdx])
+                {
                     // the parent priority is higher; do the swap.
                     var tempPriority = _priorities[parentIdx];
                     var tempItem = _heap[parentIdx];
@@ -71,7 +74,8 @@ namespace Itinero.Routing.DataStructures
 
                     bubbleIndex = parentIdx;
                 }
-                else {
+                else
+                {
                     // the parent priority is lower or equal; the item will not bubble up more.
                     break;
                 }
@@ -100,7 +104,8 @@ namespace Itinero.Routing.DataStructures
         public T Pop(out double priority)
         {
             priority = 0;
-            if (_count <= 0) {
+            if (_count <= 0)
+            {
                 return default;
             }
 
@@ -115,38 +120,48 @@ namespace Itinero.Routing.DataStructures
             var parentItem = _heap[_latestIndex];
             _heap[1] = parentItem; // place the last element on top.
             _priorities[1] = parentPriority; // place the last element on top.
-            do {
+            do
+            {
                 var parent = swapItem;
                 var swapItemPriority = 0d;
-                if (2 * parent + 1 <= _latestIndex) {
+                if (2 * parent + 1 <= _latestIndex)
+                {
                     swapItemPriority = _priorities[2 * parent];
                     var potentialSwapItem = _priorities[2 * parent + 1];
-                    if (parentPriority >= swapItemPriority) {
+                    if (parentPriority >= swapItemPriority)
+                    {
                         swapItem = 2 * parent;
-                        if (_priorities[swapItem] >= potentialSwapItem) {
+                        if (_priorities[swapItem] >= potentialSwapItem)
+                        {
                             swapItemPriority = potentialSwapItem;
                             swapItem = 2 * parent + 1;
                         }
                     }
-                    else if (parentPriority >= potentialSwapItem) {
+                    else if (parentPriority >= potentialSwapItem)
+                    {
                         swapItemPriority = potentialSwapItem;
                         swapItem = 2 * parent + 1;
                     }
-                    else {
+                    else
+                    {
                         break;
                     }
                 }
-                else if (2 * parent <= _latestIndex) {
+                else if (2 * parent <= _latestIndex)
+                {
                     // Only one child exists
                     swapItemPriority = _priorities[2 * parent];
-                    if (parentPriority >= swapItemPriority) {
+                    if (parentPriority >= swapItemPriority)
+                    {
                         swapItem = 2 * parent;
                     }
-                    else {
+                    else
+                    {
                         break;
                     }
                 }
-                else {
+                else
+                {
                     break;
                 }
 

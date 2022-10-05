@@ -1,4 +1,4 @@
-using Itinero.Routes;
+﻿using Itinero.Routes;
 
 namespace Itinero.Instructions;
 

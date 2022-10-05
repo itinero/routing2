@@ -1,4 +1,4 @@
-using Itinero.Network.DataStructures;
+﻿using Itinero.Network.DataStructures;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Mutation

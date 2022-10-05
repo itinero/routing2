@@ -1,4 +1,4 @@
-using Itinero.Profiles;
+﻿using Itinero.Profiles;
 
 namespace Itinero.Routing.Costs.Caches;
 
@@ -19,9 +19,11 @@ internal class TurnCostFactorCache
     public void Set(uint typeId, TurnCostFactor factor)
     {
         var cache = _cache;
-        if (cache.Length <= typeId) {
+        if (cache.Length <= typeId)
+        {
             var newSize = _cache.Length + 1024;
-            while (newSize <= typeId) {
+            while (newSize <= typeId)
+            {
                 newSize += 1024;
             }
 

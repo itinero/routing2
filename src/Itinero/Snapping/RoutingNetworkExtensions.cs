@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;

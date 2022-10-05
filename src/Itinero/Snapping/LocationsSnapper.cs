@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -40,7 +40,7 @@ internal class LocationsSnapper : ILocationsSnapper
     /// The offset in meter for the bounding box to check for potential edges.
     /// </summary>
     public double OffsetInMeter { get; set; } = 100;
-        
+
     /// <summary>
     /// The maximum offset in meter for the bounding box to check for potential edges. This is used when there is nothing found and is different from OffsetInMeter.
     /// </summary>
@@ -99,7 +99,7 @@ internal class LocationsSnapper : ILocationsSnapper
             var start = DateTime.Now.Ticks;
             // break when cancelled.
             if (cancellationToken.IsCancellationRequested) break;
-            
+
             // calculate one box for all locations.
             var box = location.BoxAround(OffsetInMeter);
 
@@ -119,10 +119,10 @@ internal class LocationsSnapper : ILocationsSnapper
                 {
                     // use bigger box.
                     box = location.BoxAround(OffsetInMeterMax);
-                    
+
                     // make sure data is loaded.
                     await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box, cancellationToken);
-                    
+
                     // snap to closest edge.
                     snapPoint = _snapper.RoutingNetwork.SnapInBox(box, acceptableFunc);
                     if (snapPoint.EdgeId != EdgeId.Empty)

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Attributes;
 
@@ -15,7 +15,8 @@ internal class ProfileEdgeTypeSetMinimizer
         params string[] defaultKeys)
     {
         _profiles = profiles;
-        for (var i = 0; i < defaultKeys.Length; i++) {
+        for (var i = 0; i < defaultKeys.Length; i++)
+        {
             var key = defaultKeys[i];
             _probablyImportant[key] = 1 + defaultKeys.Length - i;
         }
@@ -39,13 +40,15 @@ internal class ProfileEdgeTypeSetMinimizer
     public IEnumerable<(string key, string value)> MinimizeAttributes(
         IEnumerable<(string key, string value)> attributes)
     {
-        if (attributes.Count() <= 1) {
+        if (attributes.Count() <= 1)
+        {
             // Nothing to cull here
             return attributes;
         }
 
         var attributesHash = attributes.GetHash();
-        if (_cache.TryGet(attributesHash, out var prunedSet)) {
+        if (_cache.TryGet(attributesHash, out var prunedSet))
+        {
             // The current attributes are already known!
             // We simply return the cached set
             return prunedSet.attributes;
@@ -66,32 +69,38 @@ internal class ProfileEdgeTypeSetMinimizer
         long lastFactorHash = 0;
 
         // We add the important keys one by one, until we have the same hash
-        foreach (var (importantKey, _) in importantKeys) {
+        foreach (var (importantKey, _) in importantKeys)
+        {
             attributes.TryGetValue(importantKey, out var value);
 
             pruned.Add((importantKey, value));
             prunedAttributesHash = (importantKey, value).GetDiffHash(prunedAttributesHash);
 
-            if (_cache.TryGet(prunedAttributesHash, out var fromCache)) {
+            if (_cache.TryGet(prunedAttributesHash, out var fromCache))
+            {
                 lastFactorHash = fromCache.edgeFactorHash;
                 // We've already seen this hash! Lets inspect the previously calculated values...
-                if (fromCache.edgeFactorHash == targetHash) {
+                if (fromCache.edgeFactorHash == targetHash)
+                {
                     // Hooray! We have found the correct value without doing a thing
                     this.AddImportance(fromCache.attributes);
                     return fromCache.attributes;
                 }
             }
-            else {
+            else
+            {
                 long currentFactorHash = this.GetEdgeFactorHash(pruned);
                 _cache.Add(prunedAttributesHash,
                     (new HashSet<(string key, string value)>(pruned), currentFactorHash));
-                if (currentFactorHash == targetHash) {
+                if (currentFactorHash == targetHash)
+                {
                     // We have found our smaller configuration!
                     this.AddImportance(pruned);
                     return pruned;
                 }
 
-                if (lastFactorHash == currentFactorHash) {
+                if (lastFactorHash == currentFactorHash)
+                {
                     // Hmm, this last key didn't change anything... We negatively affect this value in order to prevent it from accidentely floating up
                     this.AddNotImportant(importantKey);
                 }
@@ -107,12 +116,15 @@ internal class ProfileEdgeTypeSetMinimizer
     private void AddImportance(IEnumerable<(string key, string value)> attributes)
     {
         var usedKeys = new HashSet<string>();
-        foreach (var (key, _) in attributes) {
+        foreach (var (key, _) in attributes)
+        {
             usedKeys.Add(key);
-            if (!_probablyImportant.ContainsKey(key)) {
+            if (!_probablyImportant.ContainsKey(key))
+            {
                 _probablyImportant[key] = 1;
             }
-            else {
+            else
+            {
                 _probablyImportant[key]++;
             }
         }
@@ -120,17 +132,20 @@ internal class ProfileEdgeTypeSetMinimizer
 
     private void AddNotImportant(string key)
     {
-        if (!_probablyImportant.ContainsKey(key)) {
+        if (!_probablyImportant.ContainsKey(key))
+        {
             _probablyImportant[key] = -1;
         }
-        else {
+        else
+        {
             _probablyImportant[key]--;
         }
     }
 
     private int ImportanceOf(string key)
     {
-        if (_probablyImportant.TryGetValue(key, out var v)) {
+        if (_probablyImportant.TryGetValue(key, out var v))
+        {
             return v;
         }
 
@@ -144,7 +159,8 @@ internal class ProfileEdgeTypeSetMinimizer
     {
         var hash = 13.GetHashCode();
 
-        foreach (var profile in _profiles) {
+        foreach (var profile in _profiles)
+        {
             var factor = profile.Factor(attributes);
             hash ^= factor.GetHashCode();
         }

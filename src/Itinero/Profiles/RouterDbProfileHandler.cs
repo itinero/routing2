@@ -1,4 +1,4 @@
-namespace Itinero.Profiles
+﻿namespace Itinero.Profiles
 {
     public abstract class RouterDbProfileHandler
     {

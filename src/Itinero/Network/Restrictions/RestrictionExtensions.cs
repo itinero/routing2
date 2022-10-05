@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Enumerators.Edges;
 
@@ -21,7 +21,8 @@ namespace Itinero.Network.Restrictions
             where T : IEdgeEnumerable
         {
             var firstPart = new List<(EdgeId edge, bool forward)>(restrictedSequence);
-            if (firstPart.Count < 2) {
+            if (firstPart.Count < 2)
+            {
                 yield break; // no inverse possible.
             }
 
@@ -32,15 +33,18 @@ namespace Itinero.Network.Restrictions
             var secondToLast = firstPart[firstPart.Count - 2];
             mutableNetworkEdgeEnumerator.MoveToEdge(secondToLast.edge, secondToLast.forward);
             mutableNetworkEdgeEnumerator.MoveTo(mutableNetworkEdgeEnumerator.Head);
-            while (mutableNetworkEdgeEnumerator.MoveNext()) {
+            while (mutableNetworkEdgeEnumerator.MoveNext())
+            {
                 var id = mutableNetworkEdgeEnumerator.EdgeId;
                 if (id == secondToLast.edge &&
-                    mutableNetworkEdgeEnumerator.Forward != secondToLast.forward) {
+                    mutableNetworkEdgeEnumerator.Forward != secondToLast.forward)
+                {
                     continue;
                 }
 
                 if (id == last.edge &&
-                    mutableNetworkEdgeEnumerator.Forward == last.forward) {
+                    mutableNetworkEdgeEnumerator.Forward == last.forward)
+                {
                     continue;
                 }
 

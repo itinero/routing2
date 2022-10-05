@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Snapping;
 using Xunit;
@@ -13,7 +13,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
-            using (var writer = routerDb.GetMutableNetwork()) {
+            using (var writer = routerDb.GetMutableNetwork())
+            {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
@@ -41,7 +42,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
+            using (var writer = routerDb.GetMutableNetwork())
+            {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
                 vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -74,7 +76,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3, vertex4;
-            using (var writer = routerDb.GetMutableNetwork()) {
+            using (var writer = routerDb.GetMutableNetwork())
+            {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
                 vertex3 = writer.AddVertex(4.792141914367670, 51.26297560389227);
@@ -112,7 +115,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2, edge3;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
+            using (var writer = routerDb.GetMutableNetwork())
+            {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
                 vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -126,8 +130,10 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
                 await latest.Snap().ToAsync(vertex1, edge3),
                 await latest.Snap().ToAsync(vertex3, edge3),
-                (e, ep) => {
-                    if (e.EdgeId == edge3) {
+                (e, ep) =>
+                {
+                    if (e.EdgeId == edge3)
+                    {
                         return (10, 0);
                     }
 
@@ -166,7 +172,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge;
             VertexId vertex1, vertex2;
-            using (var writer = routerDb.GetMutableNetwork()) {
+            using (var writer = routerDb.GetMutableNetwork())
+            {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
 
@@ -181,7 +188,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var snap5 = new SnapPoint(edge, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
             var paths = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-                snap1, new[] {snap2, snap3, snap4, snap5},
+                snap1, new[] { snap2, snap3, snap4, snap5 },
                 (e, ep) => (1, 0));
             Assert.NotNull(paths);
             Assert.Equal(4, paths.Length);
@@ -229,7 +236,8 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var routerDb = new RouterDb();
             EdgeId edge1, edge2;
             VertexId vertex1, vertex2, vertex3;
-            using (var writer = routerDb.GetMutableNetwork()) {
+            using (var writer = routerDb.GetMutableNetwork())
+            {
                 vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
                 vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
                 vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -246,7 +254,7 @@ namespace Itinero.Tests.Routing.Flavours.Dijkstra
             var snap5 = new SnapPoint(edge2, ushort.MaxValue / 4 + ushort.MaxValue / 2);
 
             var paths = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-                snap1, new[] {snap2, snap3, snap4, snap5},
+                snap1, new[] { snap2, snap3, snap4, snap5 },
                 (e, ep) => (1, 0));
             Assert.NotNull(paths);
             Assert.Equal(4, paths.Length);

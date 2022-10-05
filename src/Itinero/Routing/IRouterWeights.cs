@@ -1,4 +1,4 @@
-namespace Itinero.Routing
+﻿namespace Itinero.Routing
 {
     /// <summary>
     /// Abstract representation of a router configured for weight calculations.

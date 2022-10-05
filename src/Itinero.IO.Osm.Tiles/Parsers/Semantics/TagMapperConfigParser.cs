@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using Itinero.Logging;
@@ -12,27 +12,34 @@ namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
         {
             var mappings = new Dictionary<string, TagMapperConfig>();
 
-            using (var textReader = new StreamReader(stream)) {
+            using (var textReader = new StreamReader(stream))
+            {
                 var parsed = JArray.Parse(textReader.ReadToEnd());
 
-                foreach (var item in parsed) {
-                    try {
+                foreach (var item in parsed)
+                {
+                    try
+                    {
                         var osmKeyValue = item["osm_key"];
-                        if (osmKeyValue == null) {
+                        if (osmKeyValue == null)
+                        {
                             throw new Exception("osm_key not found.");
                         }
 
-                        if (osmKeyValue.Type != JTokenType.String) {
+                        if (osmKeyValue.Type != JTokenType.String)
+                        {
                             throw new Exception("osm_key not a string.");
                         }
 
                         var osmKey = osmKeyValue.Value<string>();
                         var predicateValue = item["predicate"];
-                        if (predicateValue == null) {
+                        if (predicateValue == null)
+                        {
                             throw new Exception("predicate not found.");
                         }
 
-                        if (predicateValue.Type != JTokenType.String) {
+                        if (predicateValue.Type != JTokenType.String)
+                        {
                             throw new Exception("predicate not a string.");
                         }
 
@@ -40,26 +47,32 @@ namespace Itinero.IO.Osm.Tiles.Parsers.Semantics
 
                         var map = item["mapping"];
                         Dictionary<string, string> mapping = null;
-                        if (map != null) {
+                        if (map != null)
+                        {
                             mapping = new Dictionary<string, string>();
-                            foreach (var child in map.Children()) {
-                                if (!(child is JProperty property)) {
+                            foreach (var child in map.Children())
+                            {
+                                if (!(child is JProperty property))
+                                {
                                     continue;
                                 }
 
-                                if (property.Value is JValue val) {
+                                if (property.Value is JValue val)
+                                {
                                     mapping[val.Value.ToInvariantString()] = property.Name;
                                 }
                             }
                         }
 
-                        mappings[predicate] = new TagMapperConfig {
+                        mappings[predicate] = new TagMapperConfig
+                        {
                             ReverseMapping = mapping,
                             OsmKey = osmKey,
                             Predicate = predicate
                         };
                     }
-                    catch (Exception ex) {
+                    catch (Exception ex)
+                    {
                         Logger.Log($"{nameof(TagMapperConfigParser)}.{nameof(Parse)}", TraceEventType.Error,
                             "Could not fully parse mapping configuration {0}", ex);
                         throw;

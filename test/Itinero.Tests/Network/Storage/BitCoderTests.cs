@@ -1,4 +1,4 @@
-using Itinero.Network.Storage;
+﻿using Itinero.Network.Storage;
 using Reminiscence.Arrays;
 using Xunit;
 
@@ -43,7 +43,7 @@ namespace Itinero.Tests.Network.Storage
 
             Assert.Equal(1, data.SetDynamicUInt32(0, 0));
             Assert.Equal(1, data.GetDynamicUInt32(0, out var result));
-            Assert.Equal((uint) 0, result);
+            Assert.Equal((uint)0, result);
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Itinero.Tests.Network.Storage
 
             Assert.Equal(1, data.SetDynamicUInt32(0, 46));
             Assert.Equal(1, data.GetDynamicUInt32(0, out var result));
-            Assert.Equal((uint) 46, result);
+            Assert.Equal((uint)46, result);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Itinero.Tests.Network.Storage
 
             Assert.Equal(2, data.SetDynamicUInt32(0, 4646));
             Assert.Equal(2, data.GetDynamicUInt32(0, out var result));
-            Assert.Equal((uint) 4646, result);
+            Assert.Equal((uint)4646, result);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Itinero.Tests.Network.Storage
 
             Assert.Equal(3, data.SetDynamicUInt32(0, 464646));
             Assert.Equal(3, data.GetDynamicUInt32(0, out var result));
-            Assert.Equal((uint) 464646, result);
+            Assert.Equal((uint)464646, result);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Itinero.Tests.Network.Storage
 
             Assert.Equal(4, data.SetDynamicUInt32(0, 46464646));
             Assert.Equal(4, data.GetDynamicUInt32(0, out var result));
-            Assert.Equal((uint) 46464646, result);
+            Assert.Equal((uint)46464646, result);
         }
 
         [Fact]
@@ -101,9 +101,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(5);
 
-            Assert.Equal(1, data.SetDynamicUInt64(0, (ulong) 0));
+            Assert.Equal(1, data.SetDynamicUInt64(0, (ulong)0));
             Assert.Equal(1, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 0, result);
+            Assert.Equal((ulong)0, result);
         }
 
         [Fact]
@@ -111,9 +111,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(5);
 
-            Assert.Equal(1, data.SetDynamicUInt64(0, (ulong) 46));
+            Assert.Equal(1, data.SetDynamicUInt64(0, (ulong)46));
             Assert.Equal(1, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 46, result);
+            Assert.Equal((ulong)46, result);
         }
 
         [Fact]
@@ -121,9 +121,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(5);
 
-            Assert.Equal(2, data.SetDynamicUInt64(0, (ulong) 4646));
+            Assert.Equal(2, data.SetDynamicUInt64(0, (ulong)4646));
             Assert.Equal(2, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 4646, result);
+            Assert.Equal((ulong)4646, result);
         }
 
         [Fact]
@@ -131,9 +131,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(5);
 
-            Assert.Equal(3, data.SetDynamicUInt64(0, (ulong) 464646));
+            Assert.Equal(3, data.SetDynamicUInt64(0, (ulong)464646));
             Assert.Equal(3, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 464646, result);
+            Assert.Equal((ulong)464646, result);
         }
 
         [Fact]
@@ -141,9 +141,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(5);
 
-            Assert.Equal(4, data.SetDynamicUInt64(0, (ulong) 46464646));
+            Assert.Equal(4, data.SetDynamicUInt64(0, (ulong)46464646));
             Assert.Equal(4, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 46464646, result);
+            Assert.Equal((ulong)46464646, result);
         }
 
         [Fact]
@@ -151,9 +151,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(5);
 
-            Assert.Equal(5, data.SetDynamicUInt64(0, (ulong) 4646464646));
+            Assert.Equal(5, data.SetDynamicUInt64(0, (ulong)4646464646));
             Assert.Equal(5, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 4646464646, result);
+            Assert.Equal((ulong)4646464646, result);
         }
 
         [Fact]
@@ -161,9 +161,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(6);
 
-            Assert.Equal(6, data.SetDynamicUInt64(0, (ulong) 464646464646));
+            Assert.Equal(6, data.SetDynamicUInt64(0, (ulong)464646464646));
             Assert.Equal(6, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 464646464646, result);
+            Assert.Equal((ulong)464646464646, result);
         }
 
         [Fact]
@@ -171,9 +171,9 @@ namespace Itinero.Tests.Network.Storage
         {
             var data = new MemoryArray<byte>(7);
 
-            Assert.Equal(7, data.SetDynamicUInt64(0, (ulong) 46464646464646));
+            Assert.Equal(7, data.SetDynamicUInt64(0, (ulong)46464646464646));
             Assert.Equal(7, data.GetDynamicUInt64(0, out var result));
-            Assert.Equal((ulong) 46464646464646, result);
+            Assert.Equal((ulong)46464646464646, result);
         }
 
         [Fact]
@@ -203,7 +203,7 @@ namespace Itinero.Tests.Network.Storage
 
             Assert.Equal(1, data.SetDynamicUInt32Nullable(0, 0));
             Assert.Equal(1, data.GetDynamicUInt32Nullable(0, out var result));
-            Assert.Equal((uint?) 0, result);
+            Assert.Equal((uint?)0, result);
         }
     }
 }

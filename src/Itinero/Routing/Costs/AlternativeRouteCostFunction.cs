@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
 namespace Itinero.Routing.Costs
 {
-    internal class AlternativeRouteCostFunction: ICostFunction
+    internal class AlternativeRouteCostFunction : ICostFunction
     {
         private readonly ICostFunction _originalCostFunction;
         private readonly HashSet<EdgeId> _moreCostlyEdges;
@@ -23,11 +23,12 @@ namespace Itinero.Routing.Costs
             _moreCostlyEdges = moreCostlyEdges;
             _alreadyVisitedCostFactor = alreadyVisitedCostFactor;
         }
-        
+
         public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
             IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
         {
-            if (_moreCostlyEdges.Contains(edgeEnumerator.EdgeId)) {
+            if (_moreCostlyEdges.Contains(edgeEnumerator.EdgeId))
+            {
                 var (canAccess, canStop, cost, turnCost) = _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);
                 return (canAccess, canStop, cost * _alreadyVisitedCostFactor, turnCost);
             }

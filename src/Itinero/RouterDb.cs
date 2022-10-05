@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -48,7 +48,8 @@ namespace Itinero
         {
             // check version #.
             var version = stream.ReadVarInt32();
-            if (version != 1) {
+            if (version != 1)
+            {
                 throw new InvalidDataException("Unknown version #.");
             }
 
@@ -58,7 +59,7 @@ namespace Itinero
             // read edge type map data.
             _edgeTypeIndex = AttributeSetIndex.ReadFrom(stream);
             _turnCostTypeIndex = AttributeSetIndex.ReadFrom(stream);
-            
+
             // read attributes.
             this.Meta = new List<(string key, string value)>(this.ReadAttributesFrom(stream));
 

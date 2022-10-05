@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Itinero.IO;
 
 namespace Itinero.Network.Tiles
@@ -23,7 +23,7 @@ namespace Itinero.Network.Tiles
 
             // write shapes.
             this.WriteGeoTo(stream);
-            
+
             // write turn costs.
             this.WriteTurnCostsTo(stream);
         }
@@ -31,7 +31,8 @@ namespace Itinero.Network.Tiles
         public static NetworkTile ReadFrom(Stream stream)
         {
             var version = stream.ReadVarInt32();
-            if (version != 1) {
+            if (version != 1)
+            {
                 throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
             }
 
@@ -51,7 +52,7 @@ namespace Itinero.Network.Tiles
 
             // read shapes.
             graphTile.ReadGeoFrom(stream);
-            
+
             // read turn costs.
             graphTile.ReadTurnCostsFrom(stream);
 

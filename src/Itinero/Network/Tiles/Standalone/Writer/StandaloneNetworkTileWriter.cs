@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo;
 // ReSharper disable PossibleMultipleEnumeration
@@ -15,7 +15,7 @@ public class StandaloneNetworkTileWriter
     private readonly (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) _turnCostTypeMap;
 
     internal StandaloneNetworkTileWriter(StandaloneNetworkTile tile, int zoom,
-        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap, 
+        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap,
         (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) turnCostTypeMap)
     {
         _tile = tile;
@@ -37,7 +37,7 @@ public class StandaloneNetworkTileWriter
         edge.MoveTo(edgeId, forward);
         return edge;
     }
-    
+
     /// <summary>
     /// Gets the edge type map.
     /// </summary>
@@ -60,7 +60,7 @@ public class StandaloneNetworkTileWriter
     /// Gets the tile id.
     /// </summary>
     public uint TileId => _tile.TileId;
-    
+
     /// <summary>
     /// Adds a new vertex.
     /// </summary>
@@ -98,18 +98,20 @@ public class StandaloneNetworkTileWriter
         if (_tile.TileId != vertex2.TileId) throw new ArgumentException("Vertex not in tile");
 
         // get the edge length in centimeters.
-        if (!_tile.NetworkTile.TryGetVertex(vertex1, out var longitude, out var latitude, out var e)) {
+        if (!_tile.NetworkTile.TryGetVertex(vertex1, out var longitude, out var latitude, out var e))
+        {
             throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex1} not found.");
         }
 
         var vertex1Location = (longitude, latitude, e);
-        if (!_tile.NetworkTile.TryGetVertex(vertex2, out longitude, out latitude, out e)) {
+        if (!_tile.NetworkTile.TryGetVertex(vertex2, out longitude, out latitude, out e))
+        {
             throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex2} not found.");
         }
 
         var vertex2Location = (longitude, latitude, e);
 
-        var length = (uint) (vertex1Location.DistanceEstimateInMeterShape(
+        var length = (uint)(vertex1Location.DistanceEstimateInMeterShape(
             vertex2Location, shape) * 100);
 
         return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
@@ -125,7 +127,7 @@ public class StandaloneNetworkTileWriter
         _tile.AddGlobalIdFor(boundaryEdgeId, globalEdgeId);
     }
 
-    
+
     /// <summary>
     /// Adds turn costs.
     /// </summary>
@@ -138,7 +140,7 @@ public class StandaloneNetworkTileWriter
         EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
-        
+
         // get the turn cost type id.
         var turnCostTypeId = _turnCostTypeMap.func(attributes);
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Instructions;
 using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
@@ -61,7 +61,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void GenerateBend_LeftBend_GetsBend()
         {
-            var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
+            var bend = (FollowBendInstruction)new FollowBendGenerator().Generate(
                 new IndexedRoute(Rabattestraat), 8
             );
             Assert.NotNull(bend);
@@ -73,7 +73,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void GenerateBend_RightBend_GetsBend()
         {
-            var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
+            var bend = (FollowBendInstruction)new FollowBendGenerator().Generate(
                 new IndexedRoute(Rabattestraat), 1
             );
             Assert.NotNull(bend);
@@ -85,7 +85,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void GenerateBend_RightBendWithOuter_GetsBend()
         {
-            var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
+            var bend = (FollowBendInstruction)new FollowBendGenerator().Generate(
                 new IndexedRoute(RabattestraatWithOuterBranch), 1
             );
             Assert.NotNull(bend);
@@ -97,7 +97,7 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void GenerateBend_RightBendWithInner_GetsBend()
         {
-            var bend = (FollowBendInstruction) new FollowBendGenerator().Generate(
+            var bend = (FollowBendInstruction)new FollowBendGenerator().Generate(
                 new IndexedRoute(RabattestraatWithInnerBranch), 1
             );
             // We follow the bend, but only until we reach the inner branch

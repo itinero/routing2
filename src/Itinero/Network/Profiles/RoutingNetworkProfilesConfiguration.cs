@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Itinero.IO;
@@ -35,7 +35,8 @@ namespace Itinero.Network.Profiles
 
         public bool AddProfile(Profile profile)
         {
-            if (_profiles.ContainsKey(profile.Name)) {
+            if (_profiles.ContainsKey(profile.Name))
+            {
                 return false;
             }
 
@@ -46,7 +47,8 @@ namespace Itinero.Network.Profiles
         internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache)
         {
             cache = null;
-            if (!_profiles.TryGetValue(profile.Name, out var profileValue)) {
+            if (!_profiles.TryGetValue(profile.Name, out var profileValue))
+            {
                 return false;
             }
 
@@ -65,7 +67,8 @@ namespace Itinero.Network.Profiles
             stream.WriteVarInt32(_profiles.Count);
 
             // write profiles.
-            foreach (var (profile, _) in _profiles.Values) {
+            foreach (var (profile, _) in _profiles.Values)
+            {
                 stream.WriteProfile(profile, profileSerializer);
             }
         }
@@ -75,7 +78,8 @@ namespace Itinero.Network.Profiles
         {
             // verify version #.
             var version = stream.ReadVarInt32();
-            if (version != 1) {
+            if (version != 1)
+            {
                 throw new InvalidDataException("Invalid version #.");
             }
 
@@ -84,7 +88,8 @@ namespace Itinero.Network.Profiles
 
             // write profiles.
             var profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache)>(profileCount);
-            for (var p = 0; p < profileCount; p++) {
+            for (var p = 0; p < profileCount; p++)
+            {
                 var profile = profileSerializer.ReadFrom(stream);
                 profiles[profile.Name] = (profile, new EdgeFactorCache());
             }

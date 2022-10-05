@@ -1,4 +1,4 @@
-using Itinero.Routes;
+﻿using Itinero.Routes;
 
 namespace Itinero.Instructions.Types;
 
@@ -15,12 +15,15 @@ public static class RouteExtensions
     /// <returns>The value if any, null otherwise.</returns>
     public static string? GetAttributeOrNull(this Route.Meta? meta, string key)
     {
-        if (meta == null) {
+        if (meta == null)
+        {
             return default;
         }
 
-        foreach (var (k, value) in meta.Attributes) {
-            if (k.Equals(key)) {
+        foreach (var (k, value) in meta.Attributes)
+        {
+            if (k.Equals(key))
+            {
                 return value;
             }
         }

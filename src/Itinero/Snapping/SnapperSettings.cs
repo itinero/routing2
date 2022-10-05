@@ -1,4 +1,4 @@
-namespace Itinero.Snapping
+﻿namespace Itinero.Snapping
 {
     /// <summary>
     /// A settings objects for snapping options.
@@ -19,7 +19,7 @@ namespace Itinero.Snapping
         /// The offset in meter for the bounding box to check for potential edges.
         /// </summary>
         public double OffsetInMeter { get; set; } = 100;
-        
+
         /// <summary>
         /// The maximum offset in meter for the bounding box to check for potential edges. This is used when there is nothing found and is different from OffsetInMeter.
         /// </summary>

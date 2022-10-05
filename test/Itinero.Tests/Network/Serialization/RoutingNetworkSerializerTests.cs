@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Serialization;
@@ -26,7 +26,8 @@ namespace Itinero.Tests.Network.Serialization
         {
             var expected = new RoutingNetwork(new RouterDb());
             VertexId vertex;
-            using (var writer = expected.GetWriter()) {
+            using (var writer = expected.GetWriter())
+            {
                 vertex = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             }
 
@@ -46,7 +47,8 @@ namespace Itinero.Tests.Network.Serialization
             var expected = new RoutingNetwork(new RouterDb());
             VertexId vertex1, vertex2;
             EdgeId edge;
-            using (var writer = expected.GetWriter()) {
+            using (var writer = expected.GetWriter())
+            {
                 vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
                 vertex2 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
 

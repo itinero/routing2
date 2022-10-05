@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Itinero.IO;
 using Itinero.Network.Attributes;

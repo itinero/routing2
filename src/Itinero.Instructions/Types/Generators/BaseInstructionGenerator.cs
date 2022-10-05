@@ -1,12 +1,13 @@
-namespace Itinero.Instructions.Types.Generators
+﻿namespace Itinero.Instructions.Types.Generators
 {
     internal class BaseInstructionGenerator : IInstructionGenerator
     {
         public string Name { get; } = "base";
-        
+
         public BaseInstruction Generate(IndexedRoute route, int offset)
         {
-            if (offset + 1 >= route.Last) {
+            if (offset + 1 >= route.Last)
+            {
                 // The current offset is already the last index of the shape; this is the endpoint
                 return null;
             }

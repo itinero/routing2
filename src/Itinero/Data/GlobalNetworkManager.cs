@@ -1,4 +1,4 @@
-namespace Itinero.Data;
+﻿namespace Itinero.Data;
 
 /// <summary>
 /// A manager to manage mapping or vertex and edge ids and turn restrictions.
@@ -13,12 +13,12 @@ public class GlobalNetworkManager
         this.VertexIdSet = new GlobalVertexIdSet();
         this.EdgeIdSet = new GlobalEdgeIdSet();
     }
-    
+
     /// <summary>
     /// The global vertex id set.
     /// </summary>
     public GlobalVertexIdSet VertexIdSet { get; }
-    
+
     /// <summary>
     /// The global edge id set.
     /// </summary>

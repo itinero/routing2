@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routes;
@@ -18,13 +18,14 @@ namespace Itinero.Tests.Functional.Tests
         {
             var (routerDb, source, targets, profile) = input;
 
-            var results = await routerDb.Route(new RoutingSettings {Profile = profile})
+            var results = await routerDb.Route(new RoutingSettings { Profile = profile })
                 .From(source)
                 .To(targets)
                 .Calculate();
 
             var routes = new Route[targets.Length];
-            for (var r = 0; r < routes.Length; r++) {
+            for (var r = 0; r < routes.Length; r++)
+            {
                 routes[r] = results[r].Value;
             }
 

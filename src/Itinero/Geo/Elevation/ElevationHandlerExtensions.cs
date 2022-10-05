@@ -1,4 +1,4 @@
-namespace Itinero.Geo.Elevation
+﻿namespace Itinero.Geo.Elevation
 {
     /// <summary>
     /// Contains extension methods to add/handle elevation.
@@ -34,7 +34,8 @@ namespace Itinero.Geo.Elevation
             this (double lon, double lat, float? e) coordinate,
             float? estimate = null, IElevationHandler? elevationHandler = null)
         {
-            if (coordinate.e != null) {
+            if (coordinate.e != null)
+            {
                 return coordinate;
             }
 

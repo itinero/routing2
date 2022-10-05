@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
@@ -30,17 +30,20 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
 
     internal NetworkTile? GetTileForRead(uint localTileId)
     {
-        if (_tiles.Length <= localTileId) {
+        if (_tiles.Length <= localTileId)
+        {
             return null;
         }
 
         var tile = _tiles[localTileId];
-        if (tile == null) {
+        if (tile == null)
+        {
             return null;
         }
 
         var edgeTypeMap = RouterDb.GetEdgeTypeMap();
-        if (tile.EdgeTypeMapId != edgeTypeMap.id) {
+        if (tile.EdgeTypeMapId != edgeTypeMap.id)
+        {
             // tile.EdgeTypeMapId indicates the version of the used edgeTypeMap
             // If the id is different, the loaded tile needs updating; e.g. because a cost function has been changed
             tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
@@ -53,8 +56,9 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
     internal IEnumerator<uint> GetTileEnumerator()
     {
         using var enumerator = _tiles.GetEnumerator();
-        while (enumerator.MoveNext()) {
-            yield return (uint) enumerator.Current.i;
+        while (enumerator.MoveNext())
+        {
+            yield return (uint)enumerator.Current.i;
         }
     }
 
@@ -87,7 +91,8 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
 
         // get tile.
         var tile = GetTileForRead(localTileId);
-        if (tile == null) {
+        if (tile == null)
+        {
             longitude = default;
             latitude = default;
             elevation = null;
@@ -106,7 +111,7 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
     {
         return new RoutingNetworkEdgeEnumerator(this);
     }
-    
+
     RoutingNetworkEdgeEnumerator IRoutingNetworkWritable.GetEdgeEnumerator()
     {
         return this.GetEdgeEnumerator();
@@ -126,8 +131,10 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
 
     internal RoutingNetworkMutator GetAsMutable()
     {
-        lock (_mutatorSync) {
-            if (_graphMutator != null) {
+        lock (_mutatorSync)
+        {
+            if (_graphMutator != null)
+            {
                 throw new InvalidOperationException($"Only one mutable graph is allowed at one time.");
             }
 
@@ -157,8 +164,10 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
     /// <returns>The writer.</returns>
     public RoutingNetworkWriter GetWriter()
     {
-        lock (_writeSync) {
-            if (_writer != null) {
+        lock (_writeSync)
+        {
+            if (_writer != null)
+            {
                 throw new InvalidOperationException($"Only one writer is allowed at one time." +
                                                     $"Check {nameof(HasWriter)} to check for a current writer.");
             }
@@ -181,12 +190,15 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
 
         var edgeTypeMap = RouterDb.GetEdgeTypeMap();
         var tile = _tiles[localTileId];
-        if (tile != null) {
-            if (tile.EdgeTypeMapId != edgeTypeMap.id) {
+        if (tile != null)
+        {
+            if (tile.EdgeTypeMapId != edgeTypeMap.id)
+            {
                 tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
                 _tiles[localTileId] = tile;
             }
-            else {
+            else
+            {
                 // check if there is a mutable graph.
                 CloneTileIfNeededForMutator(tile);
             }
@@ -209,18 +221,18 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
     public bool HasTile(uint localTileId)
     {
         if (localTileId >= _tiles.Length) return false;
-            
+
         return _tiles[localTileId] != null;
     }
-        
+
     void IRoutingNetworkWritable.SetTile(NetworkTile tile)
     {
         var edgeTypeMap = RouterDb.GetEdgeTypeMap();
         if (tile.EdgeTypeMapId != edgeTypeMap.id) throw new ArgumentException("Cannot add an entire tile without a matching edge type map");
-            
+
         // ensure minimum size.
         _tiles.EnsureMinimumSize(tile.TileId);
-            
+
         // set tile if not yet there.
         var existingTile = _tiles[tile.TileId];
         if (existingTile != null) throw new ArgumentException("Cannot overwrite a tile");
@@ -240,7 +252,8 @@ public class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingN
         // data from the write could bleed into the mutator creating an invalid state.
         // so **we have to clone tiles before writing to them and give them to the mutator**
         var mutableGraph = _graphMutator;
-        if (mutableGraph != null && !mutableGraph.HasTile(tile.TileId)) {
+        if (mutableGraph != null && !mutableGraph.HasTile(tile.TileId))
+        {
             mutableGraph.SetTile(tile.Clone());
         }
     }

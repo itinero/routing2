@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo.Elevation;
@@ -20,8 +20,8 @@ public class RouterDbStreamTarget : OsmStreamTarget
     private readonly Dictionary<long, Way?> _restrictionMembers = new();
     private readonly Dictionary<long, (double longitude, double latitude)> _nodeLocations = new();
     private readonly HashSet<long> _usedNodes = new();
-    private readonly List<OsmTurnRestriction> _osmTurnRestrictions = new ();
-    private readonly Dictionary<(long wayId, int node1Idx, int node2Idx), EdgeId> _restrictedEdges = new (); 
+    private readonly List<OsmTurnRestriction> _osmTurnRestrictions = new();
+    private readonly Dictionary<(long wayId, int node1Idx, int node2Idx), EdgeId> _restrictedEdges = new();
 
     /// <inheritdoc />
     public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
@@ -47,7 +47,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
         _firstPass = false;
         Source.Reset();
         DoPull();
-        
+
         return false;
     }
 
@@ -138,11 +138,11 @@ public class RouterDbStreamTarget : OsmStreamTarget
             var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
                 shape,
                 filteredTags);
-            
+
             // check if this edge needs saving for restriction.
             var edgeIdKey = (way.Id.Value, vertex1Idx, n);
             if (saveEdge) _restrictedEdges[edgeIdKey] = edgeId;
-            
+
             // move to next part.
             vertex1 = vertex2;
             shape.Clear();
@@ -156,17 +156,17 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (_firstPass)
         {
             if (!_restrictionParser.IsRestriction(relation, out _)) return;
-            
+
             // log member ways.
             foreach (var relationMember in relation.Members)
             {
                 if (relationMember.Type != OsmGeoType.Way) continue;
-                
+
                 _restrictionMembers[relationMember.Id] = null;
             }
             return;
         }
-        
+
         // try to parse restriction.
         var result = _restrictionParser.TryParse(relation,
             k => !_restrictionMembers.TryGetValue(k, out var osmGeo) ? null : osmGeo,
@@ -201,15 +201,15 @@ public class RouterDbStreamTarget : OsmStreamTarget
                 // TODO: log something?
                 continue;
             }
-                
+
             // get last edge and turn cost vertex.
             var last = networkRestriction[^1];
             var lastEdge = _mutableRouterDb.GetEdge(last.edge, last.forward);
             var turnCostVertex = lastEdge.Tail;
-                
+
             var secondToLast = networkRestriction[^2];
-            var costs = new uint[,] {{0, 1}, {0, 0}};
-            _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes, new [] {  secondToLast.edge, last.edge }, costs,
+            var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
+            _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes, new[] { secondToLast.edge, last.edge }, costs,
                 networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
         }
     }

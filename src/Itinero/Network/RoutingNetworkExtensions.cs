@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,7 +22,8 @@ namespace Itinero.Network
         public static (double longitude, double latitude, float? e) GetVertex(this RoutingNetwork routingNetwork,
             VertexId vertex)
         {
-            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) {
+            if (!routingNetwork.TryGetVertex(vertex, out var longitude, out var latitude, out var e))
+            {
                 throw new ArgumentOutOfRangeException(nameof(vertex));
             }
 
@@ -37,7 +38,8 @@ namespace Itinero.Network
         public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork)
         {
             var enumerator = routingNetwork.GetVertexEnumerator();
-            while (enumerator.MoveNext()) {
+            while (enumerator.MoveNext())
+            {
                 yield return enumerator.Current;
             }
         }
@@ -50,13 +52,17 @@ namespace Itinero.Network
         public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork)
         {
             var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
-            foreach (var vertex in routingNetwork.GetVertices()) {
-                if (!edgeEnumerator.MoveTo(vertex)) {
+            foreach (var vertex in routingNetwork.GetVertices())
+            {
+                if (!edgeEnumerator.MoveTo(vertex))
+                {
                     continue;
                 }
 
-                while (edgeEnumerator.MoveNext()) {
-                    if (!edgeEnumerator.Forward) {
+                while (edgeEnumerator.MoveNext())
+                {
+                    if (!edgeEnumerator.Forward)
+                    {
                         continue;
                     }
 
@@ -67,7 +73,8 @@ namespace Itinero.Network
 
         internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
         {
-            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache, out var turnCostFactorCache)) {
+            if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache, out var turnCostFactorCache))
+            {
                 return new ProfileCostFunction(profile);
             }
 
@@ -78,10 +85,11 @@ namespace Itinero.Network
             GetAttributes(this RoutingNetwork routerDb, EdgeId edge)
         {
             var enumerator = routerDb.GetEdgeEnumerator();
-            if (!enumerator.MoveToEdge(edge)) {
+            if (!enumerator.MoveToEdge(edge))
+            {
                 return Enumerable.Empty<(string key, string value)>();
             }
-        
+
             return enumerator.Attributes;
         }
     }

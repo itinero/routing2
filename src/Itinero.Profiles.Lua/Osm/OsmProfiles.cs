@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 
 namespace Itinero.Profiles.Lua.Osm
@@ -15,7 +15,7 @@ namespace Itinero.Profiles.Lua.Osm
         /// Gets the default bicycle profile.
         /// </summary>
         public static Profile Bicycle { get; } = LazyBicycle.Value;
-        
+
         private static readonly Lazy<Profile> LazyPedestrian = new(() => LuaProfile.Load(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.pedestrian.lua"),
             "Itinero.Profiles.Lua.Osm.pedestrian.lua"));
 
@@ -23,7 +23,7 @@ namespace Itinero.Profiles.Lua.Osm
         /// Gets the default pedestrian profile.
         /// </summary>
         public static Profile Pedestrian { get; } = LazyPedestrian.Value;
-        
+
         private static readonly Lazy<Profile> LazyCar = new(() => LuaProfile.Load(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.car.lua"),
             "Itinero.Profiles.Lua.Osm.car.lua"));
 
@@ -31,7 +31,7 @@ namespace Itinero.Profiles.Lua.Osm
         /// Gets the default car profile.
         /// </summary>
         public static Profile Car { get; } = LazyCar.Value;
-        
+
         /// <summary>
         /// Loads a string from an embedded resource stream.
         /// </summary>

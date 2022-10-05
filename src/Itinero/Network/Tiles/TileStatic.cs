@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Itinero.Network.Tiles
@@ -8,22 +8,23 @@ namespace Itinero.Network.Tiles
         private static void ValidateBox(this ((double longitude, double latitude, float? e) topLeft,
             (double longitude, double latitude, float? e) bottomRight) box)
         {
-            if (box.topLeft.latitude < box.bottomRight.latitude) {
+            if (box.topLeft.latitude < box.bottomRight.latitude)
+            {
                 throw new ArgumentOutOfRangeException($"Top is lower than bottom.");
             }
         }
 
         public static (uint x, uint y) ToTile(int zoom, uint tileId)
         {
-            var xMax = (ulong) (1 << zoom);
+            var xMax = (ulong)(1 << zoom);
 
-            return ((uint) (tileId % xMax), (uint) (tileId / xMax));
+            return ((uint)(tileId % xMax), (uint)(tileId / xMax));
         }
 
         public static uint ToLocalId(uint x, uint y, int zoom)
         {
-            var xMax = 1 << (int) zoom;
-            return (uint) (y * xMax + x);
+            var xMax = 1 << (int)zoom;
+            return (uint)(y * xMax + x);
         }
 
         public static uint ToLocalId(double longitude, double latitude, int zoom)
@@ -48,7 +49,7 @@ namespace Itinero.Network.Tiles
             var latStep = (top - bottom) / resolution;
             var lonStep = (right - left) / resolution;
 
-            return ((int) ((longitude - left) / lonStep), (int) ((top - latitude) / latStep));
+            return ((int)((longitude - left) / lonStep), (int)((top - latitude) / latStep));
         }
 
         public static void FromLocalTileCoordinates(int zoom, uint tileId, int x, int y, int resolution,
@@ -73,7 +74,7 @@ namespace Itinero.Network.Tiles
 
         private static int N(int zoom)
         {
-            return (int) Math.Floor(Math.Pow(2, zoom)); // replace by bit shifting?
+            return (int)Math.Floor(Math.Pow(2, zoom)); // replace by bit shifting?
         }
 
         public static (uint x, uint y) WorldToTile(double longitude, double latitude, int zoom)
@@ -81,8 +82,8 @@ namespace Itinero.Network.Tiles
             var n = N(zoom);
             var rad = latitude / 180d * Math.PI;
 
-            var x = (uint) ((longitude + 180.0f) / 360.0f * n);
-            var y = (uint) (
+            var x = (uint)((longitude + 180.0f) / 360.0f * n);
+            var y = (uint)(
                 (1.0f - Math.Log(Math.Tan(rad) + 1.0f / Math.Cos(rad))
                     / Math.PI) / 2f * n);
 
@@ -101,12 +102,15 @@ namespace Itinero.Network.Tiles
 
             var x = topLeft.x;
             var y = topLeft.y;
-            while (true) {
+            while (true)
+            {
                 yield return (x, y);
 
-                if (y == bottomRight.y) {
+                if (y == bottomRight.y)
+                {
                     // move on with x.
-                    if (x == bottomRight.x) {
+                    if (x == bottomRight.x)
+                    {
                         // both x and y have reached the end.
                         break;
                     }
@@ -116,7 +120,8 @@ namespace Itinero.Network.Tiles
 
                     // move on with x.
                     x++;
-                    if (x == n) {
+                    if (x == n)
+                    {
                         x = 0;
                     }
 

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net;
 
 namespace Itinero.Tests.Functional.Staging
@@ -7,7 +7,8 @@ namespace Itinero.Tests.Functional.Staging
     {
         public static string Get(string localFile, string url)
         {
-            if (File.Exists(localFile)) {
+            if (File.Exists(localFile))
+            {
                 return localFile;
             }
 

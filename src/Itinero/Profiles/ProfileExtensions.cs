@@ -1,4 +1,4 @@
-using Itinero.Network;
+﻿using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
 namespace Itinero.Profiles
@@ -9,7 +9,8 @@ namespace Itinero.Profiles
             IEdgeEnumerator<RoutingNetwork> enumerator)
         {
             var factor = profile.Factor(enumerator.Attributes);
-            if (!enumerator.Forward) {
+            if (!enumerator.Forward)
+            {
                 factor = factor.Reverse;
             }
 

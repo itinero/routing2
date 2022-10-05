@@ -1,4 +1,4 @@
-// using System.Collections.Generic;
+﻿// using System.Collections.Generic;
 // using Itinero.Profiles;
 //
 // namespace Itinero.Tests.Functional.Tests

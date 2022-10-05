@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Enumerators.Edges;
 using Xunit;
@@ -26,8 +26,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             enumerator.MoveNext();
             var shape = enumerator.GetCompleteShape().ToArray();
             Assert.Equal(2, shape.Length);
-            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?) null), shape[0]);
-            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?) null), shape[1]);
+            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?)null), shape[0]);
+            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?)null), shape[1]);
         }
 
         [Fact]
@@ -49,8 +49,8 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             enumerator.MoveNext();
             var shape = enumerator.GetCompleteShape().ToArray();
             Assert.Equal(2, shape.Length);
-            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?) null), shape[0]);
-            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?) null), shape[1]);
+            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?)null), shape[0]);
+            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?)null), shape[1]);
         }
 
         [Fact]
@@ -75,10 +75,10 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             enumerator.MoveNext();
             var shape = enumerator.GetCompleteShape().ToArray();
             Assert.Equal(4, shape.Length);
-            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?) null), shape[0]);
-            ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?) null), shape[1]);
-            ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?) null), shape[2]);
-            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?) null), shape[3]);
+            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?)null), shape[0]);
+            ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?)null), shape[1]);
+            ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?)null), shape[2]);
+            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?)null), shape[3]);
         }
 
         [Fact]
@@ -103,10 +103,10 @@ namespace Itinero.Tests.Network.Enumerators.Edges
             enumerator.MoveNext();
             var shape = enumerator.GetCompleteShape().ToArray();
             Assert.Equal(4, shape.Length);
-            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?) null), shape[0]);
-            ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?) null), shape[1]);
-            ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?) null), shape[2]);
-            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?) null), shape[3]);
+            ItineroAsserts.SameLocations((4.801771044731140, 51.268886491558250, (float?)null), shape[0]);
+            ItineroAsserts.SameLocations((4.801242649555205, 51.268816008449830, (float?)null), shape[1]);
+            ItineroAsserts.SameLocations((4.800950288772583, 51.268426671236426, (float?)null), shape[2]);
+            ItineroAsserts.SameLocations((4.801073670387268, 51.268064181900094, (float?)null), shape[3]);
         }
     }
 }

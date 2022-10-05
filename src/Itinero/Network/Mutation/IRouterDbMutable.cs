@@ -1,4 +1,4 @@
-using Itinero.Profiles;
+﻿using Itinero.Profiles;
 
 namespace Itinero.Network.Mutation
 {

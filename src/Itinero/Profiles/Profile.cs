@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
@@ -55,13 +55,14 @@ namespace Itinero.Profiles
         /// <returns>True if the profiles have the same name.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Profile profile) {
+            if (obj is Profile profile)
+            {
                 return profile.Name.Equals(this.Name);
             }
 
             return false;
         }
-        
+
         private static readonly MD5 Hasher = MD5.Create();
     }
 }

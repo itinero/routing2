@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,7 +27,7 @@ namespace Itinero.Tests.Functional.Tests
         /// Gets or sets the logging flag.
         /// </summary>
         public bool Log { get; set; } = true;
-        
+
         /// <summary>
         /// Executes this test for the given input.
         /// </summary>
@@ -37,10 +37,12 @@ namespace Itinero.Tests.Functional.Tests
         /// <returns>The output.</returns>
         public Task<TOut> RunAsync(TIn input = default, string name = null, int count = 1)
         {
-            try {
+            try
+            {
                 return this.TrackPerformance ? this.RunPerformanceAsync(input, name: name, count: count) : this.ExecuteAsync(input);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Serilog.Log.Error(ex, $"Running {Name} with inputs {input} failed");
 
                 throw;
@@ -77,29 +79,34 @@ namespace Itinero.Tests.Functional.Tests
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
         protected void True(bool value)
         {
-            if (!value) {
+            if (!value)
+            {
                 throw new Exception("Assertion failed, expected true");
             }
         }
 
         public void NotNull(object o)
         {
-            if (o == null) {
+            if (o == null)
+            {
                 throw new ArgumentNullException(nameof(o));
             }
         }
 
         public void NotNull(object o, string message)
         {
-            if (o == null) {
+            if (o == null)
+            {
                 throw new ArgumentException("Null detected: " + message);
             }
         }
 
         public void AssertContains(object o, IEnumerable xs)
         {
-            foreach (var x in xs) {
-                if (x.Equals(o)) {
+            foreach (var x in xs)
+            {
+                if (x.Equals(o))
+                {
                     return;
                 }
             }
@@ -113,7 +120,8 @@ namespace Itinero.Tests.Functional.Tests
         /// <param name="message">The log message.</param>
         protected void Information(string message)
         {
-            if (!Log) {
+            if (!Log)
+            {
                 return;
             }
 

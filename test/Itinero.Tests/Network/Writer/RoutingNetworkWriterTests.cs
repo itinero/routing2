@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
 using Xunit;
@@ -18,7 +18,7 @@ public class RoutingNetworkWriterTests
         });
 
         Assert.Equal(Tile.WorldToTile(4.7868, 51.2643, network.Zoom).LocalId, vertices[0].TileId);
-        Assert.Equal((uint) 0, vertices[0].LocalId);
+        Assert.Equal((uint)0, vertices[0].LocalId);
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class RoutingNetworkWriterTests
             (4.7868, 51.2643, (float?) null)
         });
 
-        Assert.Equal((uint) 89546969, vertices[0].TileId);
-        Assert.Equal((uint) 1, vertices[0].LocalId);
+        Assert.Equal((uint)89546969, vertices[0].TileId);
+        Assert.Equal((uint)1, vertices[0].LocalId);
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class RoutingNetworkWriterTests
         });
 
         var tile = Tile.FromLocalId(vertices[0].TileId, network.Zoom);
-        Assert.Equal((uint) 8409, tile.X);
-        Assert.Equal((uint) 5465, tile.Y);
+        Assert.Equal((uint)8409, tile.X);
+        Assert.Equal((uint)5465, tile.Y);
         Assert.Equal(14, tile.Zoom);
     }
 
@@ -84,7 +84,7 @@ public class RoutingNetworkWriterTests
             (0, 1, null)
         });
 
-        Assert.Equal((uint) 0, edges[0].LocalId);
+        Assert.Equal((uint)0, edges[0].LocalId);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class RoutingNetworkWriterTests
             (0, 2, null)
         });
 
-        Assert.Equal((uint) 11, edges[1].LocalId);
+        Assert.Equal((uint)11, edges[1].LocalId);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class RoutingNetworkWriterTests
             });
 
         Assert.Equal(vertices[0].TileId, edges[0].TileId);
-        Assert.Equal((uint) EdgeId.MinCrossId + 0, edges[0].LocalId);
+        Assert.Equal((uint)EdgeId.MinCrossId + 0, edges[0].LocalId);
 
         var enumerator = network.GetEdgeEnumerator();
         Assert.True(enumerator.MoveTo(vertices[0]));

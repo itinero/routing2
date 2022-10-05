@@ -1,4 +1,4 @@
-using Itinero.Profiles;
+﻿using Itinero.Profiles;
 using Itinero.Routes.Paths;
 using Itinero.Routing.DataStructures;
 

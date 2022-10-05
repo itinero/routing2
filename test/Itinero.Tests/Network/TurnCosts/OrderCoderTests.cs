@@ -1,4 +1,4 @@
-using Itinero.Network.TurnCosts;
+﻿using Itinero.Network.TurnCosts;
 using Reminiscence.Arrays;
 using Xunit;
 
@@ -72,7 +72,7 @@ namespace Itinero.Tests.Network.TurnCosts
             byte? head = null;
             data.GetTailHeadOrder(0, ref tail, ref head);
 
-            Assert.Equal((byte?) 0, tail);
+            Assert.Equal((byte?)0, tail);
             Assert.Null(head);
         }
 
@@ -88,7 +88,7 @@ namespace Itinero.Tests.Network.TurnCosts
             data.GetTailHeadOrder(0, ref tail, ref head);
 
             Assert.Null(tail);
-            Assert.Equal((byte?) 0, head);
+            Assert.Equal((byte?)0, head);
         }
 
         [Fact]
@@ -102,8 +102,8 @@ namespace Itinero.Tests.Network.TurnCosts
             byte? head = null;
             data.GetTailHeadOrder(0, ref tail, ref head);
 
-            Assert.Equal((byte?) 0, tail);
-            Assert.Equal((byte?) 0, head);
+            Assert.Equal((byte?)0, tail);
+            Assert.Equal((byte?)0, head);
         }
 
         [Fact]
@@ -117,8 +117,8 @@ namespace Itinero.Tests.Network.TurnCosts
             byte? head = null;
             data.GetTailHeadOrder(0, ref tail, ref head);
 
-            Assert.Equal((byte?) 14, tail);
-            Assert.Equal((byte?) 14, head);
+            Assert.Equal((byte?)14, tail);
+            Assert.Equal((byte?)14, head);
         }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using OsmSharp;
 
 namespace Itinero.IO.Osm.Filters
@@ -11,14 +11,16 @@ namespace Itinero.IO.Osm.Filters
         /// <summary>
         /// Gets the default tags filter.
         /// </summary>
-        public static readonly TagsFilter Default = new TagsFilter() {
+        public static readonly TagsFilter Default = new TagsFilter()
+        {
             Filter = RoutingTagsFilter.Filter,
             MemberFilter = RoutingTagsFilter.ProcessCycleNetwork
         };
-            
+
         internal static bool Filter(OsmGeo osmGeo)
         {
-            switch (osmGeo.Type) {
+            switch (osmGeo.Type)
+            {
                 case OsmGeoType.Way:
                     return FilterWay(osmGeo);
                 case OsmGeoType.Node:
@@ -29,19 +31,22 @@ namespace Itinero.IO.Osm.Filters
                 default:
                     break;
             }
-            
+
             return true;
         }
 
         private static bool FilterWay(OsmGeo osmGeo)
         {
             if (osmGeo.Tags == null) return false;
-            
-            foreach (var t in osmGeo.Tags) {
-                if (t.Key == "highway") {
+
+            foreach (var t in osmGeo.Tags)
+            {
+                if (t.Key == "highway")
+                {
                     return true;
                 }
-                else if (t.Key == "route" && t.Value == "ferry") {
+                else if (t.Key == "route" && t.Value == "ferry")
+                {
                     return true;
                 }
             }
@@ -50,7 +55,7 @@ namespace Itinero.IO.Osm.Filters
         }
 
         private const string CycleNetworkPrefix = "_cycle_network";
-        
+
         private static bool ProcessCycleNetwork(Relation relation, OsmGeo? member)
         {
             if (relation.Members == null) return false;
@@ -59,23 +64,30 @@ namespace Itinero.IO.Osm.Filters
             var network = string.Empty;
             var type = string.Empty;
             var route = string.Empty;
-            foreach (var t in relation.Tags) {
-                if (t.Key == "type" && t.Value == "route") {
+            foreach (var t in relation.Tags)
+            {
+                if (t.Key == "type" && t.Value == "route")
+                {
                     type = "route";
-                } else if (t.Key == "route" && t.Value == "bicycle") {
+                }
+                else if (t.Key == "route" && t.Value == "bicycle")
+                {
                     route = "bicycle";
-                } else if (t.Key == "network") {
+                }
+                else if (t.Key == "network")
+                {
                     network = t.Value;
                 }
             }
-            if (string.IsNullOrWhiteSpace(type) || 
-                string.IsNullOrWhiteSpace(route) || 
+            if (string.IsNullOrWhiteSpace(type) ||
+                string.IsNullOrWhiteSpace(route) ||
                 string.IsNullOrWhiteSpace(network)) return false;
 
-            if (member?.Tags != null && member.Type == OsmGeoType.Way) {
+            if (member?.Tags != null && member.Type == OsmGeoType.Way)
+            {
                 member.Tags[$"{CycleNetworkPrefix}:network:{network}"] = "yes   ";
             }
-            
+
             return true;
         }
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -29,7 +29,7 @@ public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
     {
         _sequence = new List<(EdgeId edge, bool forward)>(sequence);
         if (_sequence.Count < 2) throw new ArgumentException("A restriction has to have at least 2 edges");
-        
+
         this.IsProhibitory = isProhibitory;
         this.Attributes = attributes;
     }
@@ -44,12 +44,12 @@ public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
     /// </summary>
     /// <param name="index">The index.</param>
     public (EdgeId edge, bool forward) this[int index] => _sequence[index];
-    
+
     /// <summary>
     /// Returns true if the restriction is negative.
     /// </summary>
     public bool IsProhibitory { get; }
-    
+
     /// <summary>
     /// The attributes associated with the restriction.
     /// </summary>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo;
@@ -20,7 +20,8 @@ namespace Itinero.Network.Enumerators.Edges
             yield return enumerator.TailLocation;
 
             var shape = enumerator.Shape;
-            foreach (var s in shape) {
+            foreach (var s in shape)
+            {
                 yield return s;
             }
 
@@ -53,13 +54,16 @@ namespace Itinero.Network.Enumerators.Edges
             where T : IEdgeEnumerator<S>
             where S : IEdgeEnumerable
         {
-            if (offset1 > offset2) {
+            if (offset1 > offset2)
+            {
                 throw new ArgumentException($"{nameof(offset1)} has to smaller than or equal to {nameof(offset2)}");
             }
 
             // return the entire edge if requested.
-            if (offset1 == 0 && offset2 == ushort.MaxValue) {
-                foreach (var s in enumerator.GetCompleteShape<T, S>()) {
+            if (offset1 == 0 && offset2 == ushort.MaxValue)
+            {
+                foreach (var s in enumerator.GetCompleteShape<T, S>())
+                {
                     yield return s;
                 }
 
@@ -71,34 +75,40 @@ namespace Itinero.Network.Enumerators.Edges
 
             // calculate offsets in meters.
             var edgeLength = enumerator.EdgeLength<T, S>();
-            var offset1Length = offset1 / (double) ushort.MaxValue * edgeLength;
-            var offset2Length = offset2 / (double) ushort.MaxValue * edgeLength;
+            var offset1Length = offset1 / (double)ushort.MaxValue * edgeLength;
+            var offset2Length = offset2 / (double)ushort.MaxValue * edgeLength;
 
             // TODO: can we make this easier with the complete shape enumeration?
             // calculate coordinate shape.
             var before = offset1 > 0; // when there is a start offset.
             var length = 0.0;
             var previous = enumerator.TailLocation;
-            if (offset1 == 0 && includeVertices) {
+            if (offset1 == 0 && includeVertices)
+            {
                 yield return previous;
             }
 
-            for (var i = 0; i < shape.Count + 1; i++) {
+            for (var i = 0; i < shape.Count + 1; i++)
+            {
                 (double longitude, double latitude, float? e) next;
-                if (i < shape.Count) {
+                if (i < shape.Count)
+                {
                     // the 
                     next = shape[i];
                 }
-                else {
+                else
+                {
                     // the last location.
                     next = enumerator.HeadLocation;
                 }
 
                 var segmentLength = previous.DistanceEstimateInMeter(next);
-                if (before) {
+                if (before)
+                {
                     // check if offset1 length has exceeded.
                     if (segmentLength + length >= offset1Length &&
-                        offset1 > 0) {
+                        offset1 > 0)
+                    {
                         // we are before, but not we have move to after.
                         var segmentOffset = offset1Length - length;
                         var location = (previous, next).PositionAlongLine(segmentOffset / segmentLength);
@@ -108,10 +118,12 @@ namespace Itinero.Network.Enumerators.Edges
                     }
                 }
 
-                if (!before) {
+                if (!before)
+                {
                     // check if offset2 length has exceeded.
                     if (segmentLength + length > offset2Length &&
-                        offset2 < ushort.MaxValue) {
+                        offset2 < ushort.MaxValue)
+                    {
                         // we are after but now we are after.
                         var segmentOffset = offset2Length - length;
                         var location = (previous, next).PositionAlongLine(segmentOffset / segmentLength);
@@ -120,7 +132,8 @@ namespace Itinero.Network.Enumerators.Edges
                     }
 
                     // the case where include vertices is false.
-                    if (i == shape.Count && !includeVertices) {
+                    if (i == shape.Count && !includeVertices)
+                    {
                         yield break;
                     }
 
@@ -148,16 +161,19 @@ namespace Itinero.Network.Enumerators.Edges
             var shape = enumerator.GetShapeBetween<T, S>().ToList();
             var length = enumerator.EdgeLength<T, S>();
             var currentLength = 0.0;
-            var targetLength = length * (offset / (double) ushort.MaxValue);
-            for (var i = 1; i < shape.Count; i++) {
+            var targetLength = length * (offset / (double)ushort.MaxValue);
+            for (var i = 1; i < shape.Count; i++)
+            {
                 var segmentLength = shape[i - 1].DistanceEstimateInMeter(shape[i]);
-                if (segmentLength + currentLength > targetLength) {
+                if (segmentLength + currentLength > targetLength)
+                {
                     var segmentOffsetLength = segmentLength + currentLength - targetLength;
                     var segmentOffset = 1 - segmentOffsetLength / segmentLength;
                     float? e = null;
                     if (shape[i - 1].e.HasValue &&
-                        shape[i].e.HasValue) {
-                        e = (float) (shape[i - 1].e.Value + segmentOffset * (shape[i].e.Value - shape[i - 1].e.Value));
+                        shape[i].e.HasValue)
+                    {
+                        e = (float)(shape[i - 1].e.Value + segmentOffset * (shape[i].e.Value - shape[i - 1].e.Value));
                     }
 
                     return (shape[i - 1].longitude + segmentOffset * (shape[i].longitude - shape[i - 1].longitude),

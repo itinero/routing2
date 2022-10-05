@@ -1,4 +1,4 @@
-using Reminiscence.Arrays;
+﻿using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles.Standalone;
 
@@ -11,7 +11,7 @@ public partial class StandaloneNetworkTile
     {
         _attributes = new MemoryArray<byte>(1024);
         _strings = new MemoryArray<string>(128);
-        
+
         NetworkTile = networkTile;
     }
 

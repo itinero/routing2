@@ -1,4 +1,4 @@
-using Itinero.IO.Osm;
+﻿using Itinero.IO.Osm;
 using OsmSharp;
 using OsmSharp.Streams;
 using OsmSharp.Tags;
@@ -8,7 +8,7 @@ namespace Itinero.Tests.IO.Osm;
 
 public class RouterDbExtensionsTests
 {
-    [Fact] 
+    [Fact]
     public void RouterDbExtensions_AllData_ShouldIgnoreNothing()
     {
         var os = new OsmGeo[] {
@@ -30,7 +30,8 @@ public class RouterDbExtensionsTests
 
         var routerDb = new RouterDb();
         // include all the data.
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s => {
+        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        {
             s.TagsFilter.Filter = null;
             s.TagsFilter.CompleteFilter = null;
             s.TagsFilter.MemberFilter = null;
@@ -41,8 +42,8 @@ public class RouterDbExtensionsTests
         Assert.True(vertices.MoveNext());
         Assert.False(vertices.MoveNext());
     }
-        
-    [Fact] 
+
+    [Fact]
     public void RouterDbExtensions_OnlyHighways_ShouldTakeOnlyHighway()
     {
         var os = new OsmGeo[] {
@@ -80,8 +81,10 @@ public class RouterDbExtensionsTests
 
         var routerDb = new RouterDb();
         // include all the data.
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s => {
-            s.TagsFilter.Filter = o => {
+        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        {
+            s.TagsFilter.Filter = o =>
+            {
                 if (o.Type == OsmGeoType.Node) return true;
                 if (o.Tags == null) return false;
                 if (!o.Tags.ContainsKey("highway")) return false;
@@ -97,7 +100,7 @@ public class RouterDbExtensionsTests
         Assert.True(vertices.MoveNext());
         Assert.True(edges.MoveTo(vertices.Current));
         Assert.True(edges.MoveNext());
-        Assert.Equal(new []  { ("highway", "residential") }, edges.Attributes);
+        Assert.Equal(new[] { ("highway", "residential") }, edges.Attributes);
         Assert.False(edges.MoveNext());
         Assert.True(vertices.MoveNext());
         Assert.False(vertices.MoveNext());
@@ -141,8 +144,10 @@ public class RouterDbExtensionsTests
 
         var routerDb = new RouterDb();
         // include all the data.
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s => {
-            s.TagsFilter.Filter = o => {
+        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        {
+            s.TagsFilter.Filter = o =>
+            {
                 if (o.Type == OsmGeoType.Node) return true;
                 if (o.Tags == null) return false;
                 if (!o.Tags.ContainsKey("highway")) return false;
@@ -158,7 +163,7 @@ public class RouterDbExtensionsTests
         Assert.True(vertices.MoveNext());
         Assert.True(edges.MoveTo(vertices.Current));
         Assert.True(edges.MoveNext());
-        Assert.Equal(new []  { ("highway", "residential") }, edges.Attributes);
+        Assert.Equal(new[] { ("highway", "residential") }, edges.Attributes);
         Assert.False(edges.MoveNext());
         Assert.True(vertices.MoveNext());
         Assert.False(vertices.MoveNext());

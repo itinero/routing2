@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
 
@@ -53,7 +53,7 @@ namespace Itinero.Tests.Network.Tiles
 
             var edge = networkTile.AddEdge(vertex1, vertex2,
                 System.Array.Empty<(double longitude, double latitude, float? e)>());
-            Assert.Equal((uint) 0, edge.LocalId);
+            Assert.Equal((uint)0, edge.LocalId);
         }
 
         [Fact]

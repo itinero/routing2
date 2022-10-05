@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network;
@@ -12,7 +12,7 @@ public static class OsmTurnRestrictionExtensions
     /// The signature of a function to get edges for the given nodes pair along the given way.
     /// </summary>
     public delegate (EdgeId edge, bool forward)? GetEdgeFor(long wayId, int node1Idx, int node2Idx);
-    
+
     /// <summary>
     /// Converts the given OSM turn restriction into one or more sequences on the network.
     /// </summary>
@@ -74,15 +74,15 @@ public static class OsmTurnRestrictionExtensions
 
         var networkRestrictions = new List<NetworkRestriction>();
         foreach (var fromEdge in fromEdges)
-        foreach (var toEdge in toEdges)
-        {
-            var sequence = new List<(EdgeId edgeId, bool forward)> { fromEdge };
-            sequence.AddRange(viaEdges);
-            sequence.Add(toEdge);
+            foreach (var toEdge in toEdges)
+            {
+                var sequence = new List<(EdgeId edgeId, bool forward)> { fromEdge };
+                sequence.AddRange(viaEdges);
+                sequence.Add(toEdge);
 
-            networkRestrictions.Add(new NetworkRestriction(sequence, osmTurnRestriction.IsProbibitory,
-                osmTurnRestriction.Attributes));
-        }
+                networkRestrictions.Add(new NetworkRestriction(sequence, osmTurnRestriction.IsProbibitory,
+                    osmTurnRestriction.Attributes));
+            }
 
         return networkRestrictions;
     }
@@ -128,7 +128,7 @@ public static class OsmTurnRestrictionExtensions
         this OsmTurnRestriction osmTurnRestriction)
     {
         var node = osmTurnRestriction.GetViaFrom();
-        
+
         var fromWayRestriction = new List<Result<(Way way, int minStartNode, int endNode)>>();
         foreach (var fromWay in osmTurnRestriction.From)
         {
@@ -300,7 +300,7 @@ public static class OsmTurnRestrictionExtensions
             {
                 var edge = getEdgeFor(wayId, startNode, n);
                 if (edge == null) continue;
-                
+
                 startNode = n;
                 yield return edge.Value;
             }
@@ -311,7 +311,7 @@ public static class OsmTurnRestrictionExtensions
             {
                 var edge = getEdgeFor(wayId, startNode, n);
                 if (edge == null) continue;
-                
+
                 startNode = n;
                 yield return edge.Value;
             }

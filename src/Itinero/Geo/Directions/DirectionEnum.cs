@@ -1,4 +1,4 @@
-namespace Itinero.Geo.Directions
+﻿namespace Itinero.Geo.Directions
 {
     /// <summary>
     /// Direction types.

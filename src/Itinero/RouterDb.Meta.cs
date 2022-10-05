@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Itinero.Network.Attributes;
@@ -15,7 +15,8 @@ namespace Itinero
         private IEnumerable<(string key, string value)> ReadAttributesFrom(Stream stream)
         {
             var ver = stream.ReadByte();
-            if (ver == 0) {
+            if (ver == 0)
+            {
                 return Enumerable.Empty<(string key, string value)>();
             }
 

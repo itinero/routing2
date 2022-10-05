@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Profiles;
@@ -14,10 +14,11 @@ namespace Itinero.Tests.Functional.Tests
         {
             var result = await input.routerDb.Snap().Using(input.profile).ToAsync((input.longitude, input.latitude, null));
 
-            if (result.IsError) {
+            if (result.IsError)
+            {
                 throw new Exception($"SnapPoint test failed: could not snap to point ({input.longitude}, {input.latitude}) because {result.ErrorMessage}");
             }
-            
+
             return result.Value;
         }
 

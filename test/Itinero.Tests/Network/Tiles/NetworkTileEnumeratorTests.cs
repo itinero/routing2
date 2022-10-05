@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
 
@@ -11,7 +11,7 @@ namespace Itinero.Tests.Network.Tiles
         {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
-            var vertex = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
+            var vertex = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
 
             var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(networkTile);
@@ -23,8 +23,8 @@ namespace Itinero.Tests.Network.Tiles
         {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
-            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
-            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?) null);
+            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
+            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
 
@@ -44,8 +44,8 @@ namespace Itinero.Tests.Network.Tiles
         {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
-            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
-            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?) null);
+            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
+            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
 
@@ -65,8 +65,8 @@ namespace Itinero.Tests.Network.Tiles
         {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
-            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
-            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?) null);
+            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
+            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
             var edge = networkTile.AddEdge(vertex1, vertex2, new[] {
                 (
@@ -107,8 +107,8 @@ namespace Itinero.Tests.Network.Tiles
         {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
-            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
-            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?) null);
+            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
+            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
 
@@ -127,8 +127,8 @@ namespace Itinero.Tests.Network.Tiles
         {
             var networkTile = new NetworkTile(14,
                 TileStatic.ToLocalId(4.86638, 51.269728, 14));
-            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?) null);
-            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?) null);
+            var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
+            var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
 

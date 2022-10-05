@@ -19,10 +19,12 @@
         /// </summary>
         public void AddId(long id)
         {
-            if (id >= 0) {
+            if (id >= 0)
+            {
                 _positiveNodeIndex.AddId(id);
             }
-            else {
+            else
+            {
                 _negativeNodeIndex.AddId(-id);
             }
         }
@@ -39,9 +41,12 @@
         /// <summary>
         /// Gets the node id at the given index.
         /// </summary>
-        public long this[long idx] {
-            get {
-                if (idx >= _negativeNodeIndex.Count) {
+        public long this[long idx]
+        {
+            get
+            {
+                if (idx >= _negativeNodeIndex.Count)
+                {
                     return _positiveNodeIndex[idx - _negativeNodeIndex.Count];
                 }
 
@@ -54,10 +59,12 @@
         /// </summary>
         public void Set(long id, uint vertex)
         {
-            if (id >= 0) {
+            if (id >= 0)
+            {
                 _positiveNodeIndex.Set(id, vertex);
             }
-            else {
+            else
+            {
                 _negativeNodeIndex.Set(-id, vertex);
             }
         }
@@ -67,12 +74,15 @@
         /// </summary>
         public long TryGetIndex(long id)
         {
-            if (id >= 0) {
+            if (id >= 0)
+            {
                 return _positiveNodeIndex.TryGetIndex(id);
             }
-            else {
+            else
+            {
                 var result = _negativeNodeIndex.TryGetIndex(-id);
-                if (result == long.MaxValue) {
+                if (result == long.MaxValue)
+                {
                     return long.MaxValue;
                 }
 
@@ -85,10 +95,12 @@
         /// </summary>
         public void SetIndex(long idx, float latitude, float longitude)
         {
-            if (idx >= 0) {
+            if (idx >= 0)
+            {
                 _positiveNodeIndex.SetIndex(idx, latitude, longitude);
             }
-            else {
+            else
+            {
                 idx = -idx - 1;
                 _negativeNodeIndex.SetIndex(idx, latitude, longitude);
             }
@@ -99,10 +111,12 @@
         /// </summary>
         public bool TryGetCoreNode(long id, out uint vertex)
         {
-            if (id >= 0) {
+            if (id >= 0)
+            {
                 return _positiveNodeIndex.TryGetCoreNode(id, out vertex);
             }
-            else {
+            else
+            {
                 return _negativeNodeIndex.TryGetCoreNode(-id, out vertex);
             }
         }
@@ -113,10 +127,12 @@
         public bool TryGetValue(long id, out float latitude, out float longitude, out bool isCore, out uint vertex,
             out long idx)
         {
-            if (id >= 0) {
+            if (id >= 0)
+            {
                 return _positiveNodeIndex.TryGetValue(id, out latitude, out longitude, out isCore, out vertex, out idx);
             }
-            else {
+            else
+            {
                 return _negativeNodeIndex.TryGetValue(-id, out latitude, out longitude, out isCore, out vertex,
                     out idx);
             }

@@ -1,4 +1,4 @@
-using Itinero.Snapping;
+﻿using Itinero.Snapping;
 
 namespace Itinero.Routing
 {

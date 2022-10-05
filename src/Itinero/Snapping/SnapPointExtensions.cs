@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
@@ -43,7 +43,7 @@ namespace Itinero.Snapping
         public static bool? Direction(this SnapPoint snapPoint, RoutingNetwork routerDb, DirectionEnum direction,
             double distance = 10, double tolerance = 90)
         {
-            return snapPoint.DirectionFromAngle(routerDb, (double) direction, out _, distance, tolerance);
+            return snapPoint.DirectionFromAngle(routerDb, (double)direction, out _, distance, tolerance);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Itinero.Snapping
         public static bool? Direction(this SnapPoint snapPoint, RoutingNetwork routerDb, DirectionEnum direction,
             out double difference, double distance = 10, double tolerance = 90)
         {
-            return snapPoint.DirectionFromAngle(routerDb, (double) direction, out difference, distance, tolerance);
+            return snapPoint.DirectionFromAngle(routerDb, (double)direction, out difference, distance, tolerance);
         }
 
         /// <summary>
@@ -80,30 +80,35 @@ namespace Itinero.Snapping
             double degreesMeridian, out double difference, double distance = 10,
             double tolerance = 90)
         {
-            if (tolerance <= 0 || tolerance > 90) {
+            if (tolerance <= 0 || tolerance > 90)
+            {
                 throw new ArgumentOutOfRangeException(nameof(tolerance), "The tolerance has to be in range of ]0,90]");
             }
 
             var angle = snapPoint.Angle(routerDb, distance);
-            if (!angle.HasValue) {
+            if (!angle.HasValue)
+            {
                 difference = 0;
                 return null;
             }
 
             difference = degreesMeridian - angle.Value;
-            if (difference > 180) {
+            if (difference > 180)
+            {
                 difference -= 360;
             }
 
             if (difference >= 0 && difference <= tolerance ||
-                difference < 0 && difference >= -tolerance) {
+                difference < 0 && difference >= -tolerance)
+            {
                 // forward, according to the tolerance.
                 return true;
             }
 
             var reverseTolerance = 180 - tolerance;
             if (difference >= 0 && difference >= reverseTolerance ||
-                difference < 0 && difference <= reverseTolerance) {
+                difference < 0 && difference <= reverseTolerance)
+            {
                 // backward, according to the tolerance.
                 return false;
             }
@@ -120,12 +125,14 @@ namespace Itinero.Snapping
         /// <returns>The angle in degrees with the meridian clockwise.</returns>
         public static double? Angle(this SnapPoint snapPoint, RoutingNetwork routerDb, double distance = 10)
         {
-            if (distance <= 0) {
+            if (distance <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(distance), "The distance has to be in the range ]0,∞[");
             }
 
             var edgeEnumerator = routerDb.GetEdgeEnumerator();
-            if (!edgeEnumerator.MoveToEdge(snapPoint.EdgeId, true)) {
+            if (!edgeEnumerator.MoveToEdge(snapPoint.EdgeId, true))
+            {
                 throw new ArgumentException($"Cannot find edge in {nameof(SnapPoint)}: {snapPoint}");
             }
 
@@ -133,24 +140,28 @@ namespace Itinero.Snapping
             // to calculate the angle for.
             var edgeLength = edgeEnumerator.EdgeLength();
             var distanceOffset = distance / edgeLength * ushort.MaxValue;
-            var offset1 = (ushort) 0;
+            var offset1 = (ushort)0;
             var offset2 = ushort.MaxValue;
-            if (distanceOffset <= ushort.MaxValue) {
+            if (distanceOffset <= ushort.MaxValue)
+            {
                 // not the entire edge.
                 // round offsets to beginning/end of edge.
-                offset1 = (ushort) Math.Max(0,
+                offset1 = (ushort)Math.Max(0,
                     snapPoint.Offset - distanceOffset);
-                offset2 = (ushort) Math.Min(ushort.MaxValue,
+                offset2 = (ushort)Math.Min(ushort.MaxValue,
                     snapPoint.Offset + distanceOffset);
 
                 // if both are at the same location make sure to at least
                 // convert the smallest possible section of the edge.
-                if (offset2 - offset1 == 0) {
-                    if (offset1 > 0) {
+                if (offset2 - offset1 == 0)
+                {
+                    if (offset1 > 0)
+                    {
                         offset1--;
                     }
 
-                    if (offset2 < ushort.MaxValue) {
+                    if (offset2 < ushort.MaxValue)
+                    {
                         offset2++;
                     }
                 }
@@ -160,12 +171,13 @@ namespace Itinero.Snapping
             var location1 = edgeEnumerator.LocationOnEdge(offset1);
             var location2 = edgeEnumerator.LocationOnEdge(offset2);
 
-            if (location1.DistanceEstimateInMeter(location2) < .1) { // distance too small, edge to short.
+            if (location1.DistanceEstimateInMeter(location2) < .1)
+            { // distance too small, edge to short.
                 return null;
             }
 
             // calculate and return angle.
-            var toNorth = (location1.longitude, location1.latitude + 0.001f, (float?) null);
+            var toNorth = (location1.longitude, location1.latitude + 0.001f, (float?)null);
             var angleRadians = DirectionCalculator.Angle(location2, location1, toNorth);
             return angleRadians.ToDegrees().NormalizeDegrees();
         }

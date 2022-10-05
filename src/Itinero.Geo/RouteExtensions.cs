@@ -20,6 +20,6 @@ namespace Itinero.Geo
         {
             return new LineString(route.Shape.Select(x => new Coordinate(x.longitude, x.latitude)).ToArray());
         }
-        
+
     }
 }

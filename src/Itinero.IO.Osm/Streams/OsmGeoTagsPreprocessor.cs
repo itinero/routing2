@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using OsmSharp;
 using OsmSharp.Streams.Filters;
 
@@ -17,21 +17,22 @@ namespace Itinero.IO.Osm.Streams
         {
             _action = action;
         }
-        
+
         public override bool MoveNext(bool ignoreNodes, bool ignoreWays, bool ignoreRelations)
         {
             _current = null;
-            
-            while (true) {
+
+            while (true)
+            {
                 if (!this.Source.MoveNext(ignoreNodes, ignoreWays, ignoreRelations)) return false;
-                
+
                 var current = this.Source.Current();
                 if (!_action(current)) continue;
 
                 _current = current;
                 break;
             }
-            
+
             return true;
         }
 
@@ -40,7 +41,7 @@ namespace Itinero.IO.Osm.Streams
             if (_current == null)
                 throw new InvalidOperationException(
                     $"Current is null, do {nameof(MoveNext)} first.");
-            
+
             return _current;
         }
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Geo.Elevation;
 using Itinero.Routes;
 using Xunit;
@@ -10,7 +10,8 @@ namespace Itinero.Tests.Geo.Elevation
         [Fact]
         public void RouteExtensions_AddElevation_1ShapePoint_WithoutHandler_ShouldNotAddElevation()
         {
-            var route = new Route {
+            var route = new Route
+            {
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (1, 2, null)
                 }
@@ -24,13 +25,14 @@ namespace Itinero.Tests.Geo.Elevation
         [Fact]
         public void RouteExtensions_AddElevation_1ShapePoint_WithHandler_ShouldAddElevation()
         {
-            var route = new Route {
+            var route = new Route
+            {
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (1, 2, null)
                 }
             };
 
-            var elevationHandler = new ElevationHandler((lon, lat) => (float) (lon + lat));
+            var elevationHandler = new ElevationHandler((lon, lat) => (float)(lon + lat));
 
             route.AddElevation(elevationHandler);
 

@@ -1,4 +1,4 @@
-using Itinero.IO.Osm.Tiles.Parsers;
+﻿using Itinero.IO.Osm.Tiles.Parsers;
 
 namespace Itinero.IO.Osm.Tiles
 {

@@ -46,7 +46,8 @@ namespace Itinero.Tests.Functional
         private static RouterDb FromUrl(Profile p, string url, string localFile = "latest.osm.pbf")
         {
             Console.WriteLine("Loading from URL " + url);
-            var routerDb = new RouterDb(new RouterDbConfiguration {
+            var routerDb = new RouterDb(new RouterDbConfiguration
+            {
                 Zoom = 14
             });
 
@@ -105,8 +106,8 @@ namespace Itinero.Tests.Functional
             // setup a router db with a local osm file.
             var routerDb = FromUrl(car, LuxembourgUrl, "luxembourg-latest.osm.pbf");
 
-            var lux1 = (6.119298934936523, 49.60962540702068, (float?) 0f);
-            var lux2 = (6.124148368835449, 49.588792167215345, (float?) 0f);
+            var lux1 = (6.119298934936523, 49.60962540702068, (float?)0f);
+            var lux2 = (6.124148368835449, 49.588792167215345, (float?)0f);
 
             var latest = routerDb.Latest;
             var lux1sp = await latest.Snap().ToAsync(lux1);
@@ -117,7 +118,7 @@ namespace Itinero.Tests.Functional
             var routes = await RouterOneToOneWithAlternativeTest.Default.RunAsync(
                 (latest, lux1sp, lux2sp, car)
             );
-            
+
             var geoJson = routes.Select(r => r.ToGeoJson()).ToList();
             Console.WriteLine(geoJson);
             // SnappingTests.RunTests(routerDb, bicycle);
@@ -398,60 +399,78 @@ namespace Itinero.Tests.Functional
 #else
             var loggingBlacklist = new HashSet<string>();
 #endif
-            Logger.LogAction = (o, level, message, parameters) => {
-                if (loggingBlacklist.Contains(o)) {
+            Logger.LogAction = (o, level, message, parameters) =>
+            {
+                if (loggingBlacklist.Contains(o))
+                {
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o)) {
+                if (!string.IsNullOrEmpty(o))
+                {
                     message = $"[{o}] {message}";
                 }
 
-                if (level == TraceEventType.Verbose.ToString().ToLower()) {
+                if (level == TraceEventType.Verbose.ToString().ToLower())
+                {
                     Log.Debug(message);
                 }
-                else if (level == TraceEventType.Information.ToString().ToLower()) {
+                else if (level == TraceEventType.Information.ToString().ToLower())
+                {
                     Log.Information(message);
                 }
-                else if (level == TraceEventType.Warning.ToString().ToLower()) {
+                else if (level == TraceEventType.Warning.ToString().ToLower())
+                {
                     Log.Warning(message);
                 }
-                else if (level == TraceEventType.Critical.ToString().ToLower()) {
+                else if (level == TraceEventType.Critical.ToString().ToLower())
+                {
                     Log.Fatal(message);
                 }
-                else if (level == TraceEventType.Error.ToString().ToLower()) {
+                else if (level == TraceEventType.Error.ToString().ToLower())
+                {
                     Log.Error(message);
                 }
-                else {
+                else
+                {
                     Log.Debug(message);
                 }
             };
 
-            Logging.Logger.LogAction = (o, level, message, parameters) => {
-                if (loggingBlacklist.Contains(o)) {
+            Logging.Logger.LogAction = (o, level, message, parameters) =>
+            {
+                if (loggingBlacklist.Contains(o))
+                {
                     return;
                 }
 
-                if (!string.IsNullOrEmpty(o)) {
+                if (!string.IsNullOrEmpty(o))
+                {
                     message = $"[{o}] {message}";
                 }
 
-                if (level == TraceEventType.Verbose.ToString().ToLower()) {
+                if (level == TraceEventType.Verbose.ToString().ToLower())
+                {
                     Log.Debug(message);
                 }
-                else if (level == TraceEventType.Information.ToString().ToLower()) {
+                else if (level == TraceEventType.Information.ToString().ToLower())
+                {
                     Log.Information(message);
                 }
-                else if (level == TraceEventType.Warning.ToString().ToLower()) {
+                else if (level == TraceEventType.Warning.ToString().ToLower())
+                {
                     Log.Warning(message);
                 }
-                else if (level == TraceEventType.Critical.ToString().ToLower()) {
+                else if (level == TraceEventType.Critical.ToString().ToLower())
+                {
                     Log.Fatal(message);
                 }
-                else if (level == TraceEventType.Error.ToString().ToLower()) {
+                else if (level == TraceEventType.Error.ToString().ToLower())
+                {
                     Log.Error(message);
                 }
-                else {
+                else
+                {
                     Log.Debug(message);
                 }
             };

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Itinero.Instructions.Configuration;
@@ -221,10 +221,10 @@ namespace Itinero.Tests.Instructions
             var round = toText.ToText(new RoundaboutInstruction(null, 1, 5, 90, 3));
             Assert.Equal("Go left", round);
         }
-      
+
         private static JsonElement JsonParse(string contents)
         {
-          return  JsonDocument.Parse(contents).RootElement;
+            return JsonDocument.Parse(contents).RootElement;
         }
     }
 }

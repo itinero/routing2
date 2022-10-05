@@ -1,8 +1,9 @@
-namespace Itinero.Routing.Alternatives
+﻿namespace Itinero.Routing.Alternatives
 {
     public interface IRouterOneToOneWithAlternatives : IRouterOneToOne
     {
-        AlternativeRouteSettings AlternativeRouteSettings {
+        AlternativeRouteSettings AlternativeRouteSettings
+        {
             get;
         }
     }

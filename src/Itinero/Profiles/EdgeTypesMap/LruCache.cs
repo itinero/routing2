@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Itinero.Profiles.EdgeTypesMap;
 
@@ -16,7 +16,8 @@ internal class LruCache<K, V>
     public bool TryGet(K key, out V? value)
     {
         LinkedListNode<LruCacheItem<K, V>> node;
-        if (!_cacheMap.TryGetValue(key, out node)) {
+        if (!_cacheMap.TryGetValue(key, out node))
+        {
             value = default;
             return false;
         }
@@ -29,7 +30,8 @@ internal class LruCache<K, V>
 
     public void Add(K key, V val)
     {
-        if (_cacheMap.Count >= _capacity) {
+        if (_cacheMap.Count >= _capacity)
+        {
             this.RemoveFirst();
         }
 

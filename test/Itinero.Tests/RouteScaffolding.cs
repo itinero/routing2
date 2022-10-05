@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Routes;
 
@@ -10,10 +10,10 @@ namespace Itinero.Tests
         {
             return parts;
         }
-        
+
         public static (double lon, double lat, float? e)[] G((double lon, double lat)[] parts)
         {
-            return parts.Select(c => (c.lon, c.lat,(float?) 0)).ToArray();
+            return parts.Select(c => (c.lon, c.lat, (float?)0)).ToArray();
         }
 
         public static Route GenerateRoute(
@@ -34,9 +34,11 @@ namespace Itinero.Tests
         {
             var allCoordinates = new List<(double longitude, double latitude, float? e)>();
             var metas = new List<Route.Meta>();
-            foreach (var part in parts) {
+            foreach (var part in parts)
+            {
                 allCoordinates.AddRange(part.coordinates);
-                var meta = new Route.Meta {
+                var meta = new Route.Meta
+                {
                     Shape = allCoordinates
                         .Count, // This is different from the routebuilder, as that one _does_ include the last coordinate 
                     Attributes = part.segmentAttributes
@@ -47,7 +49,8 @@ namespace Itinero.Tests
             metas[^1].Shape--;
             Route.Branch[] branchesArr = branches?.ToArray() ?? System.Array.Empty<Route.Branch>();
 
-            return new Route {
+            return new Route
+            {
                 ShapeMeta = metas,
                 Shape = allCoordinates,
                 Branches = branchesArr

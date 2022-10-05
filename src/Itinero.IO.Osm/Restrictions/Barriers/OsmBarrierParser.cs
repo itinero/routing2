@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OsmSharp;
@@ -31,7 +31,7 @@ public class OsmBarrierParser
         barrier = null;
 
         if (!this.IsBarrier(node)) return false;
-        
+
         barrier = OsmBarrier.Create(node.Id.Value, node.Tags.Select(t => (t.Key, t.Value)).ToList());
 
         return true;

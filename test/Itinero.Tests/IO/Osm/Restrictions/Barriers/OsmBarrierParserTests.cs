@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Itinero.IO.Osm.Restrictions.Barriers;
 using OsmSharp;
 using OsmSharp.Tags;
@@ -25,7 +25,7 @@ public class OsmBarrierParserTests
 
         Assert.True(result);
     }
-    
+
     [Fact]
     public void OsmBarrierParser_IsBarrier_WhenNotBarrier_ShouldReturnFalse()
     {

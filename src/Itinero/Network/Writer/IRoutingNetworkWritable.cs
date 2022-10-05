@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Tiles;

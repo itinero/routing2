@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Itinero.Geo;
@@ -13,12 +13,13 @@ namespace Itinero.Routing
         internal static (SnapPoint snapPoint, bool? direction) ToDirected(
             this (SnapPoint snapPoint, DirectionEnum? angle) snapPointAndDirection, RoutingNetwork routerDb)
         {
-            if (snapPointAndDirection.angle == null) {
+            if (snapPointAndDirection.angle == null)
+            {
                 return (snapPointAndDirection.snapPoint, null);
             }
 
             return (snapPointAndDirection.snapPoint,
-                snapPointAndDirection.snapPoint.DirectionFromAngle(routerDb, (double) snapPointAndDirection.angle,
+                snapPointAndDirection.snapPoint.DirectionFromAngle(routerDb, (double)snapPointAndDirection.angle,
                     out _));
         }
 
@@ -34,8 +35,9 @@ namespace Itinero.Routing
             RoutingNetwork routerDb)
         {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
-            foreach (var sp in sps) {
-                directedSps.Add((sp.snapPoint, (double) sp.directionEnum).ToDirected(routerDb));
+            foreach (var sp in sps)
+            {
+                directedSps.Add((sp.snapPoint, (double)sp.directionEnum).ToDirected(routerDb));
             }
 
             return directedSps;
@@ -46,7 +48,8 @@ namespace Itinero.Routing
             RoutingNetwork routerDb)
         {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
-            foreach (var sp in sps) {
+            foreach (var sp in sps)
+            {
                 directedSps.Add(sp.ToDirected(routerDb));
             }
 
@@ -56,7 +59,8 @@ namespace Itinero.Routing
         internal static IReadOnlyList<(SnapPoint sp, bool? directed)> ToDirected(this IReadOnlyList<SnapPoint> sps)
         {
             var directedSps = new List<(SnapPoint sp, bool? directed)>();
-            foreach (var sp in sps) {
+            foreach (var sp in sps)
+            {
                 directedSps.Add((sp, null));
             }
 
@@ -67,8 +71,10 @@ namespace Itinero.Routing
             this IReadOnlyList<(SnapPoint sp, bool? directed)> directedSps)
         {
             var sps = new List<SnapPoint>();
-            foreach (var (sp, direction) in directedSps) {
-                if (direction != null) {
+            foreach (var (sp, direction) in directedSps)
+            {
+                if (direction != null)
+                {
                     throw new InvalidDataException($"{nameof(SnapPoint)} is directed cannot convert to undirected.");
                 }
 
@@ -82,8 +88,10 @@ namespace Itinero.Routing
             this IEnumerable<(SnapPoint sp, bool? directed)> directedSps, out IReadOnlyList<SnapPoint> undirected)
         {
             var sps = new List<SnapPoint>();
-            foreach (var (sp, direction) in directedSps) {
-                if (direction != null) {
+            foreach (var (sp, direction) in directedSps)
+            {
+                if (direction != null)
+                {
                     sps.Clear();
                     undirected = sps;
                     return false;
@@ -112,11 +120,13 @@ namespace Itinero.Routing
                 bottomRight)? maxBox =
                     null;
 
-            if (!(settings.MaxDistance < double.MaxValue)) {
+            if (!(settings.MaxDistance < double.MaxValue))
+            {
                 return null;
             }
 
-            foreach (var source in sp) {
+            foreach (var source in sp)
+            {
                 var sourceLocation = source.LocationOnNetwork(routerDb);
                 var sourceBox = sourceLocation.BoxAround(settings.MaxDistance);
                 maxBox = maxBox?.Expand(sourceBox) ?? sourceBox;
@@ -133,7 +143,8 @@ namespace Itinero.Routing
                 bottomRight)? maxBox =
                     null;
 
-            if (!(settings.MaxDistance < double.MaxValue)) {
+            if (!(settings.MaxDistance < double.MaxValue))
+            {
                 return null;
             }
 

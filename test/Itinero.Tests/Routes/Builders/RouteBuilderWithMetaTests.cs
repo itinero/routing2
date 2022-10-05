@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo;
 using Itinero.Profiles;
@@ -26,7 +26,7 @@ namespace Itinero.Tests.Routes.Builders
                     });
 
             var network = routerDb.Latest;
-            var path = network.BuildPath(new[] {(edges[0], true)});
+            var path = network.BuildPath(new[] { (edges[0], true) });
 
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);
@@ -37,7 +37,7 @@ namespace Itinero.Tests.Routes.Builders
                     51.268886491558250, (float?)0));
             Assert.Equal(route.TotalDistance, distance, 1);
         }
-        
+
         [Fact]
         public void RouteBuilder_OneEdgeWithMeta_MetaIsContained()
         {
@@ -53,7 +53,7 @@ namespace Itinero.Tests.Routes.Builders
                     });
 
             var network = routerDb.Latest;
-            var path = network.BuildPath(new[] {(edges[0], true)});
+            var path = network.BuildPath(new[] { (edges[0], true) });
 
             var result = RouteBuilder.Default.Build(network, new DefaultProfile(), path);
             Assert.False(result.IsError);

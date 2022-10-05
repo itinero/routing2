@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
@@ -20,7 +20,7 @@ namespace Itinero.Tests.Network.Tiles
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var graphTile = NetworkTile.ReadFrom(memoryStream);
-            Assert.Equal((uint) 89546969, graphTile.TileId);
+            Assert.Equal((uint)89546969, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude, out _));
             Assert.Equal(4.7868, longitude, 4);
             Assert.Equal(51.2643, latitude, 4);
@@ -39,7 +39,7 @@ namespace Itinero.Tests.Network.Tiles
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var graphTile = NetworkTile.ReadFrom(memoryStream);
-            Assert.Equal((uint) 89546969, graphTile.TileId);
+            Assert.Equal((uint)89546969, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude, out var e));
             Assert.Equal(4.7868, longitude, 4);
             Assert.Equal(51.2643, latitude, 4);
@@ -61,7 +61,7 @@ namespace Itinero.Tests.Network.Tiles
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var graphTile = NetworkTile.ReadFrom(memoryStream);
-            Assert.Equal((uint) 89546973, graphTile.TileId);
+            Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude, out _));
             Assert.Equal(4.86638, longitude, 4);
             Assert.Equal(51.269728, latitude, 4);
@@ -73,7 +73,7 @@ namespace Itinero.Tests.Network.Tiles
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
-            Assert.Equal((uint) 0, edgeEnumerator.EdgeId.LocalId);
+            Assert.Equal((uint)0, edgeEnumerator.EdgeId.LocalId);
             Assert.False(edgeEnumerator.MoveNext());
         }
 
@@ -104,7 +104,7 @@ namespace Itinero.Tests.Network.Tiles
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var graphTile = NetworkTile.ReadFrom(memoryStream);
-            Assert.Equal((uint) 89546973, graphTile.TileId);
+            Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude, out _));
             Assert.Equal(4.86638, longitude, 4);
             Assert.Equal(51.269728, latitude, 4);
@@ -116,7 +116,7 @@ namespace Itinero.Tests.Network.Tiles
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
-            Assert.Equal((uint) 0, edgeEnumerator.EdgeId.LocalId);
+            Assert.Equal((uint)0, edgeEnumerator.EdgeId.LocalId);
             var shapes = edgeEnumerator.Shape.ToList();
             Assert.NotNull(shapes);
             Assert.Equal(3, shapes.Count);
@@ -159,7 +159,7 @@ namespace Itinero.Tests.Network.Tiles
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var graphTile = NetworkTile.ReadFrom(memoryStream);
-            Assert.Equal((uint) 89546973, graphTile.TileId);
+            Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude, out var e));
             Assert.Equal(4.86638, longitude, 4);
             Assert.Equal(51.269728, latitude, 4);
@@ -175,7 +175,7 @@ namespace Itinero.Tests.Network.Tiles
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
-            Assert.Equal((uint) 0, edgeEnumerator.EdgeId.LocalId);
+            Assert.Equal((uint)0, edgeEnumerator.EdgeId.LocalId);
             var shapes = edgeEnumerator.Shape.ToList();
             Assert.NotNull(shapes);
             Assert.Equal(3, shapes.Count);
@@ -217,7 +217,7 @@ namespace Itinero.Tests.Network.Tiles
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             var graphTile = NetworkTile.ReadFrom(memoryStream);
-            Assert.Equal((uint) 89546973, graphTile.TileId);
+            Assert.Equal((uint)89546973, graphTile.TileId);
             Assert.True(graphTile.TryGetVertex(vertex1, out var longitude, out var latitude, out _));
             Assert.Equal(4.86638, longitude, 4);
             Assert.Equal(51.269728, latitude, 4);
@@ -229,7 +229,7 @@ namespace Itinero.Tests.Network.Tiles
             edgeEnumerator.MoveTo(graphTile);
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
-            Assert.Equal((uint) 0, edgeEnumerator.EdgeId.LocalId);
+            Assert.Equal((uint)0, edgeEnumerator.EdgeId.LocalId);
             var attributes = edgeEnumerator.Attributes.ToList();
             Assert.NotNull(attributes);
             Assert.Equal(3, attributes.Count);

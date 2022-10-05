@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Itinero
 {
@@ -41,10 +41,13 @@ namespace Itinero
         /// <summary>
         /// Gets the result.
         /// </summary>
-        public T Value {
-            get {
+        public T Value
+        {
+            get
+            {
                 if (IsError &&
-                    _createException != null) {
+                    _createException != null)
+                {
                     throw _createException(ErrorMessage);
                 }
 
@@ -71,7 +74,7 @@ namespace Itinero
         {
             return result.Value;
         }
-        
+
         /// <summary>
         /// Implicit conversion from the result object type.
         /// </summary>
@@ -98,7 +101,8 @@ namespace Itinero
         /// <returns></returns>
         public Result<TNew> ConvertError<TNew>()
         {
-            if (!IsError) {
+            if (!IsError)
+            {
                 throw new Exception("Cannot convert a result that represents more than an error.");
             }
 
@@ -111,11 +115,13 @@ namespace Itinero
         /// <returns></returns>
         public override string ToString()
         {
-            if (IsError) {
+            if (IsError)
+            {
                 return $"Result<{nameof(T)}>: {ErrorMessage}";
             }
 
-            if (Value == null) {
+            if (Value == null)
+            {
                 return $"Result<{nameof(T)}>: null";
             }
 

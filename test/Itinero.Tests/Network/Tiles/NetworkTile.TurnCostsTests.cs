@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
@@ -19,21 +19,24 @@ namespace Itinero.Tests.Network.Tiles
             var edge1 = graphTile.AddEdge(vertex1, vertex2);
             var edge2 = graphTile.AddEdge(vertex2, vertex3);
 
-            graphTile.AddTurnCosts(vertex2, 145, new[] {edge1, edge2},
-                new uint[,] {{0, 100}, {100, 0}}, ArraySegment<(string key, string value)>.Empty);
+            graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
+                new uint[,] { { 0, 100 }, { 100, 0 } }, ArraySegment<(string key, string value)>.Empty);
 
             var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
 
-            while (enumerator.MoveNext()) {
-                if (enumerator.EdgeId == edge1) {
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.EdgeId == edge1)
+                {
                     Assert.Null(enumerator.HeadOrder);
-                    Assert.Equal((byte) 0, enumerator.TailOrder);
+                    Assert.Equal((byte)0, enumerator.TailOrder);
                 }
-                else if (enumerator.EdgeId == edge2) {
+                else if (enumerator.EdgeId == edge2)
+                {
                     Assert.Null(enumerator.HeadOrder);
-                    Assert.Equal((byte) 1, enumerator.TailOrder);
+                    Assert.Equal((byte)1, enumerator.TailOrder);
                 }
             }
         }
@@ -50,15 +53,17 @@ namespace Itinero.Tests.Network.Tiles
             var edge1 = graphTile.AddEdge(vertex1, vertex2);
             var edge2 = graphTile.AddEdge(vertex2, vertex3);
 
-            graphTile.AddTurnCosts(vertex2, 145, new[] {edge1, edge2},
-                new uint[,] {{0, 145454}, {79878, 0}}, ArraySegment<(string key, string value)>.Empty);
+            graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
+                new uint[,] { { 0, 145454 }, { 79878, 0 } }, ArraySegment<(string key, string value)>.Empty);
 
             var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
 
-            while (enumerator.MoveNext()) {
-                if (enumerator.EdgeId == edge1) {
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.EdgeId == edge1)
+                {
                     var costs = enumerator.GetTurnCostToTail(1).ToList();
                     // cost from edge2 -> edge1
                     Assert.Single(costs);
@@ -66,7 +71,8 @@ namespace Itinero.Tests.Network.Tiles
                     Assert.Equal(145U, cost.turnCostType);
                     Assert.Equal(79878U, cost.cost);
                 }
-                else if (enumerator.EdgeId == edge2) {
+                else if (enumerator.EdgeId == edge2)
+                {
                     var costs = enumerator.GetTurnCostToTail(0).ToList();
                     // cost from edge1 -> edge2
                     Assert.Single(costs);
@@ -89,17 +95,19 @@ namespace Itinero.Tests.Network.Tiles
             var edge1 = graphTile.AddEdge(vertex1, vertex2);
             var edge2 = graphTile.AddEdge(vertex2, vertex3);
 
-            graphTile.AddTurnCosts(vertex2, 145, new[] {edge1, edge2},
-                new uint[,] {{0, 145454}, {79878, 0}}, ArraySegment<(string key, string value)>.Empty);
-            graphTile.AddTurnCosts(vertex2, 456, new[] {edge1, edge2},
-                new uint[,] {{0, 13144}, {46823, 0}}, ArraySegment<(string key, string value)>.Empty);
+            graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
+                new uint[,] { { 0, 145454 }, { 79878, 0 } }, ArraySegment<(string key, string value)>.Empty);
+            graphTile.AddTurnCosts(vertex2, 456, new[] { edge1, edge2 },
+                new uint[,] { { 0, 13144 }, { 46823, 0 } }, ArraySegment<(string key, string value)>.Empty);
 
             var enumerator = new NetworkTileEnumerator();
             enumerator.MoveTo(graphTile);
             enumerator.MoveTo(vertex2);
 
-            while (enumerator.MoveNext()) {
-                if (enumerator.EdgeId == edge1) {
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.EdgeId == edge1)
+                {
                     var costs = enumerator.GetTurnCostToTail(1).ToList();
                     // cost from edge2 -> edge1
                     Assert.Equal(2, costs.Count);
@@ -110,7 +118,8 @@ namespace Itinero.Tests.Network.Tiles
                     Assert.Equal(145U, cost.turnCostType);
                     Assert.Equal(79878U, cost.cost);
                 }
-                else if (enumerator.EdgeId == edge2) {
+                else if (enumerator.EdgeId == edge2)
+                {
                     var costs = enumerator.GetTurnCostToTail(0).ToList();
                     // cost from edge1 -> edge2
                     Assert.Equal(2, costs.Count);

@@ -1,4 +1,4 @@
-namespace Itinero.Geo
+﻿namespace Itinero.Geo
 {
     /// <summary>
     /// A number of geo related or calculation constants.

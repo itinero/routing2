@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Instructions;
 using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
@@ -14,7 +14,8 @@ namespace Itinero.Tests.Instructions
         {
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.1850286573171616, 51.20640699014240, null), // Ramp-up
@@ -46,7 +47,7 @@ namespace Itinero.Tests.Instructions
 
             var gen = new RoundaboutInstructionGenerator();
 
-            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
+            var instr = (RoundaboutInstruction)gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("right", instr.TurnDegrees.DegreesToText());
             Assert.Equal(1, instr.ExitNumber);
@@ -100,7 +101,7 @@ namespace Itinero.Tests.Instructions
             };
             var gen = new RoundaboutInstructionGenerator();
 
-            var instr = (RoundaboutInstruction) gen.Generate(new IndexedRoute(route), 1);
+            var instr = (RoundaboutInstruction)gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
             Assert.Equal(2, instr.ExitNumber);

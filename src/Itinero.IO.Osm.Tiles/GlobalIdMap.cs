@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -41,7 +41,8 @@ namespace Itinero.IO.Osm.Tiles
         /// <inheritdoc/>
         public IEnumerator<(long globalId, VertexId vertex)> GetEnumerator()
         {
-            foreach (var pair in _vertexPerId) {
+            foreach (var pair in _vertexPerId)
+            {
                 yield return (pair.Key, pair.Value);
             }
         }
@@ -61,7 +62,8 @@ namespace Itinero.IO.Osm.Tiles
 
             // write data.
             stream.WriteVarInt64(_vertexPerId.Count);
-            foreach (var pair in _vertexPerId) {
+            foreach (var pair in _vertexPerId)
+            {
                 stream.WriteVarInt64(pair.Key);
                 stream.WriteVarUInt32(pair.Value.TileId);
                 stream.WriteVarUInt32(pair.Value.LocalId);
@@ -75,18 +77,21 @@ namespace Itinero.IO.Osm.Tiles
             // read & verify header.
             var header = stream.ReadWithSizeString();
             var version = stream.ReadByte();
-            if (header != nameof(GlobalIdMap)) {
+            if (header != nameof(GlobalIdMap))
+            {
                 throw new InvalidDataException($"Cannot read {nameof(GlobalIdMap)}: Header invalid.");
             }
 
-            if (version != 1) {
+            if (version != 1)
+            {
                 throw new InvalidDataException($"Cannot read {nameof(GlobalIdMap)}: Version # invalid.");
             }
 
             // read size first
             var globalIdMap = new GlobalIdMap();
             var size = stream.ReadVarInt64();
-            for (var p = 0; p < size; p++) {
+            for (var p = 0; p < size; p++)
+            {
                 var nodeId = stream.ReadVarInt64();
                 var tileId = stream.ReadVarUInt32();
                 var localId = stream.ReadVarUInt32();

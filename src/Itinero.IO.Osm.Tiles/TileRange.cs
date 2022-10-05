@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -19,7 +19,8 @@ namespace Itinero.IO.Osm.Tiles
             Bottom = bottomRight.Y;
             Zoom = zoom;
 
-            if (Top > Bottom) {
+            if (Top > Bottom)
+            {
                 throw new ArgumentException("Invalid tile range, top is lower than bottom.");
             }
         }
@@ -60,18 +61,22 @@ namespace Itinero.IO.Osm.Tiles
 
             public bool MoveNext()
             {
-                if (_x == uint.MaxValue) {
+                if (_x == uint.MaxValue)
+                {
                     _x = _tileRange.Left;
                     _y = _tileRange.Top;
                     return true;
                 }
 
-                if (_tileRange.Left > _tileRange.Right) { // not supported.
+                if (_tileRange.Left > _tileRange.Right)
+                { // not supported.
                     throw new Exception("Tile ranges crossing date line not supported.");
                 }
 
-                if (_x == _tileRange.Right) { // move y.
-                    if (_y == _tileRange.Bottom) { // enumeration finished.
+                if (_x == _tileRange.Right)
+                { // move y.
+                    if (_y == _tileRange.Bottom)
+                    { // enumeration finished.
                         return false;
                     }
 

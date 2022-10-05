@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Vertices;
@@ -24,9 +24,11 @@ namespace Itinero.Network.Search
         {
             var rangeVertices = new TilesVertexEnumerator(network, box.TileRange(network.Zoom));
 
-            while (rangeVertices.MoveNext()) {
+            while (rangeVertices.MoveNext())
+            {
                 var location = rangeVertices.Location;
-                if (!box.Overlaps(location)) {
+                if (!box.Overlaps(location))
+                {
                     continue;
                 }
 

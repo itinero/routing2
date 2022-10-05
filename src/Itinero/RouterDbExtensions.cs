@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Itinero.Network.Mutation;
 using Itinero.Network.Serialization;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,7 +22,7 @@ public class AttributeSetMap
     /// Gets the id.
     /// </summary>
     public Guid Id { get; protected set; }
-    
+
     /// <summary>
     /// Maps the attribute set to a subset of the attributes keeping only the useful attributes.
     /// </summary>

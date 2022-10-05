@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Storage;
@@ -183,7 +183,7 @@ namespace Itinero.Network.Tiles
         public bool MoveNext()
         {
             this.EdgePointer = uint.MaxValue;
-            
+
             if (Tile == null)
             {
                 throw new InvalidOperationException("Move to graph tile first.");
@@ -304,12 +304,14 @@ namespace Itinero.Network.Tiles
         /// Gets the first vertex.
         /// </summary>
         public VertexId Tail { get; private set; }
-        
+
         private (double longitude, double latitude, float? e)? _tailLocation;
-        
+
         /// <inheritdoc/>
-        public (double longitude, double latitude, float? e) TailLocation {
-            get {
+        public (double longitude, double latitude, float? e) TailLocation
+        {
+            get
+            {
                 _tailLocation ??= GetVertex(Tail);
 
                 return _tailLocation.Value;
@@ -324,8 +326,10 @@ namespace Itinero.Network.Tiles
         private (double longitude, double latitude, float? e)? _headLocation;
 
         /// <inheritdoc/>
-        public (double longitude, double latitude, float? e) HeadLocation {
-            get {
+        public (double longitude, double latitude, float? e) HeadLocation
+        {
+            get
+            {
                 _headLocation ??= GetVertex(Head);
 
                 return _headLocation.Value;
@@ -381,7 +385,7 @@ namespace Itinero.Network.Tiles
                 ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
                 : Tile.GetTurnCosts(Tail, sourceOrder, order.Value);
         }
-        
+
         /// <summary>
         /// Gets the turn cost at the tail turn ([head -> tail] -> target).
         /// </summary>
@@ -398,7 +402,7 @@ namespace Itinero.Network.Tiles
                 ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
                 : Tile.GetTurnCosts(Tail, order.Value, targetOrder);
         }
-        
+
         /// <summary>
         /// Gets the turn cost at the tail turn (source -> [head -> tail]).
         /// </summary>
@@ -415,7 +419,7 @@ namespace Itinero.Network.Tiles
                 ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
                 : Tile.GetTurnCosts(Head, sourceOrder, order.Value);
         }
-        
+
         /// <summary>
         /// Gets the turn cost at the tail turn ([tail -> head] -> target).
         /// </summary>
@@ -432,14 +436,16 @@ namespace Itinero.Network.Tiles
                 ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
                 : Tile.GetTurnCosts(Head, order.Value, targetOrder);
         }
-        
+
         private (double longitude, double latitude, float? e) GetVertex(VertexId vertex)
         {
-            if (Tile == null) {
+            if (Tile == null)
+            {
                 throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
             }
 
-            if (!Tile.TryGetVertex(vertex, out var longitude, out var latitude, out var e)) {
+            if (!Tile.TryGetVertex(vertex, out var longitude, out var latitude, out var e))
+            {
                 throw new ArgumentOutOfRangeException(nameof(vertex), $"Vertex {vertex} not found!");
             }
 

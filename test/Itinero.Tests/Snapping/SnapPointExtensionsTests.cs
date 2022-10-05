@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
@@ -76,7 +76,7 @@ namespace Itinero.Tests.Snapping
         }
 
         [Fact]
-        public async Task  Snap_OneVertex_ShouldFail()
+        public async Task Snap_OneVertex_ShouldFail()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -89,7 +89,7 @@ namespace Itinero.Tests.Snapping
         }
 
         [Fact]
-        public async Task  Snap_OneEdge_Vertex1_ShouldReturnOffset0()
+        public async Task Snap_OneEdge_Vertex1_ShouldReturnOffset0()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -107,7 +107,7 @@ namespace Itinero.Tests.Snapping
         }
 
         [Fact]
-        public async Task  Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
+        public async Task Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -125,7 +125,7 @@ namespace Itinero.Tests.Snapping
         }
 
         [Fact]
-        public async Task  Snap_OneEdge_Middle_ShouldReturnMiddle()
+        public async Task Snap_OneEdge_Middle_ShouldReturnMiddle()
         {
             var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
                 new (double longitude, double latitude, float? e)[] {
@@ -137,7 +137,7 @@ namespace Itinero.Tests.Snapping
                 });
 
             var location = ((3.1074142456054688 + 3.1095707416534424) / 2,
-                (51.31012070202407 + 51.31076453560284) / 2, (float?) null);
+                (51.31012070202407 + 51.31076453560284) / 2, (float?)null);
             var routerDbLatest = routerDb.Latest;
             var result = await routerDbLatest.Snap().ToAsync(location);
             Assert.False(result.IsError);

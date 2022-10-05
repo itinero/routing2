@@ -1,4 +1,4 @@
-using Reminiscence.Arrays;
+﻿using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles
 {
@@ -15,7 +15,8 @@ namespace Itinero.Network.Tiles
         public static void EnsureMinimumSize<T>(this ArrayBase<T> array, long position,
             long step = 16, T fill = default)
         {
-            if (array.Length > position) {
+            if (array.Length > position)
+            {
                 return;
             }
 
@@ -24,7 +25,8 @@ namespace Itinero.Network.Tiles
 
             var size = array.Length;
             array.Resize(array.Length + increase);
-            for (var i = size; i < array.Length; i++) {
+            for (var i = size; i < array.Length; i++)
+            {
                 array[i] = fill;
             }
         }

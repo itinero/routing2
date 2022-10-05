@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Itinero.Network;
@@ -48,7 +48,8 @@ public sealed class GlobalEdgeIdSet : IEnumerable<(Guid globalId, EdgeId edgeId)
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
     public IEnumerator<(Guid globalId, EdgeId edgeId)> GetEnumerator()
     {
-        foreach (var (key, value) in _set) {
+        foreach (var (key, value) in _set)
+        {
             yield return (key, value);
         }
     }

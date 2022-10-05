@@ -1,7 +1,7 @@
-﻿using Reminiscence.Arrays;
-using Reminiscence.IO;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Reminiscence;
+using Reminiscence.Arrays;
+using Reminiscence.IO;
 
 namespace Itinero.IO.Osm.Collections
 {
@@ -52,18 +52,20 @@ namespace Itinero.IO.Osm.Collections
 
         private static void long2doubleInt(long a, out int a1, out int a2)
         {
-            unchecked {
-                a1 = (int) (a & uint.MaxValue);
-                a2 = (int) (a >> 32);
+            unchecked
+            {
+                a1 = (int)(a & uint.MaxValue);
+                a2 = (int)(a >> 32);
             }
         }
 
         private static long doubleInt2long(int a1, int a2)
         {
-            unchecked {
+            unchecked
+            {
                 long b = a2;
                 b = b << 32;
-                b = b | (uint) a1;
+                b = b | (uint)a1;
                 return b;
             }
         }
@@ -77,12 +79,14 @@ namespace Itinero.IO.Osm.Collections
             _index.Resize(_idx);
 
             Logging.Logger.Log("NodeIndex", Logging.TraceEventType.Information, "Sorting node id's...");
-            QuickSort.Sort((i) => {
-                    var int1 = _index[i * 2 + 0];
-                    var int2 = _index[i * 2 + 1];
-                    return doubleInt2long(int1, int2);
-                },
-                (i, j) => {
+            QuickSort.Sort((i) =>
+            {
+                var int1 = _index[i * 2 + 0];
+                var int2 = _index[i * 2 + 1];
+                return doubleInt2long(int1, int2);
+            },
+                (i, j) =>
+                {
                     var int1 = _index[i * 2 + 0];
                     var int2 = _index[i * 2 + 1];
                     _index[i * 2 + 0] = _index[j * 2 + 0];
@@ -91,16 +95,18 @@ namespace Itinero.IO.Osm.Collections
                     _index[j * 2 + 1] = int2;
                 }, 0, _index.Length / 2 - 1);
 
-            for (long i = 0; i < _index.Length / 2; i++) {
+            for (long i = 0; i < _index.Length / 2; i++)
+            {
                 var int1 = _index[i * 2 + 0];
                 var int2 = _index[i * 2 + 1];
                 var id = doubleInt2long(int1, int2);
 
-                while (id >= (long) int.MaxValue * (long) (_overflows.Count + 1)) { // nodes are overflowing again.
+                while (id >= (long)int.MaxValue * (long)(_overflows.Count + 1))
+                { // nodes are overflowing again.
                     _overflows.Add(i);
                 }
 
-                _index[i] = (int) (id - (long) int.MaxValue * (long) _overflows.Count);
+                _index[i] = (int)(id - (long)int.MaxValue * (long)_overflows.Count);
             }
 
             _index.Resize(_index.Length / 2);
@@ -110,8 +116,10 @@ namespace Itinero.IO.Osm.Collections
         /// <summary>
         /// Gets the node id at the given index.
         /// </summary>
-        public long this[long idx] {
-            get {
+        public long this[long idx]
+        {
+            get
+            {
                 var int1 = _index[idx * 2 + 0];
                 var int2 = _index[idx * 2 + 1];
                 return doubleInt2long(int1, int2);
@@ -126,7 +134,7 @@ namespace Itinero.IO.Osm.Collections
             var idx = TryGetIndex(id);
 
             _data.EnsureMinimumSize(idx * 2 + 2, int.MaxValue);
-            _data[idx * 2 + 0] = unchecked((int) vertex);
+            _data[idx * 2 + 0] = unchecked((int)vertex);
             _data[idx * 2 + 1] = int.MinValue;
         }
 
@@ -135,12 +143,13 @@ namespace Itinero.IO.Osm.Collections
         /// </summary>
         public void SetIndex(long idx, float latitude, float longitude)
         {
-            var lat = (int) (latitude * 10000000);
-            var lon = (int) (longitude * 10000000);
+            var lat = (int)(latitude * 10000000);
+            var lon = (int)(longitude * 10000000);
 
             _data.EnsureMinimumSize(idx * 2 + 2, int.MaxValue);
 
-            if (_data[idx * 2 + 1] == int.MinValue) {
+            if (_data[idx * 2 + 1] == int.MinValue)
+            {
                 // this is already a core vertex, no need to overwrite this more valuable data.
                 return;
             }
@@ -155,17 +164,19 @@ namespace Itinero.IO.Osm.Collections
         public bool TryGetCoreNode(long id, out uint vertex)
         {
             var idx = TryGetIndex(id);
-            if (idx == long.MaxValue) {
+            if (idx == long.MaxValue)
+            {
                 vertex = uint.MaxValue;
                 return false;
             }
 
-            if (_data.Length <= idx * 2 + 0) {
+            if (_data.Length <= idx * 2 + 0)
+            {
                 vertex = uint.MaxValue;
                 return false;
             }
 
-            vertex = unchecked((uint) _data[idx * 2 + 0]);
+            vertex = unchecked((uint)_data[idx * 2 + 0]);
             return _data[idx * 2 + 1] == int.MinValue;
         }
 
@@ -174,10 +185,13 @@ namespace Itinero.IO.Osm.Collections
         /// </summary>
         public bool IsCoreNode(long id)
         {
-            if (_previousIndex != long.MaxValue) {
+            if (_previousIndex != long.MaxValue)
+            {
                 var tempId = GetId(_previousIndex + 1);
-                if (tempId == id) {
-                    if (IsCoreNodeAtIndex(_previousIndex + 1, id)) {
+                if (tempId == id)
+                {
+                    if (IsCoreNodeAtIndex(_previousIndex + 1, id))
+                    {
                         return true;
                     }
 
@@ -186,9 +200,11 @@ namespace Itinero.IO.Osm.Collections
             }
 
             var idx = TryGetIndex(id);
-            if (idx != long.MaxValue) {
+            if (idx != long.MaxValue)
+            {
                 _previousIndex = idx;
-                if (IsCoreNodeAtIndex(idx, id)) {
+                if (IsCoreNodeAtIndex(idx, id))
+                {
                     return true;
                 }
 
@@ -204,9 +220,11 @@ namespace Itinero.IO.Osm.Collections
         /// </summary>
         public bool HasId(long id)
         {
-            if (_previousIndex != long.MaxValue) {
+            if (_previousIndex != long.MaxValue)
+            {
                 var tempId = GetId(_previousIndex + 1);
-                if (tempId == id) {
+                if (tempId == id)
+                {
                     return true;
                 }
             }
@@ -222,14 +240,16 @@ namespace Itinero.IO.Osm.Collections
         public bool TryGetValue(long id, out float latitude, out float longitude, out bool isCore)
         {
             var idx = TryGetIndex(id);
-            if (idx == long.MaxValue) {
+            if (idx == long.MaxValue)
+            {
                 latitude = float.MaxValue;
                 longitude = float.MaxValue;
                 isCore = false;
                 return false;
             }
 
-            if (!GetLatLon(idx, out latitude, out longitude)) {
+            if (!GetLatLon(idx, out latitude, out longitude))
+            {
                 latitude = float.MaxValue;
                 longitude = float.MaxValue;
                 isCore = false;
@@ -247,7 +267,8 @@ namespace Itinero.IO.Osm.Collections
             out long idx)
         {
             idx = TryGetIndex(id);
-            if (idx == long.MaxValue) { // no relevant data here.
+            if (idx == long.MaxValue)
+            { // no relevant data here.
                 latitude = float.MaxValue;
                 longitude = float.MaxValue;
                 isCore = false;
@@ -255,15 +276,17 @@ namespace Itinero.IO.Osm.Collections
                 return false;
             }
             else if (_data.Length > idx * 2 + 1 &&
-                     _data[idx * 2 + 1] == int.MinValue) { // this is a core-vertex, no coordinates here anymore.
+                     _data[idx * 2 + 1] == int.MinValue)
+            { // this is a core-vertex, no coordinates here anymore.
                 latitude = float.MaxValue;
                 longitude = float.MaxValue;
                 isCore = IsCoreNodeAtIndex(idx, id);
-                vertex = unchecked((uint) _data[idx * 2 + 0]);
+                vertex = unchecked((uint)_data[idx * 2 + 0]);
                 return true;
             }
 
-            if (GetLatLon(idx, out latitude, out longitude)) { // no relevant data.
+            if (GetLatLon(idx, out latitude, out longitude))
+            { // no relevant data.
                 isCore = IsCoreNodeAtIndex(idx, id);
                 vertex = uint.MaxValue;
                 return true;
@@ -282,7 +305,8 @@ namespace Itinero.IO.Osm.Collections
         public bool TryGetValue(long id, out (double longitude, double latitude, float? e) coordinate,
             out bool isCore)
         {
-            if (TryGetValue(id, out var latitude, out var longitude, out isCore)) {
+            if (TryGetValue(id, out var latitude, out var longitude, out isCore))
+            {
                 coordinate = (longitude, latitude, null);
                 return true;
             }
@@ -297,12 +321,14 @@ namespace Itinero.IO.Osm.Collections
         private bool IsCoreNodeAtIndex(long idx, long id)
         {
             if (idx > 0 &&
-                GetId(idx - 1) == id) {
+                GetId(idx - 1) == id)
+            {
                 return true;
             }
 
             if (idx < _index.Length - 1 &&
-                GetId(idx + 1) == id) {
+                GetId(idx + 1) == id)
+            {
                 return true;
             }
 
@@ -317,25 +343,30 @@ namespace Itinero.IO.Osm.Collections
         public long TryGetIndex(long id)
         {
             if (_previousIndex != long.MaxValue &&
-                _previousIndex + 1 < _idx) {
+                _previousIndex + 1 < _idx)
+            {
                 var previousId = GetId(_previousIndex);
                 var offset = 1;
                 var nextId = GetId(_previousIndex + offset);
                 while (nextId == previousId &&
-                       _previousIndex + offset + 1 < _idx) {
+                       _previousIndex + offset + 1 < _idx)
+                {
                     offset++;
                     nextId = GetId(_previousIndex + offset);
                 }
 
-                if (previousId < id && id < nextId) {
+                if (previousId < id && id < nextId)
+                {
                     return long.MaxValue;
                 }
 
-                if (previousId == id) {
+                if (previousId == id)
+                {
                     return _previousIndex;
                 }
 
-                if (nextId == id) {
+                if (nextId == id)
+                {
                     _previousIndex += offset;
                     return _previousIndex;
                 }
@@ -345,15 +376,18 @@ namespace Itinero.IO.Osm.Collections
             long bottom = 0;
             var top = _idx - 1;
             var bottomId = GetId(bottom);
-            if (id == bottomId) {
+            if (id == bottomId)
+            {
                 _previousIndex = bottom;
                 return bottom;
             }
 
             var topId = GetId(top);
-            if (id == topId) {
+            if (id == topId)
+            {
                 while (top - 1 > 0 &&
-                       GetId(top - 1) == id) {
+                       GetId(top - 1) == id)
+                {
                     top--;
                 }
 
@@ -361,12 +395,15 @@ namespace Itinero.IO.Osm.Collections
                 return top;
             }
 
-            while (top - bottom > 1) {
+            while (top - bottom > 1)
+            {
                 var middle = (top - bottom) / 2 + bottom;
                 var middleId = GetId(middle);
-                if (middleId == id) {
+                if (middleId == id)
+                {
                     while (middle - 1 > 0 &&
-                           GetId(middle - 1) == id) {
+                           GetId(middle - 1) == id)
+                    {
                         middle--;
                     }
 
@@ -374,11 +411,13 @@ namespace Itinero.IO.Osm.Collections
                     return middle;
                 }
 
-                if (middleId > id) {
+                if (middleId > id)
+                {
                     topId = middleId;
                     top = middle;
                 }
-                else {
+                else
+                {
                     bottomId = middleId;
                     bottom = middle;
                 }
@@ -389,21 +428,25 @@ namespace Itinero.IO.Osm.Collections
 
         private long GetId(long index)
         {
-            if (_index.Length == 0) {
+            if (_index.Length == 0)
+            {
                 return long.MaxValue;
             }
 
             var overflow = 0;
-            for (var i = 0; i < _overflows.Count; i++) {
-                if (index >= _overflows[i]) {
+            for (var i = 0; i < _overflows.Count; i++)
+            {
+                if (index >= _overflows[i])
+                {
                     overflow = i + 1;
                 }
-                else {
+                else
+                {
                     break;
                 }
             }
 
-            return (long) _index[index] + (long) (int.MaxValue * (long) overflow);
+            return (long)_index[index] + (long)(int.MaxValue * (long)overflow);
         }
 
         private bool GetLatLon(long index, out float latitude, out float longitude)
@@ -413,14 +456,15 @@ namespace Itinero.IO.Osm.Collections
             var lat = _data[index + 0];
             var lon = _data[index + 1];
 
-            if (lat == int.MaxValue && lon == int.MaxValue) {
+            if (lat == int.MaxValue && lon == int.MaxValue)
+            {
                 latitude = float.MaxValue;
                 longitude = float.MaxValue;
                 return false;
             }
 
-            latitude = (float) (lat / 10000000.0);
-            longitude = (float) (lon / 10000000.0);
+            latitude = (float)(lat / 10000000.0);
+            longitude = (float)(lon / 10000000.0);
             return true;
         }
 

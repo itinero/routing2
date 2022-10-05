@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Itinero.Instructions.Types
 {
@@ -21,7 +21,8 @@ namespace Itinero.Instructions.Types
         internal StartInstruction(IndexedRoute route, BaseInstruction contained = null) : this(route,
             0,
             route.DepartingDirectionAt(0).NormalizeDegrees(),
-            0, contained) { }
+            0, contained)
+        { }
 
         /// <summary>
         ///     The compass degrees to start the trip, with 0° being 'go to the north'

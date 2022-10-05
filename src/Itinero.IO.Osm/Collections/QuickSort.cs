@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Itinero.IO.Osm.Collections
 {
@@ -11,20 +11,24 @@ namespace Itinero.IO.Osm.Collections
 
         public static void Sort(Func<long, long, int> compare, Action<long, long> swap, long left, long right)
         {
-            if (left >= right) {
+            if (left >= right)
+            {
                 return;
             }
 
             var stack = new System.Collections.Generic.Stack<Pair>();
             stack.Push(new Pair(left, right));
-            while (stack.Count > 0) {
+            while (stack.Count > 0)
+            {
                 var pair = stack.Pop();
                 var pivot = Partition(compare, swap, pair.Left, pair.Right);
-                if (pair.Left < pivot) {
+                if (pair.Left < pivot)
+                {
                     stack.Push(new Pair(pair.Left, pivot - 1));
                 }
 
-                if (pivot < pair.Right) {
+                if (pivot < pair.Right)
+                {
                     stack.Push(new Pair(pivot + 1, pair.Right));
                 }
             }
@@ -33,9 +37,11 @@ namespace Itinero.IO.Osm.Collections
         public static bool IsSorted(Func<long, long> value, long left, long right)
         {
             var previous = value(left);
-            for (var i = left + 1; i <= right; i++) {
+            for (var i = left + 1; i <= right; i++)
+            {
                 var val = value(i);
-                if (previous > val) {
+                if (previous > val)
+                {
                     return false;
                 }
 
@@ -61,18 +67,21 @@ namespace Itinero.IO.Osm.Collections
         private static long Partition(Func<long, long, int> compare, Action<long, long> swap, long left, long right)
         {
             // get the pivot value.
-            if (left > right) {
+            if (left > right)
+            {
                 throw new ArgumentException("left should be smaller than or equal to right.");
             }
 
-            if (left == right) {
+            if (left == right)
+            {
                 // sorting just one item results in that item being sorted already and a pivot equal to that item itself.
                 return right;
             }
 
             // select the middle one as the pivot value.
-            var pivot = (left + right) / (long) 2;
-            if (pivot != left) { // switch.
+            var pivot = (left + right) / (long)2;
+            if (pivot != left)
+            { // switch.
                 swap(pivot, left);
             }
 
@@ -80,13 +89,16 @@ namespace Itinero.IO.Osm.Collections
             pivot = left;
             //var pivotValue = value(pivot);
 
-            while (true) {
+            while (true)
+            {
                 // move the left to the right until the first value bigger than pivot.
                 // var leftValue = value(left + 1);
                 var leftComparison = compare(left + 1, pivot);
-                while (leftComparison <= 0) {
+                while (leftComparison <= 0)
+                {
                     left++;
-                    if (left == right) {
+                    if (left == right)
+                    {
                         break;
                     }
 
@@ -94,12 +106,15 @@ namespace Itinero.IO.Osm.Collections
                 }
 
                 // move the right to left until the first value smaller than pivot.
-                if (left != right) {
+                if (left != right)
+                {
                     // var rightValue = value(right);
                     var rightComparison = compare(right, pivot);
-                    while (rightComparison > 0) {
+                    while (rightComparison > 0)
+                    {
                         right--;
-                        if (left == right) {
+                        if (left == right)
+                        {
                             break;
                         }
 
@@ -107,8 +122,10 @@ namespace Itinero.IO.Osm.Collections
                     }
                 }
 
-                if (left == right) { // we are done searching, left == right.
-                    if (pivot != left) { // make sure the pivot value is where it is supposed to be.
+                if (left == right)
+                { // we are done searching, left == right.
+                    if (pivot != left)
+                    { // make sure the pivot value is where it is supposed to be.
                         swap(pivot, left);
                     }
 
@@ -131,11 +148,13 @@ namespace Itinero.IO.Osm.Collections
             long pivot,
             out long highestLowest, out long lowestHighest)
         {
-            if (left > right) {
+            if (left > right)
+            {
                 throw new ArgumentException("left should be smaller than or equal to right.");
             }
 
-            if (left == right) {
+            if (left == right)
+            {
                 // sorting just one item results in that item being sorted already and a pivot equal to that item itself.
                 highestLowest = right;
                 lowestHighest = right;
@@ -149,18 +168,22 @@ namespace Itinero.IO.Osm.Collections
             var j = left;
             var n = right;
 
-            while (j <= n) {
+            while (j <= n)
+            {
                 var valueJ = value(j);
-                if (valueJ < pivotValue) {
+                if (valueJ < pivotValue)
+                {
                     swap(i, j);
                     i++;
                     j++;
                 }
-                else if (valueJ > pivotValue) {
+                else if (valueJ > pivotValue)
+                {
                     swap(j, n);
                     n--;
                 }
-                else {
+                else
+                {
                     j++;
                 }
             }

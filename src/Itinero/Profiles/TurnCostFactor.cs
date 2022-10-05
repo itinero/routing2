@@ -1,4 +1,4 @@
-namespace Itinero.Profiles
+﻿namespace Itinero.Profiles
 {
     /// <summary>
     /// A turn cost factor used to customize turn cost handling per profile.

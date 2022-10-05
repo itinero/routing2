@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Itinero.Network;
 using Itinero.Network.Mutation;
 
@@ -19,7 +19,8 @@ namespace Itinero
         /// <returns>The mutable version.</returns>
         public RoutingNetworkMutator GetMutableNetwork()
         {
-            if (_mutable != null) {
+            if (_mutable != null)
+            {
                 throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
                                                     $"Check {nameof(HasMutableNetwork)} to check for a current mutable.");
             }

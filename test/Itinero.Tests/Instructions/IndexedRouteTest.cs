@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Instructions;
 using Itinero.Routes;
@@ -11,7 +11,8 @@ namespace Itinero.Tests.Instructions
         [Fact]
         public void BuildMetaList_SmallRoute_MetaDataIsCorrect()
         {
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.1850286573171616, 51.20640699014240, null), // Ramp-up

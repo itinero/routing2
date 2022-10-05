@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Geo.Directions;
 using Itinero.Snapping;
 
@@ -17,7 +17,8 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterManyToOne To(this IHasSources hasSources, SnapPoint target)
         {
-            return new Router(hasSources.Network, hasSources.Settings) {
+            return new Router(hasSources.Network, hasSources.Settings)
+            {
                 Sources = hasSources.Sources,
                 Target = (target, null)
             };
@@ -32,7 +33,8 @@ namespace Itinero.Routing
         public static IRouterManyToOne To(this IHasSources hasSources,
             (SnapPoint snapPoint, DirectionEnum? direction) target)
         {
-            return new Router(hasSources.Network, hasSources.Settings) {
+            return new Router(hasSources.Network, hasSources.Settings)
+            {
                 Sources = hasSources.Sources,
                 Target = target.ToDirected(hasSources.Network)
             };
@@ -46,7 +48,8 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterManyToOne To(this IHasSources hasSources, (SnapPoint snapPoint, bool? direction) target)
         {
-            return new Router(hasSources.Network, hasSources.Settings) {
+            return new Router(hasSources.Network, hasSources.Settings)
+            {
                 Sources = hasSources.Sources,
                 Target = target
             };
@@ -60,7 +63,8 @@ namespace Itinero.Routing
         /// <returns>A configured router.</returns>
         public static IRouterManyToMany To(this IHasSources hasSources, IReadOnlyList<SnapPoint> targets)
         {
-            return new Router(hasSources.Network, hasSources.Settings) {
+            return new Router(hasSources.Network, hasSources.Settings)
+            {
                 Sources = hasSources.Sources,
                 Targets = targets.ToDirected()
             };
@@ -75,7 +79,8 @@ namespace Itinero.Routing
         public static IRouterManyToMany To(this IHasSources hasSources,
             IReadOnlyList<(SnapPoint snapPoint, DirectionEnum? directed)> targets)
         {
-            return new Router(hasSources.Network, hasSources.Settings) {
+            return new Router(hasSources.Network, hasSources.Settings)
+            {
                 Sources = hasSources.Sources,
                 Targets = targets.ToDirected(hasSources.Network)
             };
@@ -90,7 +95,8 @@ namespace Itinero.Routing
         public static IRouterManyToMany To(this IHasSources hasSources,
             IReadOnlyList<(SnapPoint snapPoint, bool? directed)> targets)
         {
-            return new Router(hasSources.Network, hasSources.Settings) {
+            return new Router(hasSources.Network, hasSources.Settings)
+            {
                 Sources = hasSources.Sources,
                 Targets = targets
             };

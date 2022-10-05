@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,28 +28,34 @@ namespace Itinero.Routes.Builders
 
             // SpareEnumerator is used in the branch-calculation. IT offers no guarantees about the state
             var spareEnumerator = routingNetwork.GetEdgeEnumerator();
-            var route = new Route {Profile = profile.Name};
+            var route = new Route { Profile = profile.Name };
             var branches = new List<Route.Branch>();
             var seenEdges = 0;
 
             var allEdgeIds = new HashSet<EdgeId>();
-            foreach (var edge in path.Edges) {
+            foreach (var edge in path.Edges)
+            {
                 allEdgeIds.Add(edge.edge);
             }
 
-            foreach (var (edge, direction, offset1, offset2) in path) {
-                if (route.Shape.Count == 0) {
+            foreach (var (edge, direction, offset1, offset2) in path)
+            {
+                if (route.Shape.Count == 0)
+                {
                     // This is the first edge of the route - we have to check for branches at the start loction
                     bool firstEdgeIsFullyContained;
-                    if (direction) {
+                    if (direction)
+                    {
                         // Forward: we look to offset1
                         firstEdgeIsFullyContained = offset1 == 0;
                     }
-                    else {
+                    else
+                    {
                         firstEdgeIsFullyContained = offset2 == ushort.MaxValue;
                     }
 
-                    if (firstEdgeIsFullyContained) {
+                    if (firstEdgeIsFullyContained)
+                    {
                         // We check for branches
                         edgeEnumerator.MoveToEdge(edge, direction);
                         AddBranches(edgeEnumerator.Tail, edgeEnumerator, spareEnumerator, 0, branches, allEdgeIds);
@@ -61,11 +67,12 @@ namespace Itinero.Routes.Builders
                 var attributes = edgeEnumerator.Attributes;
                 var factor = profile.Factor(attributes);
                 var distance = edgeEnumerator.EdgeLength();
-                distance = (offset2 - offset1) / (double) ushort.MaxValue * distance;
+                distance = (offset2 - offset1) / (double)ushort.MaxValue * distance;
                 route.TotalDistance += distance;
 
                 var speed = direction ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
-                if (speed <= 0) {
+                if (speed <= 0)
+                {
                     speed = 10;
                     // Something is wrong here
                     // throw new ArgumentException("Speed is zero! Route is not possible with the given profile.");
@@ -78,12 +85,14 @@ namespace Itinero.Routes.Builders
                 // add shape points to route.
                 using var shapeBetween = edgeEnumerator.GetShapeBetween(offset1, offset2).GetEnumerator();
                 // skip first coordinate if there are already previous edges.
-                if (route.Shape.Count > 0 && offset1 == 0) {
+                if (route.Shape.Count > 0 && offset1 == 0)
+                {
                     shapeBetween.MoveNext();
                 }
 
 
-                while (shapeBetween.MoveNext()) {
+                while (shapeBetween.MoveNext())
+                {
                     route.Shape.Add(shapeBetween.Current);
                 }
 
@@ -105,8 +114,9 @@ namespace Itinero.Routes.Builders
                 {
                     ("_segment_forward", direction.ToString())
                 });
-                
-                route.ShapeMeta.Add(new Route.Meta {
+
+                route.ShapeMeta.Add(new Route.Meta
+                {
                     Shape = route.Shape.Count - 1,
                     Attributes = attributes,
                     AttributesAreForward = direction,
@@ -121,24 +131,29 @@ namespace Itinero.Routes.Builders
                 // (Also note that the first and last edge might not be needed entirely, so that means we possible can ignore those branches)
 
                 // What is the end vertex? Add its branches...
-                if (seenEdges + 1 == path.Count) {
+                if (seenEdges + 1 == path.Count)
+                {
                     // Hmm, this is the last edge
                     // We should add the branches of it, but only if the edge is completely contained
                     bool lastEdgeIsFullyContained;
-                    if (!direction) {
+                    if (!direction)
+                    {
                         // Backward: we look to offset1
                         lastEdgeIsFullyContained = offset1 == 0;
                     }
-                    else {
+                    else
+                    {
                         lastEdgeIsFullyContained = offset2 == ushort.MaxValue;
                     }
 
-                    if (lastEdgeIsFullyContained) {
+                    if (lastEdgeIsFullyContained)
+                    {
                         AddBranches(edgeEnumerator.Head,
                             edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches, allEdgeIds);
                     }
                 }
-                else {
+                else
+                {
                     AddBranches(edgeEnumerator.Head, edgeEnumerator, spareEnumerator, route.Shape.Count - 1, branches,
                         allEdgeIds);
                 }
@@ -165,10 +180,12 @@ namespace Itinero.Routes.Builders
             ICollection<Route.Branch> addTo, HashSet<EdgeId> branchBlacklist)
         {
             edgeEnumerator.MoveTo(centralVertexId);
-            while (edgeEnumerator.MoveNext()) {
+            while (edgeEnumerator.MoveNext())
+            {
                 // Iterates over all edges of the endvertex
 
-                if (branchBlacklist.Contains(edgeEnumerator.EdgeId)) {
+                if (branchBlacklist.Contains(edgeEnumerator.EdgeId))
+                {
                     // We make sure not to pick the current nor the next edge of the path
                     // This is simple as we have a hashset containing _all_ the edge ids ¯\_(ツ)_/¯
                     continue;
@@ -180,7 +197,8 @@ namespace Itinero.Routes.Builders
                 using var shapeEnum = spareEnumerator.GetShapeBetween(includeVertices: false).GetEnumerator();
                 shapeEnum.MoveNext(); // Init enumerator at first value
                 shapeEnum.MoveNext();
-                var branch = new Route.Branch {
+                var branch = new Route.Branch
+                {
                     Attributes = edgeEnumerator.Attributes,
                     Shape = shapeIndex,
                     AttributesAreForward = isForward,

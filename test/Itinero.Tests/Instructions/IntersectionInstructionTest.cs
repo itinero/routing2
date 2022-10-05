@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Itinero.Instructions;
 using Itinero.Instructions.Types;
 using Itinero.Instructions.Types.Generators;
@@ -15,7 +15,8 @@ namespace Itinero.Tests.Instructions
             var gen = new IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.2175779342651363, 51.21153207328682, null),
@@ -43,7 +44,7 @@ namespace Itinero.Tests.Instructions
             };
 
 
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
+            var instr = (IntersectionInstruction)gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal(2, instr.ShapeIndexEnd);
         }
@@ -55,7 +56,8 @@ namespace Itinero.Tests.Instructions
             var gen = new IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.2175779342651363, 51.21153207328682, null),
@@ -79,7 +81,7 @@ namespace Itinero.Tests.Instructions
             };
 
 
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
+            var instr = (IntersectionInstruction)gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal(2, instr.ShapeIndexEnd);
         }
@@ -90,7 +92,8 @@ namespace Itinero.Tests.Instructions
             var gen = new IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the south-west
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape = new List<(double longitude, double latitude, float? e)> {
                     (3.2175779342651363, 51.21153207328682, null),
@@ -117,7 +120,7 @@ namespace Itinero.Tests.Instructions
             };
 
 
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
+            var instr = (IntersectionInstruction)gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal(2u, instr.ActualIndex);
             Assert.Equal(2, instr.ShapeIndexEnd);
@@ -130,7 +133,8 @@ namespace Itinero.Tests.Instructions
             var gen = new IntersectionInstructionGenerator();
             //https://www.openstreetmap.org/#map=19/51.21170/3.21733
             // Coming from the north-east
-            var route = new Route {
+            var route = new Route
+            {
                 Profile = "bicycle.something",
                 Shape =
                     new List<(double longitude, double latitude, float? e)> {
@@ -158,7 +162,7 @@ namespace Itinero.Tests.Instructions
             };
 
 
-            var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
+            var instr = (IntersectionInstruction)gen.Generate(new IndexedRoute(route), 1);
             Assert.NotNull(instr);
             Assert.Equal(0u, instr.ActualIndex);
             Assert.Equal(2, instr.ShapeIndexEnd);

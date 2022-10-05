@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Itinero.Instructions.Types;
@@ -30,7 +30,8 @@ namespace Itinero.Instructions.ToText
         )
         {
             var allTexts = new List<(string textOrVarName, bool substitute)>();
-            foreach (var (txt, subs) in text) {
+            foreach (var (txt, subs) in text)
+            {
                 allTexts.Add((subs ? txt.ToLower() : txt, subs));
             }
 
@@ -45,8 +46,10 @@ namespace Itinero.Instructions.ToText
         {
             var subsValues = new Dictionary<string, object>();
 
-            foreach (var f in instruction.GetType().GetProperties()) {
-                if (!f.CanRead) {
+            foreach (var f in instruction.GetType().GetProperties())
+            {
+                if (!f.CanRead)
+                {
                     continue;
                 }
 
@@ -54,13 +57,17 @@ namespace Itinero.Instructions.ToText
             }
 
             var resultText = new StringBuilder();
-            foreach (var (text, substitute) in _text) {
-                if (substitute) {
+            foreach (var (text, substitute) in _text)
+            {
+                if (substitute)
+                {
                     var firstChar = text.ToCharArray()[0];
-                    if (firstChar == '.' || firstChar == '+' || firstChar == '-') {
+                    if (firstChar == '.' || firstChar == '+' || firstChar == '-')
+                    {
                         var key = text.Substring(1);
                         var index = 0;
-                        switch (firstChar) {
+                        switch (firstChar)
+                        {
                             case '+':
                                 index = instruction.ShapeIndexEnd;
                                 break;
@@ -72,13 +79,16 @@ namespace Itinero.Instructions.ToText
                                 break;
                         }
 
-                        if (index >= instruction.Route?.Meta?.Count) {
+                        if (index >= instruction.Route?.Meta?.Count)
+                        {
                             return null;
                         }
 
                         var segment = instruction.Route?.Meta?[index]?.Attributes;
-                        if (segment == null || !segment.TryGetValue(key, out var v)) {
-                            if (_crashOnMissingKey) {
+                        if (segment == null || !segment.TryGetValue(key, out var v))
+                        {
+                            if (_crashOnMissingKey)
+                            {
                                 throw new KeyNotFoundException("The segment does not contain a key  " + text +
                                                                ". The context is " + _context);
                             }
@@ -88,26 +98,33 @@ namespace Itinero.Instructions.ToText
 
                         resultText.Append(v);
                     }
-                    else if (subsValues.TryGetValue(text, out var newValue)) {
-                        if (newValue is BaseInstruction instr) {
+                    else if (subsValues.TryGetValue(text, out var newValue))
+                    {
+                        if (newValue is BaseInstruction instr)
+                        {
                             resultText.Append(_nestedToText.Content.ToText(instr));
                         }
-                        else {
+                        else
+                        {
                             resultText.Append(newValue);
                         }
                     }
-                    else if (_extensions != null && _extensions.TryGetValue(text, out var subs)) {
+                    else if (_extensions != null && _extensions.TryGetValue(text, out var subs))
+                    {
                         resultText.Append(subs.ToText(instruction));
                     }
-                    else if (_crashOnMissingKey) {
+                    else if (_crashOnMissingKey)
+                    {
                         throw new KeyNotFoundException(
                             $"The instruction of type {instruction.Type} does not contain a field or extension with name {text}; try one of {string.Join(", ", subsValues.Keys)} or an extensions such as {string.Join(", ", _extensions?.Keys.ToList() ?? new List<string>())}. Did you intend to use a segment property? Use $.{text} instead. This happened at {_context}");
                     }
-                    else {
+                    else
+                    {
                         return null;
                     }
                 }
-                else {
+                else
+                {
                     resultText.Append(text);
                 }
             }

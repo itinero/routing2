@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using Itinero.IO.Osm.Tiles.Parsers.Semantics;
@@ -29,12 +29,14 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
         internal static JObject? Parse(this Stream stream, Tile tile)
         {
-            try {
+            try
+            {
                 using var textReader = new StreamReader(stream);
                 using var jsonReader = new JsonTextReader(textReader);
                 return JObject.Load(jsonReader);
             }
-            catch (JsonReaderException e) {
+            catch (JsonReaderException e)
+            {
                 Logger.Log($"{nameof(TileParser)}.{nameof(AddOsmTile)}", TraceEventType.Error,
                     $"Failed to parse tile {tile}: {e.ToInvariantString()}");
             }
@@ -52,32 +54,39 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             var nodes = new HashSet<long>();
             var coreNodes = new HashSet<long>();
             var updated = false;
-            if (!(jsonObject["@graph"] is JArray graph)) {
+            if (!(jsonObject["@graph"] is JArray graph))
+            {
                 return false;
             }
 
-            foreach (var graphObject in graph) {
-                if (!(graphObject["@id"] is JToken idToken)) {
+            foreach (var graphObject in graph)
+            {
+                if (!(graphObject["@id"] is JToken idToken))
+                {
                     continue;
                 }
 
                 var id = idToken.Value<string>();
 
-                if (id == null) {
+                if (id == null)
+                {
                     continue;
                 }
 
-                if (id.StartsWith("http://www.openstreetmap.org/node/")) {
+                if (id.StartsWith("http://www.openstreetmap.org/node/"))
+                {
                     // parse as a node.
                     var nodeId = long.Parse(id.Substring("http://www.openstreetmap.org/node/".Length,
                         id.Length - "http://www.openstreetmap.org/node/".Length));
 
-                    if (!(graphObject["geo:long"] is JToken longToken)) {
+                    if (!(graphObject["geo:long"] is JToken longToken))
+                    {
                         continue;
                     }
 
-                    var lon = longToken.Value<double>();   
-                    if (!(graphObject["geo:lat"] is JToken latToken)) {
+                    var lon = longToken.Value<double>();
+                    if (!(graphObject["geo:lat"] is JToken latToken))
+                    {
                         continue;
                     }
 
@@ -89,7 +98,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     nodeLocations[nodeId] = ((lon, lat, null),
                         inTile);
                 }
-                else if (id.StartsWith("http://www.openstreetmap.org/way/")) {
+                else if (id.StartsWith("http://www.openstreetmap.org/way/"))
+                {
                     // parse as a way.
                     var wayId = long.Parse(id.Substring("http://www.openstreetmap.org/way/".Length,
                         id.Length - "http://www.openstreetmap.org/way/".Length));
@@ -101,16 +111,20 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     attributes.AddOrReplace("tile_y", tile.Y.ToInvariantString());
 
                     // include all raw tags (if any).
-                    if (graphObject["osm:hasTag"] is JArray rawTags) {
-                        for (var n = 0; n < rawTags.Count; n++) {
+                    if (graphObject["osm:hasTag"] is JArray rawTags)
+                    {
+                        for (var n = 0; n < rawTags.Count; n++)
+                        {
                             var rawTag = rawTags[n];
-                            if (!(rawTag is JValue rawTagValue)) {
+                            if (!(rawTag is JValue rawTagValue))
+                            {
                                 continue;
                             }
 
                             var keyValue = rawTagValue.Value<string>();
                             var keyValueSplit = keyValue.Split('=');
-                            if (keyValueSplit.Length != 2) {
+                            if (keyValueSplit.Length != 2)
+                            {
                                 continue;
                             }
 
@@ -119,12 +133,14 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                     }
 
                     // parse nodes.
-                    if (!(graphObject["osm:hasNodes"] is JArray wayNodes)) {
+                    if (!(graphObject["osm:hasNodes"] is JArray wayNodes))
+                    {
                         continue;
                     }
 
                     var nodeIds = new List<long>();
-                    for (var n = 0; n < wayNodes.Count; n++) {
+                    for (var n = 0; n < wayNodes.Count; n++)
+                    {
                         var nodeToken = wayNodes[n];
                         var nodeIdString = nodeToken.Value<string>();
                         var nodeId = long.Parse(nodeIdString.Substring(
@@ -132,11 +148,13 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             nodeIdString.Length - "http://www.openstreetmap.org/node/".Length));
                         nodeIds.Add(nodeId);
 
-                        if (n == 0 || n == wayNodes.Count - 1) {
+                        if (n == 0 || n == wayNodes.Count - 1)
+                        {
                             // first and last nodes always core.
                             coreNodes.Add(nodeId);
                         }
-                        else if (nodes.Contains(nodeId)) {
+                        else if (nodes.Contains(nodeId))
+                        {
                             // second time this node was hit.
                             coreNodes.Add(nodeId);
                         }
@@ -146,14 +164,16 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
                     waysData[wayId] = (nodeIds, attributes);
                 }
-                else if (id.StartsWith("http://www.openstreetmap.org/relation/")) {
+                else if (id.StartsWith("http://www.openstreetmap.org/relation/"))
+                {
                     // parse as a relation.
                     // TODO: parse as a relation.
                 }
             }
 
             var shape = new List<(double longitude, double latitude, float? e)>();
-            foreach (var wayPairs in waysData) {
+            foreach (var wayPairs in waysData)
+            {
                 // prepare for next way.
                 shape.Clear();
                 var previousVertex = VertexId.Empty;
@@ -163,7 +183,8 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 var attributes = wayPairs.Value.attributes;
 
                 // verify way data and spit out a warning if a way has <= 1 node.
-                if (wayNodes.Count <= 1) {
+                if (wayNodes.Count <= 1)
+                {
                     Logger.Log($"{nameof(TileParser)}.{nameof(AddOsmTile)}",
                         TraceEventType.Warning,
                         $"Way {wayPairs.Key} has <= 1 nodes.");
@@ -171,18 +192,21 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                 }
 
                 // iterate over the way segments and add them as edges or part of the next edge.
-                for (var n = 0; n < wayNodes.Count - 1; n++) {
+                for (var n = 0; n < wayNodes.Count - 1; n++)
+                {
                     var node1Id = wayNodes[n];
                     var node2Id = wayNodes[n + 1];
 
                     // get the nodes data.
-                    if (!nodeLocations.TryGetValue(node1Id, out var node1Data)) {
+                    if (!nodeLocations.TryGetValue(node1Id, out var node1Data))
+                    {
                         Logger.Log(nameof(TileParser), TraceEventType.Warning,
                             $"Could not load way {wayPairs.Key} in {tile}: node {node1Id} missing.");
                         break;
                     }
 
-                    if (!nodeLocations.TryGetValue(node2Id, out var node2Data)) {
+                    if (!nodeLocations.TryGetValue(node2Id, out var node2Data))
+                    {
                         Logger.Log(nameof(TileParser), TraceEventType.Warning,
                             $"Could not load way {wayPairs.Key} in {tile}: node {node2Id} missing.");
                         break;
@@ -190,15 +214,18 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
                     // always add segments that cross tile boundaries.
                     // TODO: we can probably do better and add only one of the nodes as core but for now to keep complexity down we add both.
-                    if (!node1Data.inTile || !node2Data.inTile) {
+                    if (!node1Data.inTile || !node2Data.inTile)
+                    {
                         coreNodes.Add(node1Id);
                         coreNodes.Add(node2Id);
                     }
 
                     // if node1 is core make sure to add it.
-                    if (coreNodes.Contains(node1Id)) {
+                    if (coreNodes.Contains(node1Id))
+                    {
                         // add node1 as vertex but check if it already exists.
-                        if (!globalIdMap.TryGet(node1Id, out var vertex)) {
+                        if (!globalIdMap.TryGet(node1Id, out var vertex))
+                        {
                             vertex = networkWriter.AddVertex(node1Data.location.longitude,
                                 node1Data.location.latitude, null);
                             globalIdMap.Set(node1Id, vertex);
@@ -206,9 +233,11 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         }
 
                         // check if this segment wasn't just opened the iteration before.
-                        if (vertex != previousVertex) {
+                        if (vertex != previousVertex)
+                        {
                             // close previous segment if any.
-                            if (!previousVertex.IsEmpty()) {
+                            if (!previousVertex.IsEmpty())
+                            {
                                 networkWriter.AddEdge(previousVertex, vertex, shape, attributes);
                                 updated = true;
                                 shape.Clear();
@@ -216,16 +245,19 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
                             // start a new segment if the end of this one is in tile.
                             previousVertex = VertexId.Empty;
-                            if (node1Data.inTile) {
+                            if (node1Data.inTile)
+                            {
                                 previousVertex = vertex;
                             }
                         }
                     }
 
                     // if the second node is also core, close the segment.
-                    if (coreNodes.Contains(node2Id)) {
+                    if (coreNodes.Contains(node2Id))
+                    {
                         // add node2 as vertex but check if it already exists.
-                        if (!globalIdMap.TryGet(node2Id, out var vertex)) {
+                        if (!globalIdMap.TryGet(node2Id, out var vertex))
+                        {
                             vertex = networkWriter.AddVertex(node2Data.location.longitude,
                                 node2Data.location.latitude, null);
 
@@ -234,8 +266,10 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                         }
 
                         // if this segment overlaps, always add it.
-                        if (!node1Data.inTile || !node2Data.inTile) {
-                            if (!globalIdMap.TryGet(node1Id, out previousVertex)) {
+                        if (!node1Data.inTile || !node2Data.inTile)
+                        {
+                            if (!globalIdMap.TryGet(node1Id, out previousVertex))
+                            {
                                 throw new Exception(
                                     "Cannot add segment overlapping tile boundary, node should have already been added.");
                             }
@@ -244,9 +278,11 @@ namespace Itinero.IO.Osm.Tiles.Parsers
                             updated = true;
                             shape.Clear();
                         }
-                        else {
+                        else
+                        {
                             // close previous segment if any.
-                            if (!previousVertex.IsEmpty()) {
+                            if (!previousVertex.IsEmpty())
+                            {
                                 networkWriter.AddEdge(previousVertex, vertex, shape, attributes);
                                 updated = true;
                                 shape.Clear();
@@ -255,13 +291,16 @@ namespace Itinero.IO.Osm.Tiles.Parsers
 
                         // start a new segment if the end of this one is in tile.
                         previousVertex = VertexId.Empty;
-                        if (node2Data.inTile) {
+                        if (node2Data.inTile)
+                        {
                             previousVertex = vertex;
                         }
                     }
-                    else {
+                    else
+                    {
                         // add as shape point if there is an active segment.
-                        if (!previousVertex.IsEmpty()) {
+                        if (!previousVertex.IsEmpty())
+                        {
                             shape.Add(node2Data.location);
                         }
                     }
@@ -283,22 +322,27 @@ namespace Itinero.IO.Osm.Tiles.Parsers
             var attributes = new List<(string key, string value)>();
 
             // interpret all tags with defined semantics.
-            foreach (var child in osmGeo.Children()) {
-                if (!(child is JProperty property)) {
+            foreach (var child in osmGeo.Children())
+            {
+                if (!(child is JProperty property))
+                {
                     continue;
                 }
 
                 if (property.Name == "@id" ||
-                    property.Name == "@type") {
+                    property.Name == "@type")
+                {
                     continue;
                 }
 
-                if (property.Value is JArray) {
+                if (property.Value is JArray)
+                {
                     continue;
                 }
 
                 var attribute = property.Map(reverseMappings);
-                if (attribute == null) {
+                if (attribute == null)
+                {
                     continue;
                 }
 

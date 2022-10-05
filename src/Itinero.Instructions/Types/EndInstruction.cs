@@ -1,4 +1,4 @@
-namespace Itinero.Instructions.Types
+﻿namespace Itinero.Instructions.Types
 {
     /***
      * The 'startInstruction' represents the projection from the actual startpoint (e.g. an adress) to the snapped point on the road.
@@ -23,7 +23,8 @@ namespace Itinero.Instructions.Types
             0,
             0,
             route.Shape.Count - 2,
-            route.Shape.Count - 1) { }
+            route.Shape.Count - 1)
+        { }
 
         public override string ToString()
         {

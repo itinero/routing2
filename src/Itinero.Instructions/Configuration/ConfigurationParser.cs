@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -18,7 +18,8 @@ namespace Itinero.Instructions.Configuration
             new(@"^(\${[.+-]?[a-zA-Z0-9_]+}|\$[.+-]?[a-zA-Z0-9_]+|[^\$]+)*$");
 
         private static readonly List<(string, Predicate<(string? a, string? b)>)> Operators =
-            new() {
+            new()
+            {
                 // This is a list, as we first need to match '<=' and '>=', otherwise we might think the match is "abc<" = "def", not "abc" <= "def
                 ("<=", t => BothDouble(t, d => d.a <= d.b)),
                 (">=", t => BothDouble(t, d => d.a >= d.b)),
@@ -43,8 +44,10 @@ namespace Itinero.Instructions.Configuration
             // parse generator names and instantiate generators.
             var generatorNames = jsonElement.GetProperty("generators").EnumerateArray().Select(v => v.GetString())
                 .ToList();
-            var generators = generatorNames.Select(name => {
-                if (knownGenerators.TryGetValue(name, out var g)) {
+            var generators = generatorNames.Select(name =>
+            {
+                if (knownGenerators.TryGetValue(name, out var g))
+                {
                     return g;
                 }
 
@@ -54,7 +57,8 @@ namespace Itinero.Instructions.Configuration
             // parse instructions to text configurations.
             var languages = jsonElement.GetProperty("languages");
             var toTexts = new Dictionary<string, IInstructionToText>();
-            foreach (var obj in languages.EnumerateObject()) {
+            foreach (var obj in languages.EnumerateObject())
+            {
                 var langCode = obj.Name;
                 var wholeToText = new Box<IInstructionToText>();
                 var whole = ParseInstructionToText(obj.Value, wholeToText,
@@ -114,13 +118,16 @@ namespace Itinero.Instructions.Configuration
             var conditions = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
             var lowPriority = new List<(Predicate<BaseInstruction>, IInstructionToText)>();
 
-            foreach (var obj in jobj.EnumerateObject()) {
+            foreach (var obj in jobj.EnumerateObject())
+            {
                 var key = obj.Name;
                 var value = obj.Value;
 
-                if (key == "extensions") {
+                if (key == "extensions")
+                {
                     var extensionsSource = obj.Value;
-                    foreach (var ext in extensionsSource.EnumerateObject()) {
+                    foreach (var ext in extensionsSource.EnumerateObject())
+                    {
                         extensions.Add(ext.Name,
                             ParseSubObj(ext.Value, context + ".extensions." + ext.Name, extensions, wholeToText)
                         );
@@ -140,7 +147,8 @@ namespace Itinero.Instructions.Configuration
         private static IInstructionToText ParseSubObj(JsonElement j, string context,
             Dictionary<string, IInstructionToText> extensions, Box<IInstructionToText>? wholeToText)
         {
-            if (j.ValueKind == JsonValueKind.String) {
+            if (j.ValueKind == JsonValueKind.String)
+            {
                 return ParseRenderValue(j.GetString(), extensions, wholeToText, context);
             }
 
@@ -149,7 +157,8 @@ namespace Itinero.Instructions.Configuration
 
         private static bool BothDouble((string? a, string? b) t, Predicate<(double a, double b)> p)
         {
-            if (double.TryParse(t.a, out var a) && double.TryParse(t.b, out var b)) {
+            if (double.TryParse(t.a, out var a) && double.TryParse(t.b, out var b))
+            {
                 return p.Invoke((a, b));
             }
 
@@ -161,21 +170,25 @@ namespace Itinero.Instructions.Configuration
             string context = "",
             Dictionary<string, IInstructionToText>? extensions = null)
         {
-            if (condition == "*") {
+            if (condition == "*")
+            {
                 return (_ => true, true);
             }
 
-            if (condition.IndexOf("&", StringComparison.Ordinal) >= 0) {
+            if (condition.IndexOf("&", StringComparison.Ordinal) >= 0)
+            {
                 var cs = condition.Split("&")
                     .Select((condition1, i) => ParseCondition(condition1, wholeToText, context + "&" + i, extensions))
                     .Select(t => t.predicate);
                 return (instruction => cs.All(p => p.Invoke(instruction)), false);
             }
 
-            foreach (var (key, op) in Operators) {
+            foreach (var (key, op) in Operators)
+            {
                 // We iterate over all the possible operator keywords: '=', '<=', '>=', ...
                 // If they are found, we apply the actual operator
-                if (condition.IndexOf(key, StringComparison.Ordinal) < 0) {
+                if (condition.IndexOf(key, StringComparison.Ordinal) < 0)
+                {
                     continue;
                 }
 
@@ -183,7 +196,8 @@ namespace Itinero.Instructions.Configuration
                 var parts = condition.Split(key).Select(renderValue =>
                         ParseRenderValue(renderValue, extensions, wholeToText, context + "." + key, false))
                     .ToList();
-                if (parts.Count != 2) {
+                if (parts.Count != 2)
+                {
                     throw new ArgumentException("Parsing condition " + condition +
                                                 " failed, it has an operator, but to much matches. Maybe you forgot to add an '&' between the conditions?");
                 }
@@ -198,7 +212,8 @@ namespace Itinero.Instructions.Configuration
             // At this point, the condition is a single string
             // This could either be a type matching or a substitution that has to exist
             var rendered = ParseRenderValue(condition, extensions, wholeToText, context, false);
-            if (rendered.SubstitutedValueCount() > 0) {
+            if (rendered.SubstitutedValueCount() > 0)
+            {
                 return (instruction => rendered.ToText(instruction) != null, false);
             }
 
@@ -214,9 +229,11 @@ namespace Itinero.Instructions.Configuration
             bool crashOnNotFound = true)
         {
             var parts = RenderValueRegex.Match(value).Groups[1].Captures
-                    .Select(m => {
+                    .Select(m =>
+                    {
                         var v = m.Value;
-                        if (!v.StartsWith("$")) {
+                        if (!v.StartsWith("$"))
+                        {
                             return (m.Value, false);
                         }
 

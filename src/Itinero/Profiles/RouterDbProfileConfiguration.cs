@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Itinero.Profiles.EdgeTypesMap;
 using Itinero.Routing.Costs.Caches;
@@ -23,7 +23,8 @@ namespace Itinero.Profiles
 
         public void AddProfiles(IEnumerable<Profile> profiles)
         {
-            foreach (var profile in profiles) {
+            foreach (var profile in profiles)
+            {
                 _profiles[profile.Name] = (profile, new EdgeFactorCache(), new TurnCostFactorCache());
             }
 
@@ -34,7 +35,8 @@ namespace Itinero.Profiles
         {
             cache = null;
             turnCostFactorCache = null;
-            if (!_profiles.TryGetValue(profile.Name, out var profileValue)) {
+            if (!_profiles.TryGetValue(profile.Name, out var profileValue))
+            {
                 return false;
             }
 
@@ -46,7 +48,8 @@ namespace Itinero.Profiles
         private void UpdateEdgeTypeMap()
         {
             // only update the edge type map when it is based on the active profiles.
-            if (_routerDb.EdgeTypeMap is not ProfilesEdgeTypeMap) {
+            if (_routerDb.EdgeTypeMap is not ProfilesEdgeTypeMap)
+            {
                 return;
             }
 

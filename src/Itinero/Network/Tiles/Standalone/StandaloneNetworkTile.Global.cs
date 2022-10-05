@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
@@ -43,10 +43,10 @@ public partial class StandaloneNetworkTile
         }
 
         for (var x = 0; x < costs.GetLength(0); x++)
-        for (var y = 0; y < costs.GetLength(1); y++)
-        {
-            _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, costs[x, y]);
-        }
+            for (var y = 0; y < costs.GetLength(1); y++)
+            {
+                _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, costs[x, y]);
+            }
     }
 
     /// <summary>
@@ -74,11 +74,11 @@ public partial class StandaloneNetworkTile
 
             var costs = new uint[edges.Length, edges.Length];
             for (var x = 0; x < costs.GetLength(0); x++)
-            for (var y = 0; y < costs.GetLength(1); y++)
-            {
-                pointer += _crossings.GetDynamicUInt32(pointer, out var cost);
-                costs[x, y] = cost;
-            }
+                for (var y = 0; y < costs.GetLength(1); y++)
+                {
+                    pointer += _crossings.GetDynamicUInt32(pointer, out var cost);
+                    costs[x, y] = cost;
+                }
 
             yield return (edges, costs, turnCostType, this.GetAttributes(a));
         }
@@ -108,7 +108,7 @@ public partial class StandaloneNetworkTile
         {
             _globalIds.Resize(_globalIds.Length + 64);
         }
-        
+
         _globalIdPointer += (uint)_globalIds.SetGuid(_globalIdPointer, globalEdgeId);
         _globalIdPointer += (uint)_globalIds.SetDynamicInt32(_globalIdPointer, (int)-(boundaryEdgeId.LocalId + 1));
     }

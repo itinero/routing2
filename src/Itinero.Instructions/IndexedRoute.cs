@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -48,18 +48,22 @@ namespace Itinero.Instructions
         private static List<Route.Meta> BuildMetaList(Route route)
         {
             var metas = new List<Route.Meta>();
-            if (route.ShapeMeta == null || route.ShapeMeta.Count == 0) {
+            if (route.ShapeMeta == null || route.ShapeMeta.Count == 0)
+            {
                 throw new ArgumentException("Cannot generate route instructions if meta information is missing");
             }
 
-            foreach (var meta in route.ShapeMeta) {
+            foreach (var meta in route.ShapeMeta)
+            {
                 // Meta.shape indicates the last  element in the list
-                while (metas.Count < meta.Shape) {
+                while (metas.Count < meta.Shape)
+                {
                     metas.Add(meta);
                 }
             }
 #if DEBUG
-            if (metas.Count + 1 != route.Shape.Count) {
+            if (metas.Count + 1 != route.Shape.Count)
+            {
                 throw new Exception("Length of the meta doesn't match. There are " + route.Shape.Count +
                                     " shapes, but the last meta has an index of " +
                                     route.ShapeMeta[^1].Shape + ", resulting in a meta list of " + metas.Count);
@@ -72,15 +76,18 @@ namespace Itinero.Instructions
         private static List<List<Route.Branch>> BuildBranchesList(Route route)
         {
             var branches = new List<List<Route.Branch>>();
-            if (route.Branches == null) {
+            if (route.Branches == null)
+            {
                 return branches;
             }
 
-            foreach (var _ in route.Shape) {
+            foreach (var _ in route.Shape)
+            {
                 branches.Add(new List<Route.Branch>());
             }
 
-            foreach (var branch in route.Branches) {
+            foreach (var branch in route.Branches)
+            {
                 branches[branch.Shape].Add(branch);
             }
 
@@ -94,10 +101,10 @@ namespace Itinero.Instructions
         /// <returns>The distance to the next shape point.</returns>
         public double DistanceToNextPoint(int shape)
         {
-            var prevPoint = 
+            var prevPoint =
                 shape == -1 ? this._route.Stops[0].Coordinate : this.Shape[shape];
 
-            (double, double, float? e) nextPoint = this.Last == shape ? 
+            (double, double, float? e) nextPoint = this.Last == shape ?
                 this._route.Stops[^1].Coordinate : this.Shape[shape + 1];
 
             return prevPoint.DistanceEstimateInMeter(nextPoint);

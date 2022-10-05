@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Profiles;
@@ -20,9 +20,11 @@ namespace Itinero.Tests.Functional.Tests
         {
             var (routerDb, sp1, sp2, profile) = input;
 
-            var route = await routerDb.Route(new RoutingSettings {
-                    Profile = profile, MaxDistance = double.MaxValue
-                })
+            var route = await routerDb.Route(new RoutingSettings
+            {
+                Profile = profile,
+                MaxDistance = double.MaxValue
+            })
                 .From(sp1)
                 .To(sp2)
                 .WithAlternatives(new AlternativeRouteSettings())

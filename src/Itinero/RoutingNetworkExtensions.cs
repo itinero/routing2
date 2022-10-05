@@ -1,4 +1,4 @@
-using Itinero.Network;
+﻿using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routing;
 using Itinero.Snapping;
@@ -14,7 +14,8 @@ namespace Itinero
 
         public static IRouter Route(this RoutingNetwork routingNetwork, Profile profile)
         {
-            return new Router(routingNetwork, new RoutingSettings {
+            return new Router(routingNetwork, new RoutingSettings
+            {
                 Profile = profile
             });
         }

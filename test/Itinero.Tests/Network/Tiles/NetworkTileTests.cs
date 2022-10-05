@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Tiles;
@@ -17,8 +17,8 @@ namespace Itinero.Tests.Network.Tiles
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
                 networkTile.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
-            Assert.Equal((uint) 89546969, vertex1.TileId);
-            Assert.Equal((uint) 0, vertex1.LocalId);
+            Assert.Equal((uint)89546969, vertex1.TileId);
+            Assert.Equal((uint)0, vertex1.LocalId);
         }
 
         [Fact]
@@ -28,14 +28,14 @@ namespace Itinero.Tests.Network.Tiles
                 TileStatic.ToLocalId(4.7868, 51.2643, 14));
             var vertex1 =
                 networkTile.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
-            Assert.Equal((uint) 89546969, vertex1.TileId);
-            Assert.Equal((uint) 0, vertex1.LocalId);
+            Assert.Equal((uint)89546969, vertex1.TileId);
+            Assert.Equal((uint)0, vertex1.LocalId);
 
             // when adding the vertex a second time it should generate a new local id.
 
             vertex1 = networkTile.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
-            Assert.Equal((uint) 89546969, vertex1.TileId);
-            Assert.Equal((uint) 1, vertex1.LocalId);
+            Assert.Equal((uint)89546969, vertex1.TileId);
+            Assert.Equal((uint)1, vertex1.LocalId);
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace Itinero.Tests.Network.Tiles
             var vertex2 = networkTile.AddVertex(4.86737, 51.267849);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
-            Assert.Equal((uint) 0, edge.LocalId);
+            Assert.Equal((uint)0, edge.LocalId);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Itinero.Tests.Network.Tiles
             networkTile.AddEdge(vertex1, vertex2);
             // the second edge get the pointer as id.
             var edge = networkTile.AddEdge(vertex2, vertex1);
-            Assert.Equal((uint) 9, edge.LocalId);
+            Assert.Equal((uint)9, edge.LocalId);
         }
 
         [Fact]
@@ -84,16 +84,16 @@ namespace Itinero.Tests.Network.Tiles
             var vertex2 = new VertexId(vertex1.TileId + 1, 451);
 
             var edge = networkTile.AddEdge(vertex1, vertex2);
-            Assert.Equal((uint) 0 + EdgeId.MinCrossId, edge.LocalId);
+            Assert.Equal((uint)0 + EdgeId.MinCrossId, edge.LocalId);
 
             var edgePointer = networkTile.GetEdgeCrossPointer(edge.LocalId - EdgeId.MinCrossId);
             var size = networkTile.DecodeVertex(edgePointer,
                 out var localId, out var tileId);
-            Assert.Equal((uint) 0, localId);
-            Assert.Equal((uint) vertex1.TileId, tileId);
+            Assert.Equal((uint)0, localId);
+            Assert.Equal((uint)vertex1.TileId, tileId);
             size = networkTile.DecodeVertex(edgePointer + size, out localId, out tileId);
-            Assert.Equal((uint) 451, localId);
-            Assert.Equal((uint) vertex1.TileId + 1, tileId);
+            Assert.Equal((uint)451, localId);
+            Assert.Equal((uint)vertex1.TileId + 1, tileId);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             enumerator.MoveNext();
-            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] {("key1", "value1")});
+            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] { ("key1", "value1") });
 
             networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 0));
 
@@ -136,7 +136,7 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             enumerator.MoveNext();
-            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] {("key1", "value1")},
+            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] { ("key1", "value1") },
                 edgeType: 0);
         }
 
@@ -158,9 +158,9 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, attributes: new[] {("key2", "value2")});
+            ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, attributes: new[] { ("key2", "value2") });
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] {("key1", "value1")});
+            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] { ("key1", "value1") });
 
             networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 0));
 
@@ -168,10 +168,10 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, attributes: new[] {("key2", "value2")},
+            ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, attributes: new[] { ("key2", "value2") },
                 edgeType: 0);
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] {("key1", "value1")},
+            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] { ("key1", "value1") },
                 edgeType: 0);
         }
 
@@ -190,7 +190,7 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             enumerator.MoveNext();
-            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] {("key1", "value1")});
+            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] { ("key1", "value1") });
 
             networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 1234));
 
@@ -198,7 +198,7 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             enumerator.MoveNext();
-            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] {("key1", "value1")},
+            ItineroAsserts.Equal(enumerator, edge, vertex1, vertex2, attributes: new[] { ("key1", "value1") },
                 edgeType: 1234);
         }
 
@@ -220,9 +220,9 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(networkTile);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, attributes: new[] {("key2", "value2")});
+            ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, attributes: new[] { ("key2", "value2") });
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] {("key1", "value1")});
+            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] { ("key1", "value1") });
 
             networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 1234));
 
@@ -232,9 +232,9 @@ namespace Itinero.Tests.Network.Tiles
             Assert.True(enumerator.MoveNext());
             // moved 1 byte because of edge type id.
             ItineroAsserts.Equal(enumerator, new EdgeId(edge2.TileId, edge2.LocalId + 1), vertex1, vertex2,
-                attributes: new[] {("key2", "value2")}, edgeType: 1234);
+                attributes: new[] { ("key2", "value2") }, edgeType: 1234);
             Assert.True(enumerator.MoveNext());
-            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] {("key1", "value1")},
+            ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, attributes: new[] { ("key1", "value1") },
                 edgeType: 1234);
         }
 
@@ -246,7 +246,7 @@ namespace Itinero.Tests.Network.Tiles
             var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
             var vertex2 = networkTile.AddVertex(4.86737, 51.267849);
             var vertex3 = networkTile.AddVertex(4.86737, 51.267849);
-            var shape = new[] {(4.86638, 51.269728, (float?) null)};
+            var shape = new[] { (4.86638, 51.269728, (float?)null) };
             var edge1 = networkTile.AddEdge(vertex1, vertex2, shape, new[] {
                 ("key1", "value1")
             });
@@ -262,14 +262,14 @@ namespace Itinero.Tests.Network.Tiles
             enumerator.MoveTo(vertex2);
             Assert.True(enumerator.MoveNext());
             ItineroAsserts.Equal(enumerator, edge3, vertex2, vertex3, shape,
-                new[] {("key3", "value3")}, null);
+                new[] { ("key3", "value3") }, null);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
             ItineroAsserts.Equal(enumerator, edge2, vertex1, vertex2, shape,
-                new[] {("key2", "value2")}, null);
+                new[] { ("key2", "value2") }, null);
             Assert.True(enumerator.MoveNext());
             ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, shape,
-                new[] {("key1", "value1")}, null);
+                new[] { ("key1", "value1") }, null);
 
             networkTile = networkTile.CloneForEdgeTypeMap((Guid.Empty, at => 1234));
 
@@ -279,15 +279,15 @@ namespace Itinero.Tests.Network.Tiles
             Assert.True(enumerator.MoveNext());
             // moved 2 bytes because of edge type id.
             ItineroAsserts.Equal(enumerator, new EdgeId(edge3.TileId, edge3.LocalId + 2), vertex2, vertex3, shape,
-                new[] {("key3", "value3")}, 1234);
+                new[] { ("key3", "value3") }, 1234);
             enumerator.MoveTo(vertex1);
             Assert.True(enumerator.MoveNext());
             // moved 1 byte because of edge type id.
             ItineroAsserts.Equal(enumerator, new EdgeId(edge2.TileId, edge2.LocalId + 1), vertex1, vertex2, shape,
-                new[] {("key2", "value2")}, 1234);
+                new[] { ("key2", "value2") }, 1234);
             Assert.True(enumerator.MoveNext());
             ItineroAsserts.Equal(enumerator, edge1, vertex1, vertex2, shape,
-                new[] {("key1", "value1")}, 1234);
+                new[] { ("key1", "value1") }, 1234);
         }
     }
 }

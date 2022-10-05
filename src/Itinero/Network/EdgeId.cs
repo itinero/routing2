@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Itinero.Network
 {
@@ -58,7 +58,8 @@ namespace Itinero.Network
         /// <returns></returns>
         public override string ToString()
         {
-            if (LocalId >= MinCrossId) {
+            if (LocalId >= MinCrossId)
+            {
                 return $"{LocalId} (X {LocalId - MinCrossId}) @ {TileId} ";
             }
 
@@ -103,8 +104,9 @@ namespace Itinero.Network
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            unchecked {
-                return ((int) TileId * 397) ^ (int) LocalId;
+            unchecked
+            {
+                return ((int)TileId * 397) ^ (int)LocalId;
             }
         }
 
@@ -114,7 +116,7 @@ namespace Itinero.Network
         /// <returns>An encoded version of this edge.</returns>
         internal ulong Encode()
         {
-            return ((ulong) TileId << 32) + LocalId;
+            return ((ulong)TileId << 32) + LocalId;
         }
 
         /// <summary>
@@ -124,8 +126,8 @@ namespace Itinero.Network
         /// <returns>The decoded version of edge.</returns>
         internal static EdgeId Decode(ulong encoded)
         {
-            var tileId = (uint) (encoded >> 32);
-            var localId = (uint) (encoded - ((ulong) tileId << 32));
+            var tileId = (uint)(encoded >> 32);
+            var localId = (uint)(encoded - ((ulong)tileId << 32));
 
             return new EdgeId(tileId, localId);
         }
