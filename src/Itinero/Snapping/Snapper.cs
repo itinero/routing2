@@ -48,7 +48,7 @@ namespace Itinero.Snapping
         }
 
         /// <inheritdoc/>
-        public IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
+        public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var enumerator = this.RoutingNetwork.GetEdgeEnumerator();

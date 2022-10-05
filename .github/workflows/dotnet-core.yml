@@ -21,6 +21,10 @@ jobs:
       run: dotnet restore
     - name: Build all projects.
       run: dotnet build --configuration Release --no-restore
+
+    - name: Run dotnet format
+      run: dotnet format --verify-no-changes --verbosity diagnostic --no-restore
+      
     - name: Test with coverage report.
       run: dotnet test --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       working-directory: ./test/Itinero.Tests/
