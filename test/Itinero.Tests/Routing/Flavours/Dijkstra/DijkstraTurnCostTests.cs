@@ -40,7 +40,6 @@ public class DijkstraTurnCostTests
                     .Select(x => (double)x.cost).Sum();
                 return (w, tcs);
             });
-        Assert.NotNull(result);
         Assert.NotNull(result.path);
         result.path.Trim();
         Assert.Equal(0, result.path.Offset1);
@@ -88,7 +87,6 @@ public class DijkstraTurnCostTests
                     .Select(x => (double)x.cost).Sum();
                 return (w, tcs);
             });
-        Assert.NotNull(result);
         Assert.Equal(3, result.cost);
         result.path.Trim();
         Assert.Equal(0, result.path.Offset1);
@@ -132,7 +130,6 @@ public class DijkstraTurnCostTests
                     .Select(x => (double)x.cost).Sum();
                 return (w, tcs);
             });
-        Assert.NotNull(result);
         Assert.Equal(12, result.cost);
         result.path.Trim();
         Assert.Equal(0, result.path.Offset1);
