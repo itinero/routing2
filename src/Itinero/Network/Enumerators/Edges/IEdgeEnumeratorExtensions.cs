@@ -5,6 +5,9 @@ using Itinero.Geo;
 
 namespace Itinero.Network.Enumerators.Edges;
 
+/// <summary>
+/// Contains edge enumerator extensions.
+/// </summary>
 public static class IEdgeEnumeratorExtensions
 {
     /// <summary>
@@ -12,10 +15,8 @@ public static class IEdgeEnumeratorExtensions
     /// </summary>
     /// <param name="enumerator">The enumerator.</param>
     /// <returns>The complete shape.</returns>
-    public static IEnumerable<(double longitude, double latitude, float? e)> GetCompleteShape<T, S>(
-        this T enumerator)
-        where T : IEdgeEnumerator<S>
-        where S : IEdgeEnumerable
+    public static IEnumerable<(double longitude, double latitude, float? e)> GetCompleteShape(
+        this IEdgeEnumerator enumerator)
     {
         yield return enumerator.TailLocation;
 
@@ -33,11 +34,9 @@ public static class IEdgeEnumeratorExtensions
     /// </summary>
     /// <param name="enumerator">The enumerator.</param>
     /// <returns>The length in meters.</returns>
-    internal static double EdgeLength<T, S>(this T enumerator)
-        where T : IEdgeEnumerator<S>
-        where S : IEdgeEnumerable
+    internal static double EdgeLength(this IEdgeEnumerator enumerator)
     {
-        return enumerator.GetCompleteShape<T, S>().DistanceEstimateInMeter();
+        return enumerator.GetCompleteShape().DistanceEstimateInMeter();
     }
 
     /// <summary>
@@ -48,11 +47,9 @@ public static class IEdgeEnumeratorExtensions
     /// <param name="offset2">The end offset.</param>
     /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
     /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-    internal static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween<T, S>(
-        this T enumerator,
+    internal static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween(
+        this IEdgeEnumerator enumerator,
         ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
-        where T : IEdgeEnumerator<S>
-        where S : IEdgeEnumerable
     {
         if (offset1 > offset2)
         {
@@ -62,7 +59,7 @@ public static class IEdgeEnumeratorExtensions
         // return the entire edge if requested.
         if (offset1 == 0 && offset2 == ushort.MaxValue)
         {
-            foreach (var s in enumerator.GetCompleteShape<T, S>())
+            foreach (var s in enumerator.GetCompleteShape())
             {
                 yield return s;
             }
@@ -74,7 +71,7 @@ public static class IEdgeEnumeratorExtensions
         var shape = enumerator.Shape.ToList();
 
         // calculate offsets in meters.
-        var edgeLength = enumerator.EdgeLength<T, S>();
+        var edgeLength = enumerator.EdgeLength();
         var offset1Length = offset1 / (double)ushort.MaxValue * edgeLength;
         var offset2Length = offset2 / (double)ushort.MaxValue * edgeLength;
 
@@ -152,14 +149,12 @@ public static class IEdgeEnumeratorExtensions
     /// <param name="enumerator">The enumerator.</param>
     /// <param name="offset">The offset.</param>
     /// <returns>The location on the network.</returns>
-    internal static (double longitude, double latitude, float? e) LocationOnEdge<T, S>(this T enumerator,
+    internal static (double longitude, double latitude, float? e) LocationOnEdge(this IEdgeEnumerator enumerator,
         in ushort offset)
-        where T : IEdgeEnumerator<S>
-        where S : IEdgeEnumerable
     {
         // TODO: this can be optimized, build a performance test.
-        var shape = enumerator.GetShapeBetween<T, S>().ToList();
-        var length = enumerator.EdgeLength<T, S>();
+        var shape = enumerator.GetShapeBetween().ToList();
+        var length = enumerator.EdgeLength();
         var currentLength = 0.0;
         var targetLength = length * (offset / (double)ushort.MaxValue);
         for (var i = 1; i < shape.Count; i++)
@@ -183,6 +178,6 @@ public static class IEdgeEnumeratorExtensions
             currentLength += segmentLength;
         }
 
-        return shape[shape.Count - 1];
+        return shape[^1];
     }
 }

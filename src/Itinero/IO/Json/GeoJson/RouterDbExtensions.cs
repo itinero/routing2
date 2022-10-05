@@ -77,13 +77,25 @@ public static class RouterDbExtensions
     public static void WriteVertexFeature(this Utf8JsonWriter jsonWriter, VertexId vertexId,
         RoutingNetwork routerDb)
     {
+        jsonWriter.WriteVertexFeature(vertexId, routerDb.GetVertex(vertexId));
+    }
+
+    /// <summary>
+    /// Writes a vertex as a feature.
+    /// </summary>
+    /// <param name="jsonWriter">The json writer.</param>
+    /// <param name="vertexId">The vertex id.</param>
+    /// <param name="location">The location.</param>
+    public static void WriteVertexFeature(this Utf8JsonWriter jsonWriter, VertexId vertexId,
+        (double longitude, double latitude, float? e) location)
+    {
         jsonWriter.WriteFeatureStart();
-        jsonWriter.WriteProperties(new (string key, string value)[] {
-                ("tile_id", vertexId.TileId.ToString()),
-                ("local_id", vertexId.LocalId.ToString())
-            });
+        jsonWriter.WriteProperties(new (string key, string value)[]
+        {
+            ("tile_id", vertexId.TileId.ToString()), ("local_id", vertexId.LocalId.ToString())
+        });
         jsonWriter.WritePropertyName("geometry");
-        jsonWriter.WritePoint(routerDb.GetVertex(vertexId));
+        jsonWriter.WritePoint(location);
         jsonWriter.WriteFeatureEnd();
     }
 
@@ -93,20 +105,20 @@ public static class RouterDbExtensions
     /// <param name="jsonWriter">The json writer.</param>
     /// <param name="enumerator">The enumerator.</param>
     public static void WriteEdgeFeature(this Utf8JsonWriter jsonWriter,
-        IEdgeEnumerator<RoutingNetwork> enumerator)
+        IEdgeEnumerator enumerator)
     {
         jsonWriter.WriteFeatureStart();
         var attributes = enumerator.Attributes.ToList();
-        attributes.AddRange(new (string key, string value)[] {
-                ("vertex1_tile_id", enumerator.Tail.TileId.ToString()),
-                ("vertex1_local_id", enumerator.Tail.LocalId.ToString()),
-                ("vertex2_tile_id", enumerator.Head.TileId.ToString()),
-                ("vertex2_local_id", enumerator.Head.LocalId.ToString()),
-                ("edge_id", enumerator.EdgeId.ToString())
-            });
+        attributes.AddRange(new (string key, string value)[]
+        {
+            ("vertex1_tile_id", enumerator.Tail.TileId.ToString()),
+            ("vertex1_local_id", enumerator.Tail.LocalId.ToString()),
+            ("vertex2_tile_id", enumerator.Head.TileId.ToString()),
+            ("vertex2_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
+        });
         jsonWriter.WriteProperties(attributes);
         jsonWriter.WritePropertyName("geometry");
-        jsonWriter.WriteLineString(enumerator.GetCompleteShape<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>());
+        jsonWriter.WriteLineString(enumerator.GetCompleteShape());
         jsonWriter.WriteFeatureEnd();
     }
 }

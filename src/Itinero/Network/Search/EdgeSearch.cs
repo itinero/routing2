@@ -67,7 +67,7 @@ internal static class EdgeSearch
             // search for the local snap point that improves the current best snap point.
             (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);
             var isAcceptable = (bool?)null;
-            var completeShape = edgeEnumerator.GetCompleteShape<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>();
+            var completeShape = edgeEnumerator.GetCompleteShape();
             var length = 0.0;
             using (var completeShapeEnumerator = completeShape.GetEnumerator())
             {
@@ -250,7 +250,7 @@ internal static class EdgeSearch
             (EdgeId edgeId, double offset, bool isOrthoganal, double distance) bestEdgeSnapPoint =
                 (EdgeId.Empty, 0, false, double.MaxValue);
             var isAcceptable = (bool?)null;
-            var completeShape = edgeEnumerator.GetCompleteShape<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>();
+            var completeShape = edgeEnumerator.GetCompleteShape();
             var length = 0.0;
             using (var completeShapeEnumerator = completeShape.GetEnumerator())
             {

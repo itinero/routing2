@@ -58,6 +58,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
             return false;
         }
 
+        _headLocation = null;
+        _tailLocation = null;
         _localId = vertex.LocalId;
         _nextEdgePointer = uint.MaxValue;
         this.EdgePointer = uint.MaxValue;
@@ -85,6 +87,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
                 "Cannot move to edge not in current tile, move to the tile first.");
         }
 
+        _headLocation = null;
+        _tailLocation = null;
         _nextEdgePointer = edge.LocalId;
         if (edge.LocalId >= EdgeId.MinCrossId)
         {
@@ -168,6 +172,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
             throw new InvalidOperationException("Cannot reset an empty enumerator.");
         }
 
+        _headLocation = null;
+        _tailLocation = null;
         this.EdgePointer = uint.MaxValue;
         _nextEdgePointer = uint.MaxValue;
     }
@@ -182,6 +188,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
     /// <returns>True when there is a new edge.</returns>
     public bool MoveNext()
     {
+        _headLocation = null;
+        _tailLocation = null;
         this.EdgePointer = uint.MaxValue;
 
         if (this.Tile == null)

@@ -55,7 +55,7 @@ internal class ProfileCostFunctionCached : ICostFunction
 
         var lengthNullable = edgeEnumerator.Length;
         var length = lengthNullable ??
-                     (uint)(edgeEnumerator.EdgeLength<IEdgeEnumerator<RoutingNetwork>, RoutingNetwork>() * 100);
+                     (uint)(edgeEnumerator.EdgeLength() * 100);
         var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
         var canAccess = cost > 0;
 

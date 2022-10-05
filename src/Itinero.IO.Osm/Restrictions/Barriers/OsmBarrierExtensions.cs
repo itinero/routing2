@@ -38,10 +38,12 @@ public static class OsmBarrierExtensions
         // for each two edges create one restriction.
         var restrictions = new List<NetworkRestriction>();
         foreach (var from in edges)
-            foreach (var to in edges)
-            {
-                restrictions.Add(new NetworkRestriction(new[] { from, to }, true, osmBarrier.Attributes));
-            }
+        foreach (var to in edges)
+        {
+            if (from.edge == to.edge) continue;
+
+            restrictions.Add(new NetworkRestriction(new[] { from, to }, true, osmBarrier.Attributes));
+        }
 
         return new Result<IEnumerable<NetworkRestriction>>(restrictions);
     }
