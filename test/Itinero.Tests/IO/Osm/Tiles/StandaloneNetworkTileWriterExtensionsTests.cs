@@ -1,12 +1,12 @@
+using System.Linq;
+using Itinero.Indexes;
 using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
 using Itinero.Network.Tiles.Standalone.Writer;
+using Itinero.Tests.Mocks.Indexes;
 using OsmSharp;
 using OsmSharp.Tags;
 using Xunit;
-using System.Linq;
-using Itinero.Indexes;
-using Itinero.Tests.Mocks.Indexes;
 
 namespace Itinero.Tests.IO.Osm.Tiles;
 
