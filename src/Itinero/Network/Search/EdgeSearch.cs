@@ -63,7 +63,7 @@ internal static class EdgeSearch
             {
                 break; // break when exact on an edge.
             }
-
+            
             // search for the local snap point that improves the current best snap point.
             (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);
             var isAcceptable = (bool?)null;
@@ -139,7 +139,8 @@ internal static class EdgeSearch
                     previous = current;
                     if (bestDistance <= 0)
                     {
-                        break;
+                        // we need to continue, we need the total length.
+                        continue;
                     }
 
                     var projected = line.ProjectOn(center);
