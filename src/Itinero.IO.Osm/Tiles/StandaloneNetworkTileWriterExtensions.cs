@@ -90,7 +90,12 @@ public static class StandaloneNetworkTileWriterExtensions
                             var wayNode = way.Nodes[n];
 
                             // check if the node is in the tile or not.
-                            var (_, _, inTile) = nodeLocations[wayNode];
+                            if (!nodeLocations.TryGetValue(wayNode, out var value))
+                            {
+                                throw new Exception(
+                                    $"Node {wayNode} as part of way {way.Id} not found in source data.");
+                            }
+                            var (_, _, inTile) = value;
 
                             // mark as core if used before and mark as used.
                             if (inTile)
