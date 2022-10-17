@@ -44,7 +44,7 @@ jobs:
       run: dotnet pack -c release
       working-directory: ./src/Itinero.Geo/
     - name: Nuget push
-      run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/anyways-open/index.json
+      run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/itinero/index.json
       working-directory: ./src/
     - name: Extract branch name
       shell: bash
