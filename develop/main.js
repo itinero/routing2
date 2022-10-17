@@ -239,7 +239,7 @@ var assemblies = [
       { "name": "Itinero.IO.BitCoderStream", "rp": "Itinero_BitCoderStream.html", "cl": 144, "ucl": 350, "cal": 494, "tl": 658, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 108, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.GeoJsonExtensions", "rp": "Itinero_GeoJsonExtensions.html", "cl": 0, "ucl": 55, "cal": 55, "tl": 122, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.RouteExtensions", "rp": "Itinero_RouteExtensions.2.html", "cl": 0, "ucl": 49, "cal": 49, "tl": 216, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Json.GeoJson.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.html", "cl": 0, "ucl": 64, "cal": 64, "tl": 124, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 8, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Json.GeoJson.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.html", "cl": 0, "ucl": 96, "cal": 96, "tl": 166, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.SnapPointExtensions", "rp": "Itinero_SnapPointExtensions.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 52, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.StandaloneNetworkTileExtensions", "rp": "Itinero_StandaloneNetworkTileExtensions.html", "cl": 0, "ucl": 88, "cal": 88, "tl": 135, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 30, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.StreamExtensions", "rp": "Itinero_StreamExtensions.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 29, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -413,7 +413,7 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Streams.RelationTagsPreprocessor", "rp": "Itinero.IO.Osm_RelationTagsPreprocessor.html", "cl": 48, "ucl": 2, "cal": 50, "tl": 98, "ct": "LineCoverage", "mc": "-", "cb": 15, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.AttributesExtensions", "rp": "Itinero.IO.Osm_AttributesExtensions.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.GlobalEdgeIdExtensions", "rp": "Itinero.IO.Osm_GlobalEdgeIdExtensions.html", "cl": 15, "ucl": 10, "cal": 25, "tl": 44, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 184, "ucl": 55, "cal": 239, "tl": 375, "ct": "LineCoverage", "mc": "-", "cb": 116, "tb": 160, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 185, "ucl": 58, "cal": 243, "tl": 380, "ct": "LineCoverage", "mc": "-", "cb": 117, "tb": 162, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "Itinero.IO.Osm.Tiles",
@@ -451,7 +451,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero.IO.Osm", "class": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "reportPath": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "methodName": "AddTileData(Itinero.Network.Tiles.Standalone.Writer.StandaloneNetworkTileWriter,System.Collections.Generic.IEnumerable`1<OsmSharp.OsmGeo>)", "methodShortName": "AddTileData(...)", "fileIndex": 0, "line": 26,
     "metrics": [
-      { "value": 160, "exceeded": true },
+      { "value": 162, "exceeded": true },
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra", "reportPath": "Itinero_Dijkstra.2.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 74,
