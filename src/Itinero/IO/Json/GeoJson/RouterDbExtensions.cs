@@ -14,9 +14,15 @@ namespace Itinero.IO.Json.GeoJson;
 /// </summary>
 public static class RouterDbExtensions
 {
+    /// <summary>
+    /// Gets a geojson representation of the data in the routerdb.
+    /// </summary>
+    /// <param name="routerDb"></param>
+    /// <param name="box"></param>
+    /// <returns></returns>
     public static string ToGeoJson(this RoutingNetwork routerDb,
         ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight) box)
+            bottomRight)? box = null)
     {
         using var stream = new MemoryStream();
         using (var jsonWriter = new Utf8JsonWriter(stream))
@@ -37,33 +43,69 @@ public static class RouterDbExtensions
     /// <param name="jsonWriter">The json writer.</param>
     public static void WriteFeatures(this Utf8JsonWriter jsonWriter, RoutingNetwork routerDb,
         ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight) box)
+            bottomRight)? box)
     {
         var vertices = new HashSet<VertexId>();
         var edges = new HashSet<EdgeId>();
 
-        var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-        while (edgeEnumerator.MoveNext())
+        if (box == null)
         {
-            var vertex1 = edgeEnumerator.Tail;
-            if (!vertices.Contains(vertex1))
+            var vertexEnumerator = routerDb.GetVertexEnumerator();
+            var edgeEnumerator = routerDb.GetEdgeEnumerator();
+            while (vertexEnumerator.MoveNext())
             {
-                jsonWriter.WriteVertexFeature(vertex1, routerDb);
-                vertices.Add(vertex1);
-            }
+                edgeEnumerator.MoveTo(vertexEnumerator.Current);
 
-            var vertex2 = edgeEnumerator.Head;
-            if (!vertices.Contains(vertex2))
-            {
-                jsonWriter.WriteVertexFeature(vertex2, routerDb);
-                vertices.Add(vertex2);
-            }
+                while (edgeEnumerator.MoveNext())
+                {
+                    var vertex1 = edgeEnumerator.Tail;
+                    if (!vertices.Contains(vertex1))
+                    {
+                        jsonWriter.WriteVertexFeature(vertex1, routerDb);
+                        vertices.Add(vertex1);
+                    }
 
-            var edge = edgeEnumerator.EdgeId;
-            if (!edges.Contains(edge))
+                    var vertex2 = edgeEnumerator.Head;
+                    if (!vertices.Contains(vertex2))
+                    {
+                        jsonWriter.WriteVertexFeature(vertex2, routerDb);
+                        vertices.Add(vertex2);
+                    }
+
+                    var edge = edgeEnumerator.EdgeId;
+                    if (!edges.Contains(edge))
+                    {
+                        jsonWriter.WriteEdgeFeature(edgeEnumerator);
+                        edges.Add(edge);
+                    }
+                }
+            }
+        }
+        else
+        {
+            var edgeEnumerator = routerDb.SearchEdgesInBox(box.Value);
+            while (edgeEnumerator.MoveNext())
             {
-                jsonWriter.WriteEdgeFeature(edgeEnumerator);
-                edges.Add(edge);
+                var vertex1 = edgeEnumerator.Tail;
+                if (!vertices.Contains(vertex1))
+                {
+                    jsonWriter.WriteVertexFeature(vertex1, routerDb);
+                    vertices.Add(vertex1);
+                }
+
+                var vertex2 = edgeEnumerator.Head;
+                if (!vertices.Contains(vertex2))
+                {
+                    jsonWriter.WriteVertexFeature(vertex2, routerDb);
+                    vertices.Add(vertex2);
+                }
+
+                var edge = edgeEnumerator.EdgeId;
+                if (!edges.Contains(edge))
+                {
+                    jsonWriter.WriteEdgeFeature(edgeEnumerator);
+                    edges.Add(edge);
+                }
             }
         }
     }
