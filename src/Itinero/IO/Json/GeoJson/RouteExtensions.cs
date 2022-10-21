@@ -18,17 +18,15 @@ public static class RouteExtensions
     /// <returns>A geojson string.</returns>
     public static string ToGeoJson(this Route route)
     {
-        using (var stream = new MemoryStream())
+        using var stream = new MemoryStream();
+        using (var jsonWriter = new Utf8JsonWriter(stream))
         {
-            using (var jsonWriter = new Utf8JsonWriter(stream))
-            {
-                jsonWriter.WriteFeatureCollectionStart();
-                jsonWriter.WriteFeatures(route);
-                jsonWriter.WriteFeatureCollectionEnd();
-            }
-
-            return Encoding.UTF8.GetString(stream.ToArray());
+            jsonWriter.WriteFeatureCollectionStart();
+            jsonWriter.WriteFeatures(route);
+            jsonWriter.WriteFeatureCollectionEnd();
         }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
     }
 
     public static string ToGeoJson(this IReadOnlyList<Route> routes)
