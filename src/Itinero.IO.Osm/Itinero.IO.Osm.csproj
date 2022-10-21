@@ -14,6 +14,6 @@
     <PackageReference Include="OsmSharp" Version="7.0.0-pre018" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Itinero\Itinero.csproj" />
+    <ProjectReference Include="..\Itinero.Geo\Itinero.Geo.csproj" />
   </ItemGroup>
 </Project>

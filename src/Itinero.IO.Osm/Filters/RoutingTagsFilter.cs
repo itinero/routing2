@@ -11,7 +11,7 @@ internal static class RoutingTagsFilter
     /// <summary>
     /// Gets the default tags filter.
     /// </summary>
-    public static readonly TagsFilter Default = new TagsFilter()
+    public static readonly TagsFilter Default = new()
     {
         Filter = Filter,
         MemberFilter = ProcessCycleNetwork
@@ -87,6 +87,8 @@ internal static class RoutingTagsFilter
         {
             member.Tags[$"{CycleNetworkPrefix}:network:{network}"] = "yes   ";
         }
+
+        if (relation.Id == 9073325) Console.WriteLine("break");
 
         return true;
     }

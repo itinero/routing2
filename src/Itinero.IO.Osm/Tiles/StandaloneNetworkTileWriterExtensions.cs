@@ -4,10 +4,12 @@ using System.Linq;
 using Itinero.Geo;
 using Itinero.IO.Osm.Restrictions;
 using Itinero.IO.Osm.Restrictions.Barriers;
+using Itinero.IO.Osm.Streams;
 using Itinero.Network;
 using Itinero.Network.Tiles.Standalone;
 using Itinero.Network.Tiles.Standalone.Writer;
 using OsmSharp;
+using OsmSharp.Streams;
 
 namespace Itinero.IO.Osm.Tiles;
 
@@ -21,9 +23,37 @@ public static class StandaloneNetworkTileWriterExtensions
     /// </summary>
     /// <param name="writer">The writer.</param>
     /// <param name="tileData">The OSM data in the tile.</param>
+    /// <param name="configure">The configure function.</param>
     /// <exception cref="Exception"></exception>
-    public static void AddTileData(this StandaloneNetworkTileWriter writer, IEnumerable<OsmGeo> tileData)
+    public static void AddTileData(this StandaloneNetworkTileWriter writer, IEnumerable<OsmGeo> tileData,
+        Action<DataProviderSettings>? configure = null)
     {
+        // create settings.
+        var settings = new DataProviderSettings();
+        configure?.Invoke(settings);
+
+        // do filtering. 
+        // ReSharper disable once PossibleMultipleEnumeration
+        OsmStreamSource data = new OsmEnumerableStreamSource(tileData);
+
+        // 1: complete objects.
+        if (settings.TagsFilter.CompleteFilter != null)
+        {
+            data = data.ApplyCompleteFilter(settings.TagsFilter.CompleteFilter);
+        }
+
+        // 2: filter relations.
+        if (settings.TagsFilter.MemberFilter != null)
+        {
+            data = data.ApplyRelationMemberFilter(settings.TagsFilter.MemberFilter);
+        }
+
+        // 3: filter tags on ways and relations.
+        if (settings.TagsFilter.Filter != null)
+        {
+            data = data.ApplyFilter(settings.TagsFilter.Filter);
+        }
+
         // setup the edge type map.
         var edgeTypeMap = writer.EdgeTypeMap.func;
         var emptyEdgeType = edgeTypeMap(ArraySegment<(string key, string value)>.Empty);
@@ -40,7 +70,7 @@ public static class StandaloneNetworkTileWriterExtensions
         // first pass to:
         // - mark nodes are core, they are to be become vertices later.
         // - parse restrictions and keep restricted edges and mark nodes as core.
-        using var enumerator = tileData.GetEnumerator();
+        using var enumerator = data.GetEnumerator();
 
         var osmTurnRestrictions = new List<OsmTurnRestriction>();
         var restrictedEdges = new Dictionary<Guid, BoundaryOrLocalEdgeId?>();
@@ -180,6 +210,8 @@ public static class StandaloneNetworkTileWriterExtensions
                 case Way way:
                     {
                         if (restrictionMembers.ContainsKey(way.Id.Value)) restrictionMembers[way.Id.Value] = way;
+
+                        if (way.Id == 26829772) Console.WriteLine("break");
 
                         var attributes = way.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
                                          ArraySegment<(string key, string value)>.Empty;

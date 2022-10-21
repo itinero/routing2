@@ -16,12 +16,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Itinero\Itinero.csproj" />
+      <None Remove="Osm\*.lua" />
+      <EmbeddedResource Include="Osm\*.lua" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Osm\*.lua" />
-      <EmbeddedResource Include="Osm\*.lua" />
+      <ProjectReference Include="..\Itinero\Itinero.csproj" />
     </ItemGroup>
 
 </Project>
