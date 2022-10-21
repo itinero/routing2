@@ -104,7 +104,7 @@ public static class IRouterExtensions
 
         var maxBox = settings.MaxBoxFor(routingNetwork, sources);
 
-        bool checkMaxDistance(VertexId v)
+        bool CheckMaxDistance(VertexId v)
         {
             if (maxBox == null)
             {
@@ -134,7 +134,7 @@ public static class IRouterExtensions
                 async v =>
                 {
                     await routingNetwork.RouterDb.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
-                    return checkMaxDistance(v.vertexId);
+                    return CheckMaxDistance(v.vertexId);
                 });
 
             var sourceResults = new Result<Path>[pathsAndCosts.Length];
@@ -169,7 +169,7 @@ public static class IRouterExtensions
 
         var maxBox = settings.MaxBoxFor(routerDb, sources);
 
-        bool checkMaxDistance(VertexId v)
+        bool CheckMaxDistance(VertexId v)
         {
             if (maxBox == null)
             {
@@ -199,7 +199,7 @@ public static class IRouterExtensions
                 async e =>
                 {
                     await routerDb.RouterDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
-                    return checkMaxDistance(e.vertexId);
+                    return CheckMaxDistance(e.vertexId);
                 });
 
             var sourceResults = new Result<Path>[paths.Length];
