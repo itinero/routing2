@@ -73,7 +73,7 @@ internal static class RoutingNetworkSnapshotExtensions
 
     internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
     {
-        if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile, out var cache, out var turnCostFactorCache))
+        if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile.Name, out var cache, out var turnCostFactorCache))
         {
             return new ProfileCostFunction(profile);
         }

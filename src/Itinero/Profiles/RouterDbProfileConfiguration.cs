@@ -16,7 +16,12 @@ internal class RouterDbProfileConfiguration
         _profiles = new Dictionary<string, (Profile profile, EdgeFactorCache cache, TurnCostFactorCache turnCostFactorCache)>();
     }
 
-    public bool HasProfile(string name)
+    internal IEnumerable<string> GetProfileNames()
+    {
+        return _profiles.Keys.ToList();
+    }
+
+    internal bool HasProfile(string name)
     {
         return _profiles.ContainsKey(name);
     }
@@ -31,11 +36,11 @@ internal class RouterDbProfileConfiguration
         this.UpdateEdgeTypeMap();
     }
 
-    internal bool TryGetProfileHandlerEdgeTypesCache(Profile profile, out EdgeFactorCache? cache, out TurnCostFactorCache? turnCostFactorCache)
+    internal bool TryGetProfileHandlerEdgeTypesCache(string profileName, out EdgeFactorCache? cache, out TurnCostFactorCache? turnCostFactorCache)
     {
         cache = null;
         turnCostFactorCache = null;
-        if (!_profiles.TryGetValue(profile.Name, out var profileValue))
+        if (!_profiles.TryGetValue(profileName, out var profileValue))
         {
             return false;
         }
