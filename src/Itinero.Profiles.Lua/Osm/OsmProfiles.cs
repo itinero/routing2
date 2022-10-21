@@ -32,6 +32,14 @@ public static class OsmProfiles
     /// </summary>
     public static Profile Car { get; } = LazyCar.Value;
 
+    private static readonly Lazy<Profile> LazyCarShort = new(() => LuaProfile.Load(LoadEmbeddedResource("Itinero.Profiles.Lua.Osm.car.lua"),
+        "Itinero.Profiles.Lua.Osm.car.short.lua"));
+
+    /// <summary>
+    /// Gets the car short profile.
+    /// </summary>
+    public static Profile CarShort { get; } = LazyCarShort.Value;
+
     /// <summary>
     /// Loads a string from an embedded resource stream.
     /// </summary>
