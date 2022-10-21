@@ -396,7 +396,7 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Collections.UnsignedNodeIndex", "rp": "Itinero.IO.Osm_UnsignedNodeIndex.html", "cl": 0, "ucl": 293, "cal": 293, "tl": 475, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 90, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.CompleteOsmGeoExtensions", "rp": "Itinero.IO.Osm_CompleteOsmGeoExtensions.html", "cl": 0, "ucl": 6, "cal": 6, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.DataProviderSettings", "rp": "Itinero.IO.Osm_DataProviderSettings.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 20, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Filters.RoutingTagsFilter", "rp": "Itinero.IO.Osm_RoutingTagsFilter.html", "cl": 25, "ucl": 32, "cal": 57, "tl": 93, "ct": "LineCoverage", "mc": "-", "cb": 18, "tb": 46, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Filters.RoutingTagsFilter", "rp": "Itinero.IO.Osm_RoutingTagsFilter.html", "cl": 42, "ucl": 16, "cal": 58, "tl": 95, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 48, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Filters.TagsFilter", "rp": "Itinero.IO.Osm_TagsFilter.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 69, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Restrictions.Barriers.OsmBarrier", "rp": "Itinero.IO.Osm_OsmBarrier.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 37, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Restrictions.Barriers.OsmBarrierExtensions", "rp": "Itinero.IO.Osm_OsmBarrierExtensions.html", "cl": 0, "ucl": 17, "cal": 17, "tl": 50, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 10, "lch": [], "bch": [], "hc": [] },
@@ -408,12 +408,12 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.RouterDbExtensions", "rp": "Itinero.IO.Osm_RouterDbExtensions.html", "cl": 16, "ucl": 9, "cal": 25, "tl": 65, "ct": "LineCoverage", "mc": "-", "cb": 7, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.RouterDbStreamTarget", "rp": "Itinero.IO.Osm_RouterDbStreamTarget.html", "cl": 76, "ucl": 58, "cal": 134, "tl": 216, "ct": "LineCoverage", "mc": "-", "cb": 29, "tb": 62, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Streams.CompleteOsmGeoPreprocessor", "rp": "Itinero.IO.Osm_CompleteOsmGeoPreprocessor.html", "cl": 50, "ucl": 7, "cal": 57, "tl": 118, "ct": "LineCoverage", "mc": "-", "cb": 21, "tb": 26, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Streams.OsmGeoTagsPreprocessor", "rp": "Itinero.IO.Osm_OsmGeoTagsPreprocessor.html", "cl": 22, "ucl": 3, "cal": 25, "tl": 54, "ct": "LineCoverage", "mc": "-", "cb": 5, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Streams.OsmStreamSourceExtensions", "rp": "Itinero.IO.Osm_OsmStreamSourceExtensions.html", "cl": 5, "ucl": 11, "cal": 16, "tl": 55, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Streams.OsmGeoTagsPreprocessor", "rp": "Itinero.IO.Osm_OsmGeoTagsPreprocessor.html", "cl": 23, "ucl": 2, "cal": 25, "tl": 54, "ct": "LineCoverage", "mc": "-", "cb": 5, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Streams.OsmStreamSourceExtensions", "rp": "Itinero.IO.Osm_OsmStreamSourceExtensions.html", "cl": 11, "ucl": 5, "cal": 16, "tl": 55, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Streams.RelationTagsPreprocessor", "rp": "Itinero.IO.Osm_RelationTagsPreprocessor.html", "cl": 48, "ucl": 2, "cal": 50, "tl": 98, "ct": "LineCoverage", "mc": "-", "cb": 15, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.AttributesExtensions", "rp": "Itinero.IO.Osm_AttributesExtensions.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.GlobalEdgeIdExtensions", "rp": "Itinero.IO.Osm_GlobalEdgeIdExtensions.html", "cl": 15, "ucl": 10, "cal": 25, "tl": 44, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 185, "ucl": 58, "cal": 243, "tl": 380, "ct": "LineCoverage", "mc": "-", "cb": 117, "tb": 162, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 198, "ucl": 61, "cal": 259, "tl": 412, "ct": "LineCoverage", "mc": "-", "cb": 124, "tb": 172, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "Itinero.IO.Osm.Tiles",
@@ -449,9 +449,9 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "Itinero.IO.Osm", "class": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "reportPath": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "methodName": "AddTileData(Itinero.Network.Tiles.Standalone.Writer.StandaloneNetworkTileWriter,System.Collections.Generic.IEnumerable`1<OsmSharp.OsmGeo>)", "methodShortName": "AddTileData(...)", "fileIndex": 0, "line": 26,
+    "assembly": "Itinero.IO.Osm", "class": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "reportPath": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "methodName": "AddTileData(Itinero.Network.Tiles.Standalone.Writer.StandaloneNetworkTileWriter,System.Collections.Generic.IEnumerable`1<OsmSharp.OsmGeo>,System.Action`1<Itinero.IO.Osm.DataProviderSettings>)", "methodShortName": "AddTileData(...)", "fileIndex": 0, "line": 30,
     "metrics": [
-      { "value": 162, "exceeded": true },
+      { "value": 172, "exceeded": true },
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra", "reportPath": "Itinero_Dijkstra.2.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 74,
