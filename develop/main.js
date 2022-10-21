@@ -238,8 +238,8 @@ var assemblies = [
       { "name": "Itinero.Indexes.AttributeSetMap", "rp": "Itinero_AttributeSetMap.html", "cl": 9, "ucl": 0, "cal": 9, "tl": 40, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.BitCoderStream", "rp": "Itinero_BitCoderStream.html", "cl": 144, "ucl": 350, "cal": 494, "tl": 658, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 108, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.GeoJsonExtensions", "rp": "Itinero_GeoJsonExtensions.html", "cl": 0, "ucl": 55, "cal": 55, "tl": 122, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Json.GeoJson.RouteExtensions", "rp": "Itinero_RouteExtensions.2.html", "cl": 0, "ucl": 49, "cal": 49, "tl": 216, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Json.GeoJson.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.html", "cl": 0, "ucl": 96, "cal": 96, "tl": 166, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 20, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Json.GeoJson.RouteExtensions", "rp": "Itinero_RouteExtensions.2.html", "cl": 0, "ucl": 48, "cal": 48, "tl": 214, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Json.GeoJson.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.html", "cl": 0, "ucl": 128, "cal": 128, "tl": 214, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 30, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.SnapPointExtensions", "rp": "Itinero_SnapPointExtensions.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 52, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Json.GeoJson.StandaloneNetworkTileExtensions", "rp": "Itinero_StandaloneNetworkTileExtensions.html", "cl": 0, "ucl": 88, "cal": 88, "tl": 135, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 30, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.StreamExtensions", "rp": "Itinero_StreamExtensions.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 29, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -292,7 +292,7 @@ var assemblies = [
       { "name": "Itinero.Profiles.Profile", "rp": "Itinero_Profile.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 67, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.ProfileExtensions", "rp": "Itinero_ProfileExtensions.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 19, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.2.html", "cl": 0, "ucl": 6, "cal": 6, "tl": 30, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Profiles.RouterDbProfileConfiguration", "rp": "Itinero_RouterDbProfileConfiguration.html", "cl": 12, "ucl": 21, "cal": 33, "tl": 62, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Profiles.RouterDbProfileConfiguration", "rp": "Itinero_RouterDbProfileConfiguration.html", "cl": 12, "ucl": 24, "cal": 36, "tl": 67, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.Serialization.StreamExtensions", "rp": "Itinero_StreamExtensions.2.html", "cl": 0, "ucl": 6, "cal": 6, "tl": 16, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.TurnCostFactor", "rp": "Itinero_TurnCostFactor.html", "cl": 5, "ucl": 4, "cal": 9, "tl": 51, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Result`1", "rp": "Itinero_Result_1.html", "cl": 27, "ucl": 20, "cal": 47, "tl": 130, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 12, "lch": [], "bch": [], "hc": [] },
@@ -437,7 +437,7 @@ var assemblies = [
     "classes": [
       { "name": "Itinero.Profiles.Lua.LuaProfile", "rp": "Itinero.Profiles.Lua_LuaProfile.html", "cl": 75, "ucl": 14, "cal": 89, "tl": 145, "ct": "LineCoverage", "mc": "-", "cb": 39, "tb": 52, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.Lua.LuaTableExtensions", "rp": "Itinero.Profiles.Lua_LuaTableExtensions.html", "cl": 18, "ucl": 5, "cal": 23, "tl": 43, "ct": "LineCoverage", "mc": "-", "cb": 9, "tb": 16, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Profiles.Lua.Osm.OsmProfiles", "rp": "Itinero.Profiles.Lua_OsmProfiles.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 45, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 2, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Profiles.Lua.Osm.OsmProfiles", "rp": "Itinero.Profiles.Lua_OsmProfiles.html", "cl": 18, "ucl": 0, "cal": 18, "tl": 53, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 2, "lch": [], "bch": [], "hc": [] },
     ]},
 ];
 
