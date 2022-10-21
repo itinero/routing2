@@ -169,20 +169,20 @@ public static class RouterDbExtensions
 
             if (edgeFactorCache == null) continue;
             if (!enumerator.EdgeTypeId.HasValue) continue;
-            
+
             var factor = edgeFactorCache.Get(enumerator.EdgeTypeId.Value);
             if (factor == null) continue;
 
-            attributes.AddOrReplace($"{profileName}_factor_forward", 
+            attributes.AddOrReplace($"{profileName}_factor_forward",
                 factor.Value.ForwardFactor.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            attributes.AddOrReplace($"{profileName}_factor_backward", 
+            attributes.AddOrReplace($"{profileName}_factor_backward",
                 factor.Value.ForwardFactor.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            attributes.AddOrReplace($"{profileName}_speed_forward", 
+            attributes.AddOrReplace($"{profileName}_speed_forward",
                 factor.Value.ForwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            attributes.AddOrReplace($"{profileName}_speed_backward", 
+            attributes.AddOrReplace($"{profileName}_speed_backward",
                 factor.Value.BackwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
-        
+
         jsonWriter.WriteProperties(attributes);
         jsonWriter.WritePropertyName("geometry");
         jsonWriter.WriteLineString(enumerator.GetCompleteShape());
