@@ -196,9 +196,9 @@ public static class StandaloneNetworkTileWriterExtensions
                             var fromLocation = nodeLocations[from];
                             var toLocation = nodeLocations[to];
 
-                            var length = (uint)((fromLocation.longitude, fromLocation.longitude, (float?)null)
+                            var length = (uint)((fromLocation.longitude, fromLocation.latitude, (float?)null)
                                 .DistanceEstimateInMeter(
-                                    (toLocation.longitude, toLocation.longitude, (float?)null)) * 100);
+                                    (toLocation.longitude, toLocation.latitude, (float?)null)) * 100);
 
                             if (boundaryNodes.Contains(from) &&
                                 vertices.TryGetValue(to, out var vertexId))
