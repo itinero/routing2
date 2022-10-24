@@ -211,8 +211,6 @@ public static class StandaloneNetworkTileWriterExtensions
                     {
                         if (restrictionMembers.ContainsKey(way.Id.Value)) restrictionMembers[way.Id.Value] = way;
 
-                        if (way.Id == 26829772) Console.WriteLine("break");
-
                         var attributes = way.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
                                          ArraySegment<(string key, string value)>.Empty;
                         var edgeTypeId = edgeTypeMap(attributes);
