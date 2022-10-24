@@ -5,17 +5,17 @@ namespace Itinero.Network.TurnCosts;
 
 internal static class OrderCoder
 {
-    internal const int MAX_ORDER_HEAD_TAIL = 14;
+    internal const int MaxOrderHeadTail = 14;
 
     public static void SetTailHeadOrder(this ArrayBase<byte> data, long i, byte? tail, byte? head)
     {
-        if (tail.HasValue && tail.Value > MAX_ORDER_HEAD_TAIL)
+        if (tail.HasValue && tail.Value > MaxOrderHeadTail)
         {
             throw new ArgumentOutOfRangeException(nameof(tail),
                 $"Maximum order exceeded.");
         }
 
-        if (head.HasValue && head.Value > MAX_ORDER_HEAD_TAIL)
+        if (head.HasValue && head.Value > MaxOrderHeadTail)
         {
             throw new ArgumentOutOfRangeException(nameof(head),
                 $"Maximum order exceeded.");

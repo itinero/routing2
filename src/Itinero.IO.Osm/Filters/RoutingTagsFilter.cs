@@ -9,13 +9,12 @@ namespace Itinero.IO.Osm.Filters;
 internal static class RoutingTagsFilter
 {
     /// <summary>
-    /// Gets the default tags filter.
+    /// Gets the tags filter.
     /// </summary>
-    public static readonly TagsFilter Default = new()
+    public static TagsFilter Get()
     {
-        Filter = Filter,
-        MemberFilter = ProcessCycleNetwork
-    };
+        return new TagsFilter() { Filter = Filter, MemberFilter = ProcessCycleNetwork };
+    }
 
     internal static bool Filter(OsmGeo osmGeo)
     {

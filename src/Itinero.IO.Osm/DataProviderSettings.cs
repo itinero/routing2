@@ -11,7 +11,7 @@ public class DataProviderSettings
     /// <summary>
     /// Gets or sets the tags filter.
     /// </summary>
-    public TagsFilter TagsFilter { get; set; } = RoutingTagsFilter.Default;
+    public TagsFilter TagsFilter { get; set; } = RoutingTagsFilter.Get();
 
     /// <summary>
     /// Gets or sets the elevation handler.

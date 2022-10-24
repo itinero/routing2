@@ -14,10 +14,10 @@ public partial class StandaloneNetworkTile
     internal void AddGlobalTurnCosts((Guid globalEdgeId, bool forward)[] edges, uint[,] costs, uint turnCostType,
         IEnumerable<(string key, string value)> attributes)
     {
-        if (edges.Length > OrderCoder.MAX_ORDER_HEAD_TAIL)
+        if (edges.Length > OrderCoder.MaxOrderHeadTail)
         {
             throw new ArgumentException(
-                $"Cannot add turn costs for vertices with more than {OrderCoder.MAX_ORDER_HEAD_TAIL} edges.");
+                $"Cannot add turn costs for vertices with more than {OrderCoder.MaxOrderHeadTail} edges.");
         }
 
         // make sure there is space in the turn cost array.

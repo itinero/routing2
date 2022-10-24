@@ -190,6 +190,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
     {
         _headLocation = null;
         _tailLocation = null;
+        _headOrder = null;
+        _tailOrder = null;
         this.EdgePointer = uint.MaxValue;
 
         if (this.Tile == null)
