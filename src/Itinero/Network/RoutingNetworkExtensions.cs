@@ -85,7 +85,7 @@ internal static class RoutingNetworkSnapshotExtensions
         GetAttributes(this RoutingNetwork routerDb, EdgeId edge)
     {
         var enumerator = routerDb.GetEdgeEnumerator();
-        if (!enumerator.MoveToEdge(edge))
+        if (!enumerator.MoveTo(edge))
         {
             return Enumerable.Empty<(string key, string value)>();
         }

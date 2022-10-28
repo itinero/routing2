@@ -69,7 +69,7 @@ public abstract class EdgeEnumerator<T> :
     /// </summary>
     /// <param name="edgeId">The edge id.</param>
     /// <param name="forward">The forward flag, when false the enumerator is in a state as it was enumerated to the edge via its last vertex. When true the enumerator is in a state as it was enumerated to the edge via its first vertex.</param>
-    public bool MoveToEdge(EdgeId edgeId, bool forward = true)
+    public bool MoveTo(EdgeId edgeId, bool forward = true)
     {
         _tailLocation = null;
         _headLocation = null;

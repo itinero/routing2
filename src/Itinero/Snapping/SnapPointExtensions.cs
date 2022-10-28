@@ -24,7 +24,7 @@ public static class SnapPointExtensions
         RoutingNetwork routerDb)
     {
         var enumerator = routerDb.GetEdgeEnumerator();
-        enumerator.MoveToEdge(snapPoint.EdgeId);
+        enumerator.MoveTo(snapPoint.EdgeId);
 
         return enumerator.LocationOnEdge(snapPoint.Offset);
     }
@@ -131,7 +131,7 @@ public static class SnapPointExtensions
         }
 
         var edgeEnumerator = routerDb.GetEdgeEnumerator();
-        if (!edgeEnumerator.MoveToEdge(snapPoint.EdgeId, true))
+        if (!edgeEnumerator.MoveTo(snapPoint.EdgeId, true))
         {
             throw new ArgumentException($"Cannot find edge in {nameof(SnapPoint)}: {snapPoint}");
         }

@@ -89,7 +89,7 @@ public static class RoutingNetworkWriterExtensions
             {
                 // figure out what vertex the turn costs need to be added at.
                 var edgeEnumerator = writer.GetEdgeEnumerator();
-                if (!edgeEnumerator.MoveToEdge(edges[^1].Item1, edges[^1].Item2))
+                if (!edgeEnumerator.MoveTo(edges[^1].Item1, edges[^1].Item2))
                     throw new Exception("edge should exist");
                 var turnCostVertex = edgeEnumerator.Tail;
 

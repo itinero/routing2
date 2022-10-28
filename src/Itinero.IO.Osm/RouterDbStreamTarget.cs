@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo.Elevation;
 using Itinero.IO.Osm.Restrictions;
+using Itinero.IO.Osm.Restrictions.Barriers;
 using Itinero.Network;
 using Itinero.Network.Mutation;
 using OsmSharp;
@@ -18,6 +19,8 @@ public class RouterDbStreamTarget : OsmStreamTarget
     private readonly IElevationHandler? _elevationHandler;
     private readonly OsmTurnRestrictionParser _restrictionParser = new();
     private readonly Dictionary<long, Way?> _restrictionMembers = new();
+    private readonly OsmBarrierParser _barrierParser = new ();
+    private readonly List<OsmBarrier> _osmBarriers = new ();
     private readonly Dictionary<long, (double longitude, double latitude)> _nodeLocations = new();
     private readonly HashSet<long> _usedNodes = new();
     private readonly List<OsmTurnRestriction> _osmTurnRestrictions = new();
@@ -42,6 +45,24 @@ public class RouterDbStreamTarget : OsmStreamTarget
     {
         // execute the first pass.
         this.DoPull(true, false, false);
+        
+        // add barriers as turn weights.
+        var tileEnumerator = _mutableRouterDb.GetEdgeEnumerator();
+        var networkRestrictions = new List<NetworkRestriction>();
+        foreach (var osmBarrier in _osmBarriers)
+        {
+            var networkBarriersResult = osmBarrier.ToNetworkRestrictions(n =>
+            {
+                if (!_vertices.TryGetValue(n, out var v)) throw new Exception("Node should exist as vertex");
+                tileEnumerator.MoveTo(v);
+                return tileEnumerator;
+            });
+            if (networkBarriersResult.IsError) continue;
+
+            networkRestrictions.AddRange(networkBarriersResult.Value);
+        }
+
+        this.AddNetworkRestrictions(networkRestrictions);
 
         // move to second pass.
         _firstPass = false;
@@ -54,13 +75,31 @@ public class RouterDbStreamTarget : OsmStreamTarget
     /// <inheritdoc />
     public override void AddNode(Node node)
     {
-        // FIRST PASS: ignore nodes.
-        if (_firstPass) return;
-
-        // SECOND PASS: keep node locations.
         if (!node.Id.HasValue) return;
         if (!node.Longitude.HasValue || !node.Latitude.HasValue) return;
+        
+        // FIRST PASS: ignore nodes.
+        if (_firstPass)
+        {
+            if (_barrierParser.IsBarrier(node))
+            {
+                // make sure the barriers are core nodes, they need a turn cost.
+                // log nodes are barriers to be able to detect their ways,
+                //      only take nodes in the tile to mark as barrier.
+                _vertices[node.Id.Value] = VertexId.Empty;
+            }
+            return;
+        }
+
+        // SECOND PASS: keep node locations.
         _nodeLocations[node.Id.Value] = (node.Longitude.Value, node.Latitude.Value);
+        if (!_vertices.TryGetValue(node.Id.Value, out _)) return;
+
+        // a vertex can be a barrier, check here.
+        if (_barrierParser.TryParse(node, out var barrier))
+        {
+            _osmBarriers.Add(barrier);
+        }
     }
 
     /// <inheritdoc />
@@ -133,7 +172,6 @@ public class RouterDbStreamTarget : OsmStreamTarget
             }
 
             // add edges.
-            if (way.Id.Value == 27946227) Console.WriteLine("");
             var filteredTags = way.Tags?.Select(x => (x.Key, x.Value));
             var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
                 shape,
@@ -194,7 +232,13 @@ public class RouterDbStreamTarget : OsmStreamTarget
         });
         if (networkRestrictionResult.IsError) return;
 
-        foreach (var networkRestriction in networkRestrictionResult.Value)
+        this.AddNetworkRestrictions(networkRestrictionResult.Value);
+    }
+
+    private void AddNetworkRestrictions(IEnumerable<NetworkRestriction> networkRestrictions)
+    {
+        var enumerator = _mutableRouterDb.GetEdgeEnumerator();
+        foreach (var networkRestriction in networkRestrictions)
         {
             if (networkRestriction.Count < 2)
             {
@@ -208,9 +252,33 @@ public class RouterDbStreamTarget : OsmStreamTarget
             var turnCostVertex = lastEdge.Tail;
 
             var secondToLast = networkRestriction[^2];
-            var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-            _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes, new[] { secondToLast.edge, last.edge }, costs,
-                networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+            if (networkRestriction.IsProhibitory)
+            {
+                // easy, we only add a single cost.
+                var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
+                _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                    new[] { secondToLast.edge, last.edge }, costs,
+                    networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+            }
+            else
+            {
+                // hard, we need to add a cost for every *other* edge than then one in the restriction.
+                enumerator.MoveTo(secondToLast.edge, secondToLast.forward);
+                var to = enumerator.Head;
+                enumerator.MoveTo(to);
+
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.EdgeId == secondToLast.edge ||
+                        enumerator.EdgeId == lastEdge.EdgeId) continue;
+
+                    // easy, we only add a single cost.
+                    var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
+                    _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                        new[] { secondToLast.edge, enumerator.EdgeId }, costs,
+                        networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                }
+            }
         }
     }
 }

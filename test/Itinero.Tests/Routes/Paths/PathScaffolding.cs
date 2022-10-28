@@ -14,7 +14,7 @@ internal static class PathScaffolding
         var edgeEnumerator = network.GetEdgeEnumerator();
         foreach (var e in edges)
         {
-            edgeEnumerator.MoveToEdge(e.edge, e.direction);
+            edgeEnumerator.MoveTo(e.edge, e.direction);
 
             path.Append(e.edge, edgeEnumerator.Tail);
         }

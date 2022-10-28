@@ -39,7 +39,7 @@ public static class PathExtensions
         var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
         foreach (var (edge, direction, offset1, offset2) in path)
         {
-            if (!edgeEnumerator.MoveToEdge(edge, direction))
+            if (!edgeEnumerator.MoveTo(edge, direction))
             {
                 throw new InvalidDataException("An edge in the path is not found!");
             }
@@ -83,9 +83,9 @@ public static class PathExtensions
         }
 
         var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
-        edgeEnumerator.MoveToEdge(last.edge, last.direction);
+        edgeEnumerator.MoveTo(last.edge, last.direction);
         var lastVertex = edgeEnumerator.Head;
-        edgeEnumerator.MoveToEdge(first.edge, first.direction);
+        edgeEnumerator.MoveTo(first.edge, first.direction);
         var firstVertex = edgeEnumerator.Tail;
 
         return lastVertex == firstVertex;
@@ -117,7 +117,7 @@ public static class PathExtensions
 
             foreach (var (edge, direction, _, _) in path)
             {
-                if (!enumerator.MoveToEdge(edge, direction))
+                if (!enumerator.MoveTo(edge, direction))
                 {
                     throw new InvalidDataException(
                         $"Edge not found.");

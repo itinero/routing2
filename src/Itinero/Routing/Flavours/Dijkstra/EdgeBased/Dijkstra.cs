@@ -103,7 +103,7 @@ internal class Dijkstra
         if (source.Forward())
         {
             // add forward.
-            if (!enumerator.MoveToEdge(source.sp.EdgeId, true))
+            if (!enumerator.MoveTo(source.sp.EdgeId, true))
             {
                 throw new Exception($"Edge in source {source} not found!");
             }
@@ -124,7 +124,7 @@ internal class Dijkstra
         if (source.Backward())
         {
             // add backward.
-            if (!enumerator.MoveToEdge(source.sp.EdgeId, false))
+            if (!enumerator.MoveTo(source.sp.EdgeId, false))
             {
                 throw new Exception($"Edge in source {source} not found!");
             }
@@ -152,7 +152,7 @@ internal class Dijkstra
             if (target.Forward())
             {
                 // add forward.
-                if (!enumerator.MoveToEdge(target.sp.EdgeId, true))
+                if (!enumerator.MoveTo(target.sp.EdgeId, true))
                 {
                     throw new Exception($"Edge in target {target} not found!");
                 }
@@ -174,7 +174,7 @@ internal class Dijkstra
             if (target.Backward())
             {
                 // add backward.
-                if (!enumerator.MoveToEdge(target.sp.EdgeId, false))
+                if (!enumerator.MoveTo(target.sp.EdgeId, false))
                 {
                     throw new Exception($"Edge in source {source} not found!");
                 }
@@ -218,7 +218,7 @@ internal class Dijkstra
             {
                 // the source is earlier in the direction of the edge
                 // and the edge can be traversed in this direction.
-                if (!enumerator.MoveToEdge(source.sp.EdgeId, true))
+                if (!enumerator.MoveTo(source.sp.EdgeId, true))
                 {
                     throw new Exception($"Edge in source {source} not found!");
                 }
@@ -232,7 +232,7 @@ internal class Dijkstra
             {
                 // the source is earlier against the direction of the edge
                 // and the edge can be traversed in this direction.
-                if (!enumerator.MoveToEdge(source.sp.EdgeId, false))
+                if (!enumerator.MoveTo(source.sp.EdgeId, false))
                 {
                     throw new Exception($"Edge in source {source} not found!");
                 }
@@ -422,7 +422,7 @@ internal class Dijkstra
             {
                 if (visit.previousPointer == uint.MaxValue)
                 {
-                    enumerator.MoveToEdge(visit.edge);
+                    enumerator.MoveTo(visit.edge);
                     path.Prepend(visit.edge, visit.vertex);
                     break;
                 }

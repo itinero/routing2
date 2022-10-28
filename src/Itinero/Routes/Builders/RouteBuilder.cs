@@ -57,12 +57,12 @@ public class RouteBuilder : IRouteBuilder
                 if (firstEdgeIsFullyContained)
                 {
                     // We check for branches
-                    edgeEnumerator.MoveToEdge(edge, direction);
+                    edgeEnumerator.MoveTo(edge, direction);
                     this.AddBranches(edgeEnumerator.Tail, edgeEnumerator, spareEnumerator, 0, branches, allEdgeIds);
                 }
             }
 
-            edgeEnumerator.MoveToEdge(edge, direction);
+            edgeEnumerator.MoveTo(edge, direction);
 
             var attributes = edgeEnumerator.Attributes;
             var factor = profile.Factor(attributes);
@@ -193,7 +193,7 @@ public class RouteBuilder : IRouteBuilder
 
             // If the vertex of the crossroads are the same as the from, we would walk forward over the branch if we would take it
             var isForward = edgeEnumerator.Forward;
-            spareEnumerator.MoveToEdge(edgeEnumerator.EdgeId, isForward);
+            spareEnumerator.MoveTo(edgeEnumerator.EdgeId, isForward);
             using var shapeEnum = spareEnumerator.GetShapeBetween(includeVertices: false).GetEnumerator();
             shapeEnum.MoveNext(); // Init enumerator at first value
             shapeEnum.MoveNext();

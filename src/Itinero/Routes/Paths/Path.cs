@@ -89,7 +89,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     /// <param name="first">The vertex that should occur first.</param>
     public void Append(EdgeId edge, VertexId first)
     {
-        if (!_edgeEnumerator.MoveToEdge(edge))
+        if (!_edgeEnumerator.MoveTo(edge))
         {
             throw new Exception($"Edge does not exist.");
         }
@@ -115,7 +115,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     /// <param name="last">The vertex that should occur last.</param>
     public void Prepend(EdgeId edge, VertexId last)
     {
-        if (!_edgeEnumerator.MoveToEdge(edge))
+        if (!_edgeEnumerator.MoveTo(edge))
         {
             throw new Exception($"Edge does not exist.");
         }
@@ -183,7 +183,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         if (_edges.Count > 0)
         { // there is a first edge.
             var first = _edges[0];
-            _edgeEnumerator.MoveToEdge(first.edge, first.forward);
+            _edgeEnumerator.MoveTo(first.edge, first.forward);
             builder.Append($"[{_edgeEnumerator.Tail}]");
             builder.Append("->");
             if (this.Offset1 != 0)
@@ -216,7 +216,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         for (var e = 1; e < _edges.Count - 1; e++)
         {
             var edgeAndDirection = _edges[e];
-            _edgeEnumerator.MoveToEdge(edgeAndDirection.edge, edgeAndDirection.forward);
+            _edgeEnumerator.MoveTo(edgeAndDirection.edge, edgeAndDirection.forward);
             builder.Append("->");
             builder.Append($"{edgeAndDirection.edge}");
             builder.Append(edgeAndDirection.forward ? "F" : "B");
@@ -236,7 +236,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
                 builder.Append(OffsetPer(this.Offset2, true));
             }
 
-            _edgeEnumerator.MoveToEdge(last.edge, last.forward);
+            _edgeEnumerator.MoveTo(last.edge, last.forward);
             builder.Append("->");
             builder.Append($"[{_edgeEnumerator.Head}]");
             return builder.ToString();

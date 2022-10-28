@@ -28,7 +28,7 @@ public class NetworkTests
             });
 
         var enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveToEdge(edges[0]);
+        enumerator.MoveTo(edges[0]);
 
         Assert.Equal(1U, enumerator.EdgeTypeId);
     }
@@ -55,7 +55,7 @@ public class NetworkTests
             });
 
         var enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveToEdge(edges[1]);
+        enumerator.MoveTo(edges[1]);
 
         Assert.Equal(1U, enumerator.EdgeTypeId);
     }
@@ -82,7 +82,7 @@ public class NetworkTests
             });
 
         var enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveToEdge(edges[1]);
+        enumerator.MoveTo(edges[1]);
 
         Assert.Equal(2U, enumerator.EdgeTypeId);
     }
@@ -110,7 +110,7 @@ public class NetworkTests
             });
 
         var enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveToEdge(edges[0]);
+        enumerator.MoveTo(edges[0]);
         Assert.Equal(1U, enumerator.EdgeTypeId);
 
         // update edge type func to include maxspeed.
@@ -120,7 +120,7 @@ public class NetworkTests
         network = routerDb.Latest;
 
         enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveToEdge(edges[0]);
+        enumerator.MoveTo(edges[0]);
 
         Assert.Equal(2U, enumerator.EdgeTypeId);
     }

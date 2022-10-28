@@ -31,7 +31,7 @@ public static class RestrictionExtensions
 
         // enumerate all edges except the u-turn and the original sequence.
         var secondToLast = firstPart[firstPart.Count - 2];
-        mutableNetworkEdgeEnumerator.MoveToEdge(secondToLast.edge, secondToLast.forward);
+        mutableNetworkEdgeEnumerator.MoveTo(secondToLast.edge, secondToLast.forward);
         mutableNetworkEdgeEnumerator.MoveTo(mutableNetworkEdgeEnumerator.Head);
         while (mutableNetworkEdgeEnumerator.MoveNext())
         {

@@ -80,7 +80,7 @@ internal class Dijkstra
 
         // add sources.
         // add forward.
-        if (!enumerator.MoveToEdge(source.EdgeId, true))
+        if (!enumerator.MoveTo(source.EdgeId, true))
         {
             throw new Exception($"Edge in source {source} not found!");
         }
@@ -96,7 +96,7 @@ internal class Dijkstra
         }
 
         // add backward.
-        if (!enumerator.MoveToEdge(source.EdgeId, false))
+        if (!enumerator.MoveTo(source.EdgeId, false))
         {
             throw new Exception($"Edge in source {source} not found!");
         }
@@ -120,7 +120,7 @@ internal class Dijkstra
             var target = targets[t];
 
             // add targets to vertices.
-            if (!enumerator.MoveToEdge(target.EdgeId, true))
+            if (!enumerator.MoveTo(target.EdgeId, true))
             {
                 throw new Exception($"Edge in target {target} not found!");
             }
@@ -154,7 +154,7 @@ internal class Dijkstra
                 {
                     // the source is earlier in the direction of the edge
                     // and the edge can be traversed in this direction.
-                    if (!enumerator.MoveToEdge(source.EdgeId, true))
+                    if (!enumerator.MoveTo(source.EdgeId, true))
                     {
                         throw new Exception($"Edge in source {source} not found!");
                     }
@@ -167,7 +167,7 @@ internal class Dijkstra
                 {
                     // the source is earlier against the direction of the edge
                     // and the edge can be traversed in this direction.
-                    if (!enumerator.MoveToEdge(source.EdgeId, false))
+                    if (!enumerator.MoveTo(source.EdgeId, false))
                     {
                         throw new Exception($"Edge in source {source} not found!");
                     }
@@ -349,7 +349,7 @@ internal class Dijkstra
             {
                 if (visit.previousPointer == uint.MaxValue)
                 {
-                    enumerator.MoveToEdge(visit.edge);
+                    enumerator.MoveTo(visit.edge);
                     path.Prepend(visit.edge, visit.vertex);
                     break;
                 }
