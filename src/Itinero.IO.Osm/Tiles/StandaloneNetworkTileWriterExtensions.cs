@@ -163,7 +163,7 @@ public static class StandaloneNetworkTileWriterExtensions
                     }
                 case Relation relation:
                     if (!restrictionParser.IsRestriction(relation, out _)) continue;
-                    
+
                     if (relation.Id == 5562510) Debug.WriteLine("break");
 
                     // log ways that are members, we need to keep their edge ids ready
@@ -296,9 +296,9 @@ public static class StandaloneNetworkTileWriterExtensions
                     var result = restrictionParser.TryParse(relation, (wayId) =>
                             restrictionMembers.TryGetValue(wayId, out var member) ? member : null,
                         out var osmTurnRestriction);
-                    
+
                     if (relation.Id == 5562510) Debug.WriteLine("break");
-                    
+
                     if (result.IsError) continue;
                     if (!result.Value) continue;
                     if (osmTurnRestriction == null)

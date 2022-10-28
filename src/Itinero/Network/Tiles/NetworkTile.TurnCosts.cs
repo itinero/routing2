@@ -35,7 +35,7 @@ internal partial class NetworkTile
             throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.",
                 nameof(vertex));
         }
-        
+
         // determine max existing order, perhaps there are other turn costs already.
         var orders = new byte?[edges.Length];
         var max = -1;
@@ -46,7 +46,7 @@ internal partial class NetworkTile
 
             max = enumerator.TailOrder.Value;
         }
-        
+
         // assign missing orders if any.
         enumerator.Reset();
         var next = max + 1;
@@ -55,7 +55,7 @@ internal partial class NetworkTile
             // only assign orders of edges that are used.
             var i = Array.IndexOf(edges, enumerator.EdgeId);
             if (i == -1) continue;
-            
+
             // edge is used, assign or reuse existing.
             var order = enumerator.TailOrder;
             if (order == null)
@@ -63,7 +63,7 @@ internal partial class NetworkTile
                 // get next order.
                 order = (byte)next;
                 next++;
-                
+
                 // set order, it's different.
                 if (enumerator.Forward)
                 {
