@@ -35,104 +35,53 @@ internal partial class NetworkTile
             throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.",
                 nameof(vertex));
         }
-
-        // get existing head/tail orders.
+        
+        // determine max existing order, perhaps there are other turn costs already.
         var orders = new byte?[edges.Length];
-        while (enumerator.MoveNext())
-        {
-            // get the given order, if any, skip edge otherwise.
-            var givenOrder = Array.IndexOf(edges, enumerator.EdgeId);
-            if (givenOrder < 0)
-            {
-                continue;
-            }
-
-            // get the existing order at the restricted vertex, if any.
-            byte? order = null;
-            order = enumerator.TailOrder;
-
-            // set order.
-            orders[givenOrder] = order;
-        }
-
-        // assign missing orders if any.
-        var min = -1;
         var max = -1;
-        for (var o = 0; o < orders.Length; o++)
-        {
-            var order = orders[o];
-            if (order != null)
-            {
-                if (max < order.Value)
-                {
-                    max = order.Value;
-                }
-
-                continue;
-            }
-
-            // find the first n not used.
-            var firstUnused = 0;
-            for (var n = min + 1; n < orders.Length; n++)
-            {
-                if (orders.Contains((byte)n))
-                {
-                    continue;
-                }
-
-                firstUnused = n;
-                min = firstUnused - 1;
-                break;
-            }
-
-            // set order.
-            order = (byte)firstUnused;
-            orders[o] = order;
-            min++;
-
-            if (max < order.Value)
-            {
-                max = order.Value;
-            }
-        }
-
-        // set orders on adjacent edges.
-        enumerator.Reset();
         while (enumerator.MoveNext())
         {
-            // get the given order, if any, skip edge otherwise.
-            var givenOrder = Array.IndexOf(edges, enumerator.EdgeId);
-            if (givenOrder < 0)
-            {
-                continue;
-            }
+            if (!enumerator.TailOrder.HasValue) continue;
+            if (enumerator.TailOrder.Value <= max) continue;
 
-            // get order and check order.
-            var order = orders[givenOrder];
+            max = enumerator.TailOrder.Value;
+        }
+        
+        // assign missing orders if any.
+        enumerator.Reset();
+        var next = max + 1;
+        while (enumerator.MoveNext())
+        {
+            // only assign orders of edges that are used.
+            var i = Array.IndexOf(edges, enumerator.EdgeId);
+            if (i == -1) continue;
+            
+            // edge is used, assign or reuse existing.
+            var order = enumerator.TailOrder;
             if (order == null)
             {
-                throw new InvalidDataException("Order should be set by now.");
+                // get next order.
+                order = (byte)next;
+                next++;
+                
+                // set order, it's different.
+                if (enumerator.Forward)
+                {
+                    // if the edge is forward the tail in the enumerator is also the tail in the edge.
+                    this.SetTailHeadOrder(enumerator.EdgePointer, order, enumerator.HeadOrder);
+                }
+                else
+                {
+                    // if the edge is backward the tail in the enumerator is head in the edge.
+                    this.SetTailHeadOrder(enumerator.EdgePointer, enumerator.TailOrder, order);
+                }
             }
 
-            // check if an update is needed.
-            if (enumerator.TailOrder == order) continue;
-
-            // set order, it's different.
-            if (enumerator.Forward)
-            {
-                // if the edge is forward the tail in the enumerator is also the tail in the edge.
-                this.SetTailHeadOrder(enumerator.EdgePointer, order.Value, null);
-            }
-            else
-            {
-                // if the edge is backward the tail in the enumerator is head in the edge.
-                this.SetTailHeadOrder(enumerator.EdgePointer, null, order.Value);
-            }
+            orders[i] = order;
         }
 
-        var count = max + 1;
-
         // reversed order array.
+        var count = next;
         var reversedOrders = new byte?[count];
         for (var i = 0; i < orders.Length; i++)
         {
@@ -330,7 +279,7 @@ internal partial class NetworkTile
         // set tail order if there is a value.
         if (tailOrder.HasValue)
         {
-            if (existingTailOrder.HasValue)
+            if (existingTailOrder.HasValue && existingTailOrder.Value != tailOrder.Value)
                 throw new InvalidOperationException("An edge tail or head order can only be set once.");
             existingTailOrder = tailOrder;
         }
@@ -338,7 +287,7 @@ internal partial class NetworkTile
         // set head order if there is a value.
         if (headOrder.HasValue)
         {
-            if (existingHeadOrder.HasValue)
+            if (existingHeadOrder.HasValue && existingHeadOrder.Value != headOrder.Value)
                 throw new InvalidOperationException("An edge tail or head order can only be set once.");
             existingHeadOrder = headOrder;
         }

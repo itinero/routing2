@@ -31,12 +31,12 @@ public class NetworkTile_TurnCostsTests
             if (enumerator.EdgeId == edge1)
             {
                 Assert.Null(enumerator.HeadOrder);
-                Assert.Equal((byte)0, enumerator.TailOrder);
+                Assert.Equal((byte)1, enumerator.TailOrder);
             }
             else if (enumerator.EdgeId == edge2)
             {
                 Assert.Null(enumerator.HeadOrder);
-                Assert.Equal((byte)1, enumerator.TailOrder);
+                Assert.Equal((byte)0, enumerator.TailOrder);
             }
         }
     }
@@ -64,7 +64,7 @@ public class NetworkTile_TurnCostsTests
         {
             if (enumerator.EdgeId == edge1)
             {
-                var costs = enumerator.GetTurnCostToTail(1).ToList();
+                var costs = enumerator.GetTurnCostToTail(0).ToList();
                 // cost from edge2 -> edge1
                 Assert.Single(costs);
                 var cost = costs[0];
@@ -73,7 +73,7 @@ public class NetworkTile_TurnCostsTests
             }
             else if (enumerator.EdgeId == edge2)
             {
-                var costs = enumerator.GetTurnCostToTail(0).ToList();
+                var costs = enumerator.GetTurnCostToTail(1).ToList();
                 // cost from edge1 -> edge2
                 Assert.Single(costs);
                 var cost = costs[0];
@@ -108,7 +108,7 @@ public class NetworkTile_TurnCostsTests
         {
             if (enumerator.EdgeId == edge1)
             {
-                var costs = enumerator.GetTurnCostToTail(1).ToList();
+                var costs = enumerator.GetTurnCostToTail(0).ToList();
                 // cost from edge2 -> edge1
                 Assert.Equal(2, costs.Count);
                 var cost = costs[0];
@@ -120,7 +120,7 @@ public class NetworkTile_TurnCostsTests
             }
             else if (enumerator.EdgeId == edge2)
             {
-                var costs = enumerator.GetTurnCostToTail(0).ToList();
+                var costs = enumerator.GetTurnCostToTail(1).ToList();
                 // cost from edge1 -> edge2
                 Assert.Equal(2, costs.Count);
                 var cost = costs[0];

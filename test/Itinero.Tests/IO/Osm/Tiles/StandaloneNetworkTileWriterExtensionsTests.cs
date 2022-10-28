@@ -190,8 +190,8 @@ public class StandaloneNetworkTileWriterExtensionsTests
             tileEnumerator.Attributes.Where(x => !x.key.StartsWith("_")));
         Assert.True(tileEnumerator.Forward);
         Assert.Null(tileEnumerator.TailOrder);
-        Assert.Equal((byte)0, tileEnumerator.HeadOrder);
-        var turnCosts = tileEnumerator.GetTurnCostFromHead(1).ToList();
+        Assert.Equal((byte)1, tileEnumerator.HeadOrder);
+        var turnCosts = tileEnumerator.GetTurnCostFromHead(0).ToList();
         Assert.Single(turnCosts);
         var turnCost = turnCosts[0];
         Assert.Equal(1U, turnCost.cost);
@@ -205,9 +205,9 @@ public class StandaloneNetworkTileWriterExtensionsTests
         Assert.Equal(new (string Key, string value)[] { ("highway", "residential") },
             tileEnumerator.Attributes.Where(x => !x.key.StartsWith("_")));
         Assert.True(tileEnumerator.Forward);
-        Assert.Equal((byte)1, tileEnumerator.TailOrder);
+        Assert.Equal((byte)0, tileEnumerator.TailOrder);
         Assert.Null(tileEnumerator.HeadOrder);
-        turnCosts = tileEnumerator.GetTurnCostToTail(0).ToList();
+        turnCosts = tileEnumerator.GetTurnCostToTail(1).ToList();
         Assert.Single(turnCosts);
         turnCost = turnCosts[0];
         Assert.Equal(1U, turnCost.cost);
@@ -218,9 +218,9 @@ public class StandaloneNetworkTileWriterExtensionsTests
         Assert.Equal(new (string Key, string value)[] { ("highway", "residential") },
             tileEnumerator.Attributes.Where(x => !x.key.StartsWith("_")));
         Assert.False(tileEnumerator.Forward);
-        Assert.Equal((byte)0, tileEnumerator.TailOrder);
+        Assert.Equal((byte)1, tileEnumerator.TailOrder);
         Assert.Null(tileEnumerator.HeadOrder);
-        turnCosts = tileEnumerator.GetTurnCostFromTail(1).ToList();
+        turnCosts = tileEnumerator.GetTurnCostFromTail(0).ToList();
         Assert.Single(turnCosts);
         turnCost = turnCosts[0];
         Assert.Equal(1U, turnCost.cost);
@@ -235,8 +235,8 @@ public class StandaloneNetworkTileWriterExtensionsTests
             tileEnumerator.Attributes.Where(x => !x.key.StartsWith("_")));
         Assert.False(tileEnumerator.Forward);
         Assert.Null(tileEnumerator.TailOrder);
-        Assert.Equal((byte)1, tileEnumerator.HeadOrder);
-        turnCosts = tileEnumerator.GetTurnCostToHead(0).ToList();
+        Assert.Equal((byte)0, tileEnumerator.HeadOrder);
+        turnCosts = tileEnumerator.GetTurnCostToHead(1).ToList();
         Assert.Single(turnCosts);
         turnCost = turnCosts[0];
         Assert.Equal(1U, turnCost.cost);

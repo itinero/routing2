@@ -60,18 +60,18 @@ public static class RouterDbExtensions
 
                 while (edgeEnumerator.MoveNext())
                 {
-                    var vertex1 = edgeEnumerator.Tail;
-                    if (!vertices.Contains(vertex1))
+                    var tail = edgeEnumerator.Tail;
+                    if (!vertices.Contains(tail))
                     {
-                        jsonWriter.WriteVertexFeature(vertex1, routingNetwork);
-                        vertices.Add(vertex1);
+                        jsonWriter.WriteVertexFeature(tail, routingNetwork);
+                        vertices.Add(tail);
                     }
 
-                    var vertex2 = edgeEnumerator.Head;
-                    if (!vertices.Contains(vertex2))
+                    var head = edgeEnumerator.Head;
+                    if (!vertices.Contains(head))
                     {
-                        jsonWriter.WriteVertexFeature(vertex2, routingNetwork);
-                        vertices.Add(vertex2);
+                        jsonWriter.WriteVertexFeature(head, routingNetwork);
+                        vertices.Add(head);
                     }
 
                     var edge = edgeEnumerator.EdgeId;
@@ -88,18 +88,18 @@ public static class RouterDbExtensions
             var edgeEnumerator = routingNetwork.SearchEdgesInBox(box.Value);
             while (edgeEnumerator.MoveNext())
             {
-                var vertex1 = edgeEnumerator.Tail;
-                if (!vertices.Contains(vertex1))
+                var tail = edgeEnumerator.Tail;
+                if (!vertices.Contains(tail))
                 {
-                    jsonWriter.WriteVertexFeature(vertex1, routingNetwork);
-                    vertices.Add(vertex1);
+                    jsonWriter.WriteVertexFeature(tail, routingNetwork);
+                    vertices.Add(tail);
                 }
 
-                var vertex2 = edgeEnumerator.Head;
-                if (!vertices.Contains(vertex2))
+                var head = edgeEnumerator.Head;
+                if (!vertices.Contains(head))
                 {
-                    jsonWriter.WriteVertexFeature(vertex2, routingNetwork);
-                    vertices.Add(vertex2);
+                    jsonWriter.WriteVertexFeature(head, routingNetwork);
+                    vertices.Add(head);
                 }
 
                 var edge = edgeEnumerator.EdgeId;
@@ -156,11 +156,13 @@ public static class RouterDbExtensions
         var attributes = enumerator.Attributes.ToList();
         attributes.AddRange(new (string key, string value)[]
         {
-            ("vertex1_tile_id", enumerator.Tail.TileId.ToString()),
-            ("vertex1_local_id", enumerator.Tail.LocalId.ToString()),
-            ("vertex2_tile_id", enumerator.Head.TileId.ToString()),
-            ("vertex2_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
+            ("tail_tile_id", enumerator.Tail.TileId.ToString()),
+            ("tail_local_id", enumerator.Tail.LocalId.ToString()),
+            ("head_tile_id", enumerator.Head.TileId.ToString()),
+            ("head_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
         });
+        if (enumerator.TailOrder.HasValue) attributes.AddOrReplace("tail_order", enumerator.TailOrder.Value.ToString());
+        if (enumerator.HeadOrder.HasValue) attributes.AddOrReplace("head_order", enumerator.HeadOrder.Value.ToString());
 
         foreach (var profileName in routerDb.ProfileConfiguration.GetProfileNames())
         {
@@ -201,11 +203,13 @@ public static class RouterDbExtensions
         var attributes = enumerator.Attributes.ToList();
         attributes.AddRange(new (string key, string value)[]
         {
-            ("vertex1_tile_id", enumerator.Tail.TileId.ToString()),
-            ("vertex1_local_id", enumerator.Tail.LocalId.ToString()),
-            ("vertex2_tile_id", enumerator.Head.TileId.ToString()),
-            ("vertex2_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
+            ("tail_tile_id", enumerator.Tail.TileId.ToString()),
+            ("tail_local_id", enumerator.Tail.LocalId.ToString()),
+            ("head_tile_id", enumerator.Head.TileId.ToString()),
+            ("head_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
         });
+        if (enumerator.TailOrder.HasValue) attributes.AddOrReplace("tail_order", enumerator.TailOrder.Value.ToString());
+        if (enumerator.HeadOrder.HasValue) attributes.AddOrReplace("head_order", enumerator.HeadOrder.Value.ToString());
         jsonWriter.WriteProperties(attributes);
         jsonWriter.WritePropertyName("geometry");
         jsonWriter.WriteLineString(enumerator.GetCompleteShape());

@@ -40,7 +40,6 @@ public static class StandaloneNetworkTileExtensions
     /// <param name="jsonWriter">The json writer.</param>
     public static void WriteFeatures(this Utf8JsonWriter jsonWriter, StandaloneNetworkTile tile)
     {
-        var vertices = new HashSet<VertexId>();
         var edges = new HashSet<EdgeId>();
 
         var vertex = new VertexId(tile.TileId, 0);
