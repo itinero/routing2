@@ -19,8 +19,8 @@ public class RouterDbStreamTarget : OsmStreamTarget
     private readonly IElevationHandler? _elevationHandler;
     private readonly OsmTurnRestrictionParser _restrictionParser = new();
     private readonly Dictionary<long, Way?> _restrictionMembers = new();
-    private readonly OsmBarrierParser _barrierParser = new ();
-    private readonly List<OsmBarrier> _osmBarriers = new ();
+    private readonly OsmBarrierParser _barrierParser = new();
+    private readonly List<OsmBarrier> _osmBarriers = new();
     private readonly Dictionary<long, (double longitude, double latitude)> _nodeLocations = new();
     private readonly HashSet<long> _usedNodes = new();
     private readonly List<OsmTurnRestriction> _osmTurnRestrictions = new();
@@ -45,7 +45,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
     {
         // execute the first pass.
         this.DoPull(true, false, false);
-        
+
         // add barriers as turn weights.
         var tileEnumerator = _mutableRouterDb.GetEdgeEnumerator();
         var networkRestrictions = new List<NetworkRestriction>();
@@ -77,7 +77,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
     {
         if (!node.Id.HasValue) return;
         if (!node.Longitude.HasValue || !node.Latitude.HasValue) return;
-        
+
         // FIRST PASS: ignore nodes.
         if (_firstPass)
         {
