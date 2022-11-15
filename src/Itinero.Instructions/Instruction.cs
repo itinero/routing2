@@ -5,10 +5,11 @@ namespace Itinero.Instructions;
 
 /// <summary>
 /// Represents a single turn-by-turn instructions and it's textual representation in one or more languages.
+/// This is a wrapper around a BaseInstruction <see cref="BaseInstruction"/> and how it can be translated
 /// </summary>
 public class Instruction
 {
-    internal Instruction(BaseInstruction baseInstruction, IReadOnlyDictionary<string, string> text)
+    public Instruction(BaseInstruction baseInstruction, IReadOnlyDictionary<string, string> text)
     {
         this.BaseInstruction = baseInstruction;
         this.Text = text;

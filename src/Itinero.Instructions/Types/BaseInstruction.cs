@@ -30,7 +30,14 @@
 /// </remarks>
 public class BaseInstruction
 {
-    internal BaseInstruction(IndexedRoute route,
+    /// <summary>
+    /// Constructs a BaseInstruction. See class definition for documentation
+    /// </summary>
+    /// <param name="route"><see cref="Route"/></param>
+    /// <param name="shapeIndex"><see cref="ShapeIndex"/></param>
+    /// <param name="shapeIndexEnd"><see cref="ShapeIndexEnd"/></param>
+    /// <param name="turnDegrees"><see cref="TurnDegrees"/></param>
+    public BaseInstruction(IndexedRoute route,
         int shapeIndex, int shapeIndexEnd, int turnDegrees)
     {
         this.Route = route;
@@ -40,7 +47,7 @@ public class BaseInstruction
         this.Type = Tp(this);
     }
 
-    internal BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
+    public BaseInstruction(IndexedRoute route, int shapeIndex, double turnDegrees)
     {
         this.Route = route;
         this.ShapeIndex = shapeIndex;

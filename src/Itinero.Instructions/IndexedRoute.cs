@@ -16,7 +16,7 @@ public class IndexedRoute
 {
     private readonly Route _route;
 
-    internal IndexedRoute(Route route)
+    public IndexedRoute(Route route)
     {
         _route = route;
         this.Meta = BuildMetaList(route);
