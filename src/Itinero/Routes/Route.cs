@@ -8,33 +8,37 @@ using Itinero.Network.Attributes;
 namespace Itinero.Routes;
 
 /// <summary>
-/// Represents a route.
+/// A route is the result of routeplanning and represents how a vehicle might travel over the routing graph.
+/// Apart from the coordinates, it has metadata about stops, branches and the segments
 /// </summary>
 public partial class Route : IEnumerable<RoutePosition>
 {
     /// <summary>
-    /// Gets or sets the shape.
+    /// The geometry of the route, including startpoint, endpoint and (if present) intermediate waypoints
     /// </summary>
     public List<(double longitude, double latitude, float? e)> Shape { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the attributes.
+    /// Metadata about the entire route; might contain total length, total duration, the vehicle profile the route has been planned with, ...
     /// </summary>
     public IEnumerable<(string key, string value)> Attributes { get; set; } =
         ArraySegment<(string key, string value)>.Empty;
 
     /// <summary>
-    /// Gets or sets the stops.
+    /// Metadata about the Stops, such as departure point, arrival point and intermediate destinations
     /// </summary>
     public List<Stop> Stops { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the meta data.
+    /// Metadata about individual segments.
+    /// <remarks>
+    /// ShapeMetaObject at `this.ShapeMeta[i]` describes the segment up to (and including) `this.Shape[this.ShapeMeta[i]]`
+    /// </remarks>
     /// </summary>
     public List<Meta> ShapeMeta { get; set; } = new();
 
     /// <summary>
-    /// A stop is the coordinate where the traveller would like to start or end.
+    /// A stop is the coordinate where the traveller would like to start, to end or has an intermediate destination.
     /// <remarks>
     /// In general, this is the coordinate of the point not yet matched to the road network, but it has a certain distance to the actual route.
     /// </remarks>
@@ -123,8 +127,8 @@ public partial class Route : IEnumerable<RoutePosition>
         /// </summary>
         /// <remarks>
         /// One can travel in two directions over an edge; forward and backward.
-        /// The attributes however are always defined in the forward direction.
-        /// If this flag is false, the attributes might have to be interpreted differently
+        /// The attributes however are always defined in the forward direction of the edge.
+        /// If this flag is false, some attributes (such as oneway) might have to be interpreted differently
         /// </remarks>
         public bool AttributesAreForward { get; set; }
 
@@ -153,25 +157,30 @@ public partial class Route : IEnumerable<RoutePosition>
         }
 
         /// <summary>
-        /// The length of the described segment
+        /// The length of the described segment in meter
         /// </summary>
         public double Distance { get; set; }
 
         /// <summary>
-        /// The time needed to travel over this segment.
+        /// The time needed to travel over this segment in seconds.
         /// The speed on this segment can be calculated by using this.Distance/this.Time
         /// </summary>
         public double Time { get; set; }
     }
 
     /// <summary>
-    /// The list of edges where the traveller passes by
+    /// The list of other edges (intersections) where the traveller passes by.
+    /// <remarks>
+    ///See <see cref="Branch"/> for more information
+    /// </remarks>
     /// </summary>
     public Branch[] Branches { get; set; } = Array.Empty<Branch>();
 
     /// <summary>
-    /// A branch is a which the traveller passes by when following the route.
-    /// It are thus the roads not taken.
+    /// A branch is an edge which the traveller passes by when following the route.
+    /// <remarks>
+    /// These are thus roads "branching" from the main route, e.g. in intersections, crossed streets, ...
+    /// </remarks>
     /// </summary>
     public class Branch
     {
@@ -189,7 +198,7 @@ public partial class Route : IEnumerable<RoutePosition>
         public (double longitude, double latitude, float? e) Coordinate { get; set; }
 
         /// <summary>
-        /// Gets or sets the attributes.
+        /// The attributes of the branch as fetched from the underlying data source
         /// </summary>
         public IEnumerable<(string key, string value)> Attributes { get; set; } = ArraySegment<(string key, string value)>.Empty;
 
