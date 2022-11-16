@@ -134,9 +134,27 @@ internal class LocationsSnapper : ILocationsSnapper
                 yield return new Result<SnapPoint>(
                     $"Could not snap to location: {location.longitude},{location.latitude}");
             }
+        }
+    }
 
-            var end = DateTime.Now.Ticks;
-            Console.WriteLine($"LocationSnapper.ToAsync - single location: {new TimeSpan(end - start)}");
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<SnapPoint> ToAllAsync((double longitude, double latitude, float? e) location, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // We need to give 'AcceptableFunc' as function pointer later on
+        // We construct this function only once
+        var acceptableFunc = this.AcceptableFunc();
+
+        // calculate one box for all locations.
+        var box = location.BoxAround(this.OffsetInMeter);
+
+        // make sure data is loaded.
+        await _snapper.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(_snapper.RoutingNetwork, box, cancellationToken);
+
+        // snap all.
+        var snapped = _snapper.RoutingNetwork.SnapAllInBox(box, acceptableFunc);
+        foreach (var snapPoint in snapped)
+        {
+            yield return snapPoint;
         }
     }
 }

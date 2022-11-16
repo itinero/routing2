@@ -126,4 +126,21 @@ internal class Snapper : ISnapper
             }
         }
     }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<SnapPoint> ToAllAsync((double longitude, double latitude, float? e) location, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // calculate search box.
+        var box = location.BoxAround(this.Settings.OffsetInMeter);
+
+        // make sure data is loaded.
+        if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box, cancellationToken);
+
+        // snap all.
+        var snapped = this.RoutingNetwork.SnapAllInBox(box, (_) => true);
+        foreach (var snapPoint in snapped)
+        {
+            yield return snapPoint;
+        }
+    }
 }

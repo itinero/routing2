@@ -36,7 +36,7 @@ public static class PathExtensions
     {
         var weight = 0.0;
 
-        var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
+        var edgeEnumerator = path.RoutingNetwork.GetEdgeEnumerator();
         foreach (var (edge, direction, offset1, offset2) in path)
         {
             if (!edgeEnumerator.MoveTo(edge, direction))
@@ -71,8 +71,7 @@ public static class PathExtensions
         if (last.edge == first.edge &&
             last.direction == first.direction)
         {
-            var offset2 = (ushort)(ushort.MaxValue - next.Offset1);
-            return path.Offset2 == offset2;
+            return path.Offset2 == next.Offset1;
         }
 
         // check if the same vertices at the end.
@@ -82,7 +81,7 @@ public static class PathExtensions
             return false;
         }
 
-        var edgeEnumerator = path.RouterDb.GetEdgeEnumerator();
+        var edgeEnumerator = path.RoutingNetwork.GetEdgeEnumerator();
         edgeEnumerator.MoveTo(last.edge, last.direction);
         var lastVertex = edgeEnumerator.Head;
         edgeEnumerator.MoveTo(first.edge, first.direction);
@@ -102,8 +101,8 @@ public static class PathExtensions
         RoutingNetworkEdgeEnumerator? enumerator = null;
         foreach (var path in paths)
         {
-            merged ??= new Path(path.RouterDb);
-            enumerator ??= path.RouterDb.GetEdgeEnumerator();
+            merged ??= new Path(path.RoutingNetwork);
+            enumerator ??= path.RoutingNetwork.GetEdgeEnumerator();
 
             if (merged.Count == 0)
             {
@@ -115,15 +114,28 @@ public static class PathExtensions
                     $"Paths cannot be concatenated.");
             }
 
+            var isFirst = true;
             foreach (var (edge, direction, _, _) in path)
             {
+                if (isFirst)
+                {
+                    isFirst = false;
+                    if (merged.Count > 0 &&
+                        merged.Last.edge == edge)
+                    {
+                        // first edge may be the same edge as
+                        // previous path, don't add it again.
+                        continue;
+                    }
+                }
+
                 if (!enumerator.MoveTo(edge, direction))
                 {
                     throw new InvalidDataException(
                         $"Edge not found.");
                 }
 
-                merged.Append(edge, enumerator.Head);
+                merged.Append(edge, enumerator.Tail);
             }
 
             merged.Offset2 = path.Offset2;
@@ -159,5 +171,12 @@ public static class PathExtensions
             path.RemoveLast();
             path.Offset2 = ushort.MaxValue;
         }
+    }
+
+    public static bool HasLength(this Path path)
+    {
+        if (path.Count > 1) return true;
+
+        return path.Offset1 != path.Offset2;
     }
 }

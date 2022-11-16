@@ -154,13 +154,27 @@ public static class RouterDbExtensions
     {
         jsonWriter.WriteFeatureStart();
         var attributes = enumerator.Attributes.ToList();
-        attributes.AddRange(new (string key, string value)[]
+        if (enumerator.Forward)
         {
-            ("tail_tile_id", enumerator.Tail.TileId.ToString()),
-            ("tail_local_id", enumerator.Tail.LocalId.ToString()),
-            ("head_tile_id", enumerator.Head.TileId.ToString()),
-            ("head_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
-        });
+            attributes.AddRange(new (string key, string value)[]
+            {
+                ("tail_tile_id", enumerator.Tail.TileId.ToString()),
+                ("tail_local_id", enumerator.Tail.LocalId.ToString()),
+                ("head_tile_id", enumerator.Head.TileId.ToString()),
+                ("head_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
+            });
+        }
+        else
+        {
+            attributes.AddRange(new (string key, string value)[]
+            {
+                ("head_tile_id", enumerator.Tail.TileId.ToString()),
+                ("head_local_id", enumerator.Tail.LocalId.ToString()),
+                ("tail_tile_id", enumerator.Head.TileId.ToString()),
+                ("tail_local_id", enumerator.Head.LocalId.ToString()), ("edge_id", enumerator.EdgeId.ToString())
+            });
+        }
+
         if (enumerator.TailOrder.HasValue) attributes.AddOrReplace("tail_order", enumerator.TailOrder.Value.ToString());
         if (enumerator.HeadOrder.HasValue) attributes.AddOrReplace("head_order", enumerator.HeadOrder.Value.ToString());
 

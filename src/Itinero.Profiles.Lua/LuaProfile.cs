@@ -48,10 +48,8 @@ public class LuaProfile : Profile
     /// <param name="script">The script.</param>
     /// <param name="name">The name of the script.</param>
     /// <returns>The profile.</returns>
-    public static Profile Load(string script, string? name = null)
+    public static Profile Load(string script, string name)
     {
-        name ??= string.Empty;
-
         var chunk = _lua.CompileChunk(script, name, new LuaCompileOptions());
         return new LuaProfile(chunk);
     }

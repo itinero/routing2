@@ -25,7 +25,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         _edges = new List<(EdgeId edge, bool forward)>();
     }
 
-    public RoutingNetwork RouterDb => _graph;
+    public RoutingNetwork RoutingNetwork => _graph;
 
     /// <summary>
     /// Gets the offset at the start of the path.
@@ -188,7 +188,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
             builder.Append("->");
             if (this.Offset1 != 0)
             {
-                builder.Append(OffsetPer(this.Offset1, true));
+                builder.Append(OffsetPer(this.Offset1));
                 builder.Append("-");
             }
 
@@ -201,7 +201,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
                     (!first.forward && this.Offset2 != 0))
                 {
                     builder.Append("-");
-                    builder.Append(OffsetPer(this.Offset2, first.forward));
+                    builder.Append(OffsetPer(this.Offset2));
                 }
 
                 builder.Append("->");
@@ -226,14 +226,14 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
 
         if (_edges.Count > 0)
         { // there is a last edge.
-            var last = _edges[_edges.Count - 1];
+            var last = _edges[^1];
             builder.Append("->");
             builder.Append($"{last.edge}");
             builder.Append(last.forward ? "F" : "B");
             if (this.Offset2 != ushort.MaxValue)
             {
                 builder.Append("-");
-                builder.Append(OffsetPer(this.Offset2, true));
+                builder.Append(OffsetPer(this.Offset2));
             }
 
             _edgeEnumerator.MoveTo(last.edge, last.forward);
@@ -245,14 +245,9 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         return builder.ToString();
 
         // Declare a local function.
-        string OffsetPer(ushort offset, bool forward)
+        static string OffsetPer(ushort offset)
         {
-            if (forward)
-            {
-                return $"{(double)offset / ushort.MaxValue * 100:F1}%";
-            }
-
-            return $"{(double)(ushort.MaxValue - offset) / ushort.MaxValue * 100:F1}%";
+            return $"{(double)offset / ushort.MaxValue * 100:F1}%";
         }
     }
 }
