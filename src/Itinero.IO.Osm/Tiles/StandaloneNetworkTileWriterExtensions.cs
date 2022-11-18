@@ -297,8 +297,6 @@ public static class StandaloneNetworkTileWriterExtensions
                             restrictionMembers.TryGetValue(wayId, out var member) ? member : null,
                         out var osmTurnRestriction);
 
-                    if (relation.Id == 5562510) Debug.WriteLine("break");
-
                     if (result.IsError) continue;
                     if (!result.Value) continue;
                     if (osmTurnRestriction == null)
