@@ -47,7 +47,7 @@ public static class IEdgeEnumeratorExtensions
     /// <param name="offset2">The end offset.</param>
     /// <param name="includeVertices">Include vertices in case the range start at min offset or ends at max.</param>
     /// <returns>The shape points between the given offsets. Includes the vertices by default when offsets at min/max.</returns>
-    internal static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween(
+    public static IEnumerable<(double longitude, double latitude, float? e)> GetShapeBetween(
         this IEdgeEnumerator enumerator,
         ushort offset1 = 0, ushort offset2 = ushort.MaxValue, bool includeVertices = true)
     {
