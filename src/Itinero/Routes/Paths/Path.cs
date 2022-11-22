@@ -76,7 +76,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     /// Remove the last edge.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    internal void RemoveLast()
+    public void RemoveLast()
     {
         if (_edges.Count == 0)
         {
