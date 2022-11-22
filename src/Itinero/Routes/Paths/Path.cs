@@ -15,17 +15,25 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     private readonly List<(EdgeId edge, bool forward)> _edges;
     public List<(EdgeId edge, bool forward)> Edges => _edges;
     private readonly RoutingNetworkEdgeEnumerator _edgeEnumerator;
-    private readonly RoutingNetwork _graph;
+    private readonly RoutingNetwork _network;
 
     public Path(RoutingNetwork network)
     {
-        _graph = network;
+        _network = network;
         _edgeEnumerator = network.GetEdgeEnumerator();
 
         _edges = new List<(EdgeId edge, bool forward)>();
     }
 
-    public RoutingNetwork RoutingNetwork => _graph;
+    internal Path(Path pathToClone)
+    {
+        _network = pathToClone._network;
+        _edgeEnumerator = _network.GetEdgeEnumerator();
+
+        _edges = new List<(EdgeId edge, bool forward)>(pathToClone._edges);
+    }
+
+    public RoutingNetwork RoutingNetwork => _network;
 
     /// <summary>
     /// Gets the offset at the start of the path.
@@ -142,6 +150,15 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         {
             throw new Exception($"Cannot prepend edge, the given vertex is not part of it.");
         }
+    }
+
+    /// <summary>
+    /// Returns a copy of this path.
+    /// </summary>
+    /// <returns>A copy.</returns>
+    public Path Clone()
+    {
+        return new Path(this);
     }
 
     internal void AppendInternal(EdgeId edge, bool forward)
