@@ -31,8 +31,14 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         _edgeEnumerator = _network.GetEdgeEnumerator();
 
         _edges = new List<(EdgeId edge, bool forward)>(pathToClone._edges);
+
+        this.Offset1 = pathToClone.Offset1;
+        this.Offset2 = pathToClone.Offset2;
     }
 
+    /// <summary>
+    /// Gets the network.
+    /// </summary>
     public RoutingNetwork RoutingNetwork => _network;
 
     /// <summary>
