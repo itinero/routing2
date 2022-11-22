@@ -6,9 +6,9 @@ namespace Itinero.Instructions.Types;
  * The 'startInstruction' represents the projection from the actual startpoint (e.g. an adress) to the snapped point on the road.
  * It doesn't really have an associated segment.
  */
-internal class StartInstruction : BaseInstruction
+public class StartInstruction : BaseInstruction
 {
-    internal StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
+    public StartInstruction(IndexedRoute route, int turnDegrees, int absoluteStartingDegrees,
         uint projectionDistance, BaseInstruction? contained = null) :
         base(route, 0, Math.Max(0, contained?.ShapeIndexEnd ?? 0), turnDegrees)
     {
@@ -18,7 +18,7 @@ internal class StartInstruction : BaseInstruction
     }
 
 
-    internal StartInstruction(IndexedRoute route, BaseInstruction? contained = null) : this(route,
+    public StartInstruction(IndexedRoute route, BaseInstruction? contained = null) : this(route,
         0,
         route.DepartingDirectionAt(0).NormalizeDegrees(),
         0, contained)

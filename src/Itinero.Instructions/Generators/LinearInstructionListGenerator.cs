@@ -18,7 +18,7 @@ namespace Itinero.Instructions.Generators;
 ///  the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
 ///  whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
 /// </remarks>
-internal class LinearInstructionListGenerator : IInstructionListGenerator
+public class LinearInstructionListGenerator : IInstructionListGenerator
 {
     private readonly IReadOnlyList<Types.Generators.IInstructionGenerator> _constructors;
 

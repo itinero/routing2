@@ -7,7 +7,7 @@ namespace Itinero.Instructions.Types;
 /// </summary>
 public class RoundaboutInstruction : BaseInstruction
 {
-    internal RoundaboutInstruction(
+    public RoundaboutInstruction(
         IndexedRoute route,
         int shapeIndex,
         int shapeIndexEnd,

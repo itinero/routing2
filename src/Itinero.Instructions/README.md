@@ -6,7 +6,7 @@ This project focuses on the generation of instructions for a given route.
 
 There are little exposed classes:
 
-0. The `BaseInstruction`, which represents a piece of the itinery: namely travel a bit and make a maneuver afterwards
+0. The `BaseInstruction`, which represents a piece of the itinerary: namely travel a bit and make a maneuver afterwards
 1. `IInstructionGenerator` is a simple interface, with one function: `GenerateInstructions`. It takes a route and converts it in instructions. This is the _only_ entry point the routeplanner knows about. If you want to make your own instructionGenerator, implement this class.
 2. The`IInstructionToText` which converts an instruction into human readable text
 
