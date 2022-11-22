@@ -301,7 +301,7 @@ var assemblies = [
       { "name": "Itinero.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.3.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 23, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.Builders.RouteBuilder", "rp": "Itinero_RouteBuilder.html", "cl": 110, "ucl": 14, "cal": 124, "tl": 210, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 34, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.IRoutePositionExtensions", "rp": "Itinero_IRoutePositionExtensions.html", "cl": 0, "ucl": 115, "cal": 115, "tl": 693, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 50, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Routes.Paths.Path", "rp": "Itinero_Path.html", "cl": 67, "ucl": 75, "cal": 142, "tl": 263, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 48, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Routes.Paths.Path", "rp": "Itinero_Path.html", "cl": 67, "ucl": 84, "cal": 151, "tl": 280, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 48, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.Paths.PathExtensions", "rp": "Itinero_PathExtensions.html", "cl": 16, "ucl": 81, "cal": 97, "tl": 180, "ct": "LineCoverage", "mc": "-", "cb": 8, "tb": 48, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.Route", "rp": "Itinero_Route.html", "cl": 23, "ucl": 37, "cal": 60, "tl": 693, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.RouteEnumerator", "rp": "Itinero_RouteEnumerator.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 693, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
