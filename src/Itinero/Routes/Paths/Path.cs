@@ -57,7 +57,11 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     /// </summary>
     public (EdgeId edge, bool direction) Last => _edges[this.Count - 1];
 
-    internal void RemoveFirst()
+    /// <summary>
+    /// Remove the first edge.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    public void RemoveFirst()
     {
         if (_edges.Count == 0)
         {
@@ -65,8 +69,13 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         }
 
         _edges.RemoveAt(0);
+        this.Offset1 = 0;
     }
 
+    /// <summary>
+    /// Remove the last edge.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     internal void RemoveLast()
     {
         if (_edges.Count == 0)
@@ -75,6 +84,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
         }
 
         _edges.RemoveAt(_edges.Count - 1);
+        this.Offset2 = ushort.MaxValue;
     }
 
     /// <summary>

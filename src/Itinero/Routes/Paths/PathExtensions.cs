@@ -158,7 +158,6 @@ public static class PathExtensions
         if (path.Offset1 == ushort.MaxValue)
         {
             path.RemoveFirst();
-            path.Offset1 = 0;
         }
 
         if (path.Count <= 1)
@@ -169,7 +168,6 @@ public static class PathExtensions
         if (path.Offset2 == 0)
         {
             path.RemoveLast();
-            path.Offset2 = ushort.MaxValue;
         }
     }
 
