@@ -16,6 +16,7 @@ internal static class AllGenerators
             new IntersectionInstructionGenerator(),
             new RoundaboutInstructionGenerator(),
             new FollowAlongGenerator(),
-            new FollowBendGenerator()
+            new FollowBendGenerator(),
+            new TurnGenerator()
         };
 }

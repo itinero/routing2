@@ -6,6 +6,7 @@
     "roundabout",
     "followbend",
     "followalong",
+    "turn",
     "end",
     "base"
   ],
@@ -64,6 +65,9 @@
         "$.highway=cycleway&$+name": "Follow the cyclepath which bends $lr, $onto",
         "$.highway=cycleway": "Follow the cyclepath which bends $lr",
         "*": "Follow the road which bends $lr"
+      },
+      "turn": {
+        "*": "Turn $lr $onto"
       },
       "followalong": {
         "$.highway=cycleway": "Follow the cyclepath",
