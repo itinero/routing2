@@ -32,7 +32,7 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Append(edge, vertex1);
+        path.Append(edge, true);
 
         Assert.Single(path);
         Assert.Equal(edge, path.First.edge);
@@ -57,8 +57,8 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Append(edge1, vertex1);
-        path.Append(edge2, vertex2);
+        path.Append(edge1, true);
+        path.Append(edge2, true);
 
         Assert.Equal(2, path.Count);
         Assert.Equal(edge1, path.First.edge);
@@ -84,8 +84,8 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Append(edge1, vertex1);
-        path.Append(edge2, vertex2);
+        path.Append(edge1, true);
+        path.Append(edge2, true);
 
         var edges = path.ToList();
         Assert.Equal(2, edges.Count);
@@ -109,7 +109,7 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Prepend(edge1, vertex1);
+        path.Prepend(edge1, true);
 
         Assert.Single(path);
         Assert.Equal(edge1, path.First.edge);
@@ -132,8 +132,8 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Prepend(edge2, vertex3);
-        path.Prepend(edge1, vertex2);
+        path.Prepend(edge2, true);
+        path.Prepend(edge1, true);
 
         Assert.Equal(2, path.Count);
         Assert.Equal(edge1, path.First.edge);
@@ -157,8 +157,8 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Append(edge1, vertex1);
-        path.Append(edge2, vertex2);
+        path.Append(edge1, true);
+        path.Append(edge2, true);
         path.Offset1 = ushort.MaxValue / 2;
         path.Offset2 = ushort.MaxValue / 2;
 
@@ -184,8 +184,8 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Append(edge1, vertex1);
-        path.Append(edge2, vertex2);
+        path.Append(edge1, true);
+        path.Append(edge2, true);
         path.Offset1 = ushort.MaxValue;
         path.Offset2 = ushort.MaxValue / 2;
 
@@ -213,8 +213,8 @@ public class PathTests
         }
 
         var path = new Path(routerDb.Latest);
-        path.Append(edge1, vertex1);
-        path.Append(edge2, vertex2);
+        path.Append(edge1, true);
+        path.Append(edge2, true);
         path.Offset1 = ushort.MaxValue / 2;
         path.Offset2 = 0;
 

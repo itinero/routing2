@@ -110,52 +110,24 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     /// Appends the given edge and calculates the proper direction.
     /// </summary>
     /// <param name="edge">The edge.</param>
-    /// <param name="first">The vertex that should occur first.</param>
-    public void Append(EdgeId edge, VertexId first)
+    /// <param name="forward">The direction of the edge.</param>
+    public void Append(EdgeId edge, bool forward)
     {
-        if (!_edgeEnumerator.MoveTo(edge))
-        {
-            throw new Exception($"Edge does not exist.");
-        }
+        if (!_edgeEnumerator.MoveTo(edge, forward)) throw new Exception($"Edge does not exist.");
 
-        if (_edgeEnumerator.Tail == first)
-        {
-            this.AppendInternal(edge, true);
-        }
-        else if (_edgeEnumerator.Head == first)
-        {
-            this.AppendInternal(edge, false);
-        }
-        else
-        {
-            throw new Exception($"Cannot append edge, the given vertex is not part of it.");
-        }
+        this.AppendInternal(edge, forward);
     }
 
     /// <summary>
     /// Prepends the given edge and calculates the proper direction.
     /// </summary>
     /// <param name="edge">The edge.</param>
-    /// <param name="last">The vertex that should occur last.</param>
-    public void Prepend(EdgeId edge, VertexId last)
+    /// <param name="forward">The direction of the edge.</param>
+    public void Prepend(EdgeId edge, bool forward)
     {
-        if (!_edgeEnumerator.MoveTo(edge))
-        {
-            throw new Exception($"Edge does not exist.");
-        }
-
-        if (_edgeEnumerator.Tail == last)
-        {
-            this.PrependInternal(edge, false);
-        }
-        else if (_edgeEnumerator.Head == last)
-        {
-            this.PrependInternal(edge, true);
-        }
-        else
-        {
-            throw new Exception($"Cannot prepend edge, the given vertex is not part of it.");
-        }
+        if (!_edgeEnumerator.MoveTo(edge)) throw new Exception($"Edge does not exist.");
+        
+        this.PrependInternal(edge, forward);
     }
 
     /// <summary>

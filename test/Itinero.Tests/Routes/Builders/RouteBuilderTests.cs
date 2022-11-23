@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Profiles;
 using Itinero.Routes.Builders;
@@ -42,7 +43,7 @@ public class RouteBuilderTests
                     (4.801771044731140, 51.268886491558250, (float?) null)
             },
             new (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
-                    (0, 1, new (double longitude, double latitude, float? e)[0])
+                    (0, 1, Array.Empty<(double longitude, double latitude, float? e)>())
             });
 
         var network = routerDb.Latest;

@@ -128,14 +128,8 @@ public static class PathExtensions
                         continue;
                     }
                 }
-
-                if (!enumerator.MoveTo(edge, direction))
-                {
-                    throw new InvalidDataException(
-                        $"Edge not found.");
-                }
-
-                merged.Append(edge, enumerator.Tail);
+                
+                merged.Append(edge, direction);
             }
 
             merged.Offset2 = path.Offset2;

@@ -115,7 +115,7 @@ internal class Dijkstra
                 // can traverse edge in the forward direction.
                 var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
                 sourceForwardVisit =
-                    _tree.AddVisit(enumerator.Head, source.sp.EdgeId, enumerator.HeadOrder, uint.MaxValue);
+                    _tree.AddVisit(enumerator, uint.MaxValue);
                 _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
             }
         }
@@ -136,7 +136,7 @@ internal class Dijkstra
                 // can traverse edge in the backward direction.
                 var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
                 sourceBackwardVisit =
-                    _tree.AddVisit(enumerator.Head, source.sp.EdgeId, enumerator.HeadOrder, uint.MaxValue);
+                    _tree.AddVisit(enumerator, uint.MaxValue);
                 _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
             }
         }
@@ -375,8 +375,7 @@ internal class Dijkstra
                         }
 
                         // this is an improvement.
-                        neighbourPointer = _tree.AddVisit(enumerator.Head,
-                            enumerator.EdgeId, enumerator.HeadOrder, currentPointer);
+                        neighbourPointer = _tree.AddVisit(enumerator, currentPointer);
                         bestTargets[t] = (neighbourPointer, targetCost);
 
                         // update worst.
@@ -395,7 +394,7 @@ internal class Dijkstra
                 if (neighbourPointer == uint.MaxValue)
                 {
                     neighbourPointer =
-                        _tree.AddVisit(enumerator.Head, enumerator.EdgeId, enumerator.HeadOrder, currentPointer);
+                        _tree.AddVisit(enumerator, currentPointer);
                 }
 
                 // add visit to heap.
@@ -423,11 +422,11 @@ internal class Dijkstra
                 if (visit.previousPointer == uint.MaxValue)
                 {
                     enumerator.MoveTo(visit.edge);
-                    path.Prepend(visit.edge, visit.vertex);
+                    path.Prepend(visit.edge, visit.forward);
                     break;
                 }
 
-                path.Prepend(visit.edge, visit.vertex);
+                path.Prepend(visit.edge, visit.forward);
                 visit = _tree.GetVisit(visit.previousPointer);
             }
 

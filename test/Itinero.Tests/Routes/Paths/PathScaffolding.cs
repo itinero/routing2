@@ -16,7 +16,7 @@ internal static class PathScaffolding
         {
             edgeEnumerator.MoveTo(e.edge, e.direction);
 
-            path.Append(e.edge, edgeEnumerator.Tail);
+            path.Append(e.edge, e.direction);
         }
 
         return path;

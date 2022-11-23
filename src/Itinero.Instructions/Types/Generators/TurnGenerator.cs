@@ -39,7 +39,7 @@ internal class TurnGenerator : IInstructionGenerator
                 // Here, it doesn't have that...
                 break;
             }
-            
+
             totalDistance += distance;
             angleDiff += dAngle;
             // We keep the total angle too; as it might turn more then 180°
@@ -47,7 +47,7 @@ internal class TurnGenerator : IInstructionGenerator
             usedShapes++;
         }
 
-        
+
         // A turn does turn, at least a few degrees per meter
         if (Math.Abs(angleDiff) < 45)
         {
