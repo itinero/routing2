@@ -75,7 +75,7 @@ internal class FollowBendGenerator : IInstructionGenerator
             var distance = route.DistanceToNextPoint(offset + usedShapes);
             if (distance > 35)
             {
-                // a gentle bent must have pieces that are not too long at a time
+                // a gentle bend must have pieces that are not too long at a time
                 break;
             }
 

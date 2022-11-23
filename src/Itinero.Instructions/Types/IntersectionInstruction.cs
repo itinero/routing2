@@ -8,7 +8,7 @@ namespace Itinero.Instructions.Types;
 ///     traveller can get confused.
 ///     And lets be honest, 'turn right' isn't all that clear when there is a road slightly right, right and sharp right.
 /// </summary>
-internal class IntersectionInstruction : BaseInstruction
+public class IntersectionInstruction : BaseInstruction
 {
     public readonly uint ActualIndex;
 

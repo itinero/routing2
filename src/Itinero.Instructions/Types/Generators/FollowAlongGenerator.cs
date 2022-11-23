@@ -11,7 +11,7 @@ internal class FollowAlongGenerator : IInstructionGenerator
     {
         if (offset == 0 || offset == route.Last)
         {
-            // We never a follow along as first or as last...
+            // We can have never a follow along as first or as last locations...
             return null;
         }
 
