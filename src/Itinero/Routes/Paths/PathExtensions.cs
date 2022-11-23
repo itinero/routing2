@@ -128,7 +128,7 @@ public static class PathExtensions
                         continue;
                     }
                 }
-                
+
                 merged.Append(edge, direction);
             }
 

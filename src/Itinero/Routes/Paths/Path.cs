@@ -126,7 +126,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     public void Prepend(EdgeId edge, bool forward)
     {
         if (!_edgeEnumerator.MoveTo(edge)) throw new Exception($"Edge does not exist.");
-        
+
         this.PrependInternal(edge, forward);
     }
 

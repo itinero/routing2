@@ -8,7 +8,7 @@ namespace Itinero.Routing.Flavours.Dijkstra;
 internal static class PathTreeExtensions
 {
     // TODO: this can all be represented much more compact.
-    
+
     /// <summary>
     /// Adds a new visit the path tree.
     /// </summary>
@@ -45,7 +45,7 @@ internal static class PathTreeExtensions
         return tree.AddVisit(enumerator.Head, enumerator.EdgeId, enumerator.Forward, enumerator.HeadOrder,
             previousPointer);
     }
-    
+
     /// <summary>
     /// Gets the visit at the given location.
     /// </summary>
@@ -72,7 +72,7 @@ internal static class PathTreeExtensions
     {
         while (pointer != uint.MaxValue)
         {
-            var (_, edge, _,  head, next) = tree.GetVisit(pointer);
+            var (_, edge, _, head, next) = tree.GetVisit(pointer);
 
             yield return (edge, head);
 
