@@ -21,9 +21,9 @@ internal class FollowBendGenerator : IInstructionGenerator
         {
             // What is the angle-difference of the branch?
             // This resembles the route.DirectionChangeAt-definition
-            var dBranchAngle =
-                (route.Shape[shapeI].AngleWithMeridian(branch.Coordinate) - route.ArrivingDirectionAt(shapeI))
-                .NormalizeDegrees();
+            var selfAngle = route.ArrivingDirectionAt(shapeI);
+            var branchAngle = route.Shape[shapeI].AngleWithMeridian(branch.Coordinate);
+            var dBranchAngle = (selfAngle - branchAngle).NormalizeDegrees();
 
             // With the angle in hand, we can ask ourselves: lies it on the inner side?
             if (Math.Sign(dBranchAngle) != angleSign)

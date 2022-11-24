@@ -30,7 +30,7 @@ public class BaseInstructionTest
         var baseInstruction = new BaseInstructionGenerator().Generate(
             new IndexedRoute(route), 0);
         Assert.NotNull(baseInstruction);
-        Assert.Equal(-90, baseInstruction.TurnDegrees);
+        Assert.Equal(90, baseInstruction.TurnDegrees);
     }
 
     [Fact]
@@ -54,6 +54,6 @@ public class BaseInstructionTest
         var baseInstruction = new BaseInstructionGenerator().Generate(
             new IndexedRoute(route), 0);
         Assert.NotNull(baseInstruction);
-        Assert.Equal(90, baseInstruction.TurnDegrees);
+        Assert.Equal(-90, baseInstruction.TurnDegrees);
     }
 }

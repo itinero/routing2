@@ -70,7 +70,7 @@ public class RealRouteTests
         var instructions = gen.GenerateInstructions(route);
         var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
         Assert.Equal("Start towards 160°", text[0]);
-        Assert.Equal("Turn 87 onto Klaverstraat", text[1]);
+        Assert.Equal("Turn -87 onto Klaverstraat", text[1]);
         Assert.Equal("Fallback: end 0", text[2]);
     }
 

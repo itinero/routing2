@@ -145,7 +145,7 @@ public class IndexedRoute
     /// <returns></returns>
     public int DirectionChangeAt(int shape)
     {
-        return (this.DepartingDirectionAt(shape) - this.ArrivingDirectionAt(shape)).NormalizeDegrees();
+        return (this.ArrivingDirectionAt(shape) - this.DepartingDirectionAt(shape)).NormalizeDegrees();
     }
     //
     // // ReSharper disable once UnusedMember.Global
