@@ -162,9 +162,9 @@ public class IntersectionInstructionTest
         };
 
 
-        var instr = (IntersectionInstruction)gen.Generate(new IndexedRoute(route), 1);
+        var instr = (IntersectionInstruction) gen.Generate(new IndexedRoute(route), 1);
         Assert.NotNull(instr);
-        Assert.Equal(0u, instr.ActualIndex);
+        Assert.Equal(1u, instr.ActualIndex);
         Assert.Equal(2, instr.ShapeIndexEnd);
     }
 }

@@ -92,7 +92,7 @@ public class InstructionTest
         var texts = instructions.Select(toText.ToText).ToList();
 
         Assert.NotEmpty(instructions);
-        Assert.Equal("Turn 57", texts[1]);
+        Assert.Equal("Turn -57", texts[1]);
     }
 
     [Fact]
@@ -130,6 +130,6 @@ public class InstructionTest
         var instructions = instructionGenerator.GenerateInstructions(route).ToList();
         // The left turn is included in the start instruction
         var leftTurn = ((StartInstruction)instructions[0]).Then;
-        Assert.True(leftTurn.TurnDegrees < 0);
+        Assert.True(leftTurn.TurnDegrees > 0);
     }
 }

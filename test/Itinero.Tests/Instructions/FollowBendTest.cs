@@ -65,7 +65,7 @@ public class FollowBendTest
             new IndexedRoute(Rabattestraat), 8
         );
         Assert.NotNull(bend);
-        Assert.Equal(-85, bend.TurnDegrees);
+        Assert.Equal(85, bend.TurnDegrees);
         Assert.Equal(8, bend.ShapeIndex);
         Assert.Equal(11, bend.ShapeIndexEnd);
     }
@@ -77,7 +77,7 @@ public class FollowBendTest
             new IndexedRoute(Rabattestraat), 1
         );
         Assert.NotNull(bend);
-        Assert.Equal(143, bend.TurnDegrees);
+        Assert.Equal(-143, bend.TurnDegrees);
         Assert.Equal(1, bend.ShapeIndex);
         Assert.Equal(6, bend.ShapeIndexEnd);
     }
@@ -89,7 +89,7 @@ public class FollowBendTest
             new IndexedRoute(RabattestraatWithOuterBranch), 1
         );
         Assert.NotNull(bend);
-        Assert.Equal(143, bend.TurnDegrees);
+        Assert.Equal(-143, bend.TurnDegrees);
         Assert.Equal(1, bend.ShapeIndex);
         Assert.Equal(6, bend.ShapeIndexEnd);
     }
@@ -102,7 +102,7 @@ public class FollowBendTest
         );
         // We follow the bend, but only until we reach the inner branch
         Assert.NotNull(bend);
-        Assert.Equal(77, bend.TurnDegrees);
+        Assert.Equal(-77, bend.TurnDegrees);
         Assert.Equal(1, bend.ShapeIndex);
         Assert.Equal(3, bend.ShapeIndexEnd);
     }

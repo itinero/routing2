@@ -28,8 +28,8 @@ internal class IntersectionInstructionGenerator : IInstructionGenerator
         var incomingDirection = route.ArrivingDirectionAt(offset);
         foreach (var branch in branches)
         {
-            var branchAbsDirection = route.Shape[offset].AngleWithMeridian(branch.Coordinate);
-            var branchRelDirection = branchAbsDirection - incomingDirection;
+            var branchAbsDirection = branch.Coordinate.AngleWithMeridian(route.Shape[offset]);
+            var branchRelDirection = incomingDirection - branchAbsDirection;
             incomingStreets.Add((branchRelDirection.NormalizeDegrees(), branch.Attributes));
         }
 
