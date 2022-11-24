@@ -6,8 +6,8 @@
     "roundabout",
     "followbend",
     "followalong",
-    "turn",
     "end",
+    "turn",
     "base"
   ],
   "about:languages": "Maps language codes onto InstructionToText-configurations",

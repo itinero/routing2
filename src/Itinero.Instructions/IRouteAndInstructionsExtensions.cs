@@ -6,34 +6,42 @@ using Itinero.Routes;
 namespace Itinero.Instructions;
 
 /// <summary>
-/// Contains extension methods for further operations after instruction generation.
+///     Contains extension methods for further operations after instruction generation.
 /// </summary>
 // ReSharper disable once InconsistentNaming
 public static class IRouteAndInstructionsExtensions
 {
+
     /// <summary>
-    /// Adds the instructions to the route object.
+    ///     Adds the instructions to the route object.
     /// </summary>
+    /// <remarks>
+    ///     Some instructions have a length of 0 (thus: instruction.ShapeIndex == instruction.ShapeIndexEnd).
+    ///     This will result in multiple shapeMetas pointing to the same 'shape'. Use <see cref="RemoveDuplicateShapeMeta" />
+    ///     to remove them.
+    /// </remarks>
     /// <param name="routeAndInstructions">The route and the instructions.</param>
     /// <param name="keyForLanguage">A callback to configure the key per language code.</param>
     /// <returns>Another augmented route and the same instructions.</returns>
-    public static IRouteAndInstructions AugmentRoute(this IRouteAndInstructions routeAndInstructions, Func<string, string>? keyForLanguage = null)
+    public static IRouteAndInstructions AugmentRoute(this IRouteAndInstructions routeAndInstructions,
+        Func<string, string>? keyForLanguage = null)
     {
-        // 'instructions' and 'shapeMeta' might have different boundaries - so reusing the old shapeMeta's is not possible
-
         keyForLanguage ??= l => $"instruction:{l}";
 
         var route = routeAndInstructions.Route;
-        var shapeMetas = routeAndInstructions.Route.ShapeMeta;
         var instructions = routeAndInstructions.Instructions;
+        var shapeMetas = routeAndInstructions.Route.ShapeMeta;
 
         var metas = new List<Route.Meta>();
+        // 'instructions' and 'shapeMeta' might have different boundaries - so reusing the old shapeMeta's is not possible
+        // We build a new set of shapeMeta instead
         var instructionPointer = 0;
         var shapeMetaPointer = 0;
         var routeCount = shapeMetas.Last().Shape;
 
         Route.Meta? lastMeta = null;
-        while ((lastMeta?.Shape ?? 0) < routeCount && instructionPointer < instructions.Count &&
+        while ((lastMeta?.Shape ?? 0) < routeCount &&
+               instructionPointer < instructions.Count &&
                shapeMetaPointer < shapeMetas.Count)
         {
             var currentMeta = shapeMetas[shapeMetaPointer];
@@ -49,6 +57,7 @@ public static class IRouteAndInstructionsExtensions
             {
                 attributes.Add((keyForLanguage(languageCode), text));
             }
+
             var distance = route.DistanceBetween(lastMeta?.Shape ?? 0, latestIncludedPoint);
             var speed = currentMeta.Distance / currentMeta.Time;
 
