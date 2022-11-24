@@ -121,7 +121,8 @@ public static class PathExtensions
                 {
                     isFirst = false;
                     if (merged.Count > 0 &&
-                        merged.Last.edge == edge)
+                        merged.Last.edge == edge &&
+                        merged.Last.direction == direction)
                     {
                         // first edge may be the same edge as
                         // previous path, don't add it again.
