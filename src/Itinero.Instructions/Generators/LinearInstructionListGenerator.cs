@@ -48,8 +48,6 @@ public class LinearInstructionListGenerator : IInstructionListGenerator
             }
         }
 
-        instructions[0] = new StartInstruction(indexedRoute, instructions[0]);
-
         return instructions;
     }
 

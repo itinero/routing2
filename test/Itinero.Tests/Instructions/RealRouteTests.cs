@@ -73,5 +73,42 @@ public class RealRouteTests
         Assert.Equal("Turn 87 onto Klaverstraat", text[1]);
         Assert.Equal("Fallback: end 0", text[2]);
     }
+    
+    
+    [Fact]
+    public void GenerateInstructionsWithStart_SimpleRoute_StartInstructionHasZeroIndices()
+    {
+        
+        var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() {
+            new StartInstructionGenerator(),
+            new EndInstructionGenerator(),
+            new RoundaboutInstructionGenerator(),
+            new TurnGenerator(),
+            new BaseInstructionGenerator() }
+        );
+        var route = RouteScaffolding.GenerateRoute(
+            (RouteScaffolding.P(
+                    (3.2200763, 51.215923, null)
+                ), new List<(string, string)> {
+                    ("name", "Elf-Julistraat"),
+                    ("highway", "residential")
+                }
+            ),
+            (RouteScaffolding.P(
+                (3.2203252, 51.215485, null),
+                (3.2195995, 51.215298, null),
+                (3.2191286, 51.21517, null)
+            ), new List<(string, string)> {
+                ("name", "Klaverstraat")
+            })
+        );
+
+
+        var instructions = generator.GenerateInstructions(route);
+        var startInstr = instructions[0];
+        Assert.Equal("start", startInstr.Type);
+        Assert.Equal(0, startInstr.ShapeIndex);
+        Assert.Equal(0, startInstr.ShapeIndexEnd);
+    }
 
 }

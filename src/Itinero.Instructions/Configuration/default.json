@@ -3,6 +3,7 @@
   "description": "Generates default instructions",
   "about:generators": "When generating instructions, every of the below generators will be tried from left to right. The first generator that succeeds in creating an instruction will be used. This implies that very specific generators should be first, and very general instructions (base) should be last",
   "generators": [
+    "start",
     "roundabout",
     "followbend",
     "followalong",
