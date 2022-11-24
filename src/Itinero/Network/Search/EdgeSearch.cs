@@ -240,10 +240,7 @@ internal static class EdgeSearch
 
         while (edgeEnumerator.MoveNext())
         {
-            if (edges.Contains(edgeEnumerator.EdgeId))
-            {
-                continue;
-            }
+            if (edges.Contains(edgeEnumerator.EdgeId)) continue;
 
             edges.Add(edgeEnumerator.EdgeId);
 

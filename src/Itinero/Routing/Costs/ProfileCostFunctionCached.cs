@@ -57,7 +57,7 @@ internal class ProfileCostFunctionCached : ICostFunction
         var length = lengthNullable ??
                      (uint)(edgeEnumerator.EdgeLength() * 100);
         var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
-        var canAccess = cost > 0;
+        var canAccess = factor.ForwardFactor > 0 || factor.BackwardFactor > 0;
 
         var totalTurnCost = 0.0;
         var (_, turn) = previousEdges.FirstOrDefault();
