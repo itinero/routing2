@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Itinero.Instructions;
 using Itinero.Instructions.Configuration;
 using Itinero.Instructions.Generators;
 using Itinero.Instructions.ToText;
 using Itinero.Instructions.Types.Generators;
-using Itinero.IO.Json.GeoJson;
 using Xunit;
 
 namespace Itinero.Tests.Instructions;
@@ -46,35 +44,34 @@ public class RealRouteTests
             new BaseInstructionGenerator() }
     );
 
-    // [Fact]
-    // public void GenerateInstructions_SimpleRoute_TurnRight()
-    // {
-    //     var route = RouteScaffolding.GenerateRoute(
-    //         (RouteScaffolding.P(
-    //                 (3.2200763, 51.215923, null)
-    //             ), new List<(string, string)> {
-    //                     ("name", "Elf-Julistraat"),
-    //                     ("highway", "residential")
-    //             }
-    //         ),
-    //         (RouteScaffolding.P(
-    //             (3.2203252, 51.215485, null),
-    //             (3.2195995, 51.215298, null),
-    //             (3.2191286, 51.21517, null)
-    //         ), new List<(string, string)> {
-    //                 ("name", "Klaverstraat")
-    //         })
-    //     );
-    //
-    //
-    //     var instructions = gen.GenerateInstructions(route);
-    //     var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
-    //     Assert.Equal("Start towards 160°", text[0]);
-    //     Assert.Equal("Turn -87 onto Klaverstraat", text[1]);
-    //     Assert.Equal("Fallback: end 0", text[2]);
-    // }
-
-
+     [Fact]
+     public void GenerateInstructions_SimpleRoute_TurnRight()
+     {
+         var route = RouteScaffolding.GenerateRoute(
+             (RouteScaffolding.P(
+                     (3.2200763, 51.215923, null)
+                 ), new List<(string, string)> {
+                         ("name", "Elf-Julistraat"),
+                         ("highway", "residential")
+                 }
+             ),
+             (RouteScaffolding.P(
+                 (3.2203252, 51.215485, null),
+                 (3.2195995, 51.215298, null),
+                 (3.2191286, 51.21517, null)
+             ), new List<(string, string)> {
+                     ("name", "Klaverstraat")
+             })
+         );
+    
+        var instructions = gen.GenerateInstructions(route);
+        var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
+        Assert.Equal("Turn right onto Elf-Julistraat", text[0]);
+        Assert.Equal("Turn -87 onto Klaverstraat", text[1]);
+        Assert.Equal("Fallback: end 0", text[2]);
+    }
+    
+    
     [Fact]
     public void GenerateInstructionsWithStart_SimpleRoute_StartInstructionHasZeroIndices()
     {
