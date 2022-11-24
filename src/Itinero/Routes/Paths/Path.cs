@@ -122,12 +122,12 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
             if (!edgeEnumerator.MoveTo(edge, forward)) throw new Exception($"Edge does not exist.");
             var tail = edgeEnumerator.Tail;
             var previous = _edges[^1];
-            if (!edgeEnumerator.MoveTo(previous.edge, previous.forward))  throw new Exception($"Edge does not exist.");;
+            if (!edgeEnumerator.MoveTo(previous.edge, previous.forward)) throw new Exception($"Edge does not exist."); ;
             if (edgeEnumerator.Head != tail)
                 throw new Exception("Cannot append edge, previous edge head does not match tail");
         }
 #endif
-        
+
         this.AppendInternal(edge, forward);
     }
 
@@ -139,7 +139,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
     public void Prepend(EdgeId edge, bool forward)
     {
         if (!_edgeEnumerator.MoveTo(edge, forward)) throw new Exception($"Edge does not exist.");
-        
+
 #if DEBUG
         if (_edges.Count > 0)
         {
@@ -147,7 +147,7 @@ public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, usho
             if (!edgeEnumerator.MoveTo(edge, forward)) throw new Exception($"Edge does not exist.");
             var head = edgeEnumerator.Head;
             var next = _edges[0];
-            if (!edgeEnumerator.MoveTo(next.edge, next.forward))  throw new Exception($"Edge does not exist.");
+            if (!edgeEnumerator.MoveTo(next.edge, next.forward)) throw new Exception($"Edge does not exist.");
             if (edgeEnumerator.Tail != head)
                 throw new Exception("Cannot append edge, next edge tail does not match head");
         }

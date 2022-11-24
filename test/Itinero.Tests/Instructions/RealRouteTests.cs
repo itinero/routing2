@@ -73,12 +73,12 @@ public class RealRouteTests
         Assert.Equal("Turn -87 onto Klaverstraat", text[1]);
         Assert.Equal("Fallback: end 0", text[2]);
     }
-    
-    
+
+
     [Fact]
     public void GenerateInstructionsWithStart_SimpleRoute_StartInstructionHasZeroIndices()
     {
-        
+
         var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() {
             new StartInstructionGenerator(),
             new EndInstructionGenerator(),
