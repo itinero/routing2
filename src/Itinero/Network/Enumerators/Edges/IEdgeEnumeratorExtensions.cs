@@ -34,7 +34,7 @@ public static class IEdgeEnumeratorExtensions
     /// </summary>
     /// <param name="enumerator">The enumerator.</param>
     /// <returns>The length in meters.</returns>
-    internal static double EdgeLength(this IEdgeEnumerator enumerator)
+    public static double EdgeLength(this IEdgeEnumerator enumerator)
     {
         return enumerator.GetCompleteShape().DistanceEstimateInMeter();
     }
