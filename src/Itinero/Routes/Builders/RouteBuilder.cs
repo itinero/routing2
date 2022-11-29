@@ -14,7 +14,7 @@ namespace Itinero.Routes.Builders;
 /// </summary>
 public class RouteBuilder : IRouteBuilder
 {
-    private readonly Func<IEnumerable<(string, string)>, bool,RoutingNetworkEdgeEnumerator, double, IEnumerable<(string, string)>>? _calculateExtraAttributes;
+    private readonly Func<IEnumerable<(string, string)>, bool, double,RoutingNetworkEdgeEnumerator, IEnumerable<(string, string)>>? _calculateExtraAttributes;
     private static readonly ThreadLocal<RouteBuilder> DefaultLazy = new(() => new RouteBuilder());
 
     /// <summary>
@@ -32,7 +32,7 @@ public class RouteBuilder : IRouteBuilder
     /// - distance: the length we are travelling on the edge
     /// - edgeEnumerator: the current edgeEnumerator
     /// </param>
-    public RouteBuilder(Func<IEnumerable<(string, string)>, bool,RoutingNetworkEdgeEnumerator, double, IEnumerable<(string, string)>>? calculateExtraAttributes = null)
+    public RouteBuilder(Func<IEnumerable<(string, string)>, bool, double,RoutingNetworkEdgeEnumerator, IEnumerable<(string, string)>>? calculateExtraAttributes = null)
     {
         _calculateExtraAttributes = calculateExtraAttributes;
     }
