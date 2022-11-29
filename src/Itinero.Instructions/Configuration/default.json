@@ -43,12 +43,12 @@
       },
       "end": "You have arrived at your destination",
       "start": {
-        "$startDegrees<=-135": "Start south $on, then $then",
-        "$startDegrees>-135&$startDegrees<=-45": "Start west $on, then $then",
-        "$startDegrees>-45&$startDegrees<=45": "Start north $on, then $then",
-        "$startDegrees>45&$startDegrees<=135": "Start east $on, then $then",
-        "$startDegrees>135": "Start south $on, then $then",
-        "*": "Start heading $startDegrees $on, then $then"
+        "$startDegrees<=-135": "Start south $on",
+        "$startDegrees>-135&$startDegrees<=-45": "Start west $on",
+        "$startDegrees>-45&$startDegrees<=45": "Start north $on",
+        "$startDegrees>45&$startDegrees<=135": "Start east $on",
+        "$startDegrees>135": "Start south $on",
+        "*": "Start heading $startDegrees $on"
       },
       "roundabout": {
         "$exitNumber=1": "Go $lr on the roundabout by taking the first exit",
