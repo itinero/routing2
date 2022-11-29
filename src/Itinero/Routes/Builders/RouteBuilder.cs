@@ -14,7 +14,7 @@ namespace Itinero.Routes.Builders;
 /// </summary>
 public class RouteBuilder : IRouteBuilder
 {
-    private readonly Func<IEnumerable<(string, string)>, IEnumerable<(string, string)>>? _calculateExtraAttributes;
+    private readonly Func<IEnumerable<(string, string)>, bool,RoutingNetworkEdgeEnumerator, double, IEnumerable<(string, string)>>? _calculateExtraAttributes;
     private static readonly ThreadLocal<RouteBuilder> DefaultLazy = new(() => new RouteBuilder());
 
     /// <summary>
@@ -26,9 +26,13 @@ public class RouteBuilder : IRouteBuilder
     /// </summary>
     /// <param name="calculateExtraAttributes">
     /// If this callback is given, it will be executed on every segment to inject extra attributes into the ShapeMeta.
-    /// The passed-in attributes will be a reference to the attributes which the edgeEnumerator gave
+    /// The parameters are:
+    /// - attributes:be a reference to the attributes which the edgeEnumerator gave
+    /// - direction: if we are travelling in forward direction over the edge
+    /// - distance: the length we are travelling on the edge
+    /// - edgeEnumerator: the current edgeEnumerator
     /// </param>
-    public RouteBuilder(Func<IEnumerable<(string, string)>, IEnumerable<(string, string)>>? calculateExtraAttributes = null)
+    public RouteBuilder(Func<IEnumerable<(string, string)>, bool,RoutingNetworkEdgeEnumerator, double, IEnumerable<(string, string)>>? calculateExtraAttributes = null)
     {
         _calculateExtraAttributes = calculateExtraAttributes;
     }
@@ -84,7 +88,7 @@ public class RouteBuilder : IRouteBuilder
 
             if (_calculateExtraAttributes != null)
             {
-                attributes = attributes.Concat(_calculateExtraAttributes(attributes));
+                attributes = attributes.Concat(_calculateExtraAttributes(attributes, direction, distance, edgeEnumerator));
             }
             var speed = direction ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
             if (speed <= 0)
