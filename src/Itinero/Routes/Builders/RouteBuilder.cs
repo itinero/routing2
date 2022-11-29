@@ -14,12 +14,24 @@ namespace Itinero.Routes.Builders;
 /// </summary>
 public class RouteBuilder : IRouteBuilder
 {
+    private readonly Func<IEnumerable<(string, string)>, IEnumerable<(string, string)>>? _calculateExtraAttributes;
     private static readonly ThreadLocal<RouteBuilder> DefaultLazy = new(() => new RouteBuilder());
 
     /// <summary>
     ///     Gets the default instance (for the local thread).
     /// </summary>
     public static RouteBuilder Default => DefaultLazy.Value;
+
+    /// <summary>
+    /// </summary>
+    /// <param name="calculateExtraAttributes">
+    /// If this callback is given, it will be executed on every segment to inject extra attributes into the ShapeMeta.
+    /// The passed-in attributes will be a reference to the attributes which the edgeEnumerator gave
+    /// </param>
+    public RouteBuilder(Func<IEnumerable<(string, string)>, IEnumerable<(string, string)>>? calculateExtraAttributes = null)
+    {
+        _calculateExtraAttributes = calculateExtraAttributes;
+    }
 
     /// <inheritdoc />
     public Result<Route> Build(RoutingNetwork routingNetwork, Profile profile, Path path)
@@ -70,6 +82,10 @@ public class RouteBuilder : IRouteBuilder
             distance = (offset2 - offset1) / (double)ushort.MaxValue * distance;
             route.TotalDistance += distance;
 
+            if (_calculateExtraAttributes != null)
+            {
+                attributes = attributes.Concat(_calculateExtraAttributes(attributes));
+            }
             var speed = direction ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
             if (speed <= 0)
             {
