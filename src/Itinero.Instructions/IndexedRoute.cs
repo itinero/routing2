@@ -110,6 +110,24 @@ public class IndexedRoute
         return prevPoint.DistanceEstimateInMeter(nextPoint);
     }
 
+    
+    /// <summary>
+    /// Calculates the total distance in meter between shape-index 'start' and shapeindex 'end'
+    /// </summary>
+    /// <param name="shapeStart"></param>
+    /// <param name="shapeEnd"></param>
+    /// <returns></returns>
+    public double DistanceBetween(int shapeStart, int shapeEnd)
+    {
+        var total = 0.0;
+        for (int i = shapeStart; i < shapeEnd; i++)
+        {
+            total += this.DistanceToNextPoint(i);
+        }
+
+        return total;
+    }
+
     /// <summary>
     /// The departing angle with the meridian.
     /// </summary>
