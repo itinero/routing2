@@ -71,7 +71,7 @@ public class RouteWithInstructionsTest
         Assert.Equal(route.TotalDistance, newMetas.Select(m => m.Distance).Sum());
 
     }
-    
+
     [Fact]
     public void MergeInstructionsAndShapeMeta_InstructionMustBeBroken_MergedNeatly()
     {

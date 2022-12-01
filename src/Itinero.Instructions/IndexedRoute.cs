@@ -110,7 +110,7 @@ public class IndexedRoute
         return prevPoint.DistanceEstimateInMeter(nextPoint);
     }
 
-    
+
     /// <summary>
     /// Calculates the total distance in meter between shape-index 'start' and shapeindex 'end'
     /// </summary>

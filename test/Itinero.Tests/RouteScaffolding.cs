@@ -67,7 +67,7 @@ public class RouteScaffolding
         for (var i = 1; i < metas.Count; i++)
         {
             var meta = metas[i];
-            meta.Distance = indexedRoute.DistanceBetween(metas[i-1].Shape, meta.Shape);
+            meta.Distance = indexedRoute.DistanceBetween(metas[i - 1].Shape, meta.Shape);
         }
 
         route.TotalDistance = metas.Select(m => m.Distance).Sum();
