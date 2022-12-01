@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Itinero.Instructions;
 using Itinero.Routes;
 
 namespace Itinero.Tests;
@@ -46,14 +48,29 @@ public class RouteScaffolding
             metas.Add(meta);
         }
 
+
+
         metas[^1].Shape--;
         Route.Branch[] branchesArr = branches?.ToArray() ?? System.Array.Empty<Route.Branch>();
 
-        return new Route
+        var route = new Route
         {
             ShapeMeta = metas,
             Shape = allCoordinates,
             Branches = branchesArr
         };
+
+        var indexedRoute = new IndexedRoute(route);
+        var firstMeta = metas[0];
+        firstMeta.Distance = indexedRoute.DistanceBetween(0, firstMeta.Shape);
+
+        for (var i = 1; i < metas.Count; i++)
+        {
+            var meta = metas[i];
+            meta.Distance = indexedRoute.DistanceBetween(metas[i-1].Shape, meta.Shape);
+        }
+
+        route.TotalDistance = metas.Select(m => m.Distance).Sum();
+        return route;
     }
 }

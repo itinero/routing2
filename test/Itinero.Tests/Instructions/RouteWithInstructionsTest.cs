@@ -6,6 +6,7 @@ using System.Text;
 using Itinero.Instructions;
 using Itinero.Instructions.Types;
 using Itinero.Network.Attributes;
+using Itinero.Tests.Network.Enumerators.Edges;
 using Xunit;
 
 namespace Itinero.Tests.Instructions;
@@ -67,8 +68,10 @@ public class RouteWithInstructionsTest
             a.AssertTag("highway", "residential");
             a.AssertTag("instruction", "" + i);
         }
-    }
+        Assert.Equal(route.TotalDistance, newMetas.Select(m => m.Distance).Sum());
 
+    }
+    
     [Fact]
     public void MergeInstructionsAndShapeMeta_InstructionMustBeBroken_MergedNeatly()
     {
@@ -86,6 +89,7 @@ public class RouteWithInstructionsTest
                 }
             )
         );
+
 
         var settings = RouteInstructionGeneratorSettings.FromStream(
             TextToStream("{\"generators\":[],  \"languages\":{ \"en\": {\"*\":\"$turnDegrees\" } }}"));
@@ -112,6 +116,7 @@ public class RouteWithInstructionsTest
         a1.AssertTag("highway", "residential");
         a1.AssertTag("name", "Elf-Julistraat");
         // a1.AssertTag("instruction", "0");
+        Assert.Equal(route.TotalDistance, newMetas.Select(m => m.Distance).Sum());
     }
 
     private static Stream TextToStream(string text)
