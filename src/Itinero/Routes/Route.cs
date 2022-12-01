@@ -110,7 +110,7 @@ public partial class Route : IEnumerable<RoutePosition>
         /// <remarks>
         /// A route has a list of coordinates named 'Shape'.
         /// This meta-object gives information about a part of the route,
-        /// namely from the previous point till 'Shape' (shape is included)
+        /// namely from the previous shapeMeta till 'Shape' (shape is included)
         /// </remarks>
         public int Shape { get; set; }
 
