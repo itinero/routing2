@@ -10,10 +10,9 @@ namespace Itinero.Routes.Paths;
 /// <summary>
 /// Represents a path in a graph as a collection of edges.
 /// </summary>
-public class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
+public sealed class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
 {
     private readonly List<(EdgeId edge, bool forward)> _edges;
-    public List<(EdgeId edge, bool forward)> Edges => _edges;
     private readonly RoutingNetworkEdgeEnumerator _edgeEnumerator;
     private readonly RoutingNetwork _network;
 

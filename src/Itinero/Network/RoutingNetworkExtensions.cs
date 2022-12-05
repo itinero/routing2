@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Itinero.Network.Enumerators.Edges;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 using Itinero.Routing.Costs.Caches;
@@ -69,6 +70,16 @@ internal static class RoutingNetworkSnapshotExtensions
                 yield return edgeEnumerator.EdgeId;
             }
         }
+    }
+
+    internal static ProfileCached GetCachedProfile(this RoutingNetwork network, Profile profile)
+    {        
+        if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile.Name, out var cache, out var turnCostFactorCache))
+        {
+            return new ProfileCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
+        }
+
+        return new ProfileCached(profile, cache ?? new EdgeFactorCache(), turnCostFactorCache ?? new TurnCostFactorCache());
     }
 
     internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
