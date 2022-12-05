@@ -91,7 +91,7 @@ public class RouteBuilder : IRouteBuilder
             {
                 attributes = attributes.Concat(_calculateExtraAttributes(attributes, direction, distance, edgeEnumerator));
             }
-            var speed = direction ? factor.ForwardSpeedMeterPerSecond : factor.BackwardSpeedMeterPerSecond;
+            var speed = factor.ForwardSpeedMeterPerSecond;
             if (speed <= 0)
             {
                 speed = 10;
