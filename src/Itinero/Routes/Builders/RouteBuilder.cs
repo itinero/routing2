@@ -80,7 +80,7 @@ public class RouteBuilder : IRouteBuilder
             }
 
             edgeEnumerator.MoveTo(edge, direction);
-            
+
             var attributes = edgeEnumerator.Attributes;
             var factor = profileCached.Factor(edgeEnumerator);
             var distance = edgeEnumerator.EdgeLength();
