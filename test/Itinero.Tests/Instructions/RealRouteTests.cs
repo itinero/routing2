@@ -49,21 +49,20 @@ public class RealRouteTests
     {
         var route = RouteScaffolding.GenerateRoute(
             (RouteScaffolding.P(
-                    (3.2200763, 51.215923, null)
+                    (3.2200763, 51.215923, null)      
                 ), new List<(string, string)> { ("name", "Elf-Julistraat"), ("highway", "residential") }
             ),
-            (RouteScaffolding.P(
-                (3.2203252, 51.215485, null),
-                (3.2195995, 51.215298, null),
-                (3.2191286, 51.21517, null)
+            (RouteScaffolding.P(  
+                (3.2203252, 51.215485, null)     ,
+                (3.2195995, 51.215298, null)
             ), new List<(string, string)> { ("name", "Klaverstraat") })
         );
 
         var instructions = gen.GenerateInstructions(route);
         var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
-        Assert.Equal("Turn right onto Elf-Julistraat", text[0]);
+        Assert.Equal("Turn right onto Elf-Julistraat", text[0]);// This one is a bit weird, it should be a start-instruction, but they are not in this generator, so the 'turnright' fills the gap
         Assert.Equal("Turn -87 onto Klaverstraat", text[1]);
-        Assert.Equal("Fallback: end 0", text[3]);
+        Assert.Equal("Fallback: end 0", text[2]);
     }
 
 
@@ -164,4 +163,67 @@ public class RealRouteTests
         Assert.Equal("turn", instructions[1].Type);
     }
 
+    /*
+    [Fact]
+    public void CyclepathNextToRingroad_ConstructInstructions_FollowbendRight()
+    {
+        /*
+         * This describes a long, gentle rightwards bend in the cyclepath here:https://www.openstreetmap.org/#map=19/51.20998/3.21397
+         * The regression was that it would insert a 'turn straight' instruction, but this should be one (or two) 'follow bend'-instructions
+         * /
+        var part0 = (RouteScaffolding.P(
+                (
+                    3.213835487550398,
+                    51.210335796947305, 0f
+                ),
+                (
+                    3.213832145410805,
+                    51.210259375824165, 0f
+                ),
+                (
+                    3.2137970529425957,
+                    51.210155736015906, 0f
+                ),
+                (
+                    3.213740236565144,
+                    51.21006884589596, 0f
+                ),
+                (
+                    3.213661696278564,
+                    51.210029064822805, 0f
+                ),
+                (
+                    3.2135965245518605,
+                    51.21001126801539, 0f
+                ),
+                (
+                    3.213499602496398,
+                    51.21000289304513, 0f
+                )),
+            new List<(string, string)> { ("highway", "cycleway"), ("oneway", "yes"), ("oneway:bicycle", "yes") });
+        var part1 = (RouteScaffolding.P((
+                3.2134026804409643,
+                51.21000498678771, 0f
+            ),
+            (
+                3.2132756791262693,
+                51.21005523658562, 0f
+            )), new List<(string, string)> { ("highway", "cycleway") });
+        var route = RouteScaffolding.GenerateRoute(part0, part1);
+        var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>
+        {
+            new StartInstructionGenerator(),
+            new RoundaboutInstructionGenerator(),
+            new FollowBendGenerator(),
+            new FollowAlongGenerator(),
+            new TurnGenerator(),
+            new BaseInstructionGenerator()
+        });
+        var instructions = generator.GenerateInstructions(route);
+        Assert.Equal("start", instructions[0].Type);
+        Assert.Equal("followbend", instructions[1].Type);
+        Assert.Equal("followbend", instructions[2].Type);
+        Assert.Equal("end", instructions[3].Type);
+    }
+    //*/
 }
