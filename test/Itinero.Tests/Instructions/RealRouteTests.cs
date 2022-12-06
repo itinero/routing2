@@ -35,13 +35,13 @@ public class RealRouteTests
         "\"roundabout\": \"Taking the ${exitNumber}th exit\"";
 
     private static readonly IInstructionToText SimpleToText =
-        ConfigurationParser.ParseInstructionToText(JsonDocument.Parse("{" + baseInstructionToLeftRight + "," + roundaboutGenerator + "}").RootElement);
+        ConfigurationParser.ParseInstructionToText(JsonDocument
+            .Parse("{" + baseInstructionToLeftRight + "," + roundaboutGenerator + "}").RootElement);
 
-    private static readonly LinearInstructionListGenerator gen = new(new List<IInstructionGenerator>() {
-            new EndInstructionGenerator(),
-            new RoundaboutInstructionGenerator(),
-            new TurnGenerator(),
-            new BaseInstructionGenerator() }
+    private static readonly LinearInstructionListGenerator gen = new(new List<IInstructionGenerator>
+        {
+            new RoundaboutInstructionGenerator(), new TurnGenerator(), new BaseInstructionGenerator()
+        }
     );
 
     [Fact]
@@ -50,54 +50,45 @@ public class RealRouteTests
         var route = RouteScaffolding.GenerateRoute(
             (RouteScaffolding.P(
                     (3.2200763, 51.215923, null)
-                ), new List<(string, string)> {
-                         ("name", "Elf-Julistraat"),
-                         ("highway", "residential")
-                }
+                ), new List<(string, string)> { ("name", "Elf-Julistraat"), ("highway", "residential") }
             ),
             (RouteScaffolding.P(
                 (3.2203252, 51.215485, null),
                 (3.2195995, 51.215298, null),
                 (3.2191286, 51.21517, null)
-            ), new List<(string, string)> {
-                     ("name", "Klaverstraat")
-            })
+            ), new List<(string, string)> { ("name", "Klaverstraat") })
         );
 
         var instructions = gen.GenerateInstructions(route);
         var text = instructions.Select(i => SimpleToText.ToText(i)).ToList();
         Assert.Equal("Turn right onto Elf-Julistraat", text[0]);
         Assert.Equal("Turn -87 onto Klaverstraat", text[1]);
-        Assert.Equal("Fallback: end 0", text[2]);
+        Assert.Equal("Fallback: end 0", text[3]);
     }
 
 
     [Fact]
     public void GenerateInstructionsWithStart_SimpleRoute_StartInstructionHasZeroIndices()
     {
-
-        var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>() {
-            new StartInstructionGenerator(),
-            new EndInstructionGenerator(),
-            new RoundaboutInstructionGenerator(),
-            new TurnGenerator(),
-            new BaseInstructionGenerator() }
+        var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>
+            {
+                new StartInstructionGenerator(),
+                new EndInstructionGenerator(),
+                new RoundaboutInstructionGenerator(),
+                new TurnGenerator(),
+                new BaseInstructionGenerator()
+            }
         );
         var route = RouteScaffolding.GenerateRoute(
             (RouteScaffolding.P(
                     (3.2200763, 51.215923, null)
-                ), new List<(string, string)> {
-                    ("name", "Elf-Julistraat"),
-                    ("highway", "residential")
-                }
+                ), new List<(string, string)> { ("name", "Elf-Julistraat"), ("highway", "residential") }
             ),
             (RouteScaffolding.P(
                 (3.2203252, 51.215485, null),
                 (3.2195995, 51.215298, null),
                 (3.2191286, 51.21517, null)
-            ), new List<(string, string)> {
-                ("name", "Klaverstraat")
-            })
+            ), new List<(string, string)> { ("name", "Klaverstraat") })
         );
 
 
@@ -106,6 +97,71 @@ public class RealRouteTests
         Assert.Equal("start", startInstr.Type);
         Assert.Equal(0, startInstr.ShapeIndex);
         Assert.Equal(0, startInstr.ShapeIndexEnd);
+    }
+
+    [Fact]
+    public void KlaverstraatStartAndStopRoute_GenerateInstructions_InstructionsContainFollowAlong()
+    {
+        var route = RouteScaffolding.GenerateRoute(
+            (RouteScaffolding.P(
+                    (
+                        3.2203238220720323,
+                        51.215487201201114, 0f
+                    ),
+                    (
+                        3.2208590840492377,
+                        51.215600349155096, 0f
+                    ), (
+                        3.2210915919065712,
+                        51.215630089643184, 0f
+                    )
+                ), new List<(string, string)> { ("name", "Klaverstraat"), ("highway", "residential") }
+            )
+        );
+
+        var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>
+        {
+            new StartInstructionGenerator(),
+            new RoundaboutInstructionGenerator(),
+            new FollowBendGenerator(),
+            new FollowAlongGenerator(),
+            new TurnGenerator(),
+            new BaseInstructionGenerator()
+        });
+        var instructions = generator.GenerateInstructions(route);
+        Assert.Equal("followalong", instructions[1].Type);
+    }
+
+    [Fact]
+    public void KlaverstraatStartAndVlamingdamStopRoute_GenerateInstructions_InstructionsContainTurn()
+    {
+        var route = RouteScaffolding.GenerateRoute(
+            (RouteScaffolding.P(
+                    (
+                        3.2208590840492377,
+                        51.215600349155096, 0f
+                    ), (
+                        3.2210915919065712,
+                        51.215630089643184, 0f
+                    )
+                ), new List<(string, string)> { ("name", "Klaverstraat"), ("highway", "residential") }
+            ),
+            (RouteScaffolding.P((3.221081870955544,
+                    51.215575831418306, 0f)),
+                new List<(string, string)> { ("highway", "tertiary"), ("name", "Vlamingdam") })
+        );
+
+        var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>
+        {
+            new StartInstructionGenerator(),
+            new RoundaboutInstructionGenerator(),
+            new FollowBendGenerator(),
+            new FollowAlongGenerator(),
+            new TurnGenerator(),
+            new BaseInstructionGenerator()
+        });
+        var instructions = generator.GenerateInstructions(route);
+        Assert.Equal("turn", instructions[1].Type);
     }
 
 }
