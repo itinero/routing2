@@ -67,6 +67,6 @@ public class LinearInstructionListGenerator : IInstructionListGenerator
             }
         }
 
-        throw new Exception("Could not generate instruction");
+        throw new Exception("Could not generate instruction for offset "+currentOffset);
     }
 }
