@@ -52,7 +52,7 @@ public class LinearInstructionListGenerator : IInstructionListGenerator
         }
 
         instructions.Add(new EndInstruction(indexedRoute));
-        
+
         return instructions;
     }
 

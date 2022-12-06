@@ -48,14 +48,14 @@ internal class FollowAlongGenerator : IInstructionGenerator
         {
             return null;
         }
-            
+
         // THere is little directional change - does it turn at most a little bit?
         if (Math.Abs(totalChange) / totalDistance >= 2.5)
         {
             // Nope, we turn more then 2.5°/m, this is 'followBend'-material
             return null;
         }
-        
+
 
         return new FollowAlongInstruction(
             route,
