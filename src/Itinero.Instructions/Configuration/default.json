@@ -31,6 +31,16 @@
           "$turnDegrees<135&$turnDegrees>=65": "left",
           "$turnDegrees<65&$turnDegrees>=25": "slightly left",
           "*": "$turnDegrees°"
+        },
+        "numbered_exit": {
+          "$exitNumber=1": "first exit",
+          "$exitNumber=2": "second exit",
+          "$exitNumber=3": "third exit",
+          "$exitNumber=4": "fourth exit",
+          "$exitNumber=5": "fifth exit",
+          "$exitNumber=6": "sixth exit",
+          "$exitNumber=7": "seventh exit",
+          "*": "${exitNumber}th exit"
         }
       },
       "base": {
@@ -50,14 +60,8 @@
         "*": "Start heading $startDegrees $on"
       },
       "roundabout": {
-        "$exitNumber=1": "Go $lr on the roundabout by taking the first exit",
-        "$exitNumber=2": "Go $lr on the roundabout by taking the second exit",
-        "$exitNumber=3": "Go $lr on the roundabout by taking the third exit",
-        "$exitNumber=4": "Go $lr on the roundabout by taking the fourth exit",
-        "$exitNumber=5": "Go $lr on the roundabout by taking the fifth exit",
-        "$exitNumber=6": "Go $lr on the roundabout by taking the sixth exit",
-        "$exitNumber=7": "Go $lr on the roundabout by taking the seventh exit",
-        "*": "Go $lr on the roundabout by taking the ${exitNumber}th exit"
+        "$turnDegrees>155": "Turn around on the roundabout by taking the $numbered_exit",
+        "*": "Go $lr on the roundabout by taking the $numbered_exit"
       },
       "followbend": {
         "$.name!=$+name&$.name&$+name": "Follow $.name which bends $lr, $onto",
@@ -67,6 +71,7 @@
         "*": "Follow the road which bends $lr"
       },
       "turn": {
+        "$turnDegrees>-25&$turnDegrees<25": "Continue $on",
         "*": "Turn $lr $onto"
       },
       "followalong": {

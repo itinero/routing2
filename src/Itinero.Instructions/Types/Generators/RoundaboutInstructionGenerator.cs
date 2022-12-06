@@ -14,7 +14,6 @@ internal class RoundaboutInstructionGenerator : IInstructionGenerator
             return null;
         }
 
-        var inDegrees = route.DepartingDirectionAt(offset); // Offset is still on the rampup
         var usedInstructions = 1;
         var exitCount = 0;
         while (route.Meta[offset + usedInstructions].GetAttributeOrNull("junction") == "roundabout")
@@ -33,13 +32,21 @@ internal class RoundaboutInstructionGenerator : IInstructionGenerator
             return null;
         }
 
-
+        var inDegrees = route.ArrivingDirectionAt(offset); // Offset is still on the rampup
         var outDegrees = route.DepartingDirectionAt(offset + usedInstructions);
+
+        var shapeIndexEnd = offset + usedInstructions;
+        if (shapeIndexEnd + 1 < route.Last)
+        {
+            // We add an extra index, as the first segment after the roundabout doesn't need an instruction for it;
+            // This is always a right turn anyway 
+            shapeIndexEnd++;
+        }
 
         return new RoundaboutInstruction(route,
             offset,
-            offset + usedInstructions,
-            (outDegrees - inDegrees).NormalizeDegrees(),
+             shapeIndexEnd,
+            (inDegrees - outDegrees).NormalizeDegrees(),
             exitCount + 1
         );
     }
