@@ -33,6 +33,13 @@ internal class FollowAlongGenerator : IInstructionGenerator
                 // Different street!
                 break;
             }
+            route.Meta[offset + usedShapes].Attributes.TryGetValue("junction", out var junctionType);
+            if (junctionType == "roundabout")
+            {
+                // We cancel on roundabouts, in order to generate a roundabout-instruction for them 
+                break;
+            }
+
 
             var distance = route.DistanceToNextPoint(offset + usedShapes);
             totalDistance += distance;

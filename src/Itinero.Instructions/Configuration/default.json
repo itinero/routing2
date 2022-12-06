@@ -79,6 +79,77 @@
         "*": "Follow along $on"
       },
       "*": "Could not generate an instruction for $type"
+    },
+    "nl":  {
+      "extensions": {
+        "op": {
+          "$.name": "op $.name",
+          "*": ""
+        },
+        "onto": {
+          "$+name": "op $+name",
+          "*": ""
+        },
+        "windrichting": {
+          "$startDegrees<=-135": "zuidelijke",
+          "$startDegrees>-135&$startDegrees<=-45": "westelijke",
+          "$startDegrees>-45&$startDegrees<=45": "noordelijke",
+          "$startDegrees>45&$startDegrees<=135": "oostelijke",
+          "$startDegrees>135": "zuidelijke"
+        },
+        "lr": {
+          "$turnDegrees<=-135": "scherp rechtsaf",
+          "$turnDegrees>-135&$turnDegrees<=-65": "rechtsaf",
+          "$turnDegrees>-65&$turnDegrees<=-25": "licht rechtsaf",
+          "$turnDegrees>-25&$turnDegrees<25": "rechtdoor",
+          "$turnDegrees>=135": "scherp linksaf",
+          "$turnDegrees<135&$turnDegrees>=65": "linksaf",
+          "$turnDegrees<65&$turnDegrees>=25": "licht linksaf",
+          "*": "$turnDegrees°"
+        },
+        "numbered_exit": {
+          "$exitNumber=1": "eerste afrit",
+          "$exitNumber=2": "tweede afrit",
+          "$exitNumber=3": "derde afrit",
+          "$exitNumber=4": "vierde afrit",
+          "$exitNumber=5": "vijfde afrit",
+          "$exitNumber=6": "zesde afrit",
+          "$exitNumber=7": "zevende afrite",
+          "*": "${exitNumber}e afrit"
+        }
+      },
+      "base": {
+        "$turnDegrees>-25&$turnDegrees<25": {
+          "$.name!=$+name&$.name&$+name":"Ga verder $op, daarna $onto",
+          "*":"Ga verder $op"
+        },
+        "*": "Draai $lr $onto"
+      },
+      "end": "Je bent op je bestemming toegekomen",
+      "start": {
+        "*": "Vertrek in $windrichting richting $op"
+      },
+      "roundabout": {
+        "$turnDegrees>155": "Maak via de rotonde rechtsomkeer met de $numbered_exit",
+        "*": "Ga $lr op de rotonde via de $numbered_exit"
+      },
+      "followbend": {
+        "$.name!=$+name&$.name&$+name": "Volg $.name die $lr gaat $onto",
+        "$.name": "Volg $.name die $lr gaat",
+        "$.highway=cycleway&$+name": "Volg het fietspad die $lr buigt, $onto",
+        "$.highway=cycleway": "Volg het fietspad die $lr buigt",
+        "*": "Volg de weg die $lr buigt"
+      },
+      "turn": {
+        "$turnDegrees>-25&$turnDegrees<25": "Ga verder $op",
+        "*": "Sla $lr $onto"
+      },
+      "followalong": {
+        "$.name": "Volg $.name",
+        "$.highway=cycleway": "Volg het fietspad",
+        "*": "Volg de weg"
+      },
+      "*": "Kon geen instructie genereren voor $type"
     }
   }
 }
