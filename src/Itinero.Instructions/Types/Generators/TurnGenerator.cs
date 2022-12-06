@@ -21,14 +21,14 @@ internal class TurnGenerator : IInstructionGenerator
         var angleSign = Math.Sign(angleDiff);
         var usedShapes = 1;
 
-        var totalDistance = 0.0;
+        var totalDistance = route.DistanceToNextPoint(offset);
         // We walk forward and detect a true gentle bend:
         while (offset + usedShapes < route.Last)
         {
             var distance = route.DistanceToNextPoint(offset + usedShapes);
-            if (distance > 35)
+            if (distance > 5)
             {
-                // a gentle bend must have pieces that are not too long at a time
+                // a sharp bend must have pieces that are short
                 break;
             }
 
