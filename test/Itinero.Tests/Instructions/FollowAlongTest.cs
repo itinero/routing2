@@ -33,7 +33,7 @@ public class FollowAlongTest
         Assert.NotNull(followAlong);
         Assert.Equal("followalong", followAlong.Type);
         Assert.Equal(1, followAlong.ShapeIndex);
-        Assert.Equal(4, followAlong.ShapeIndexEnd);
+        Assert.Equal(5, followAlong.ShapeIndexEnd);
     }
 
 

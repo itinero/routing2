@@ -60,7 +60,7 @@ internal class FollowAlongGenerator : IInstructionGenerator
         return new FollowAlongInstruction(
             route,
             offset,
-            offset + usedShapes - 1,
+            offset + usedShapes,
             totalChange
         );
     }
