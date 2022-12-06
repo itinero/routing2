@@ -67,7 +67,7 @@ public class FollowBendTest
         Assert.NotNull(bend);
         Assert.Equal(85, bend.TurnDegrees);
         Assert.Equal(8, bend.ShapeIndex);
-        Assert.Equal(11, bend.ShapeIndexEnd);
+        Assert.Equal(12, bend.ShapeIndexEnd);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class FollowBendTest
         Assert.NotNull(bend);
         Assert.Equal(-143, bend.TurnDegrees);
         Assert.Equal(1, bend.ShapeIndex);
-        Assert.Equal(6, bend.ShapeIndexEnd);
+        Assert.Equal(7, bend.ShapeIndexEnd);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class FollowBendTest
         Assert.NotNull(bend);
         Assert.Equal(-143, bend.TurnDegrees);
         Assert.Equal(1, bend.ShapeIndex);
-        Assert.Equal(6, bend.ShapeIndexEnd);
+        Assert.Equal(7, bend.ShapeIndexEnd);
     }
 
     [Fact]
@@ -104,6 +104,6 @@ public class FollowBendTest
         Assert.NotNull(bend);
         Assert.Equal(-77, bend.TurnDegrees);
         Assert.Equal(1, bend.ShapeIndex);
-        Assert.Equal(3, bend.ShapeIndexEnd);
+        Assert.Equal(4, bend.ShapeIndexEnd);
     }
 }

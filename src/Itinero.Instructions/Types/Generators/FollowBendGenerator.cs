@@ -130,7 +130,7 @@ internal class FollowBendGenerator : IInstructionGenerator
         return new FollowBendInstruction(
             route,
             offset,
-            offset + usedShapes - 1,
+            offset + usedShapes,
             angleDiff
         );
     }

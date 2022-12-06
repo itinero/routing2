@@ -163,14 +163,13 @@ public class RealRouteTests
         Assert.Equal("turn", instructions[1].Type);
     }
 
-    /*
     [Fact]
     public void CyclepathNextToRingroad_ConstructInstructions_FollowbendRight()
     {
         /*
          * This describes a long, gentle rightwards bend in the cyclepath here:https://www.openstreetmap.org/#map=19/51.20998/3.21397
          * The regression was that it would insert a 'turn straight' instruction, but this should be one (or two) 'follow bend'-instructions
-         * /
+         */
         var part0 = (RouteScaffolding.P(
                 (
                     3.213835487550398,
@@ -201,14 +200,10 @@ public class RealRouteTests
                     51.21000289304513, 0f
                 )),
             new List<(string, string)> { ("highway", "cycleway"), ("oneway", "yes"), ("oneway:bicycle", "yes") });
-        var part1 = (RouteScaffolding.P((
-                3.2134026804409643,
-                51.21000498678771, 0f
-            ),
-            (
-                3.2132756791262693,
-                51.21005523658562, 0f
-            )), new List<(string, string)> { ("highway", "cycleway") });
+        var part1 = (RouteScaffolding.P(
+            (3.2134026804409643, 51.21000498678771, 0f),
+            (3.2132756791262693, 51.21005523658562, 0f)),
+            new List<(string, string)> { ("highway", "cycleway") });
         var route = RouteScaffolding.GenerateRoute(part0, part1);
         var generator = new LinearInstructionListGenerator(new List<IInstructionGenerator>
         {
@@ -222,8 +217,8 @@ public class RealRouteTests
         var instructions = generator.GenerateInstructions(route);
         Assert.Equal("start", instructions[0].Type);
         Assert.Equal("followbend", instructions[1].Type);
-        Assert.Equal("followbend", instructions[2].Type);
-        Assert.Equal("end", instructions[3].Type);
+        Assert.Equal(-117, instructions[1].TurnDegrees);
+        Assert.Equal("end", instructions[2].Type);
     }
     //*/
 }
