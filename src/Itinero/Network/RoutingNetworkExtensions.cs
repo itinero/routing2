@@ -11,7 +11,10 @@ using Itinero.Routing.Costs.Caches;
 
 namespace Itinero.Network;
 
-internal static class RoutingNetworkSnapshotExtensions
+/// <summary>
+/// Extensions methods for routing networks.
+/// </summary>
+public static class RoutingNetworkSnapshotExtensions
 {
     /// <summary>
     /// Gets the location of the given vertex.
