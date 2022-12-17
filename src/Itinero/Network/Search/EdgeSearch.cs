@@ -364,11 +364,11 @@ internal static class EdgeSearch
 
             return true;
         }
-        
+
         var center = searchBox.Center();
         var closestDistance = maxDistance;
         var closest = VertexId.Empty;
-        
+
         var vertices = network.SearchVerticesInBox(searchBox);
         var edgeEnumerator = network.GetEdgeEnumerator();
         foreach (var (vertex, location) in vertices)
@@ -413,17 +413,17 @@ internal static class EdgeSearch
 
             return true;
         }
-        
+
         var center = searchBox.Center();
         var vertices = network.SearchVerticesInBox(searchBox);
         var edgeEnumerator = network.GetEdgeEnumerator();
         foreach (var (vertex, location) in vertices)
         {
             edgeEnumerator.MoveTo(vertex);
-            
+
             var d = center.DistanceEstimateInMeter(location);
             if (d > maxDistance) continue;
-            
+
             while (edgeEnumerator.MoveNext())
             {
                 if (!CheckAcceptable(edgeEnumerator, acceptableFunc)) continue;
@@ -433,7 +433,7 @@ internal static class EdgeSearch
             }
         }
     }
-    
+
     /// <summary>
     /// Enumerates all edges that have at least one vertex in the given bounding box.
     /// </summary>

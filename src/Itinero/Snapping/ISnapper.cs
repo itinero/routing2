@@ -29,7 +29,7 @@ public interface ISnapper
     /// <returns>The locations on edges nearby.</returns>
     IAsyncEnumerable<SnapPoint> ToAllAsync(double longitude, double latitude,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Snaps to the given location.
     /// </summary>

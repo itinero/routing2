@@ -26,7 +26,7 @@ internal sealed class Snapper : ISnapper
     private readonly double _offsetInMeterMax;
     private readonly double _maxDistance;
     private readonly ICostFunction[] _costFunctions;
-    
+
     public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance)
     {
         _routingNetwork = routingNetwork;
@@ -35,11 +35,11 @@ internal sealed class Snapper : ISnapper
         _offsetInMeter = offsetInMeter;
         _offsetInMeterMax = offsetInMeterMax;
         _maxDistance = maxDistance;
-        
+
         _costFunctions = profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
     }
-    
-    
+
+
     private bool AcceptableFunc(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
     {
         var hasProfiles = _costFunctions.Length > 0;
@@ -204,7 +204,7 @@ internal sealed class Snapper : ISnapper
 
     /// <inheritdoc/>
     public async Task<Result<VertexId>> ToVertexAsync(double longitude, double latitude, CancellationToken cancellationToken = default)
-    { 
+    {
         (double longitude, double latitude, float? e) location = (longitude, latitude, null);
 
         // calculate one box for all locations.

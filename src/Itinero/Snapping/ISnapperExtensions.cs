@@ -24,7 +24,7 @@ public static class ISnapperExtensions
     {
         return await snapper.ToAsync(location.longitude, location.latitude, cancellationToken);
     }
-    
+
     /// <summary>
     /// Snaps to the given locations.
     /// </summary>
@@ -32,7 +32,7 @@ public static class ISnapperExtensions
     /// <param name="locations"></param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public static async IAsyncEnumerable<Result<SnapPoint>> ToAsync(this ISnapper snapper, IEnumerable<(double longitude, double latitude, float? e)> locations, 
+    public static async IAsyncEnumerable<Result<SnapPoint>> ToAsync(this ISnapper snapper, IEnumerable<(double longitude, double latitude, float? e)> locations,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var location in locations)
@@ -40,7 +40,7 @@ public static class ISnapperExtensions
             yield return await snapper.ToAsync(location, cancellationToken: cancellationToken);
         }
     }
-    
+
     /// <summary>
     /// Snap to the given location.
     /// </summary>
@@ -53,7 +53,7 @@ public static class ISnapperExtensions
     {
         return await snapper.ToVertexAsync(location.longitude, location.latitude, cancellationToken);
     }
-    
+
     /// <summary>
     /// Snaps to the given locations.
     /// </summary>
@@ -67,7 +67,7 @@ public static class ISnapperExtensions
             yield return await snapper.ToVertexAsync(location);
         }
     }
-    
+
     /// <summary>
     /// Snaps to the given vertex and edge exactly.
     /// </summary>
