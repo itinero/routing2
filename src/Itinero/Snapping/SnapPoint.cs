@@ -35,6 +35,11 @@ public readonly struct SnapPoint
     public ushort Offset { get; }
 
     /// <summary>
+    /// Returns true if this snap point is exactly at a vertex location.
+    /// </summary>
+    public bool IsVertex => this.Offset is 0 or ushort.MaxValue;
+
+    /// <summary>
     /// Gets a description of this snap point.
     /// </summary>
     /// <returns></returns>

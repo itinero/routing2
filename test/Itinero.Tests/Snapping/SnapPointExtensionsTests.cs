@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
@@ -72,8 +73,8 @@ public class SnapPointExtensionsTests
     {
         var routerDb = new RouterDb();
 
-        var result = routerDb.Latest.Snap().To(new VertexId(0, 1));
-        Assert.True(result.IsError);
+        var result = routerDb.Latest.Snap().To(new VertexId(0, 1)).ToArray();
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -86,7 +87,7 @@ public class SnapPointExtensionsTests
             Array.Empty<(int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)>());
 
         var result = routerDb.Latest.Snap().To(vertices[0]);
-        Assert.True(result.IsError);
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -101,8 +102,9 @@ public class SnapPointExtensionsTests
                     (0, 1, null)
             });
 
-        var result = routerDb.Latest.Snap().To(vertices[0]);
-        Assert.False(result.IsError);
+        var results = routerDb.Latest.Snap().To(vertices[0]);
+        Assert.Single(results);
+        var result = results.First();
         Assert.Equal(0, result.Value.Offset);
         Assert.Equal(edges[0], result.Value.EdgeId);
         return Task.CompletedTask;
@@ -120,8 +122,9 @@ public class SnapPointExtensionsTests
                     (0, 1, null)
             });
 
-        var result = routerDb.Latest.Snap().To(vertices[1]);
-        Assert.False(result.IsError);
+        var results = routerDb.Latest.Snap().To(vertices[1]);
+        Assert.Single(results);
+        var result = results.First();
         Assert.Equal(ushort.MaxValue, result.Value.Offset);
         Assert.Equal(edges[0], result.Value.EdgeId);
         return Task.CompletedTask;
@@ -209,7 +212,7 @@ public class SnapPointExtensionsTests
 
         var routerDbLatest = routerDb.Latest;
         var location = new SnapPoint(edges[0], ushort.MaxValue / 2).LocationOnNetwork(routerDbLatest);
-        var result = await routerDbLatest.Snap().Using(x => x.OffsetInMeter = 1000).ToAsync(location);
+        var result = await routerDbLatest.Snap(x => x.OffsetInMeter = 1000).ToAsync(location);
         Assert.False(result.IsError);
         Assert.True(result.Value.LocationOnNetwork(routerDbLatest).DistanceEstimateInMeter(location) < 1);
         Assert.Equal(edges[0], result.Value.EdgeId);

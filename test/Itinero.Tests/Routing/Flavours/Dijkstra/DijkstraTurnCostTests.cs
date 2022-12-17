@@ -29,8 +29,8 @@ public class DijkstraTurnCostTests
 
         var latest = routerDb.Latest;
         var result = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1),
-            latest.Snap().To(vertex3),
+            latest.Snap().To(vertex1).First(),
+            latest.Snap().To(vertex3).First(),
             (e, ep) =>
             {
                 var w = 1;
@@ -76,8 +76,8 @@ public class DijkstraTurnCostTests
 
         var latest = routerDb.Latest;
         var result = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1),
-            latest.Snap().To(vertex3),
+            latest.Snap().To(vertex1).First(),
+            latest.Snap().To(vertex3).First(),
             (e, ep) =>
             {
                 var w = 1;
@@ -119,8 +119,8 @@ public class DijkstraTurnCostTests
 
         var latest = routerDb.Latest;
         var result = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1),
-            latest.Snap().To(vertex3),
+            latest.Snap().To(vertex1).First(),
+            latest.Snap().To(vertex3).First(),
             (e, ep) =>
             {
                 var w = 1;
@@ -164,8 +164,8 @@ public class DijkstraTurnCostTests
 
         var latest = routerDb.Latest;
         var result = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1),
-            latest.Snap().To(vertex3),
+            latest.Snap().To(vertex1).First(),
+            latest.Snap().To(vertex3).First(),
             (e, ep) =>
             {
                 var tcs = e.GetTurnCostTo(ep)

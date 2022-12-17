@@ -12,7 +12,7 @@ internal class SnappingTest : FunctionalTest<SnapPoint, (RoutingNetwork routerDb
     protected override async Task<SnapPoint> ExecuteAsync(
         (RoutingNetwork routerDb, double longitude, double latitude, Profile profile) input)
     {
-        var result = await input.routerDb.Snap().Using(input.profile).ToAsync((input.longitude, input.latitude, null));
+        var result = await input.routerDb.Snap(input.profile).ToAsync((input.longitude, input.latitude, null));
 
         if (result.IsError)
         {

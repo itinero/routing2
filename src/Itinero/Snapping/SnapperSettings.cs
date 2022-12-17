@@ -16,12 +16,17 @@ public class SnapperSettings
     public bool CheckCanStopOn { get; set; } = true;
 
     /// <summary>
-    /// The offset in meter for the bounding box to check for potential edges.
+    /// The maximum distance of any snapping point or vertex returned.
+    /// </summary>
+    public double MaxDistance { get; set; } = 100;
+
+    /// <summary>
+    /// The offset in meter for the bounding box to check for potential edges or vertices.
     /// </summary>
     public double OffsetInMeter { get; set; } = 100;
 
     /// <summary>
-    /// The maximum offset in meter for the bounding box to check for potential edges. This is used when there is nothing found and is different from OffsetInMeter.
+    /// The maximum offset in meter for the bounding box to check for potential edges or vertices. This is used when there is nothing found and is different from OffsetInMeter.
     /// </summary>
     public double OffsetInMeterMax { get; set; } = 100;
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Snapping;
@@ -10,32 +11,19 @@ namespace Itinero.Network.Search;
 internal static class EdgeSearch
 {
     /// <summary>
-    /// Enumerates all edges that have at least one vertex in the given bounding box.
-    /// </summary>
-    /// <param name="network">The network.</param>
-    /// <param name="box">The box to enumerate in.</param>
-    /// <returns>An enumerator with all the vertices and their location.</returns>
-    public static IEdgeEnumerator<RoutingNetwork> SearchEdgesInBox(this RoutingNetwork network,
-        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight) box)
-    {
-        var vertices = network.SearchVerticesInBox(box);
-        return new VertexEdgeEnumerator(network, vertices.Select((i) => i.vertex));
-    }
-
-    /// <summary>
     /// Returns the closest edge to the center of the given box that has at least one vertex inside the given box.
     /// </summary>
     /// <param name="network">The network.</param>
-    /// <param name="box">The box.</param>
+    /// <param name="searchBox">The box to search in.</param>
+    /// <param name="maxDistance">The maximum distance of any snap point returned relative to the center of the search box.</param>
     /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
     /// <returns>The closest edge to the center of the box inside the given box.</returns>
     public static SnapPoint SnapInBox(this RoutingNetwork network,
         ((double longitude, double, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)
-            box,
-        Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null)
+            searchBox,
+        Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, double maxDistance = double.MaxValue)
     {
-        bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum)
+        static bool CheckAcceptable(bool? isAcceptable, IEdgeEnumerator<RoutingNetwork> eEnum, Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc)
         {
             if (isAcceptable.HasValue)
             {
@@ -51,11 +39,11 @@ internal static class EdgeSearch
             return true;
         }
 
-        var edgeEnumerator = network.SearchEdgesInBox(box);
-        var center = box.Center();
+        var edgeEnumerator = network.SearchEdgesInBox(searchBox);
+        var center = searchBox.Center();
 
         const double exactTolerance = 1;
-        var bestDistance = double.MaxValue;
+        var bestDistance = maxDistance;
         (EdgeId edgeId, ushort offset) bestSnapPoint = (EdgeId.Empty, ushort.MaxValue);
         while (edgeEnumerator.MoveNext())
         {
@@ -78,8 +66,8 @@ internal static class EdgeSearch
                 var distance = previous.DistanceEstimateInMeter(center);
                 if (distance < bestDistance)
                 {
-                    isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
-                    if (isAcceptable.HasValue && !isAcceptable.Value)
+                    isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator, acceptableFunc);
+                    if (!isAcceptable.Value)
                     {
                         continue;
                     }
@@ -104,8 +92,8 @@ internal static class EdgeSearch
                     distance = current.DistanceEstimateInMeter(center);
                     if (distance < bestDistance)
                     {
-                        isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
-                        if (isAcceptable.HasValue && !isAcceptable.Value)
+                        isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator, acceptableFunc);
+                        if (!isAcceptable.Value)
                         {
                             break;
                         }
@@ -155,8 +143,8 @@ internal static class EdgeSearch
                         continue;
                     }
 
-                    isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator);
-                    if (isAcceptable.HasValue && !isAcceptable.Value)
+                    isAcceptable = CheckAcceptable(isAcceptable, edgeEnumerator, acceptableFunc);
+                    if (!isAcceptable.Value)
                     {
                         break;
                     }
@@ -208,14 +196,15 @@ internal static class EdgeSearch
     /// Snaps all points in the given box that could potentially be snapping points.
     /// </summary>
     /// <param name="routerDb"></param>
-    /// <param name="box">The box to snap in.</param>
+    /// <param name="searchBox">The box to search in.</param>
+    /// <param name="maxDistance">The maximum distance of any snap point returned relative to the center of the search box.</param>
     /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
     /// <param name="nonOrthogonalEdges">When true the best potential location on each edge is returned, when false only orthogonal projected points.</param>
     /// <returns>All edges that could potentially be relevant snapping points, not only the closest.</returns>
     public static IEnumerable<SnapPoint> SnapAllInBox(this RoutingNetwork routerDb,
         ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight) box,
-        Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true)
+            bottomRight) searchBox,
+        Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, bool nonOrthogonalEdges = true, double maxDistance = double.MaxValue)
     {
         var edges = new HashSet<EdgeId>();
 
@@ -235,8 +224,8 @@ internal static class EdgeSearch
             return true;
         }
 
-        var edgeEnumerator = routerDb.SearchEdgesInBox(box);
-        var center = box.Center();
+        var edgeEnumerator = routerDb.SearchEdgesInBox(searchBox);
+        var center = searchBox.Center();
 
         while (edgeEnumerator.MoveNext())
         {
@@ -246,7 +235,7 @@ internal static class EdgeSearch
 
             // search for the best snap point for the current edge.
             (EdgeId edgeId, double offset, bool isOrthoganal, double distance) bestEdgeSnapPoint =
-                (EdgeId.Empty, 0, false, double.MaxValue);
+                (EdgeId.Empty, 0, false, maxDistance);
             var isAcceptable = (bool?)null;
             var completeShape = edgeEnumerator.GetCompleteShape();
             var length = 0.0;
@@ -350,5 +339,112 @@ internal static class EdgeSearch
 
             yield return new SnapPoint(bestEdgeSnapPoint.edgeId, offset);
         }
+    }
+
+    /// <summary>
+    /// Returns the closest vertex to the center of the given box.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="searchBox">The box to search in.</param>
+    /// <param name="maxDistance">The maximum distance of any vertex returned relative to the center of the search box.</param>
+    /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
+    /// <returns>The closest edge to the center of the box inside the given box.</returns>
+    public static VertexId SnapToVertexInBox(this RoutingNetwork network,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight) searchBox,
+        Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, double maxDistance = double.MaxValue)
+    {
+        static bool CheckAcceptable(IEdgeEnumerator<RoutingNetwork> eEnum, Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null)
+        {
+            if (acceptableFunc != null &&
+                !acceptableFunc.Invoke(eEnum))
+            { // edge cannot be used.
+                return false;
+            }
+
+            return true;
+        }
+        
+        var center = searchBox.Center();
+        var closestDistance = maxDistance;
+        var closest = VertexId.Empty;
+        
+        var vertices = network.SearchVerticesInBox(searchBox);
+        var edgeEnumerator = network.GetEdgeEnumerator();
+        foreach (var (vertex, location) in vertices)
+        {
+            var d = center.DistanceEstimateInMeter(location);
+            if (d > closestDistance) continue;
+
+            edgeEnumerator.MoveTo(vertex);
+            while (edgeEnumerator.MoveNext())
+            {
+                if (!CheckAcceptable(edgeEnumerator, acceptableFunc)) continue;
+
+                closest = vertex;
+                closestDistance = d;
+                break;
+            }
+        }
+
+        return closest;
+    }
+
+    /// <summary>
+    /// Snaps all vertices in the given box that could potentially be snapping vertices.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="searchBox">The box to search in.</param>
+    /// <param name="maxDistance">The maximum distance of any vertex returned relative to the center of the search box.</param>
+    /// <param name="acceptableFunc">The function to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
+    /// <returns>All the vertices within the box with at least one acceptable edge.</returns>
+    public static IEnumerable<VertexId> SnapToAllVerticesInBox(this RoutingNetwork network,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight) searchBox,
+        Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null, double maxDistance = double.MaxValue)
+    {
+        static bool CheckAcceptable(IEdgeEnumerator<RoutingNetwork> eEnum, Func<IEdgeEnumerator<RoutingNetwork>, bool>? acceptableFunc = null)
+        {
+            if (acceptableFunc != null &&
+                !acceptableFunc.Invoke(eEnum))
+            { // edge cannot be used.
+                return false;
+            }
+
+            return true;
+        }
+        
+        var center = searchBox.Center();
+        var vertices = network.SearchVerticesInBox(searchBox);
+        var edgeEnumerator = network.GetEdgeEnumerator();
+        foreach (var (vertex, location) in vertices)
+        {
+            edgeEnumerator.MoveTo(vertex);
+            
+            var d = center.DistanceEstimateInMeter(location);
+            if (d > maxDistance) continue;
+            
+            while (edgeEnumerator.MoveNext())
+            {
+                if (!CheckAcceptable(edgeEnumerator, acceptableFunc)) continue;
+
+                yield return vertex;
+                break;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Enumerates all edges that have at least one vertex in the given bounding box.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="box">The box to enumerate in.</param>
+    /// <returns>An enumerator with all the vertices and their location.</returns>
+    public static IEdgeEnumerator<RoutingNetwork> SearchEdgesInBox(this RoutingNetwork network,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight) box)
+    {
+        var vertices = network.SearchVerticesInBox(box);
+        return new VertexEdgeEnumerator(network, vertices.Select((i) => i.vertex));
     }
 }

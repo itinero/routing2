@@ -1,74 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Network;
+using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search;
 using Itinero.Profiles;
+using Itinero.Routing.Costs;
 
 namespace Itinero.Snapping;
 
-internal class Snapper : ISnapper
+/// <summary>
+/// Just like the `Snapper`, it'll snap to a location.
+/// However, the 'Snapper' will match to any road whereas the `LocationSnapper` will only snap to roads accessible to the selected profiles
+/// </summary>
+internal sealed class Snapper : ISnapper
 {
-    public Snapper(RoutingNetwork routingNetwork,
-        SnapperSettings? settings = null)
+    private readonly RoutingNetwork _routingNetwork;
+    private readonly bool _anyProfile;
+    private readonly bool _checkCanStopOn;
+    private readonly double _offsetInMeter;
+    private readonly double _offsetInMeterMax;
+    private readonly double _maxDistance;
+    private readonly ICostFunction[] _costFunctions;
+    
+    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance)
     {
-        this.RoutingNetwork = routingNetwork;
-        this.Settings = settings ?? new SnapperSettings();
+        _routingNetwork = routingNetwork;
+        _anyProfile = anyProfile;
+        _checkCanStopOn = checkCanStopOn;
+        _offsetInMeter = offsetInMeter;
+        _offsetInMeterMax = offsetInMeterMax;
+        _maxDistance = maxDistance;
+        
+        _costFunctions = profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
     }
-
-    internal RoutingNetwork RoutingNetwork { get; }
-
-    internal SnapperSettings Settings { get; }
-
-    /// <inheritdoc/>
-    public ILocationsSnapper Using(Action<SnapperSettings> settings)
+    
+    
+    private bool AcceptableFunc(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
     {
-        var s = new SnapperSettings();
-        settings?.Invoke(s);
-
-        return new Snapper(this.RoutingNetwork, s);
-    }
-
-    /// <inheritdoc/>
-    public ILocationsSnapper Using(Profile profile, Action<SnapperSettings>? settings = null)
-    {
-        var s = new SnapperSettings();
-        settings?.Invoke(s);
-
-        return new LocationsSnapper(this, new[] { profile })
+        var hasProfiles = _costFunctions.Length > 0;
+        if (!hasProfiles)
         {
-            AnyProfile = s.AnyProfile,
-            CheckCanStopOn = s.CheckCanStopOn,
-            OffsetInMeter = s.OffsetInMeter,
-            OffsetInMeterMax = s.OffsetInMeterMax
-        };
-    }
-
-    /// <inheritdoc/>
-    public IEnumerable<Result<SnapPoint>> To(IEnumerable<(VertexId vertexId, EdgeId? edgeId)> vertices)
-    {
-        var enumerator = this.RoutingNetwork.GetEdgeEnumerator();
-
-        foreach (var (vertexId, edgeId) in vertices)
+            return true;
+        }
+        else
         {
-            if (!enumerator.MoveTo(vertexId))
+            var allOk = true;
+
+            foreach (var costFunction in _costFunctions)
             {
-                yield return new Result<SnapPoint>($"Vertex {vertexId} not found.");
+                var costs = costFunction.Get(edgeEnumerator, true,
+                    Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+
+                var profileIsOk = costs.canAccess &&
+                                  (!_checkCanStopOn || costs.canStop);
+
+                if (_anyProfile && profileIsOk)
+                {
+                    return true;
+                }
+
+                allOk = profileIsOk && allOk;
+            }
+
+            return allOk;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<Result<SnapPoint>> To(VertexId vertexId, EdgeId? edgeId, bool? asDeparture = null)
+    {
+        var enumerator = _routingNetwork.GetEdgeEnumerator();
+        RoutingNetworkEdgeEnumerator? secondEnumerator = null;
+
+        if (!enumerator.MoveTo(vertexId))
+        {
+            yield break;
+        }
+
+        while (enumerator.MoveNext())
+        {
+            if (edgeId != null &&
+                enumerator.EdgeId != edgeId.Value)
+            {
                 continue;
             }
 
-            var found = false;
-            while (enumerator.MoveNext())
+            if (_costFunctions.Length == 0 ||
+                asDeparture == null)
             {
-                if (edgeId != null &&
-                    enumerator.EdgeId != edgeId.Value)
-                {
-                    continue;
-                }
-
                 if (enumerator.Forward)
                 {
                     yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, 0));
@@ -77,70 +101,139 @@ internal class Snapper : ISnapper
                 {
                     yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, ushort.MaxValue));
                 }
-
-                found = true;
-                break;
-            }
-
-            if (found)
-            {
-                continue;
-            }
-
-            if (edgeId.HasValue)
-            {
-                yield return new Result<SnapPoint>($"Edge {edgeId.Value} not found for vertex {vertexId}");
             }
             else
             {
-                yield return new Result<SnapPoint>("Cannot snap to a vertex that has no edges.");
+                if (asDeparture.Value)
+                {
+                    if (!this.AcceptableFunc(enumerator))
+                    {
+                        continue;
+                    }
+
+                    if (enumerator.Forward)
+                    {
+                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, 0));
+                    }
+                    else
+                    {
+                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, ushort.MaxValue));
+                    }
+                }
+                else
+                {
+                    secondEnumerator ??= _routingNetwork.GetEdgeEnumerator();
+                    secondEnumerator.MoveTo(enumerator.EdgeId, !enumerator.Forward);
+                    if (!this.AcceptableFunc(secondEnumerator))
+                    {
+                        continue;
+                    }
+
+                    if (enumerator.Forward)
+                    {
+                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, 0));
+                    }
+                    else
+                    {
+                        yield return new Result<SnapPoint>(new SnapPoint(enumerator.EdgeId, ushort.MaxValue));
+                    }
+                }
             }
         }
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(IEnumerable<(double longitude, double latitude, float? e)> locations,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<Result<SnapPoint>> ToAsync(
+        double longitude, double latitude,
+        CancellationToken cancellationToken = default)
     {
-        foreach (var location in locations)
-        {
-            // calculate search box.
-            var box = location.BoxAround(this.Settings.OffsetInMeter);
+        (double longitude, double latitude, float? e) location = (longitude, latitude, null);
 
-            // make sure data is loaded.
-            if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box, cancellationToken);
-
-            // break when cancelled.
-            if (cancellationToken.IsCancellationRequested) break;
-
-            // snap to closest edge.
-            var snapPoint = this.RoutingNetwork.SnapInBox(box, (_) => true);
-            if (snapPoint.EdgeId != EdgeId.Empty)
-            {
-                yield return snapPoint;
-            }
-            else
-            {
-                yield return new Result<SnapPoint>(
-                    $"Could not snap to location: {location.longitude},{location.latitude}");
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<SnapPoint> ToAllAsync((double longitude, double latitude, float? e) location, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        // calculate search box.
-        var box = location.BoxAround(this.Settings.OffsetInMeter);
+        // calculate one box for all locations.
+        var box = location.BoxAround(_offsetInMeter);
 
         // make sure data is loaded.
-        if (this.RoutingNetwork.RouterDb?.UsageNotifier != null) await this.RoutingNetwork.RouterDb.UsageNotifier.NotifyBox(this.RoutingNetwork, box, cancellationToken);
+        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+
+        // snap to closest edge.
+        var snapPoint = _routingNetwork.SnapInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
+        if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
+
+        // retry only if requested.
+        if (!(_offsetInMeter < _offsetInMeterMax))
+        {
+            return new Result<SnapPoint>(
+                $"Could not snap to location: {location.longitude},{location.latitude}");
+        }
+
+        // use bigger box.
+        box = location.BoxAround(_offsetInMeterMax);
+
+        // make sure data is loaded.
+        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box,
+            cancellationToken);
+
+        // snap to closest edge.
+        snapPoint = _routingNetwork.SnapInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
+        if (snapPoint.EdgeId != EdgeId.Empty)
+        {
+            return snapPoint;
+        }
+
+        return new Result<SnapPoint>(
+            $"Could not snap to location: {location.longitude},{location.latitude}");
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<SnapPoint> ToAllAsync(double longitude, double latitude, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // calculate one box for all locations.
+        (double longitude, double latitude, float? e) location = (longitude, latitude, null);
+        var box = location.BoxAround(_offsetInMeter);
+
+        // make sure data is loaded.
+        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap all.
-        var snapped = this.RoutingNetwork.SnapAllInBox(box, (_) => true);
+        var snapped = _routingNetwork.SnapAllInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
         foreach (var snapPoint in snapped)
         {
             yield return snapPoint;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<VertexId>> ToVertexAsync(double longitude, double latitude, CancellationToken cancellationToken = default)
+    { 
+        (double longitude, double latitude, float? e) location = (longitude, latitude, null);
+
+        // calculate one box for all locations.
+        var box = location.BoxAround(_maxDistance);
+
+        // make sure data is loaded.
+        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+
+        // snap to closest vertex.
+        return _routingNetwork.SnapToVertexInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<VertexId> ToAllVerticesAsync(double longitude, double latitude,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        (double longitude, double latitude, float? e) location = (longitude, latitude, null);
+
+        // calculate one box for all locations.
+        var box = location.BoxAround(_maxDistance);
+
+        // make sure data is loaded.
+        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+
+        // snap to closest vertex.
+        foreach (var vertex in _routingNetwork.SnapToAllVerticesInBox(box, this.AcceptableFunc,
+                     maxDistance: _maxDistance))
+        {
+            yield return vertex;
         }
     }
 }

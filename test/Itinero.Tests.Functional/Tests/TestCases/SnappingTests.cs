@@ -27,7 +27,7 @@ public class SnappingTests
     { // Belgium
         var latest = routerDb.Latest;
 
-        var brugge = routerDb.Latest.Snap().Using(profile).ToAsync(
+        var brugge = routerDb.Latest.Snap(profile).ToAsync(
               new (double longitude, double latitude, float? e)[2] {
                     (3.2203820473368694, 51.215381552063945, 0f),
                     (3.2195755643836605, 51.21651607032328, 0f)
