@@ -6,7 +6,7 @@ using Itinero.Routes;
 namespace Itinero.Instructions.Generators;
 
 /// <summary>
-/// Constructs instructions using the instruction constructors.
+/// Constructs instructions using the instruction constructors and adds an end-instruction.
 /// </summary>
 /// <remarks>
 /// Given a list of instruction constructors, this will construct a route in the following way:
@@ -16,7 +16,10 @@ namespace Itinero.Instructions.Generators;
 /// 
 ///  This means that the list of 'baseInstructionConstructors' should go from "very specialized" to "very generic", e.g.
 ///  the roundabout-instruction-constructor should be at the first position as that instruction will only trigger in specific circumstances;
-///  whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative
+///  whereas the 'follow the road/go left/go right' instruction will always trigger but is not very informative.
+///
+/// An 'end'-instruction will always an automatically be appended. Adding the 'endInstructionGenerator' via the constructor is thus unnecessary in might result in
+/// _two_ end instructions
 /// </remarks>
 public class LinearInstructionListGenerator : IInstructionListGenerator
 {
@@ -48,6 +51,8 @@ public class LinearInstructionListGenerator : IInstructionListGenerator
             }
         }
 
+        instructions.Add(new EndInstruction(indexedRoute));
+
         return instructions;
     }
 
@@ -62,6 +67,6 @@ public class LinearInstructionListGenerator : IInstructionListGenerator
             }
         }
 
-        throw new Exception("Could not generate instruction");
+        throw new Exception("Could not generate instruction for offset " + currentOffset);
     }
 }

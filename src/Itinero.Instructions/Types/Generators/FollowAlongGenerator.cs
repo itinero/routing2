@@ -16,7 +16,7 @@ internal class FollowAlongGenerator : IInstructionGenerator
         }
 
         var usedShapes = 1;
-        var totalDistance = 0.0;
+        var totalDistance = route.DistanceToNextPoint(offset);
         route.Meta[offset].Attributes.TryGetValue("name", out var name);
         while (offset + usedShapes < route.Last)
         {
@@ -33,37 +33,41 @@ internal class FollowAlongGenerator : IInstructionGenerator
                 // Different street!
                 break;
             }
+            route.Meta[offset + usedShapes].Attributes.TryGetValue("junction", out var junctionType);
+            if (junctionType == "roundabout")
+            {
+                // We cancel on roundabouts, in order to generate a roundabout-instruction for them 
+                break;
+            }
+
 
             var distance = route.DistanceToNextPoint(offset + usedShapes);
             totalDistance += distance;
 
             usedShapes++;
         }
-
-        if (usedShapes <= 2)
-        {
-            // To short for a follow along
-            return null;
-        }
-
+        // In degrees. Difference in bearing between start- and end
         var totalChange =
             (route.ArrivingDirectionAt(offset + usedShapes) - route.ArrivingDirectionAt(offset)).NormalizeDegrees();
 
-        // A gentle bend also does turn, at least a few degrees per meter
-        if (Math.Abs(totalChange) < 45)
+        // A follow along is not allowed to turn more then 45 degrees in total; otherwise this is a 'followBend'
+        if (Math.Abs(totalChange) >= 45)
         {
-            // THere is little change - does it at least turn a bit?
-            if (Math.Abs(totalChange) / totalDistance >= 2.5)
-            {
-                // Nope, we turn more then 2.5°/m, this is 'followBend'-material
-                return null;
-            }
+            return null;
         }
+
+        // THere is little directional change - does it turn at most a little bit?
+        if (Math.Abs(totalChange) / totalDistance >= 2.5)
+        {
+            // Nope, we turn more then 2.5°/m, this is 'followBend'-material
+            return null;
+        }
+
 
         return new FollowAlongInstruction(
             route,
             offset,
-            offset + usedShapes - 1,
+            offset + usedShapes,
             totalChange
         );
     }

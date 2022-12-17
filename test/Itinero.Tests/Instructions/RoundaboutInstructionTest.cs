@@ -12,8 +12,8 @@ public class RoundaboutInstructionTest
     [Fact]
     public void GenerateRoundabout_FirstExitRight_GetsInstruction()
     {
-        //https://www.openstreetmap.org/#map=19/51.21170/3.21733
-        // Coming from the south-west
+        // https://www.openstreetmap.org/#map=19/51.20655/3.18477
+        // Coming from the south-west (Legeweg); turning right onto St.Hubertuslaan
         var route = new Route
         {
             Profile = "bicycle.something",
@@ -49,16 +49,16 @@ public class RoundaboutInstructionTest
 
         var instr = (RoundaboutInstruction)gen.Generate(new IndexedRoute(route), 1);
         Assert.NotNull(instr);
-        Assert.Equal("right", instr.TurnDegrees.DegreesToText());
+        Assert.Equal(-64, instr.TurnDegrees);
         Assert.Equal(1, instr.ExitNumber);
-        Assert.Equal(4, instr.ShapeIndexEnd);
+        Assert.Equal(5, instr.ShapeIndexEnd);
     }
 
     [Fact]
     public void GenerateRoundabout_StraightOn_GetsInstruction2ndExit()
     {
-        //https://www.openstreetmap.org/#map=19/51.21170/3.21733
-        // Coming from the south-west
+        // https://geojson.io/#map=17.22/51.206777/3.184407
+        // Coming from the Legeweg (west); we cross the roundabout and end up going mostly straight/slightly to the left
         var route = new Route();
         route.Profile = "bicycle.something";
         route.Shape = new List<(double longitude, double latitude, float? e)> {
@@ -103,7 +103,7 @@ public class RoundaboutInstructionTest
 
         var instr = (RoundaboutInstruction)gen.Generate(new IndexedRoute(route), 1);
         Assert.NotNull(instr);
-        Assert.Equal("straight on", instr.TurnDegrees.DegreesToText());
+        Assert.Equal(31, instr.TurnDegrees);
         Assert.Equal(2, instr.ExitNumber);
         Assert.Equal(6, instr.ShapeIndexEnd);
         Assert.Equal(2, instr.ExitNumber);

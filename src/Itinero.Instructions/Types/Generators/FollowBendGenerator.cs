@@ -68,7 +68,7 @@ internal class FollowBendGenerator : IInstructionGenerator
         route.Meta[offset].Attributes.TryGetValue("name", out var name);
 
 
-        var totalDistance = 0.0;
+        var totalDistance = route.DistanceToNextPoint(offset);
         // We walk forward and detect a true gentle bend:
         while (offset + usedShapes < route.Last)
         {
@@ -130,7 +130,7 @@ internal class FollowBendGenerator : IInstructionGenerator
         return new FollowBendInstruction(
             route,
             offset,
-            offset + usedShapes - 1,
+            offset + usedShapes,
             angleDiff
         );
     }

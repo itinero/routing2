@@ -41,7 +41,7 @@ public class IndexedRoute
     public List<(double longitude, double latitude, float? e)> Shape => _route.Shape;
 
     /// <summary>
-    /// The last shape point.
+    /// The index of the last shape point.
     /// </summary>
     public int Last => this.Shape.Count - 1;
 
