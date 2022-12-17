@@ -18,14 +18,14 @@
 <tr><th>Assembly:</th><td>Itinero</td></tr>
 <tr><th>File(s):</th><td><a href="#homerunnerworkrouting2routing2srcItineroSnappingSnapPointExtensionscs" class="navigatetohash">/home/runner/work/routing2/routing2/src/Itinero/Snapping/SnapPointExtensions.cs</a></td></tr>
 <tr><th>Covered lines:</th><td>47</td></tr>
-<tr><th>Uncovered lines:</th><td>28</td></tr>
-<tr><th>Coverable lines:</th><td>75</td></tr>
-<tr><th>Total lines:</th><td>184</td></tr>
-<tr><th>Line coverage:</th><td>62.6% (47 of 75)</td></tr>
+<tr><th>Uncovered lines:</th><td>38</td></tr>
+<tr><th>Coverable lines:</th><td>85</td></tr>
+<tr><th>Total lines:</th><td>206</td></tr>
+<tr><th>Line coverage:</th><td>55.2% (47 of 85)</td></tr>
 <tr><th>Covered branches:</th><td>21</td></tr>
-<tr><th>Total branches:</th><td>38</td></tr>
-<tr><th>Branch coverage:</th><td>55.2% (21 of 38)</td></tr>
-<tr><th>Tag:</th><td>190_3720697695</td></tr>
+<tr><th>Total branches:</th><td>44</td></tr>
+<tr><th>Branch coverage:</th><td>47.7% (21 of 44)</td></tr>
+<tr><th>Tag:</th><td>191_3720813934</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -37,6 +37,7 @@
 <tr><td title="Direction(Itinero.Snapping.SnapPoint,Itinero.Network.RoutingNetwork,Itinero.Geo.Directions.DirectionEnum,System.Double&amp;,System.Double,System.Double)"><a href="#file0_line63" class="navigatetohash">Direction(...)</a></td><td>100%</td><td>1</td><td>0%</td></tr>
 <tr><td title="DirectionFromAngle(Itinero.Snapping.SnapPoint,Itinero.Network.RoutingNetwork,System.Double,System.Double&amp;,System.Double,System.Double)"><a href="#file0_line82" class="navigatetohash">DirectionFromAngle(...)</a></td><td>62.5%</td><td>24</td><td>64%</td></tr>
 <tr><td title="Angle(Itinero.Snapping.SnapPoint,Itinero.Network.RoutingNetwork,System.Double)"><a href="#file0_line127" class="navigatetohash">Angle(...)</a></td><td>42.85%</td><td>14</td><td>58.97%</td></tr>
+<tr><td title="GetVertex(Itinero.Snapping.SnapPoint,Itinero.Network.RoutingNetwork)"><a href="#file0_line192" class="navigatetohash">GetVertex(...)</a></td><td>0%</td><td>6</td><td>0%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -227,10 +228,32 @@
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line181"></a><code>181</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;angleRadians&nbsp;=&nbsp;DirectionCalculator.Angle(location2,&nbsp;location1,&nbsp;toNorth);</code></td></tr>
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line182"></a><code>182</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;angleRadians.ToDegrees().NormalizeDegrees();</code></td></tr>
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line183"></a><code>183</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line184"></a><code>184</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line184"></a><code>184</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line185"></a><code>185</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;summary&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line186"></a><code>186</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;Gets&nbsp;the&nbsp;vertex&nbsp;for&nbsp;the&nbsp;snap&nbsp;point,&nbsp;but&nbsp;only&nbsp;if&nbsp;it&nbsp;represents&nbsp;an&nbsp;exact&nbsp;vertex.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line187"></a><code>187</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line188"></a><code>188</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;snapPoint&quot;&gt;The&nbsp;snap&nbsp;point,&nbsp;representing&nbsp;a&nbsp;vertex.&lt;/param&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line189"></a><code>189</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;routingNetwork&quot;&gt;The&nbsp;routing&nbsp;network.&lt;/param&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line190"></a><code>190</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;returns&gt;The&nbsp;vertex.&lt;/returns&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line191"></a><code>191</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;VertexId&nbsp;GetVertex(this&nbsp;SnapPoint&nbsp;snapPoint,&nbsp;RoutingNetwork&nbsp;routingNetwork)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line192"></a><code>192</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line193"></a><code>193</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!snapPoint.IsVertex)&nbsp;throw&nbsp;new&nbsp;ArgumentOutOfRangeException(nameof(snapPoint),&nbsp;&quot;Snap&nbsp;point&nbsp;is&nbsp;not&nbsp;a&nbsp;vertex&quot;);</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line194"></a><code>194</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line195"></a><code>195</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;enumerator&nbsp;=&nbsp;routingNetwork.GetEdgeEnumerator();</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line196"></a><code>196</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!enumerator.MoveTo(snapPoint.EdgeId))</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line197"></a><code>197</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;new&nbsp;Exception(&quot;Edge&nbsp;not&nbsp;found,&nbsp;has&nbsp;snap&nbsp;point&nbsp;been&nbsp;created&nbsp;on&nbsp;the&nbsp;given&nbsp;network?&quot;);</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line198"></a><code>198</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits, 0 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line199"></a><code>199</code></td><td class="percentagebar percentagebar0"><i class="icon-fork"></i></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(snapPoint.Offset&nbsp;==&nbsp;0)</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line200"></a><code>200</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line201"></a><code>201</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;enumerator.Tail;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line202"></a><code>202</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line203"></a><code>203</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line204"></a><code>204</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;enumerator.Head;</code></td></tr>
+<tr class="coverableline" title="Not covered (0 visits)" data-coverage="{'AllTestMethods': {'VC': '0', 'LVS': 'red'}}"><td class="red">&nbsp;</td><td class="leftmargin rightmargin right">0</td><td class="rightmargin right"><a id="file0_line205"></a><code>205</code></td><td></td><td class="lightred"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line206"></a><code>206</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />12/17/2022 - 15:40:30<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />12/17/2022 - 16:17:46<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -239,6 +262,7 @@
 <a href="#file0_line63" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - Direction(...)"><i class="icon-cube"></i>Direction(...)</a><br />
 <a href="#file0_line82" class="navigatetohash percentagebar percentagebar60" title="Line coverage: 64% - DirectionFromAngle(...)"><i class="icon-cube"></i>DirectionFromAngle(...)</a><br />
 <a href="#file0_line127" class="navigatetohash percentagebar percentagebar50" title="Line coverage: 58.9% - Angle(...)"><i class="icon-cube"></i>Angle(...)</a><br />
+<a href="#file0_line192" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetVertex(...)"><i class="icon-cube"></i>GetVertex(...)</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
