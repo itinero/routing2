@@ -22,9 +22,11 @@ internal class ProfileCostFunctionCached : ICostFunction
     }
 
     public (bool canAccess, bool canStop, double cost, double turnCost) Get(
-        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
-        IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
+        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
+        previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
+
         // get edge factor and length.
         EdgeFactor factor;
         var edgeTypeId = edgeEnumerator.EdgeTypeId;

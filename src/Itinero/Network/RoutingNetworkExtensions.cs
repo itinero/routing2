@@ -85,7 +85,13 @@ public static class RoutingNetworkSnapshotExtensions
         return new ProfileCached(profile, cache ?? new EdgeFactorCache(), turnCostFactorCache ?? new TurnCostFactorCache());
     }
 
-    internal static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
+    /// <summary>
+    /// Gets the cost function for the given profile.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="profile">The profile.</param>
+    /// <returns>The cost function.</returns>
+    public static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
     {
         if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile.Name, out var cache, out var turnCostFactorCache))
         {

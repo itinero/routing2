@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -16,9 +17,11 @@ internal class ProfileCostFunction : ICostFunction
     }
 
     public (bool canAccess, bool canStop, double cost, double turnCost) Get(
-        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
-        IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
+        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
+        previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
+
         var factor = _profile.FactorInEdgeDirection(edgeEnumerator);
         var length = edgeEnumerator.Length ??
                      (uint)(edgeEnumerator.EdgeLength() * 100);

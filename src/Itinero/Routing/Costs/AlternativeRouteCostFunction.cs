@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
@@ -24,9 +25,11 @@ internal class AlternativeRouteCostFunction : ICostFunction
         _alreadyVisitedCostFactor = alreadyVisitedCostFactor;
     }
 
-    public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward,
-        IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges)
+    public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
+        previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
+
         if (_moreCostlyEdges.Contains(edgeEnumerator.EdgeId))
         {
             var (canAccess, canStop, cost, turnCost) = _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);

@@ -181,4 +181,26 @@ public static class SnapPointExtensions
         var angleRadians = DirectionCalculator.Angle(location2, location1, toNorth);
         return angleRadians.ToDegrees().NormalizeDegrees();
     }
+
+    /// <summary>
+    /// Gets the vertex for the snap point, but only if it represents an exact vertex.
+    /// </summary>
+    /// <param name="snapPoint">The snap point, representing a vertex.</param>
+    /// <param name="routingNetwork">The routing network.</param>
+    /// <returns>The vertex.</returns>
+    public static VertexId GetVertex(this SnapPoint snapPoint, RoutingNetwork routingNetwork)
+    {
+        if (!snapPoint.IsVertex) throw new ArgumentOutOfRangeException(nameof(snapPoint), "Snap point is not a vertex");
+
+        var enumerator = routingNetwork.GetEdgeEnumerator();
+        if (!enumerator.MoveTo(snapPoint.EdgeId))
+            throw new Exception("Edge not found, has snap point been created on the given network?");
+
+        if (snapPoint.Offset == 0)
+        {
+            return enumerator.Tail;
+        }
+
+        return enumerator.Head;
+    }
 }

@@ -39,7 +39,6 @@ internal sealed class Snapper : ISnapper
         _costFunctions = profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
     }
 
-
     private bool AcceptableFunc(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
     {
         var hasProfiles = _costFunctions.Length > 0;

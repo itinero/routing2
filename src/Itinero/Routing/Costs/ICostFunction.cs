@@ -9,7 +9,7 @@ namespace Itinero.Routing.Costs;
 /// <summary>
 /// Abstract definition of a cost function.
 /// </summary>
-internal interface ICostFunction
+public interface ICostFunction
 {
     /// <summary>
     /// Gets the costs associated with the given network edge.
@@ -20,5 +20,5 @@ internal interface ICostFunction
     /// <returns>The access flags, stop flags, cost and turn cost.</returns>
     public (bool canAccess, bool canStop, double cost, double turnCost) Get(
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator,
-        bool forward, IEnumerable<(EdgeId edgeId, byte? turn)> previousEdges);
+        bool forward = true, IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null);
 }
