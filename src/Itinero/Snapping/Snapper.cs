@@ -71,7 +71,7 @@ internal sealed class Snapper : ISnapper
     }
 
     /// <inheritdoc/>
-    public IEnumerable<Result<SnapPoint>> To(VertexId vertexId, EdgeId? edgeId, bool? asDeparture = null)
+    public IEnumerable<Result<SnapPoint>> To(VertexId vertexId, bool asDeparture = true)
     {
         var enumerator = _routingNetwork.GetEdgeEnumerator();
         RoutingNetworkEdgeEnumerator? secondEnumerator = null;
@@ -83,14 +83,7 @@ internal sealed class Snapper : ISnapper
 
         while (enumerator.MoveNext())
         {
-            if (edgeId != null &&
-                enumerator.EdgeId != edgeId.Value)
-            {
-                continue;
-            }
-
-            if (_costFunctions.Length == 0 ||
-                asDeparture == null)
+            if (_costFunctions.Length == 0)
             {
                 if (enumerator.Forward)
                 {
@@ -103,7 +96,7 @@ internal sealed class Snapper : ISnapper
             }
             else
             {
-                if (asDeparture.Value)
+                if (asDeparture)
                 {
                     if (!this.AcceptableFunc(enumerator))
                     {
@@ -139,6 +132,19 @@ internal sealed class Snapper : ISnapper
                 }
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public Result<SnapPoint> To(EdgeId edgeId, ushort offset, bool forward = true)
+    {
+        var enumerator = _routingNetwork.GetEdgeEnumerator();
+
+        if (!enumerator.MoveTo(edgeId, forward)) return new Result<SnapPoint>("Edge not found");
+
+        if (!this.AcceptableFunc(enumerator))
+            return new Result<SnapPoint>("Edge cannot be snapped to by configured profiles in the given direction");
+
+        return new Result<SnapPoint>(new SnapPoint(edgeId, offset));
     }
 
     /// <inheritdoc/>

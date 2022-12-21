@@ -74,13 +74,15 @@ public static class ISnapperExtensions
     /// <param name="snapper">The snapper.</param>
     /// <param name="vertexId">The vertex to snap to.</param>
     /// <param name="edgeId">The edge.</param>
+    /// <param name="asDeparture">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure at the given vertex, when true, or arrival, when false.</param>
     /// <returns>The result if any. Snapping will fail if a vertex has no edges.</returns>
-    public static Result<SnapPoint> ToExact(this ISnapper snapper, VertexId vertexId, EdgeId edgeId)
+    public static Result<SnapPoint> ToExact(this ISnapper snapper, VertexId vertexId, EdgeId edgeId, bool asDeparture = true)
     {
-        var result = snapper.To(vertexId, edgeId, null);
-        using var enumerator = result.GetEnumerator();
-        if (!enumerator.MoveNext()) return new Result<SnapPoint>("Vertex probably does not have edge as neighbour or edge id not snappable by configured profiles");
-
-        return enumerator.Current ?? throw new Exception("Current cannot be null");
+        var result = snapper.To(vertexId, asDeparture);
+        foreach (var result1 in result)
+        {
+            if (result1.Value.EdgeId == edgeId) return result1;
+        }
+        return new Result<SnapPoint>("Vertex probably does not have edge as neighbour or edge id not snappable by configured profiles");
     }
 }

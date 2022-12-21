@@ -54,8 +54,16 @@ public interface ISnapper
     /// Snaps to the given vertex.
     /// </summary>
     /// <param name="vertexId">The vertex.</param>
-    /// <param name="edgeId">The edge id, if any.</param>
-    /// <param name="asDeparture">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure, when true, or arrival, when false.</param>
-    /// <returns>The results if any. Snapping will fail if a vertex has no edges or the provided cannot be accessed by any configured profiles. Only one snap point will be returned if edge id is set, otherwise all possible snap points at the vertex will be returned.</returns>
-    IEnumerable<Result<SnapPoint>> To(VertexId vertexId, EdgeId? edgeId = null, bool? asDeparture = true);
+    /// <param name="asDeparture">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure at the given vertex, when true, or arrival, when false.</param>
+    /// <returns>The results if any. Snapping will fail if a vertex has no edges or cannot be accessed by any configured profiles.</returns>
+    IEnumerable<Result<SnapPoint>> To(VertexId vertexId, bool asDeparture = true);
+
+    /// <summary>
+    /// Snaps to the given vertex.
+    /// </summary>
+    /// <param name="edgeId">The edge id.</param>
+    /// <param name="offset">The vertex.</param>
+    /// <param name="forward">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure, when true, or arrival, when false.</param>
+    /// <returns>The results if any. If the edge cannot be accessed by any configured profiles.</returns>
+    Result<SnapPoint> To(EdgeId edgeId, ushort offset, bool forward = true);
 }
