@@ -17,7 +17,7 @@ public static class IRouterOneToOneExtensions
     /// <param name="oneToOneRouter">The router.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>The path.</returns>
-    public static async Task<Result<Path>> Path(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken)
+    public static async Task<Result<Path>> PathAsync(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken = default)
     {
         var sources = new[] { oneToOneRouter.Source };
         var targets = new[] { oneToOneRouter.Target };
@@ -39,7 +39,7 @@ public static class IRouterOneToOneExtensions
     /// <returns>The route.</returns>
     public static async Task<Result<Route>> CalculateAsync(this IRouterOneToOne oneToOneRouter, CancellationToken cancellationToken = default)
     {
-        var path = await oneToOneRouter.Path(cancellationToken);
+        var path = await oneToOneRouter.PathAsync(cancellationToken);
         if (path.IsError)
         {
             return new Result<Route>(path.ErrorMessage);
