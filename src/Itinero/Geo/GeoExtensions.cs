@@ -91,7 +91,7 @@ public static class GeoExtensions
     public static (double longitude, double latitude, float? e) OffsetWithDistanceX(
         this (double longitude, double latitude, float? e) coordinate, double meter)
     {
-        var offset = 0.001;
+        const double offset = 0.001;
         var offsetLon = (coordinate.longitude + offset, coordinate.latitude).AddElevation(coordinate.e);
         var lonDistance = offsetLon.DistanceEstimateInMeter(coordinate);
 
@@ -109,12 +109,84 @@ public static class GeoExtensions
         this (double longitude, double latitude, float? e) coordinate,
         double meter)
     {
-        var offset = 0.001;
+        const double offset = 0.001;
         var offsetLat = (coordinate.longitude, coordinate.latitude + offset).AddElevation(coordinate.e);
         var latDistance = offsetLat.DistanceEstimateInMeter(coordinate);
 
         return (coordinate.longitude,
             coordinate.latitude + (meter / latDistance * offset)).AddElevation(coordinate.e);
+    }
+
+    /// <summary>
+    /// Calculates an offset position along the line segment.
+    /// </summary>
+    /// <param name="line">The line segment.</param>
+    /// <param name="position">The position in meters relative to the start point.</param>
+    /// <returns>The offset coordinate.</returns>
+    public static (double longitude, double latitude, float? e) PositionAlongLineInMeters(
+        this IEnumerable<(double longitude, double latitude, float? e)> line, double position)
+    {
+        // ReSharper disable once PossibleMultipleEnumeration
+        var length = line.DistanceEstimateInMeter();
+
+        // ReSharper disable once PossibleMultipleEnumeration
+        return line.PositionAlongLineInMeters(length, position);
+    }
+
+    /// <summary>
+    /// Calculates an offset position along the line segment.
+    /// </summary>
+    /// <param name="line">The line segment.</param>
+    /// <param name="offset">The offset [0,1].</param>
+    /// <returns>The offset coordinate.</returns>
+    public static (double longitude, double latitude, float? e) PositionAlongLine(
+        this IEnumerable<(double longitude, double latitude, float? e)> line, double offset)
+    {
+        // ReSharper disable once PossibleMultipleEnumeration
+        var length = line.DistanceEstimateInMeter();
+        var targetLength = length * (offset / (double)ushort.MaxValue);
+
+        // ReSharper disable once PossibleMultipleEnumeration
+        return line.PositionAlongLineInMeters(length, targetLength);
+    }
+    
+    private static (double longitude, double latitude, float? e) PositionAlongLineInMeters(
+        this IEnumerable<(double longitude, double latitude, float? e)> line, double length, double targetLength)
+    {
+        var currentLength = 0.0;
+        
+        // ReSharper disable once PossibleMultipleEnumeration
+        using var enumerator = line.GetEnumerator();
+        if (!enumerator.MoveNext()) throw new Exception("Line doesn't have 2 locations");
+        var previous = enumerator.Current;
+        while (enumerator.MoveNext())
+        {
+            var current = enumerator.Current;
+            var segmentLength = current.DistanceEstimateInMeter(previous);
+
+            // check if the target is in this segment or not.
+            if (segmentLength + currentLength < targetLength)
+            {
+                currentLength += segmentLength;
+                previous = current;
+                continue;
+            }
+
+            var segmentOffsetLength = segmentLength + currentLength - targetLength;
+            var segmentOffset = 1 - (segmentOffsetLength / segmentLength);
+
+            float? e = null;
+            if (previous.e.HasValue &&
+                current.e.HasValue)
+            {
+                e = (float)(previous.e.Value + (segmentOffset * (current.e.Value - previous.e.Value)));
+            }
+
+            return (previous.longitude + (segmentOffset * (current.longitude - previous.longitude)),
+                previous.latitude + (segmentOffset * (current.latitude - previous.latitude)), e);
+        }
+
+        return previous;
     }
 
     /// <summary>
@@ -319,11 +391,13 @@ public static class GeoExtensions
     {
         var det = (double)((line.A() * thisLine.B()) - (thisLine.A() * line.B()));
         if (Math.Abs(det) <= E)
-        { // lines are parallel; no intersections.
+        {
+            // lines are parallel; no intersections.
             return null;
         }
         else
-        { // lines are not the same and not parallel so they will intersect.
+        {
+            // lines are not the same and not parallel so they will intersect.
             var x = ((thisLine.B() * line.C()) - (line.B() * thisLine.C())) / det;
             var y = ((line.A() * thisLine.C()) - (thisLine.A() * line.C())) / det;
 
@@ -365,7 +439,8 @@ public static class GeoExtensions
                 e = thisLine.coordinate1.e;
             }
             else
-            { // calculate offset and calculate an estimate of the elevation.
+            {
+                // calculate offset and calculate an estimate of the elevation.
                 if (Math.Abs(thisLine.A()) > Math.Abs(thisLine.B()))
                 {
                     var diffLat = Math.Abs(thisLine.A());
@@ -373,7 +448,7 @@ public static class GeoExtensions
 
                     e = (float)(((thisLine.coordinate2.e - thisLine.coordinate1.e) *
                                  (diffLatIntersection / diffLat)) +
-                                 thisLine.coordinate1.e);
+                                thisLine.coordinate1.e);
                 }
                 else
                 {
@@ -382,7 +457,7 @@ public static class GeoExtensions
 
                     e = (float)(((thisLine.coordinate2.e - thisLine.coordinate1.e) *
                                  (diffLonIntersection / diffLon)) +
-                                 thisLine.coordinate1.e);
+                                thisLine.coordinate1.e);
                 }
             }
 
