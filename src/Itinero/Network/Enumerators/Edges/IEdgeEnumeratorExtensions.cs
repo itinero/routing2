@@ -36,6 +36,8 @@ public static class IEdgeEnumeratorExtensions
     /// <returns>The length in meters.</returns>
     public static double EdgeLength(this IEdgeEnumerator enumerator)
     {
+        if (enumerator.Length != null) return enumerator.Length.Value / 100.0;
+        
         return enumerator.GetCompleteShape().DistanceEstimateInMeter();
     }
 
