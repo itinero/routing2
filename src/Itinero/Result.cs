@@ -110,6 +110,16 @@ public class Result<T>
     }
 
     /// <summary>
+    /// Converts this result.
+    /// </summary>
+    /// <typeparam name="TOther">A derived type.</typeparam>
+    /// <returns></returns>
+    public static Result<T> Create<TOther>(Result<TOther> result) where TOther : T
+    {
+        return new Result<T>(result);
+    }
+
+    /// <summary>
     /// Returns a description.
     /// </summary>
     /// <returns></returns>
