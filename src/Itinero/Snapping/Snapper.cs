@@ -219,7 +219,10 @@ internal sealed class Snapper : ISnapper
         await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest vertex.
-        return _routingNetwork.SnapToVertexInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
+        var vertex = _routingNetwork.SnapToVertexInBox(box, _costFunctions.Length > 0 ? this.AcceptableFunc : null, maxDistance: _maxDistance);
+        if (vertex.IsEmpty()) return new Result<VertexId>("No vertex in range found");
+
+        return vertex;
     }
 
     /// <inheritdoc/>
