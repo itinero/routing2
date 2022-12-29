@@ -57,6 +57,36 @@ public static class PathExtensions
     }
 
     /// <summary>
+    /// Calculates the length in meters of this path.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <returns>The length in meters.</returns>
+    /// <exception cref="InvalidDataException"></exception>
+    public static double LengthInMeters(this Path path)
+    {
+        var weight = 0.0;
+
+        var edgeEnumerator = path.RoutingNetwork.GetEdgeEnumerator();
+        foreach (var (edge, direction, offset1, offset2) in path)
+        {
+            if (!edgeEnumerator.MoveTo(edge, direction))
+            {
+                throw new InvalidDataException("An edge in the path is not found!");
+            }
+
+            var edgeWeight = edgeEnumerator.EdgeLength();
+            if (offset1 != 0 || offset2 != ushort.MaxValue)
+            {
+                edgeWeight *= (double)(offset2 - offset1) / ushort.MaxValue;
+            }
+
+            weight += edgeWeight;
+        }
+
+        return weight;
+    }
+
+    /// <summary>
     /// Returns true if the path is next.
     /// </summary>
     /// <param name="path">The path.</param>
@@ -88,6 +118,27 @@ public static class PathExtensions
         var firstVertex = edgeEnumerator.Tail;
 
         return lastVertex == firstVertex;
+    }
+
+    /// <summary>
+    /// Merges the paths.
+    /// </summary>
+    /// <param name="path">The first part.</param>
+    /// <param name="paths">The next parts.</param>
+    /// <returns>The merged path.</returns>
+    public static Path? Merge(this Path path, params Path[] paths)
+    {
+        IEnumerable<Path> Enumerate()
+        {
+            yield return path;
+
+            foreach (var p in paths)
+            {
+                yield return p;
+            }
+        }
+
+        return Enumerate().Merge();
     }
 
     /// <summary>
