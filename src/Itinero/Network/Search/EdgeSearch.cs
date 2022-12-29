@@ -376,6 +376,13 @@ internal static class EdgeSearch
             var d = center.DistanceEstimateInMeter(location);
             if (d > closestDistance) continue;
 
+            if (acceptableFunc == null)
+            {
+                closest = vertex;
+                closestDistance = d;
+                continue;
+            }
+            
             edgeEnumerator.MoveTo(vertex);
             while (edgeEnumerator.MoveNext())
             {
