@@ -27,7 +27,7 @@ public readonly struct EdgeId : IEquatable<EdgeId>
         this.TileId = tileId;
         this.LocalId = localId;
     }
-    
+
     /// <summary>
     /// Creates a new cross edge id.
     /// </summary>

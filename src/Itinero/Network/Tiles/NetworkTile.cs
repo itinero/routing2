@@ -182,7 +182,7 @@ internal partial class NetworkTile
                     nameof(vertex1));
 
             // generate a new cross tile id and store pointer to edge.
-            edgeId = EdgeId.CrossEdgeId(_tileId,_nextCrossTileId);
+            edgeId = EdgeId.CrossEdgeId(_tileId, _nextCrossTileId);
             _crossEdgePointers.EnsureMinimumSize(_nextCrossTileId + 1);
             _crossEdgePointers[_nextCrossTileId] = _nextEdgeId;
             _nextCrossTileId++;
@@ -301,7 +301,7 @@ internal partial class NetworkTile
     /// Returns true if there are deleted edges.
     /// </summary>
     internal bool HasDeletedEdges => _deletedEdges != null;
-    
+
     /// <summary>
     /// Removes all the deleted edges.
     /// </summary>
@@ -315,7 +315,7 @@ internal partial class NetworkTile
         {
             _pointers[i] = 0;
         }
-        
+
         // redo edges, skipping deleted edges.
         var nextEdgeId = _nextEdgeId;
         var p = 0U;
@@ -350,7 +350,7 @@ internal partial class NetworkTile
             {
                 if (_deletedEdges.Contains(EdgeId.CrossEdgeId(vertex1.TileId, crossEdgeId.Value))) continue;
             }
-            
+
             // no need to overwrite identical data.
             if (p == newP) continue;
 

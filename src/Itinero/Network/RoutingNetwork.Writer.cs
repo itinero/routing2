@@ -7,7 +7,7 @@ using Itinero.Network.Writer;
 namespace Itinero.Network;
 
 public sealed partial class RoutingNetwork
-{ 
+{
     private readonly object _writeSync = new();
     private RoutingNetworkWriter? _writer;
 

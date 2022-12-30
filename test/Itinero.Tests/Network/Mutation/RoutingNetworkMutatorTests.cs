@@ -146,7 +146,7 @@ public class RoutingNetworkMutatorTests
         cost = enumerator.GetTurnCostToTail(fromOrder.Value).First();
         Assert.Equal((byte)4, cost.cost);
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_DeleteEdge_ShouldRemoveEdge()
     {
@@ -164,7 +164,7 @@ public class RoutingNetworkMutatorTests
 
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -175,7 +175,7 @@ public class RoutingNetworkMutatorTests
         edgeEnumerator.MoveTo(vertex1);
         Assert.False(edgeEnumerator.MoveNext());
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_DeleteEdge_ShouldNotEnumerateEdge()
     {
@@ -193,7 +193,7 @@ public class RoutingNetworkMutatorTests
 
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -204,7 +204,7 @@ public class RoutingNetworkMutatorTests
             Assert.False(edgeEnumerator.MoveNext());
         }
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_TwoEdges_DeleteSecondEdge_ShouldNotEnumerateSecondEdge()
     {
@@ -223,7 +223,7 @@ public class RoutingNetworkMutatorTests
             writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -232,11 +232,11 @@ public class RoutingNetworkMutatorTests
             var edgeEnumerator = mutator.GetEdgeEnumerator();
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
-            Assert.True(edgeEnumerator.Attributes.Contains(("highway", "residential")));
+            Assert.Contains(("highway", "residential"), edgeEnumerator.Attributes);
             Assert.False(edgeEnumerator.MoveNext());
         }
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_TwoEdges_DeleteFirstEdge_ShouldNotEnumerateFirstEdge()
     {
@@ -255,7 +255,7 @@ public class RoutingNetworkMutatorTests
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
             writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -264,11 +264,11 @@ public class RoutingNetworkMutatorTests
             var edgeEnumerator = mutator.GetEdgeEnumerator();
             edgeEnumerator.MoveTo(vertex1);
             Assert.True(edgeEnumerator.MoveNext());
-            Assert.True(edgeEnumerator.Attributes.Contains(("highway", "not-residential")));
+            Assert.Contains(("highway", "not-residential"), edgeEnumerator.Attributes);
             Assert.False(edgeEnumerator.MoveNext());
         }
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_TwoEdges_DeleteFirstEdge_ShouldRemoveFirstEdge()
     {
@@ -287,7 +287,7 @@ public class RoutingNetworkMutatorTests
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
             writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -297,10 +297,10 @@ public class RoutingNetworkMutatorTests
         var edgeEnumerator = routerDb.Latest.GetEdgeEnumerator();
         edgeEnumerator.MoveTo(vertex1);
         Assert.True(edgeEnumerator.MoveNext());
-        Assert.True(edgeEnumerator.Attributes.Contains(("highway", "not-residential")));
+        Assert.Contains(("highway", "not-residential"), edgeEnumerator.Attributes);
         Assert.False(edgeEnumerator.MoveNext());
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_TwoEdges_DeleteSecondEdge_ShouldRemoveSecondEdge()
     {
@@ -319,7 +319,7 @@ public class RoutingNetworkMutatorTests
             writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -329,10 +329,10 @@ public class RoutingNetworkMutatorTests
         var edgeEnumerator = routerDb.Latest.GetEdgeEnumerator();
         edgeEnumerator.MoveTo(vertex1);
         Assert.True(edgeEnumerator.MoveNext());
-        Assert.True(edgeEnumerator.Attributes.Contains(("highway", "residential")));
+        Assert.Contains(("highway", "residential"), edgeEnumerator.Attributes);
         Assert.False(edgeEnumerator.MoveNext());
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_DeleteCrossTileEdge_ShouldNotEnumerateEdge()
     {
@@ -350,7 +350,7 @@ public class RoutingNetworkMutatorTests
 
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {
@@ -361,7 +361,7 @@ public class RoutingNetworkMutatorTests
             Assert.False(edgeEnumerator.MoveNext());
         }
     }
-    
+
     [Fact]
     public void RouterDb_GetAsMutable_DeleteCrossTileEdge_ShouldRemoveEdge()
     {
@@ -379,7 +379,7 @@ public class RoutingNetworkMutatorTests
 
             edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
         }
-        
+
         // delete edge.
         using (var mutator = routerDb.GetMutableNetwork())
         {

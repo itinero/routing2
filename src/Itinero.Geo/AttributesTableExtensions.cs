@@ -23,7 +23,7 @@ public static class AttributesTableExtensions
             yield return (name, attributesTable[name].ToInvariantString());
         }
     }
-        
+
     /// <summary>
     /// Returns a string representing the object in a culture invariant way.
     /// </summary>

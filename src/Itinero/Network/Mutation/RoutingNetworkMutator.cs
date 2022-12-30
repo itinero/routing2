@@ -50,7 +50,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     private NetworkTile? GetTileForRead(uint localTileId)
     {
         if (_tiles.Length <= localTileId) return null;
-        
+
 
         // get tile, if any.
         var tile = _tiles[localTileId];
@@ -59,7 +59,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         // check edge type map.
         var edgeTypeMap = _network.RouterDb.GetEdgeTypeMap();
         if (tile.EdgeTypeMapId == edgeTypeMap.id) return tile;
-        
+
         // tile.EdgeTypeMapId indicates the version of the used edgeTypeMap
         // If the id is different, the loaded tile needs updating; e.g. because a cost function has been changed
         tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
@@ -164,7 +164,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// The zoom level.
     /// </summary>
     public int Zoom => _network.Zoom;
-    
+
     /// <summary>
     /// Adds a new vertex.
     /// </summary>
@@ -230,7 +230,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         var edgeTypeId = attributes != null ? (uint?)edgeTypeFunc(attributes) : null;
         var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId);
         if (tail.TileId == head.TileId) return edge1;
-        
+
         // this edge crosses tiles, also add an extra edge to the other tile.
         (tile, _) = this.GetTileForWrite(head.TileId);
         tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId);
@@ -250,7 +250,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
 
         var vertex1 = edgeEnumerator.Tail;
         var vertex2 = edgeEnumerator.Head;
-        
+
         var (tile, _) = this.GetTileForWrite(vertex1.TileId);
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
@@ -312,9 +312,9 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
                 // at this point edge ids change but it right when the mutator is disposed.
                 // for a user perspective this is not that strange.
                 tile.value.RemoveDeletedEdges();
-            }   
+            }
         }
-        
+
         return new(_network.RouterDb, _tiles, _network.Zoom);
     }
 

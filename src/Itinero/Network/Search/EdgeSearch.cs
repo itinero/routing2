@@ -382,7 +382,7 @@ internal static class EdgeSearch
                 closestDistance = d;
                 continue;
             }
-            
+
             edgeEnumerator.MoveTo(vertex);
             while (edgeEnumerator.MoveNext())
             {

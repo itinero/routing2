@@ -149,12 +149,12 @@ public static class GeoExtensions
         // ReSharper disable once PossibleMultipleEnumeration
         return line.PositionAlongLineInMeters(length, targetLength);
     }
-    
+
     private static (double longitude, double latitude, float? e) PositionAlongLineInMeters(
         this IEnumerable<(double longitude, double latitude, float? e)> line, double length, double targetLength)
     {
         var currentLength = 0.0;
-        
+
         // ReSharper disable once PossibleMultipleEnumeration
         using var enumerator = line.GetEnumerator();
         if (!enumerator.MoveNext()) throw new Exception("Line doesn't have 2 locations");

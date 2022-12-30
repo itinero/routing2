@@ -16,7 +16,7 @@ public static class CoordinateExtensions
     {
         return (coordinate.X, coordinate.Y, null);
     }
-    
+
     /// <summary>
     /// Returns an estimate of the distance between the two given coordinates.
     /// </summary>
