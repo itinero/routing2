@@ -27,6 +27,17 @@ public readonly struct EdgeId : IEquatable<EdgeId>
         this.TileId = tileId;
         this.LocalId = localId;
     }
+    
+    /// <summary>
+    /// Creates a new cross edge id.
+    /// </summary>
+    /// <param name="tileId">The tile id.</param>
+    /// <param name="localId">The local id.</param>
+    /// <returns>An edge id represented as a id crossing tiles.</returns>
+    public static EdgeId CrossEdgeId(uint tileId, uint localId)
+    {
+        return new EdgeId(tileId, EdgeId.MinCrossId + localId);
+    }
 
     /// <summary>
     /// Gets or sets the tile id.

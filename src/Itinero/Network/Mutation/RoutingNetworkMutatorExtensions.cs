@@ -23,11 +23,15 @@ public static class RoutingNetworkMutatorExtensions
         return (longitude, latitude, e);
     }
 
+    /// <summary>
+    /// Adds a new vertex.
+    /// </summary>
+    /// <param name="routingNetwork">The mutable network.</param>
+    /// <param name="location">The location.</param>
+    /// <returns>The vertex id.</returns>
     public static VertexId AddVertex(this RoutingNetworkMutator routingNetwork,
         (double longitude, double latitude, float? e) location)
     {
         return routingNetwork.AddVertex(location.longitude, location.latitude, location.e);
     }
-
-    public static void PrepareFor(this RoutingNetworkMutator routingNetworkMutator, Profile profile) { }
 }

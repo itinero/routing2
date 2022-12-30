@@ -76,16 +76,12 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
     /// <returns>True if the move succeeds and the edge exists.</returns>
     public bool MoveTo(EdgeId edge, bool forward)
     {
-        if (this.Tile == null)
-        {
-            throw new InvalidOperationException("Move to graph tile first.");
-        }
+        if (this.Tile == null) throw new InvalidOperationException("Move to graph tile first.");
 
-        if (this.TileId != edge.TileId)
-        {
-            throw new ArgumentOutOfRangeException(nameof(edge),
+        if (this.TileId != edge.TileId) throw new ArgumentOutOfRangeException(nameof(edge),
                 "Cannot move to edge not in current tile, move to the tile first.");
-        }
+
+        if (this.Tile.IsEdgeDeleted(edge)) return false;
 
         _headLocation = null;
         _tailLocation = null;
@@ -188,89 +184,93 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
     /// <returns>True when there is a new edge.</returns>
     public bool MoveNext()
     {
-        _headLocation = null;
-        _tailLocation = null;
-        _headOrder = null;
-        _tailOrder = null;
-        this.EdgePointer = uint.MaxValue;
-
-        if (this.Tile == null)
+        while (true)
         {
-            throw new InvalidOperationException("Move to graph tile first.");
-        }
+            _headLocation = null;
+            _tailLocation = null;
+            _headOrder = null;
+            _tailOrder = null;
+            this.EdgePointer = uint.MaxValue;
 
-        if (_nextEdgePointer == uint.MaxValue)
-        {
-            // move to the first edge.
-            _nextEdgePointer = this.Tile.VertexEdgePointer(_localId).DecodeNullableData();
-        }
+            if (this.Tile == null) throw new InvalidOperationException("Move to graph tile first.");
 
-        if (_nextEdgePointer == null)
-        {
-            // no more data available.
-            return false;
-        }
+            if (_nextEdgePointer == uint.MaxValue)
+            {
+                // move to the first edge.
+                _nextEdgePointer = this.Tile.VertexEdgePointer(_localId).DecodeNullableData();
+            }
 
-        // decode edge data.
-        this.EdgePointer = _nextEdgePointer.Value;
-        this.EdgeId = new EdgeId(this.Tile.TileId, _nextEdgePointer.Value);
-        var size = this.Tile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
-        var vertex1 = new VertexId(tileId, localId);
-        _nextEdgePointer += size;
-        size = this.Tile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
-        var vertex2 = new VertexId(tileId, localId);
-        _nextEdgePointer += size;
-        size = this.Tile.DecodePointer(_nextEdgePointer.Value, out var vp1);
-        _nextEdgePointer += size;
-        size = this.Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
-        _nextEdgePointer += size;
+            if (_nextEdgePointer == null)
+            {
+                // no more data available.
+                return false;
+            }
 
-        if (vertex1.TileId != vertex2.TileId)
-        {
-            size = this.Tile.DecodeEdgeCrossId(_nextEdgePointer.Value, out var edgeCrossId);
+            // decode edge data.
+            this.EdgePointer = _nextEdgePointer.Value;
+            this.EdgeId = new EdgeId(this.Tile.TileId, _nextEdgePointer.Value);
+            var size = this.Tile.DecodeVertex(_nextEdgePointer.Value, out var localId, out var tileId);
+            var vertex1 = new VertexId(tileId, localId);
+            _nextEdgePointer += size;
+            size = this.Tile.DecodeVertex(_nextEdgePointer.Value, out localId, out tileId);
+            var vertex2 = new VertexId(tileId, localId);
+            _nextEdgePointer += size;
+            size = this.Tile.DecodePointer(_nextEdgePointer.Value, out var vp1);
+            _nextEdgePointer += size;
+            size = this.Tile.DecodePointer(_nextEdgePointer.Value, out var vp2);
             _nextEdgePointer += size;
 
-            this.EdgeId = new EdgeId(vertex1.TileId, edgeCrossId);
+            if (vertex1.TileId != vertex2.TileId)
+            {
+                size = this.Tile.DecodeEdgeCrossId(_nextEdgePointer.Value, out var edgeCrossId);
+                _nextEdgePointer += size;
+
+                this.EdgeId = new EdgeId(vertex1.TileId, edgeCrossId);
+            }
+
+            // get edge profile id.
+            size = this.Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            _nextEdgePointer += size;
+            this.EdgeTypeId = edgeProfileId;
+
+            // get length.
+            size = this.Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
+            _nextEdgePointer += size;
+            this.Length = length;
+
+            // get tail and head order.
+            this.Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
+            _nextEdgePointer++;
+
+            // get shape and attribute pointers.
+            size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
+            _nextEdgePointer += size;
+            size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
+
+            if (vertex1.TileId == this.Tile.TileId && vertex1.LocalId == _localId)
+            {
+                _nextEdgePointer = vp1;
+
+                this.Head = vertex2;
+                this.Forward = true;
+            }
+            else
+            {
+                _nextEdgePointer = vp2;
+
+                this.Head = vertex1;
+                this.Forward = false;
+
+                (_headOrder, _tailOrder) = (_tailOrder, _headOrder);
+            }
+
+            if (this.Tile.IsEdgeDeleted(this.EdgeId))
+            {
+                continue;
+            }
+
+            return true;
         }
-
-        // get edge profile id.
-        size = this.Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
-        _nextEdgePointer += size;
-        this.EdgeTypeId = edgeProfileId;
-
-        // get length.
-        size = this.Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var length);
-        _nextEdgePointer += size;
-        this.Length = length;
-
-        // get tail and head order.
-        this.Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
-        _nextEdgePointer++;
-
-        // 
-        size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
-        _nextEdgePointer += size;
-        size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
-
-        if (vertex1.TileId == this.Tile.TileId &&
-            vertex1.LocalId == _localId)
-        {
-            _nextEdgePointer = vp1;
-
-            this.Head = vertex2;
-            this.Forward = true;
-        }
-        else
-        {
-            _nextEdgePointer = vp2;
-
-            this.Head = vertex1;
-            this.Forward = false;
-
-            (_headOrder, _tailOrder) = (_tailOrder, _headOrder);
-        }
-
-        return true;
     }
 
     /// <summary>

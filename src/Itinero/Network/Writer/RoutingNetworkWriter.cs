@@ -8,10 +8,11 @@ using Itinero.Network.Tiles;
 namespace Itinero.Network.Writer;
 
 /// <summary>
-/// A writer to write to an instance. This writer will never change existing data, only add new data.
+/// A writer to write to a network. This writer will never change existing data, only add new data.
 ///
 /// This writer can:
-/// - add new vertices and edges.
+/// - add new vertices
+/// - add new edges.
 ///
 /// This writer cannot mutate existing data, only add new.
 /// </summary>
@@ -33,6 +34,13 @@ public class RoutingNetworkWriter : IDisposable
         return _network.GetEdgeEnumerator();
     }
 
+    /// <summary>
+    /// Adds a new vertex.
+    /// </summary>
+    /// <param name="longitude">The longitude.</param>
+    /// <param name="latitude">The latitude.</param>
+    /// <param name="elevation">The elevation.</param>
+    /// <returns>The vertex id.</returns>
     public VertexId AddVertex(double longitude, double latitude, float? elevation = null)
     {
         // get the local tile id.
@@ -45,31 +53,40 @@ public class RoutingNetworkWriter : IDisposable
         return tile.AddVertex(longitude, latitude, elevation);
     }
 
-    public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
+    /// <summary>
+    /// Adds a new edge.
+    /// </summary>
+    /// <param name="tail">The tail vertex.</param>
+    /// <param name="head">The head vertex.</param>
+    /// <param name="shape">The shape, if any.</param>
+    /// <param name="attributes">The attributes, if any.</param>
+    /// <param name="edgeTypeId">The edge type id, if any.</param>
+    /// <param name="length">The length, if any.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public EdgeId AddEdge(VertexId tail, VertexId head,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
         IEnumerable<(string key, string value)>? attributes = null, uint? edgeTypeId = null,
         uint? length = null)
     {
         // get the tile (or create it).
-        var (tile, edgeTypeMap) = _network.GetTileForWrite(vertex1.TileId);
-        if (tile == null)
-        {
-            throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-        }
+        var (tile, edgeTypeMap) = _network.GetTileForWrite(tail.TileId);
+        if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
         // get the edge type id.
         edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
 
         // get the edge length in centimeters.
-        if (!_network.TryGetVertex(vertex1, out var longitude, out var latitude, out var e))
+        if (!_network.TryGetVertex(tail, out var longitude, out var latitude, out var e))
         {
-            throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex1} not found.");
+            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {tail} not found.");
         }
 
         var vertex1Location = (longitude, latitude, e);
-        if (!_network.TryGetVertex(vertex2, out longitude, out latitude, out e))
+        if (!_network.TryGetVertex(head, out longitude, out latitude, out e))
         {
-            throw new ArgumentOutOfRangeException(nameof(vertex1), $"Vertex {vertex2} not found.");
+            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {head} not found.");
         }
 
         var vertex2Location = (longitude, latitude, e);
@@ -77,15 +94,15 @@ public class RoutingNetworkWriter : IDisposable
         length ??= (uint)(vertex1Location.DistanceEstimateInMeterShape(
             vertex2Location, shape) * 100);
 
-        var edge1 = tile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
-        if (vertex1.TileId == vertex2.TileId)
+        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
+        if (tail.TileId == head.TileId)
         {
             return edge1;
         }
 
         // this edge crosses tiles, also add an extra edge to the other tile.
-        (tile, _) = _network.GetTileForWrite(vertex2.TileId);
-        tile.AddEdge(vertex1, vertex2, shape, attributes, edge1, edgeTypeId, length);
+        (tile, _) = _network.GetTileForWrite(head.TileId);
+        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length);
 
         return edge1;
     }
@@ -120,6 +137,7 @@ public class RoutingNetworkWriter : IDisposable
         return _network.HasTile(localTileId);
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         _network.ClearWriter();
