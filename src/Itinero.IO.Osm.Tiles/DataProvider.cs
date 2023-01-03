@@ -33,7 +33,7 @@ internal class DataProvider : IDataUseListener
         _idMap = new GlobalIdMap();
 
         // get notified when a location/area is used.
-        routerDb.UsageNotifier.AddListener(this);
+        routerDb.Latest.UsageNotifier.AddListener(this);
     }
 
     private DataProvider(RouterDb routerDb, string baseUrl, uint zoom,
@@ -45,7 +45,7 @@ internal class DataProvider : IDataUseListener
         _loadedTiles = loadedTiles;
 
         // get notified when a location/area is used.
-        routerDb.UsageNotifier.AddListener(this);
+        routerDb.Latest.UsageNotifier.AddListener(this);
     }
 
     Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId, CancellationToken cancellationToken)

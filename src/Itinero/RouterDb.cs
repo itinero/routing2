@@ -72,9 +72,4 @@ public sealed partial class RouterDb : IRouterDbMutable
     /// Gets the latest.
     /// </summary>
     public RoutingNetwork Latest { get; private set; }
-
-    /// <summary>
-    /// Gets the usage notifier.
-    /// </summary>
-    public DataUseNotifier UsageNotifier { get; } = new();
 }

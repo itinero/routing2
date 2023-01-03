@@ -158,7 +158,7 @@ internal sealed class Snapper : ISnapper
         var box = location.BoxAround(_offsetInMeter);
 
         // make sure data is loaded.
-        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest edge.
         var snapPoint = _routingNetwork.SnapInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
@@ -175,7 +175,7 @@ internal sealed class Snapper : ISnapper
         box = location.BoxAround(_offsetInMeterMax);
 
         // make sure data is loaded.
-        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box,
+        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box,
             cancellationToken);
 
         // snap to closest edge.
@@ -197,7 +197,7 @@ internal sealed class Snapper : ISnapper
         var box = location.BoxAround(_offsetInMeter);
 
         // make sure data is loaded.
-        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap all.
         var snapped = _routingNetwork.SnapAllInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
@@ -216,7 +216,7 @@ internal sealed class Snapper : ISnapper
         var box = location.BoxAround(_maxDistance);
 
         // make sure data is loaded.
-        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest vertex.
         var vertex = _routingNetwork.SnapToVertexInBox(box, _costFunctions.Length > 0 ? this.AcceptableFunc : null, maxDistance: _maxDistance);
@@ -235,7 +235,7 @@ internal sealed class Snapper : ISnapper
         var box = location.BoxAround(_maxDistance);
 
         // make sure data is loaded.
-        await _routingNetwork.RouterDb.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
+        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest vertex.
         foreach (var vertex in _routingNetwork.SnapToAllVerticesInBox(box, this.AcceptableFunc,

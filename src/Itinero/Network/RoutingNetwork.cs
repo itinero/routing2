@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Itinero.Data.Usage;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Enumerators.Vertices;
@@ -55,6 +56,11 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
 
         return tile;
     }
+
+    /// <summary>
+    /// Gets the usage notifier.
+    /// </summary>
+    public DataUseNotifier UsageNotifier { get; } = new();
 
     internal IEnumerator<uint> GetTileEnumerator()
     {
