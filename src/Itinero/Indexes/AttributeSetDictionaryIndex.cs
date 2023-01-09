@@ -84,13 +84,13 @@ public sealed class AttributeSetDictionaryIndex : AttributeSetIndex
 
         return edgeProfileId;
     }
-    
+
     /// <inheritdoc/>
     public override Task WriteTo(Stream stream)
     {
         // write version #.
         stream.WriteVarInt32(2);
-        
+
         // write type.
         stream.WriteWithSize("dictionary-index");
 
@@ -108,14 +108,14 @@ public sealed class AttributeSetDictionaryIndex : AttributeSetIndex
 
         return Task.CompletedTask;
     }
-    
+
     /// <inheritdoc/>
     public override Task ReadFrom(Stream stream)
     {
         // get version #.
         var version = stream.ReadVarInt32();
         if (version != 2) throw new InvalidDataException("Unexpected version #.");
-        
+
         // read type.
         var type = stream.ReadWithSizeString();
         if (type != "dictionary-index") throw new InvalidDataException("Unexpected index type.");

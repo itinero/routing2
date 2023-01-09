@@ -15,7 +15,7 @@ public sealed partial class RouterDb
     public static RouterDb ReadFrom(Stream stream, RouterDbReadSettings? settings = null)
     {
         settings ??= new RouterDbReadSettings();
-        
+
         return new(stream, settings);
     }
 

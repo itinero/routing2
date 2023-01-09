@@ -13,7 +13,7 @@ public class RouterDbReadSettings
     /// The attribute set index for edge type attributes.
     /// </summary>
     public AttributeSetIndex EdgeTypeAttributeSetIndex { get; set; } = new AttributeSetDictionaryIndex();
-    
+
     /// <summary>
     /// The attribute set index for turn cost attributes.
     /// </summary>
