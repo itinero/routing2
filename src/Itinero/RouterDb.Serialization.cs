@@ -10,10 +10,13 @@ public sealed partial class RouterDb
     /// Reads a router db from the given stream.
     /// </summary>
     /// <param name="stream">The stream.</param>
+    /// <param name="settings">The settings.</param>
     /// <returns>The router db as read from the stream.</returns>
-    public static RouterDb ReadFrom(Stream stream)
+    public static RouterDb ReadFrom(Stream stream, RouterDbReadSettings? settings = null)
     {
-        return new(stream);
+        settings ??= new RouterDbReadSettings();
+        
+        return new(stream, settings);
     }
 
     /// <summary>

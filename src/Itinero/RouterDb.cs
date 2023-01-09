@@ -36,15 +36,15 @@ public sealed partial class RouterDb : IRouterDbMutable
         configuration ??= RouterDbConfiguration.Default;
 
         this.Latest = new RoutingNetwork(this, configuration.Zoom);
-        _edgeTypeIndex = new AttributeSetIndex(configuration.EdgeTypes);
+        _edgeTypeIndex = configuration.EdgeTypeIndex;
         this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default;
-        _turnCostTypeIndex = new AttributeSetIndex(configuration.TurnCostTypes);
+        _turnCostTypeIndex = configuration.TurnCostTypeIndex;
         _turnCostTypeMap = configuration.TurnCostTypeMap ?? AttributeSetMap.Default;
 
         this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
     }
 
-    private RouterDb(Stream stream)
+    private RouterDb(Stream stream, RouterDbReadSettings settings)
     {
         // check version #.
         var version = stream.ReadVarInt32();
@@ -57,8 +57,10 @@ public sealed partial class RouterDb : IRouterDbMutable
         this.Latest = stream.ReadFrom(this);
 
         // read edge type map data.
-        _edgeTypeIndex = AttributeSetIndex.ReadFrom(stream);
-        _turnCostTypeIndex = AttributeSetIndex.ReadFrom(stream);
+        _edgeTypeIndex = settings.EdgeTypeAttributeSetIndex;
+        _edgeTypeIndex.ReadFrom(stream);
+        _turnCostTypeIndex = settings.TurnCostAttributeSetIndex;
+        _turnCostTypeIndex.ReadFrom(stream);
 
         // read attributes.
         this.Meta = new List<(string key, string value)>(this.ReadAttributesFrom(stream));

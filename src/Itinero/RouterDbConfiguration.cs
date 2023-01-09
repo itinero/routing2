@@ -16,7 +16,7 @@ public class RouterDbConfiguration
     /// <summary>
     /// Gets or sets the initial edge types.
     /// </summary>
-    public List<IReadOnlyList<(string key, string value)>>? EdgeTypes { get; set; }
+    public AttributeSetIndex EdgeTypeIndex { get; set; } = new AttributeSetDictionaryIndex();
 
     /// <summary>
     /// Gets or sets the edge type map.
@@ -26,7 +26,7 @@ public class RouterDbConfiguration
     /// <summary>
     /// Gets or sets the initial turn cost types.
     /// </summary>
-    public List<IReadOnlyList<(string key, string value)>>? TurnCostTypes { get; set; }
+    public AttributeSetIndex TurnCostTypeIndex { get; set; } = new AttributeSetDictionaryIndex();
 
     /// <summary>
     /// Gets or sets the turn cost type map.
