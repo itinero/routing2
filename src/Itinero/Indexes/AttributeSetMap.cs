@@ -36,5 +36,8 @@ public class AttributeSetMap
     /// <summary>
     /// A default empty map.
     /// </summary>
-    public static readonly AttributeSetMap Default = new();
+    public static AttributeSetMap Default()
+    {
+        return new AttributeSetMap();
+    }
 }

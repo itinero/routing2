@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Itinero.Network;
 
 namespace Itinero.Tests.Network;
@@ -49,8 +50,7 @@ public static class RoutingNetworkScaffolding
             IEnumerable<(string key, string attribute)>? attributes)[]? edges)
     {
         edges ??=
-            new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
-                IEnumerable<(string key, string attribute)>? attributes)[0];
+            Array.Empty<(int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape, IEnumerable<(string key, string attribute)>? attributes)>();
         using var writer = network.GetWriter();
         var vertexIds = new VertexId[vertices.Length];
         for (var v = 0; v < vertices.Length; v++)

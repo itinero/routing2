@@ -33,13 +33,13 @@ public sealed partial class RouterDb : IRouterDbMutable
     /// <param name="configuration">The configuration.</param>
     public RouterDb(RouterDbConfiguration? configuration = null)
     {
-        configuration ??= RouterDbConfiguration.Default;
+        configuration ??= RouterDbConfiguration.Default();
 
         this.Latest = new RoutingNetwork(this, configuration.Zoom);
         _edgeTypeIndex = configuration.EdgeTypeIndex;
-        this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default;
+        this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default();
         _turnCostTypeIndex = configuration.TurnCostTypeIndex;
-        _turnCostTypeMap = configuration.TurnCostTypeMap ?? AttributeSetMap.Default;
+        _turnCostTypeMap = configuration.TurnCostTypeMap ?? AttributeSetMap.Default();
 
         this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
     }
@@ -65,8 +65,8 @@ public sealed partial class RouterDb : IRouterDbMutable
         // read attributes.
         this.Meta = new List<(string key, string value)>(this.ReadAttributesFrom(stream));
 
-        this.EdgeTypeMap = AttributeSetMap.Default;
-        _turnCostTypeMap = AttributeSetMap.Default;
+        this.EdgeTypeMap = AttributeSetMap.Default();
+        _turnCostTypeMap = AttributeSetMap.Default();
         this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
     }
 

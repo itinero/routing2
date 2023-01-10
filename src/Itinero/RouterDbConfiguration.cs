@@ -36,5 +36,5 @@ public class RouterDbConfiguration
     /// <summary>
     /// Gets the default configuration.
     /// </summary>
-    public static readonly RouterDbConfiguration Default = new() { Zoom = 14 };
+    public static RouterDbConfiguration Default() { return new() { Zoom = 14 }; }
 }
