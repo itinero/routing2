@@ -29,7 +29,7 @@ public sealed partial class RouterDb
     {
         if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
                                                                   $"Check {nameof(this.HasMutableNetwork)} to check for a current mutable.");
-        
+
         _mutable = mutable;
         return _mutable;
     }
