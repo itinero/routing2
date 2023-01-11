@@ -19,13 +19,18 @@ public sealed partial class RouterDb
     /// <returns>The mutable version.</returns>
     public RoutingNetworkMutator GetMutableNetwork()
     {
-        if (_mutable != null)
-        {
-            throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
+        if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
                                                 $"Check {nameof(this.HasMutableNetwork)} to check for a current mutable.");
-        }
 
-        _mutable = this.Latest.GetAsMutable();
+        return this.Latest.GetAsMutable();
+    }
+
+    internal RoutingNetworkMutator SetAsMutable(RoutingNetworkMutator mutable)
+    {
+        if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
+                                                                  $"Check {nameof(this.HasMutableNetwork)} to check for a current mutable.");
+        
+        _mutable = mutable;
         return _mutable;
     }
 
