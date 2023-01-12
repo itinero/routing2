@@ -38,6 +38,28 @@ public static class RouterDbExtensions
     }
 
     /// <summary>
+    /// Gets a geojson representation of given edge in the routing network.
+    /// </summary>
+    /// <param name="routerDb">The routing network.</param>
+    /// <param name="edgeId">The edge id.</param>
+    /// <returns>A string with geojson.</returns>
+    public static string ToGeoJson(this RoutingNetwork routerDb, EdgeId edgeId)
+    {
+        var edgeEnumerator = routerDb.GetEdgeEnumerator();
+        if (!edgeEnumerator.MoveTo(edgeId)) throw new Exception("Edge not found");
+
+        using var stream = new MemoryStream();
+        using (var jsonWriter = new Utf8JsonWriter(stream))
+        {
+            jsonWriter.WriteFeatureCollectionStart();
+            jsonWriter.WriteEdgeFeature(edgeEnumerator);
+            jsonWriter.WriteFeatureCollectionEnd();
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    /// <summary>
     /// Writes features to the given json writer.
     /// </summary>
     /// <param name="jsonWriter">The json writer.</param>

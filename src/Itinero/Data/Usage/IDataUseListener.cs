@@ -10,13 +10,19 @@ namespace Itinero.Data.Usage;
 public interface IDataUseListener
 {
     /// <summary>
+    /// Clones this data use listener for a new network, if possible.
+    /// </summary>
+    /// <param name="routingNetwork">The routing network.</param>
+    /// <returns>A new data use listener or null if not needed or possible.</returns>
+    IDataUseListener? CloneForNewNetwork(RoutingNetwork routingNetwork);
+
+    /// <summary>
     /// Called when a vertex is touched.
     /// </summary>
     /// <param name="network">The network.</param>
     /// <param name="vertex">The vertex that was touched.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     Task VertexTouched(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Called when an area in general is going to be touched.

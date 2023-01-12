@@ -48,6 +48,11 @@ internal class DataProvider : IDataUseListener
         routerDb.Latest.UsageNotifier.AddListener(this);
     }
 
+    IDataUseListener? IDataUseListener.CloneForNewNetwork(RoutingNetwork routingNetwork)
+    {
+        return null;
+    }
+
     Task IDataUseListener.VertexTouched(RoutingNetwork network, VertexId vertexId, CancellationToken cancellationToken)
     {
         if (_loadedTiles.Contains(vertexId.TileId))

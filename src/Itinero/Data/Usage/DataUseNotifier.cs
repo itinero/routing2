@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
@@ -20,6 +21,14 @@ public class DataUseNotifier
     public void AddListener(IDataUseListener listener)
     {
         _listeners.Add(listener);
+    }
+
+    internal IEnumerable<IDataUseListener> RegisteredListeners
+    {
+        get
+        {
+            return _listeners.ToList();
+        }
     }
 
     internal async Task NotifyVertex(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default)

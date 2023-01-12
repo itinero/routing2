@@ -1,4 +1,5 @@
-﻿using Itinero.Network.DataStructures;
+﻿using Itinero.Data.Usage;
+using Itinero.Network.DataStructures;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Mutation;
@@ -10,6 +11,8 @@ internal interface IRoutingNetworkMutable
     RouterDb RouterDb { get; }
 
     SparseArray<NetworkTile?> Tiles { get; }
+
+    DataUseNotifier UsageNotifier { get; }
 
     void ClearMutator();
 }

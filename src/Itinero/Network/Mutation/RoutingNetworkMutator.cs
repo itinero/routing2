@@ -315,7 +315,19 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
             }
         }
 
-        return new(_network.RouterDb, _tiles, _network.Zoom);
+        // create the new network.
+        var routingNetwork = new RoutingNetwork(_network.RouterDb, _tiles, _network.Zoom);
+
+        // check if listeners need to be cloned/copied over.
+        foreach (var listener in _network.UsageNotifier.RegisteredListeners)
+        {
+            var clonedListener = listener.CloneForNewNetwork(routingNetwork);
+            if (clonedListener == null) continue;
+
+            routingNetwork.UsageNotifier.AddListener(clonedListener);
+        }
+
+        return routingNetwork;
     }
 
     /// <inheritdoc/>
