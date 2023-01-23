@@ -4,19 +4,27 @@ using Itinero.Routing.Costs.Caches;
 
 namespace Itinero.Profiles;
 
-internal class ProfileCached
+/// <summary>
+/// A cached version of a profile.
+/// </summary>
+public class ProfileCached
 {
     private readonly Profile _profile;
     private readonly EdgeFactorCache _edgeFactorCache;
     private readonly TurnCostFactorCache _turnCostFactorCache;
 
-    public ProfileCached(Profile profile, EdgeFactorCache edgeFactorCache, TurnCostFactorCache turnCostFactorCache)
+    internal ProfileCached(Profile profile, EdgeFactorCache edgeFactorCache, TurnCostFactorCache turnCostFactorCache)
     {
         _profile = profile;
         _edgeFactorCache = edgeFactorCache;
         _turnCostFactorCache = turnCostFactorCache;
     }
 
+    /// <summary>
+    /// Gets an edge factor for the current edge.
+    /// </summary>
+    /// <param name="edgeEnumerator">The enumerator with the current edge.</param>
+    /// <returns>The edge factor.</returns>
     public EdgeFactor Factor(RoutingNetworkEdgeEnumerator edgeEnumerator)
     {
         // get edge factor and length.

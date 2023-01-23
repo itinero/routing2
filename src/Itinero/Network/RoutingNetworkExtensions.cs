@@ -75,7 +75,13 @@ public static class RoutingNetworkSnapshotExtensions
         }
     }
 
-    internal static ProfileCached GetCachedProfile(this RoutingNetwork network, Profile profile)
+    /// <summary>
+    /// Gets a cached version of the given profile.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="profile">The profile.</param>
+    /// <returns>The cached profile.</returns>
+    public static ProfileCached GetCachedProfile(this RoutingNetwork network, Profile profile)
     {
         if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile.Name, out var cache, out var turnCostFactorCache))
         {
