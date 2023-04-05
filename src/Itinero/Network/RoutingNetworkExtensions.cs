@@ -41,25 +41,12 @@ public static class RoutingNetworkSnapshotExtensions
     /// <param name="routingNetwork">The routing network.</param>
     /// <param name="box">The bounding box, if any.</param>
     /// <returns>An enumerable with all vertices.</returns>
-    public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork,
-        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight)? box = null)
+    public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork)
     {
-        if (box == null)
+        var enumerator = routingNetwork.GetVertexEnumerator();
+        while (enumerator.MoveNext())
         {
-            var enumerator = routingNetwork.GetVertexEnumerator();
-            while (enumerator.MoveNext())
-            {
-                yield return enumerator.Current;
-            }
-        }
-        else
-        {
-            var vertices = routingNetwork.SearchVerticesInBox(box.Value);
-            foreach (var (vertex, _) in vertices)
-            {
-                yield return vertex;
-            }
+            yield return enumerator.Current;
         }
     }
 
@@ -69,12 +56,10 @@ public static class RoutingNetworkSnapshotExtensions
     /// <param name="routingNetwork">The routing network.</param>
     /// <param name="box">The bounding box, if any.</param>
     /// <returns>An enumerable with all edges.</returns>
-    public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork,
-        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
-            bottomRight)? box = null)
+    public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork)
     {
         var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
-        foreach (var vertex in routingNetwork.GetVertices(box))
+        foreach (var vertex in routingNetwork.GetVertices())
         {
             if (!edgeEnumerator.MoveTo(vertex))
             {

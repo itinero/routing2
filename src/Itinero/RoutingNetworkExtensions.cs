@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routing;
+using Itinero.Search;
 using Itinero.Snapping;
 
 namespace Itinero;
@@ -74,5 +75,15 @@ public static class RoutingNetworkExtensions
     public static IRouter Route(this RoutingNetwork routingNetwork, RoutingSettings settings)
     {
         return new Router(routingNetwork, settings);
+    }
+
+    /// <summary>
+    /// Creates a query to search the network.
+    /// </summary>
+    /// <param name="routingNetwork">The routing network to search.</param>
+    /// <returns>A query.</returns>
+    public static IRoutingNetworkQuery Search(this RoutingNetwork routingNetwork)
+    {
+        return new RoutingNetworkQuery(routingNetwork);
     }
 }
