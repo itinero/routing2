@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Itinero.Network.Enumerators.Edges;
+using Itinero.Network.Search;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 using Itinero.Routing.Costs.Caches;
@@ -38,13 +39,27 @@ public static class RoutingNetworkSnapshotExtensions
     /// Gets an enumerable with all vertices.
     /// </summary>
     /// <param name="routingNetwork">The routing network.</param>
+    /// <param name="box">The bounding box, if any.</param>
     /// <returns>An enumerable with all vertices.</returns>
-    public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork)
+    public static IEnumerable<VertexId> GetVertices(this RoutingNetwork routingNetwork,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight)? box = null)
     {
-        var enumerator = routingNetwork.GetVertexEnumerator();
-        while (enumerator.MoveNext())
+        if (box == null)
         {
-            yield return enumerator.Current;
+            var enumerator = routingNetwork.GetVertexEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+        else
+        {
+            var vertices = routingNetwork.SearchVerticesInBox(box.Value);
+            foreach (var (vertex, _) in vertices)
+            {
+                yield return vertex;
+            }
         }
     }
 
@@ -52,11 +67,14 @@ public static class RoutingNetworkSnapshotExtensions
     /// Gets an enumerable with all edges.
     /// </summary>
     /// <param name="routingNetwork">The routing network.</param>
+    /// <param name="box">The bounding box, if any.</param>
     /// <returns>An enumerable with all edges.</returns>
-    public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork)
+    public static IEnumerable<EdgeId> GetEdges(this RoutingNetwork routingNetwork,
+        ((double longitude, double latitude, float? e) topLeft, (double longitude, double latitude, float? e)
+            bottomRight)? box = null)
     {
         var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
-        foreach (var vertex in routingNetwork.GetVertices())
+        foreach (var vertex in routingNetwork.GetVertices(box))
         {
             if (!edgeEnumerator.MoveTo(vertex))
             {
