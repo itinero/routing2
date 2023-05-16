@@ -20,7 +20,7 @@ internal class RoutingNetworkQuery : IRoutingNetworkQuery
     {
         await _network.UsageNotifier.NotifyBox(_network, box, cancellationToken);
         if (cancellationToken.IsCancellationRequested) yield break;
-        
+
         var vertices = _network.SearchVerticesInBox(box);
         foreach (var (vertex, _) in vertices)
         {

@@ -366,10 +366,14 @@ internal class Dijkstra
         return paths;
     }
 
-    private static readonly ThreadLocal<Dijkstra> DefaultLazy = new(() => new Dijkstra());
-
     /// <summary>
-    /// Gets the default dijkstra instance (for the local thread).
+    /// Gets a default dijkstra instance.
     /// </summary>
-    public static Dijkstra Default => DefaultLazy.Value;
+    public static Dijkstra Default
+    {
+        get
+        {
+            return new Dijkstra();
+        }
+    }
 }

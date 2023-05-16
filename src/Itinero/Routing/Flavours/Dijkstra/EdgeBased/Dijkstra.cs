@@ -30,12 +30,14 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
     {
-        var paths = await this.RunAsync(network, (source, null), new[] { (target, (bool?)null) }, getDijkstraWeight, settled, queued);
+        var paths = await this.RunAsync(network, (source, null), new[] { (target, (bool?)null) }, getDijkstraWeight,
+            settled, queued);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
 
-    public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
+    public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network,
+        (SnapPoint sp, bool? direction) source,
         (SnapPoint sp, bool? direction) target,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
@@ -52,7 +54,8 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
     {
-        return await this.RunAsync(network, (source, null), targets.Select(x => (x, (bool?)null)).ToArray(), getDijkstraWeight, settled, queued);
+        return await this.RunAsync(network, (source, null), targets.Select(x => (x, (bool?)null)).ToArray(),
+            getDijkstraWeight, settled, queued);
     }
 
     /// <summary>
@@ -66,7 +69,8 @@ internal class Dijkstra
     /// <param name="queued">This callback is called before an edge is loaded. Should not be used to influence route planning (but e.g. to load data when needed)</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network, (SnapPoint sp, bool? direction) source,
+    public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network,
+        (SnapPoint sp, bool? direction) source,
         IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
@@ -443,10 +447,14 @@ internal class Dijkstra
         return paths;
     }
 
-    private static readonly ThreadLocal<Dijkstra> DefaultLazy = new(() => new Dijkstra());
-
     /// <summary>
-    /// Gets the default dijkstra instance (for the local thread).
+    /// Gets a default dijkstra instance.
     /// </summary>
-    public static Dijkstra Default => DefaultLazy.Value;
+    public static Dijkstra Default
+    {
+        get
+        {
+            return new Dijkstra();
+        }
+    }
 }
