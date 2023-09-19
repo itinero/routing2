@@ -29,4 +29,9 @@ public class SnapperSettings
     /// The maximum offset in meter for the bounding box to check for potential edges or vertices. This is used when there is nothing found and is different from OffsetInMeter.
     /// </summary>
     public double OffsetInMeterMax { get; set; } = 100;
+
+    /// <summary>
+    /// The minimum island size in vertices.
+    /// </summary>
+    public int MinIslandSize { get; set; } = 0;
 }
