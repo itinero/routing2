@@ -163,6 +163,8 @@ internal partial class NetworkTile
                 }
             }
 
+            count++;
+
             if (count == 255)
             {
                 // start a new block, assign 255.
@@ -170,10 +172,6 @@ internal partial class NetworkTile
                 blockPointer = pointer;
                 pointer = blockPointer + 1;
                 count = 0;
-            }
-            else
-            {
-                count++;
             }
 
             previous = (x, y, eOffset);
@@ -198,7 +196,7 @@ internal partial class NetworkTile
         const int resolution = (1 << TileResolutionInBits) - 1;
         var count = -1;
         (int x, int y, int? eOffset) previous = (int.MaxValue, int.MaxValue, null);
-        do
+        while (true)
         {
             count = _shapes[p];
             p++;
@@ -214,7 +212,7 @@ internal partial class NetworkTile
                     eOffset = e;
                 }
 
-                if (previous.x != int.MaxValue)
+                if (i > 0)
                 {
                     x = previous.x + x;
                     y = previous.y + y;
@@ -246,7 +244,9 @@ internal partial class NetworkTile
 
                 previous = (x, y, eOffset);
             }
-        } while (count == 255);
+
+            if (count < 255) break;
+        }
     }
 
     private void WriteGeoTo(Stream stream)

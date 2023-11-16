@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Itinero.Network.Tiles;
 using Xunit;
 
@@ -191,5 +192,42 @@ public class NetworkTile_GeoTests
         Assert.Equal(51.26838639478469, shapePoint.latitude, 4);
         Assert.NotNull(shapePoint.e);
         Assert.Equal(109f, shapePoint.e.Value);
+    }
+
+    [Fact]
+    public void NetworkTile_AddEdge0_256ShapePoint_ShouldStore256ShapePoints()
+    {
+        var graphTile = new NetworkTile(14,
+            TileStatic.ToLocalId(4.86638, 51.269728, 14));
+        var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
+        var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
+
+        var shapePoints = new List<(double longitude, double latitude, float? e)>
+        {
+            (4.86786,
+                51.26909, (float?) null)
+        };
+        while (shapePoints.Count < 265)
+        {
+            var last = shapePoints[^1];
+            shapePoints.Add((last.longitude + 0.001, last.latitude + 0.001, null));
+        }
+
+        var edge = graphTile.AddEdge(vertex1, vertex2, shapePoints);
+
+        var enumerator = new NetworkTileEnumerator();
+        enumerator.MoveTo(graphTile);
+        Assert.True(enumerator.MoveTo(edge, true));
+        var shapes = enumerator.Shape.ToList();
+        Assert.NotNull(shapes);
+        Assert.Equal(shapePoints.Count, shapes.Count);
+        for (var i = 0; i < shapePoints.Count; i++)
+        {
+            var ex = shapePoints[i];
+            var ac = shapes[i];
+            Assert.Equal(ex.longitude, ac.longitude, 4);
+            Assert.Equal(ex.latitude, ac.latitude, 4);
+            Assert.Null(ac.e);
+        }
     }
 }
