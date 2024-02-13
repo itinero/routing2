@@ -25,8 +25,9 @@ internal class ProfileCostFunction : ICostFunction
         var factor = _profile.FactorInEdgeDirection(edgeEnumerator);
         var length = edgeEnumerator.Length ??
                      (uint)(edgeEnumerator.EdgeLength() * 100);
-        var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
-        var canAccess = cost > 0;
+        var directedFactor = forward ? factor.ForwardFactor : factor.BackwardFactor;
+        var cost = directedFactor * length;
+        var canAccess = directedFactor > 0;
 
         // check for turn costs.
         var totalTurnCost = 0.0;

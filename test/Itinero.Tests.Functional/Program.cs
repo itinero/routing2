@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles.Parsers;
+using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua;
 using Itinero.Snapping;
@@ -112,6 +113,11 @@ internal static class Program
         var latest = routerDb.Latest;
         var lux1sp = await latest.Snap().ToAsync(lux1);
         var lux2sp = await latest.Snap().ToAsync(lux2);
+
+        await latest.Islands(s =>
+        {
+            s.Profile = car;
+        }).IsOnIslandAsync(lux1sp.Value.EdgeId, true);
 
         var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
         var oneToOneGeoJson = oneToOne.ToGeoJson();

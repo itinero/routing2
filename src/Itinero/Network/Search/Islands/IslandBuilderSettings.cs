@@ -1,3 +1,5 @@
+using Itinero.Profiles;
+
 namespace Itinero.Network.Search.Islands;
 
 /// <summary>
@@ -5,6 +7,11 @@ namespace Itinero.Network.Search.Islands;
 /// </summary>
 public class IslandBuilderSettings
 {
+    /// <summary>
+    /// Gets or sets the profile.
+    /// </summary>
+    public Profile Profile { get; set; } = null!;
+
     /// <summary>
     /// The minimum island size, anything larger is not considered an island.
     /// </summary>

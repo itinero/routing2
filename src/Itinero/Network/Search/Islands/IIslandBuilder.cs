@@ -12,5 +12,5 @@ public interface IIslandBuilder
     /// </summary>
     /// <param name="edge">The edge.</param>
     /// <returns>True if the edge is on an island, false otherwise.</returns>
-    public Task<bool> IsOnIslandAsync(EdgeId edge);
+    public Task<bool> IsOnIslandAsync(EdgeId edge, bool forward);
 }

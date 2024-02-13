@@ -1,253 +1,332 @@
 using System;
+using System.Collections.Generic;
 
 namespace Itinero.Network.Search.Islands;
 
-/// <summary>
-/// An island label graph.
-/// </summary>
 internal class IslandLabelGraph
 {
-    private readonly DirectedGraph _graph;
+    private const uint NoEdge = uint.MaxValue;
+    private const uint NoVertex = uint.MaxValue - 1;
 
-    /// <summary>
-    /// Creates a new island label graph.
-    /// </summary>
-    internal IslandLabelGraph()
+    private readonly List<uint> _vertices = new(); // Holds all vertices pointing to it's first edge.
+    private readonly List<(uint vertex1, uint vertex2, uint pointer1, uint pointer2)> _edges = new();
+
+    public uint AddVertex()
     {
-        _graph = new DirectedGraph(0, 0);
+        var vertex = (uint)_vertices.Count;
+        _vertices.Add(NoEdge);
+        return vertex;
     }
 
-    /// <summary>
-    /// Connects the two given labels.
-    /// </summary>
-    /// <param name="label1">The first label.</param>
-    /// <param name="label2">The second label.</param>
-    internal void Connect(uint label1, uint label2)
+    public bool HasVertex(uint vertex)
     {
-        if (label1 == label2)
+        if (vertex >= _vertices.Count) return false;
+        if (_vertices[(int)vertex] == NoVertex) return false;
+
+        return true;
+    }
+
+    public bool RemoveVertex(uint vertex)
+    {
+        if (!this.HasVertex(vertex)) return false;
+
+        this.RemoveEdges(vertex);
+
+        _vertices[(int)vertex] = NoVertex;
+
+        while (_vertices.Count > 0 &&
+            _vertices[^1] == NoVertex)
         {
-            return;
+            _vertices.RemoveAt(_vertices.Count - 1);
         }
-        _graph.AddEdge(label1, label2);
+
+        return true;
     }
 
-    /// <summary>
-    /// Gets the edge enumerator.
-    /// </summary>
-    /// <returns></returns>
-    internal DirectedGraph.EdgeEnumerator GetEdgeEnumerator()
+    public void AddEdge(uint vertex1, uint vertex2)
     {
-        return _graph.GetEdgeEnumerator();
+        if (vertex1 == vertex2) { throw new ArgumentException("Given vertices must be different."); }
+        if (!this.HasVertex(vertex1)) throw new ArgumentException($"Vertex {vertex1} does not exist.");
+        if (!this.HasVertex(vertex2)) throw new ArgumentException($"Vertex {vertex2} does not exist.");
+
+        this.AddEdgeInternal(vertex1, vertex2);
+    }
+
+    public bool HasEdge(uint vertex1, uint vertex2)
+    {
+        if (vertex1 == vertex2) { throw new ArgumentException("Given vertices must be different."); }
+        if (!this.HasVertex(vertex1)) throw new ArgumentException($"Vertex {vertex1} does not exist.");
+        if (!this.HasVertex(vertex2)) throw new ArgumentException($"Vertex {vertex2} does not exist.");
+
+        var edgeId = _vertices[(int)vertex1];
+        while (edgeId != NoEdge)
+        {
+            // get the edge.
+            var edge = _edges[(int)edgeId];
+            if (edge.vertex1 == vertex1)
+            {
+                if (edge.vertex2 == vertex2)
+                {
+                    return true;
+                }
+                edgeId = edge.pointer1;
+            }
+            else if (edge.vertex2 == vertex1)
+            {
+                edgeId = edge.pointer2;
+            }
+            else
+            {
+                throw new Exception("Edge found on vertex set that does not contain vertex");
+            }
+        }
+
+        return false;
+    }
+
+    public int RemoveEdges(uint vertex)
+    {
+        var removed = 0;
+        var edges = this.GetEdgeEnumerator();
+        while (edges.MoveTo(vertex) && edges.MoveNext())
+        {
+            if (edges.Forward)
+            {
+                this.RemoveEdge(vertex, edges.Head);
+            }
+            else
+            {
+                this.RemoveEdge(edges.Head, vertex);
+            }
+            removed++;
+        }
+
+        return removed;
+    }
+
+    public bool RemoveEdge(uint vertex1, uint vertex2)
+    {
+        if (vertex1 == vertex2) throw new ArgumentException("Given vertices must be different.");
+        if (!this.HasVertex(vertex1)) throw new ArgumentException($"Vertex {vertex1} does not exist.");
+        if (!this.HasVertex(vertex2)) throw new ArgumentException($"Vertex {vertex2} does not exist.");
+
+        var edgeId = this.RemoveEdgeFromVertex1(vertex1, vertex2);
+        if (edgeId == NoEdge) return false;
+
+        this.RemoveEdgeFromVertex(vertex2, edgeId);
+
+        _edges[(int)edgeId] = (NoVertex, NoVertex, NoEdge, NoEdge);
+        return true;
+    }
+
+    private uint RemoveEdgeFromVertex1(uint vertex1, uint vertex2)
+    {
+        // find the edge and keep the previous edge id.
+        var edgeId = _vertices[(int)vertex1];
+        var previousEdgeId = NoEdge;
+        var foundEdgeId = NoEdge;
+        while (edgeId != NoEdge)
+        {
+            // get the edge.
+            var edge = _edges[(int)edgeId];
+            if (edge.vertex1 == vertex1)
+            {
+                if (edge.vertex2 == vertex2)
+                {
+                    foundEdgeId = edgeId;
+                    edgeId = edge.pointer1;
+                    break;
+                }
+                previousEdgeId = edgeId;
+                edgeId = edge.pointer1;
+            }
+            else if (edge.vertex2 == vertex1)
+            {
+                previousEdgeId = edgeId;
+                edgeId = edge.pointer2;
+            }
+            else
+            {
+                throw new Exception("Edge found on vertex set that does not contain vertex");
+            }
+        }
+
+        if (foundEdgeId == NoEdge) return NoEdge;
+
+        // set pointer on last edge or vertex.
+        if (previousEdgeId == NoEdge)
+        {
+            _vertices[(int)vertex1] = edgeId;
+        }
+        else
+        {
+            var edge = _edges[(int)previousEdgeId];
+            if (edge.vertex1 == vertex1)
+            {
+                edge.pointer1 = edgeId;
+            }
+            else if (edge.vertex2 == vertex1)
+            {
+                edge.pointer2 = edgeId;
+            }
+            _edges[(int)previousEdgeId] = edge;
+        }
+
+        return foundEdgeId;
+    }
+
+    private void RemoveEdgeFromVertex(uint vertex, uint edgeIdToRemove)
+    {
+        if (edgeIdToRemove == NoEdge) throw new Exception("This edge has to exist, it existing in other vertex");
+
+        var edgeId = _vertices[(int)vertex];
+        var previousEdgeId = NoEdge;
+        while (edgeId != NoEdge)
+        {
+            // get the edge.
+            var edge = _edges[(int)edgeId];
+            var currentEdgeId = edgeId;
+
+            if (edge.vertex1 == vertex)
+            {
+                edgeId = edge.pointer1;
+            }
+            else if (edge.vertex2 == vertex)
+            {
+                edgeId = edge.pointer2;
+            }
+            else
+            {
+                throw new Exception("Edge found on vertex set that does not contain vertex");
+            }
+
+            if (currentEdgeId == edgeIdToRemove) break;
+            previousEdgeId = currentEdgeId;
+        }
+
+        if (previousEdgeId == NoEdge)
+        {
+            _vertices[(int)vertex] = edgeId;
+        }
+        else
+        {
+            var edge = _edges[(int)previousEdgeId];
+            if (edge.vertex1 == vertex)
+            {
+                edge.pointer1 = edgeId;
+            }
+            else if (edge.vertex2 == vertex)
+            {
+                edge.pointer2 = edgeId;
+            }
+            _edges[(int)previousEdgeId] = edge;
+        }
+    }
+
+    public bool HasEdge(uint vertex1)
+    {
+        var enumerator = this.GetEdgeEnumerator();
+        if (!enumerator.MoveTo(vertex1)) return false;
+
+        return enumerator.MoveNext();
+    }
+
+    public EdgeEnumerator GetEdgeEnumerator()
+    {
+        return new EdgeEnumerator(this);
     }
 
     /// <summary>
-    /// Gets the label count.
+    /// Returns the number of vertices in this graph.
     /// </summary>
-    internal uint LabelCount => _graph.VertexCount;
+    public int VertexCount => _vertices.Count;
 
-    // /// <summary>
-    // /// Finds loops and merges them together.
-    // /// </summary>
-    // /// <param name="maxSettles">The maximum labels to settle.</param>
-    // /// <param name="updateLabel">A callback to update label.</param>
-    // internal void FindLoops(uint maxSettles, IslandLabels islandLabels, Action<uint, uint> updateLabel)
-    // {
-    //     // TODO: it's probably better to call reduce here when too much has changed.
-    //     
-    //     var pathTree = new PathTree();
-    //     var enumerator = _graph.GetEdgeEnumerator();
-    //     var settled = new HashSet<uint>();
-    //     var queue = new Queue<uint>();
-    //     var loop = new HashSet<uint>(); // keeps all with a path back to label, initially only label.
-    //     uint label = 0;
-    //     while (label < _graph.VertexCount)
-    //     {
-    //         if (!enumerator.MoveTo(label))
-    //         {
-    //             label++;
-    //             continue;
-    //         }
-    //
-    //         if (islandLabels[label] != label)
-    //         {
-    //             label++;
-    //             continue;
-    //         }
-    //
-    //         queue.Clear();
-    //         pathTree.Clear();
-    //         settled.Clear();
-    //
-    //         loop.Add(label);
-    //         queue.Enqueue(pathTree.Add(label, uint.MaxValue));
-    //
-    //         while (queue.Count > 0 &&
-    //                settled.Count < maxSettles)
-    //         {
-    //             var pointer = queue.Dequeue();
-    //             pathTree.Get(pointer, out var current, out var previous);
-    //
-    //             if (settled.Contains(current))
-    //             {
-    //                 continue;
-    //             }
-    //
-    //             settled.Add(current);
-    //
-    //             if (!enumerator.MoveTo(current))
-    //             {
-    //                 continue;
-    //             }
-    //
-    //             while (enumerator.MoveNext())
-    //             {
-    //                 var n = enumerator.Neighbour;
-    //                 
-    //                 n = islandLabels[n];
-    //                 
-    //                 if (loop.Contains(n))
-    //                 {
-    //                     // yay, a loop!
-    //                     loop.Add(current);
-    //                     while (previous != uint.MaxValue)
-    //                     {
-    //                         pathTree.Get(previous, out current, out previous);
-    //                         loop.Add(current);
-    //                     }
-    //                 }
-    //                 if (settled.Contains(n))
-    //                 {
-    //                     continue;
-    //                 }
-    //                 
-    //                 queue.Enqueue(pathTree.Add(n, pointer));
-    //             }
-    //         }
-    //
-    //         if (loop.Count > 0)
-    //         {
-    //             this.Merge(loop, updateLabel);
-    //         }
-    //         loop.Clear();
-    //
-    //         // move to the next label.
-    //         label++;
-    //     }
-    // }
-    //
-    // /// <summary>
-    // /// Merge all the given labels into one.
-    // /// </summary>
-    // /// <param name="labels">The labels to merge.</param>
-    // /// <param name="updateLabel">A callback to update label.</param>
-    // private void Merge(HashSet<uint> labels, Action<uint, uint> updateLabel)
-    // {
-    //     var edgeEnumerator = _graph.GetEdgeEnumerator();
-    //     var bestLabel = uint.MaxValue;
-    //     var neighbours = new HashSet<uint>();
-    //     foreach (var label in labels)
-    //     {
-    //         if (label < bestLabel)
-    //         {
-    //             bestLabel = label;
-    //         }
-    //
-    //         if (!edgeEnumerator.MoveTo(label))
-    //         {
-    //             continue;
-    //         }
-    //
-    //         while (edgeEnumerator.MoveNext())
-    //         {
-    //             var n = edgeEnumerator.Neighbour;
-    //             if (!labels.Contains(n))
-    //             {
-    //                 neighbours.Add(n);
-    //             }
-    //         }
-    //
-    //         _graph.RemoveEdges(label);
-    //     }
-    //
-    //     if (bestLabel == uint.MaxValue)
-    //     {
-    //         return;
-    //     }
-    //     
-    //     foreach (var neighbour in neighbours)
-    //     {
-    //         //_graph.RemoveEdge(bestLabel, neighbour);
-    //         _graph.AddEdge(bestLabel, neighbour);
-    //     }
-    //     foreach (var label in labels)
-    //     {
-    //         if (label == bestLabel)
-    //         {
-    //             continue;
-    //         }
-    //         
-    //         updateLabel(label, bestLabel);
-    //         //_graph.RemoveEdge(label, bestLabel);
-    //         //_graph.AddEdge(label, bestLabel);
-    //     }
-    // }
-    //
-    // /// <summary>
-    // /// Removes all islands that are not roots and updates all edges.
-    // /// </summary>
-    // /// <param name="islandLabels">The current labels.</param>
-    // internal long Reduce(IslandLabels islandLabels)
-    // {
-    //     // remove vertices that aren't originals.
-    //     var neighbours = new HashSet<uint>();
-    //     var edgeEnumerator = _graph.GetEdgeEnumerator();
-    //     var edgeEnumerator2 = _graph.GetEdgeEnumerator();
-    //     var nonNullLabels = 0;
-    //     for (uint label = 0; label < _graph.VertexCount; label++)
-    //     {
-    //         var minimal = islandLabels[label];
-    //         if (!edgeEnumerator.MoveTo(label))
-    //         {
-    //             _graph.RemoveEdges(label);
-    //             continue;
-    //         }
-    //
-    //         neighbours.Clear();
-    //         while (edgeEnumerator.MoveNext())
-    //         {
-    //             var n = edgeEnumerator.Neighbour;
-    //             n = islandLabels[n];
-    //             if (n == IslandLabels.NoAccess ||
-    //                 n == IslandLabels.NotSet ||
-    //                 n == minimal)
-    //             {
-    //                 continue;
-    //             }
-    //             
-    //             // remove dead-ends.
-    //             if (!edgeEnumerator2.MoveTo(n))
-    //             { // this edge has no targets.
-    //                 continue;
-    //             }
-    //
-    //             neighbours.Add(n);
-    //         }
-    //
-    //         _graph.RemoveEdges(label);
-    //         if (neighbours.Count == 0)
-    //         {
-    //             continue;
-    //         }
-    //
-    //         nonNullLabels++;
-    //         foreach (var n in neighbours)
-    //         {
-    //             _graph.RemoveEdge(minimal, n);
-    //             _graph.AddEdge(minimal, n);
-    //         }
-    //     }
-    //
-    //     _graph.Compress();
-    //     return nonNullLabels;
-    // }
+    /// <summary>
+    /// Returns the number of edges in this graph.
+    /// </summary>
+    public long EdgeCount => _edges.Count;
+
+    private uint AddEdgeInternal(uint vertex1, uint vertex2)
+    {
+        // this adds an edge without checking for duplicates!
+        var vertex1EdgeId = _vertices[(int)vertex1];
+        var vertex2EdgeId = _vertices[(int)vertex2];
+
+        var newEdgeId = (uint)_edges.Count;
+        _vertices[(int)vertex1] = newEdgeId;
+        _vertices[(int)vertex2] = newEdgeId;
+
+        _edges.Add((vertex1, vertex2, vertex1EdgeId, vertex2EdgeId));
+
+        return newEdgeId;
+    }
+
+    /// <summary>
+    /// An edge enumerator.
+    /// </summary>
+    public class EdgeEnumerator
+    {
+        private readonly IslandLabelGraph _islandLabelGraph;
+        private uint _nextEdgeId = NoEdge;
+
+        /// <summary>
+        /// Creates a new edge enumerator.
+        /// </summary>
+        internal EdgeEnumerator(IslandLabelGraph islandLabelGraph)
+        {
+            _islandLabelGraph = islandLabelGraph;
+        }
+
+        /// <summary>
+        /// Move to the next edge.
+        /// </summary>
+        /// <returns></returns>
+        public bool MoveNext()
+        {
+            if (this.Tail == NoVertex) return false;
+            if (_nextEdgeId == NoEdge) return false;
+
+            var edge = _islandLabelGraph._edges[(int)_nextEdgeId];
+            if (edge.vertex1 == this.Tail)
+            {
+                this.Head = edge.vertex2;
+                _nextEdgeId = edge.pointer1;
+                this.Forward = true;
+                return true;
+            }
+            if (edge.vertex2 == this.Tail)
+            {
+                this.Head = edge.vertex1;
+                _nextEdgeId = edge.pointer2;
+                this.Forward = false;
+                return true;
+            }
+
+            throw new Exception("Next edge does not have vertex");
+        }
+
+        public uint Tail { get; private set; } = NoVertex;
+
+        public uint Head { get; private set; } = NoVertex;
+
+        public bool Forward { get; private set; } = true;
+
+        public bool MoveTo(uint vertex)
+        {
+            if (!_islandLabelGraph.HasVertex(vertex)) return false;
+
+            _nextEdgeId = _islandLabelGraph._vertices[(int)vertex];
+            if (_nextEdgeId == NoVertex) return false;
+
+            this.Tail = vertex;
+            return true;
+        }
+
+        public void Reset()
+        {
+            if (this.Tail == NoVertex) return;
+
+            this.MoveTo(this.Tail);
+        }
+    }
 }

@@ -8,7 +8,8 @@ internal static class RoutingNetworkExtensions
     {
         var s = new IslandBuilderSettings();
         settings?.Invoke(s);
-        
-        
+
+        var islandBuilder = new IslandBuilder(network, s);
+        return islandBuilder;
     }
 }
