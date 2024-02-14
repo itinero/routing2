@@ -15,5 +15,5 @@ public class IslandBuilderSettings
     /// <summary>
     /// The minimum island size, anything larger is not considered an island.
     /// </summary>
-    public uint MinIslandSize { get; set; } = 1024;
+    public int MinIslandSize { get; set; } = 1024;
 }

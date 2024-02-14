@@ -107,17 +107,20 @@ internal static class Program
         // setup a router db with a local osm file.
         var routerDb = FromUrl(car, LuxembourgUrl, "luxembourg-latest.osm.pbf");
 
-        var lux1 = (6.119298934936523, 49.60962540702068, (float?)0f);
+        var lux1 = (5.99620407852791,
+            49.673960512047614, (float?)0f);
         var lux2 = (6.124148368835449, 49.588792167215345, (float?)0f);
 
         var latest = routerDb.Latest;
-        var lux1sp = await latest.Snap().ToAsync(lux1);
-        var lux2sp = await latest.Snap().ToAsync(lux2);
+        var lux1sp = await latest.Snap(car).ToAsync(lux1);
+        var lux1spLocation = lux1sp.Value.LocationOnNetwork(routerDb.Latest);
+        return;
+        var lux2sp = await latest.Snap(car).ToAsync(lux2);
 
-        await latest.Islands(s =>
+        latest.Islands(s =>
         {
             s.Profile = car;
-        }).IsOnIslandAsync(lux1sp.Value.EdgeId, true);
+        }).IsOnIsland(lux1sp.Value.EdgeId, true);
 
         var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
         var oneToOneGeoJson = oneToOne.ToGeoJson();

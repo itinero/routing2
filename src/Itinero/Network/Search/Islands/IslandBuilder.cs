@@ -27,7 +27,7 @@ internal class IslandBuilder : IIslandBuilder
         return labels;
     }
 
-    public async Task<bool> IsOnIslandAsync(EdgeId edgeId, bool forward)
+    public bool IsOnIsland(EdgeId edgeId, bool forward)
     {
         // make sure there are labels for the used profile.
         if (!_routingNetwork._islandLabels.TryGetValue(_settings.Profile.Name, out var labels))

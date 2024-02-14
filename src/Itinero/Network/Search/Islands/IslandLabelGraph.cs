@@ -116,6 +116,11 @@ internal class IslandLabelGraph
         this.RemoveEdgeFromVertex(vertex2, edgeId);
 
         _edges[(int)edgeId] = (NoVertex, NoVertex, NoEdge, NoEdge);
+
+        while (_edges.Count > 0 && _edges[^1].vertex1 == NoVertex)
+        {
+            _edges.RemoveAt(_edges.Count - 1);
+        }
         return true;
     }
 

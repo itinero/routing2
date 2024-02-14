@@ -8,6 +8,7 @@ using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search;
+using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 
@@ -25,9 +26,11 @@ internal sealed class Snapper : ISnapper
     private readonly double _offsetInMeter;
     private readonly double _offsetInMeterMax;
     private readonly double _maxDistance;
+    private readonly IslandBuilder[] _islandBuilders;
     private readonly ICostFunction[] _costFunctions;
 
-    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance)
+    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance,
+        int minIslandSize)
     {
         _routingNetwork = routingNetwork;
         _anyProfile = anyProfile;
@@ -36,37 +39,53 @@ internal sealed class Snapper : ISnapper
         _offsetInMeterMax = offsetInMeterMax;
         _maxDistance = maxDistance;
 
+        // ReSharper disable once PossibleMultipleEnumeration
         _costFunctions = profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
+        if (minIslandSize == 0)
+        {
+            _islandBuilders = Array.Empty<IslandBuilder>();
+        }
+        else
+        {
+            // ReSharper disable once PossibleMultipleEnumeration
+            _islandBuilders = profiles.Select(p => new IslandBuilder(routingNetwork,
+                new IslandBuilderSettings() { Profile = p, MinIslandSize = minIslandSize })).ToArray();
+        }
     }
 
     private bool AcceptableFunc(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
     {
         var hasProfiles = _costFunctions.Length > 0;
-        if (!hasProfiles)
-        {
-            return true;
-        }
-        else
-        {
-            var allOk = true;
+        if (!hasProfiles) return true;
 
-            foreach (var costFunction in _costFunctions)
+        var allOk = true;
+        foreach (var costFunction in _costFunctions)
+        {
+            var costs = costFunction.Get(edgeEnumerator, true,
+                Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+
+            var profileIsOk = costs.canAccess &&
+                              (!_checkCanStopOn || costs.canStop);
+
+            if (_anyProfile && profileIsOk)
             {
-                var costs = costFunction.Get(edgeEnumerator, true,
-                    Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
-
-                var profileIsOk = costs.canAccess &&
-                                  (!_checkCanStopOn || costs.canStop);
-
-                if (_anyProfile && profileIsOk)
-                {
-                    return true;
-                }
-
-                allOk = profileIsOk && allOk;
+                return IsNotOnIsland();
             }
 
-            return allOk;
+            allOk = allOk && profileIsOk;
+        }
+        return allOk && IsNotOnIsland();
+
+        bool IsNotOnIsland()
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var islandBuilder in _islandBuilders)
+            {
+                var onIsland = islandBuilder.IsOnIsland(edgeEnumerator.EdgeId, edgeEnumerator.Forward);
+                if (onIsland) return false;
+            }
+
+            return true;
         }
     }
 
@@ -168,7 +187,7 @@ internal sealed class Snapper : ISnapper
         if (!(_offsetInMeter < _offsetInMeterMax))
         {
             return new Result<SnapPoint>(
-                $"Could not snap to location: {location.longitude},{location.latitude}");
+                FormattableString.Invariant($"Could not snap to location: {location.longitude},{location.latitude}"));
         }
 
         // use bigger box.
@@ -186,7 +205,7 @@ internal sealed class Snapper : ISnapper
         }
 
         return new Result<SnapPoint>(
-            $"Could not snap to location: {location.longitude},{location.latitude}");
+             FormattableString.Invariant($"Could not snap to location: {location.longitude},{location.latitude}"));
     }
 
     /// <inheritdoc/>
