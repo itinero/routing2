@@ -25,7 +25,7 @@
 <tr><th>Covered branches:</th><td>3</td></tr>
 <tr><th>Total branches:</th><td>12</td></tr>
 <tr><th>Branch coverage:</th><td>25% (3 of 12)</td></tr>
-<tr><th>Tag:</th><td>207_6889875229</td></tr>
+<tr><th>Tag:</th><td>210_7933996059</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -36,7 +36,7 @@
 <tr><td title="ToAsync()"><a href="#file0_line37" class="navigatetohash">ToAsync()</a></td><td>0%</td><td>6</td><td>0%</td></tr>
 <tr><td title="ToVertexAsync()"><a href="#file0_line53" class="navigatetohash">ToVertexAsync()</a></td><td>100%</td><td>1</td><td>0%</td></tr>
 <tr><td title="ToVerticesAsync()"><a href="#file0_line64" class="navigatetohash">ToVerticesAsync()</a></td><td>0%</td><td>2</td><td>0%</td></tr>
-<tr><td title="ToExact(Itinero.Snapping.ISnapper,Itinero.Network.VertexId,Itinero.Network.EdgeId,System.Boolean)"><a href="#file0_line80" class="navigatetohash">ToExact(...)</a></td><td>75%</td><td>4</td><td>87.5%</td></tr>
+<tr><td title="ToExactAsync()"><a href="#file0_line80" class="navigatetohash">ToExactAsync()</a></td><td>75%</td><td>4</td><td>87.5%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -122,10 +122,10 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line76"></a><code>76</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;edgeId&quot;&gt;The&nbsp;edge.&lt;/param&gt;</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line77"></a><code>77</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;param&nbsp;name=&quot;asDeparture&quot;&gt;When&nbsp;this&nbsp;has&nbsp;a&nbsp;value,&nbsp;any&nbsp;edge&nbsp;will&nbsp;be&nbsp;checked&nbsp;against&nbsp;the&nbsp;configured&nbsp;profile(s)&nbsp;as&nbsp;s</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line78"></a><code>78</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;returns&gt;The&nbsp;result&nbsp;if&nbsp;any.&nbsp;Snapping&nbsp;will&nbsp;fail&nbsp;if&nbsp;a&nbsp;vertex&nbsp;has&nbsp;no&nbsp;edges.&lt;/returns&gt;</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line79"></a><code>79</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;Result&lt;SnapPoint&gt;&nbsp;ToExact(this&nbsp;ISnapper&nbsp;snapper,&nbsp;VertexId&nbsp;vertexId,&nbsp;EdgeId&nbsp;edgeId,&nbsp;bool&nbsp;asDeparture&nbsp;=&nbsp;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line79"></a><code>79</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;static&nbsp;async&nbsp;Task&lt;Result&lt;SnapPoint&gt;&gt;&nbsp;ToExactAsync(this&nbsp;ISnapper&nbsp;snapper,&nbsp;VertexId&nbsp;vertexId,&nbsp;EdgeId&nbsp;edgeId,&nbsp;bo</code></td></tr>
 <tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line80"></a><code>80</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line81"></a><code>81</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;result&nbsp;=&nbsp;snapper.To(vertexId,&nbsp;asDeparture);</code></td></tr>
-<tr class="coverableline" title="Partially covered (20 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line82"></a><code>82</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(var&nbsp;result1&nbsp;in&nbsp;result)</code></td></tr>
+<tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line81"></a><code>81</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;result&nbsp;=&nbsp;snapper.ToAsync(vertexId,&nbsp;asDeparture);</code></td></tr>
+<tr class="coverableline" title="Partially covered (20 visits, 1 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line82"></a><code>82</code></td><td class="percentagebar percentagebar50"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await&nbsp;foreach&nbsp;(var&nbsp;result1&nbsp;in&nbsp;result)</code></td></tr>
 <tr class="coverableline" title="Covered (6 visits)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line83"></a><code>83</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Covered (10 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '10', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">10</td><td class="rightmargin right"><a id="file0_line84"></a><code>84</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(result1.Value.EdgeId&nbsp;==&nbsp;edgeId)&nbsp;return&nbsp;result1;</code></td></tr>
 <tr class="coverableline" title="Covered (2 visits)" data-coverage="{'AllTestMethods': {'VC': '2', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">2</td><td class="rightmargin right"><a id="file0_line85"></a><code>85</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
@@ -134,7 +134,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line88"></a><code>88</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />11/16/2023 - 11:09:00<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />02/16/2024 - 17:20:51<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -142,7 +142,7 @@
 <a href="#file0_line37" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ToAsync()"><i class="icon-cube"></i>ToAsync()</a><br />
 <a href="#file0_line53" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ToVertexAsync()"><i class="icon-cube"></i>ToVertexAsync()</a><br />
 <a href="#file0_line64" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ToVerticesAsync()"><i class="icon-cube"></i>ToVerticesAsync()</a><br />
-<a href="#file0_line80" class="navigatetohash percentagebar percentagebar80" title="Line coverage: 87.5% - ToExact(...)"><i class="icon-cube"></i>ToExact(...)</a><br />
+<a href="#file0_line80" class="navigatetohash percentagebar percentagebar80" title="Line coverage: 87.5% - ToExactAsync()"><i class="icon-cube"></i>ToExactAsync()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
