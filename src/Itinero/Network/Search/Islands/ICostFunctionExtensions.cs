@@ -13,7 +13,6 @@ internal static class ICostFunctionExtensions
     /// This does NOT include the cost of the previous edges.
     /// </summary>
     /// <param name="costFunction"></param>
-    /// <param name="forward"></param>
     /// <param name="enumerator"></param>
     /// <param name="previousEdges"></param>
     /// <returns></returns>
@@ -22,6 +21,6 @@ internal static class ICostFunctionExtensions
     {
         var cost = costFunction.Get(enumerator, true, previousEdges);
 
-        return cost.canAccess;
+        return cost is { canAccess: true, turnCost: < double.MaxValue };
     }
 }

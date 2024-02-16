@@ -16,7 +16,7 @@ public class RouterDbConfiguration
     /// <summary>
     /// Gets or sets the maximum size of islands.
     /// </summary>
-    public int MaxIslandSize { get; set; } = 1024;
+    public int MaxIslandSize { get; set; } = 256;
 
     /// <summary>
     /// Gets or sets the initial edge types.
@@ -41,5 +41,5 @@ public class RouterDbConfiguration
     /// <summary>
     /// Gets the default configuration.
     /// </summary>
-    public static RouterDbConfiguration Default() { return new() { Zoom = 14, MaxIslandSize = 1024}; }
+    public static RouterDbConfiguration Default() { return new() { Zoom = 14, MaxIslandSize = 1024 }; }
 }

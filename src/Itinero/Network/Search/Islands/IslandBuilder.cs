@@ -15,29 +15,26 @@ internal class IslandBuilder
 {
     public static async Task BuildForTileAsync(RoutingNetwork network, Profile profile, uint tileId, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Building islands for: {tileId}");
-        var startTicks = DateTime.Now.Ticks;
+        if (cancellationToken.IsCancellationRequested) return;
         var islands = network.IslandManager.GetIslandsFor(profile);
 
         var tile = network.GetTileForRead(tileId);
         if (tile == null) return;
-        
+
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(tile);
 
         var labels = new IslandLabels(network.IslandManager.MaxIslandSize);
         var costFunction = network.GetCostFunctionFor(profile);
-        var vertex = new VertexId(tileId, 0); 
+        var vertex = new VertexId(tileId, 0);
         while (enumerator.MoveTo(vertex))
         {
             while (enumerator.MoveNext())
             {
                 if (cancellationToken.IsCancellationRequested) return;
-                
+
                 var onIsland = await IsOnIslandAsync(network, labels, costFunction, enumerator.EdgeId,
                     IsOnIslandAlready, cancellationToken);
-                var ticks = DateTime.Now.Ticks;
-                Console.WriteLine($"Building islands for: {tileId} in {new TimeSpan(ticks - startTicks).TotalSeconds}");
                 if (onIsland == null) continue; // edge cannot be traversed by profile.
                 if (!onIsland.Value) continue; // edge is not on island.
 
@@ -49,8 +46,6 @@ internal class IslandBuilder
 
         if (cancellationToken.IsCancellationRequested) return;
         islands.SetTileDone(tileId);
-        var endTicks = DateTime.Now.Ticks;
-        Console.WriteLine($"Done building islands for: {tileId} in {new TimeSpan(endTicks - startTicks).TotalSeconds}");
         return;
 
         bool? IsOnIslandAlready(IEdgeEnumerator e)
@@ -58,19 +53,21 @@ internal class IslandBuilder
             return islands.IsEdgeOnIsland(e, tileId);
         }
     }
-    
-    internal static async Task<bool?> IsOnIslandAsync(RoutingNetwork network, IslandLabels labels, ICostFunction costFunction, EdgeId edgeId, 
+
+    internal static async Task<bool?> IsOnIslandAsync(RoutingNetwork network, IslandLabels labels, ICostFunction costFunction, EdgeId edgeId,
         Func<IEdgeEnumerator, bool?>? isOnIslandAlready = null, CancellationToken cancellationToken = default)
     {
         // when we get here the edge either has no island yet or the current label is not final yet.
-        var localCostFunction = costFunction.GetIslandBuilderWeightFunc();
         var edgeEnumerator = network.GetEdgeEnumerator();
+        var backwardEdgeEnumerator = network.GetEdgeEnumerator();
         edgeEnumerator.MoveTo(edgeId, true);
-        var cost = localCostFunction(edgeEnumerator);
+        var canForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
+        backwardEdgeEnumerator.MoveTo(edgeId, false);
+        var canBackward = costFunction.GetIslandBuilderCost(backwardEdgeEnumerator);
 
         // test if the edge can be traversed, if not return undefined value.
-        if (cost is { forward: false, backward: false }) return null;
-        
+        if (!canForward && !canBackward) return null;
+
         // see if the edge already has a label.
         if (!labels.TryGetWithDetails(edgeId, out var rootIsland))
         {
@@ -105,54 +102,61 @@ internal class IslandBuilder
         // update any useful info about edges and their island labels along the way.
         var heap =
             new BinaryHeap<((EdgeId id, bool forward) edge, byte? turn)>();
-        heap.Push(((edgeId, true),edgeEnumerator.HeadOrder), 1);
-        heap.Push(((edgeId, false),edgeEnumerator.TailOrder), 1);
+        if (canForward) heap.Push(((edgeId, true), edgeEnumerator.HeadOrder), 1);
+        if (canBackward) heap.Push(((edgeId, false), edgeEnumerator.TailOrder), 1);
         var visits = new HashSet<(EdgeId id, bool forward)>();
         while (heap.Count > 0)
         {
             // visit the next edge.
             var (currentEdge, currentTurn) = heap.Pop(out var hops);
-            
+            if (!visits.Add(currentEdge)) continue;
+
             // calculate the costs.
             if (!edgeEnumerator.MoveTo(currentEdge.id, currentEdge.forward))
                 throw new Exception("Enumeration attempted to an edge that does not exist");
-            var currentCostForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-            if (!currentCostForward)
-                throw new Exception("A queued edge should always be accessible in forward direction");
-            if (!edgeEnumerator.MoveTo(currentEdge.id, !currentEdge.forward))
-                throw new Exception("Enumeration attempted to an edge that does not exist");
-            var currentCostBackward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-            
-            await network.UsageNotifier.NotifyVertex(network, cancellationToken);
+            var currentCanForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
+            if (!currentCanForward)
+                throw new Exception("Queued edge always has to be traversable in the queued direction");
+
+            // notify usage of vertex before loading neighbours
+            await network.UsageNotifier.NotifyVertex(network, edgeEnumerator.Tail, cancellationToken);
             if (cancellationToken.IsCancellationRequested) return true;
-            if (!visits.Add(currentEdge)) continue;
 
             // enumerate the neighbours and see if the label propagates.
-            if (!edgeEnumerator.MoveTo(currentVertex)) continue;
+            if (!edgeEnumerator.MoveTo(edgeEnumerator.Head)) throw new Exception("Vertex does not exist");
             while (edgeEnumerator.MoveNext())
             {
                 if (cancellationToken.IsCancellationRequested) return true;
                 if (edgeEnumerator.EdgeId == currentEdge.id) continue; // u-turn.
 
                 // determine cost and see if neighbour is worth looking at.
-                var costToNeighbour =
-                    costFunction.GetIslandBuilderCost(true, edgeEnumerator, new[] { (currentEdge.id, currentTurn) });
-                var neighbourCost = localCostFunction(edgeEnumerator);
-                if (neighbourCost is { backward: false, forward: false }) continue;
+                var neighbourCanForward =
+                    costFunction.GetIslandBuilderCost(edgeEnumerator, new[] { (currentEdge.id, currentTurn) });
+                backwardEdgeEnumerator.MoveTo(edgeEnumerator.EdgeId, !edgeEnumerator.Forward);
+                var neighbourCanBackward =
+                    costFunction.GetIslandBuilderCost(backwardEdgeEnumerator);
+                if (!neighbourCanForward && !neighbourCanBackward) continue;
+
+                var neighbourBackward = (backwardEdgeEnumerator.EdgeId, backwardEdgeEnumerator.HeadOrder);
+                backwardEdgeEnumerator.MoveTo(currentEdge.id, !currentEdge.forward);
+                var currentCanBackward =
+                    costFunction.GetIslandBuilderCost(backwardEdgeEnumerator, new[] { neighbourBackward });
 
                 // get label for the current edge.
                 if (!labels.TryGetWithDetails(currentEdge.id, out var currentLabelDetails))
                     throw new Exception("Current should already have been assigned a label");
                 if (!currentLabelDetails.statusNotFinal) continue;
                 var currentLabel = currentLabelDetails.label;
-                
+
                 // if the neighbour has a final status, no need to continue.
                 var neighbourIsFinal = false;
 
-                var isForwardConnected = currentCost.forward && neighbourCost.forward;
-                var isBackwardConnected = currentCost.backward && neighbourCost.backward;
+                var canTurnForward = currentCanForward && neighbourCanForward; // turn current -> vertex -> neighbour is possible or not.
+                var canTurnBackward = neighbourCanBackward && currentCanBackward; // turn neighbour -> vertex -> current is possible or not.
 
-                if (isForwardConnected && isBackwardConnected)
+                if (!canTurnForward && !canTurnBackward) continue;
+
+                if (canTurnForward && canTurnBackward)
                 {
                     if (!labels.TryGet(edgeEnumerator.EdgeId, out var neighbourLabel))
                     {
@@ -161,7 +165,7 @@ internal class IslandBuilder
                         if (onIslandAlready != null)
                         {
                             neighbourIsFinal = true;
-                            
+
                             // check and verify status
                             if (onIslandAlready.Value)
                             {
@@ -215,7 +219,7 @@ internal class IslandBuilder
                         if (onIslandAlready != null)
                         {
                             neighbourIsFinal = true;
-                            
+
                             // check and verify status
                             if (onIslandAlready.Value)
                             {
@@ -238,7 +242,7 @@ internal class IslandBuilder
 
                     var madeConnection =
                         // connect current label to neighbour label.
-                        isForwardConnected
+                        canTurnForward
                             ? labels.ConnectTo(currentLabel, neighbourLabel)
                             :
                             // connect neighbour label to current label.
@@ -258,15 +262,15 @@ internal class IslandBuilder
                             return true; // the island can never ever get bigger anymore.
                     }
                 }
-                
+
                 // do no queue neighbours when not forward connected or when it already has a final label.
-                if (!isForwardConnected || neighbourIsFinal)  continue;
+                if (!canTurnForward || neighbourIsFinal) continue;
 
                 // add the neighbour to the queue.
                 var neighbourHops = hops + 1;
                 if (neighbourHops <= network.IslandManager.MaxIslandSize)
                 {
-                    heap.Push(((edgeEnumerator.EdgeId, edgeEnumerator.Forward), edgeEnumerator.Head, neighbourCost),
+                    heap.Push(((edgeEnumerator.EdgeId, edgeEnumerator.Forward), edgeEnumerator.HeadOrder),
                         neighbourHops);
                 }
             }

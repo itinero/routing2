@@ -21,7 +21,7 @@ internal class Islands
         _tiles = tiles;
         _islandEdges = islandEdges;
     }
-    
+
     /// <summary>
     /// Sets the tile as done.
     /// </summary>
@@ -104,12 +104,12 @@ internal class Islands
         {
             _tilesLock.EnterWriteLock();
 
-            
+
             try
             {
                 _islandEdgesLock.EnterWriteLock();
 
-                return new Islands([.._tiles], [.._islandEdges]);
+                return new Islands([.. _tiles], [.. _islandEdges]);
             }
             finally
             {

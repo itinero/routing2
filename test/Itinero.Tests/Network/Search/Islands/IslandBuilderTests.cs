@@ -46,11 +46,45 @@ public class IslandBuilderTests
             edge = writer.AddEdge(vertex1, vertex2);
             writer.AddEdge(vertex2, vertex3);
         }
-        
+
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
             routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
 
         Assert.False(isOnIsland);
+    }
+
+    [Fact]
+    public async Task IslandBuilder_IsOnIsland_TwoEdgesWithVertexRestriction_MaxSizeTwo_ShouldReturnTrue()
+    {
+        var routerDb = new RouterDb(new RouterDbConfiguration()
+        {
+            MaxIslandSize = 2
+        });
+        var edges = new List<EdgeId>();
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            edges.Add(writer.AddEdge(vertex1, vertex2));
+            edges.Add(writer.AddEdge(vertex2, vertex3));
+
+            writer.AddTurnCosts(vertex2, new[] { ("barrier", "bollard") },
+                edges.ToArray(), new uint[,] { { 0, 1 }, { 0, 0 } });
+            writer.AddTurnCosts(vertex2, new[] { ("barrier", "bollard") },
+                System.Linq.Enumerable.Reverse(edges).ToArray(), new uint[,] { { 0, 1 }, { 0, 0 } });
+        }
+
+        var profile = new DefaultProfile(getTurnCostFactor: (_) => TurnCostFactor.Binary);
+        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
+            routerDb.Latest.GetCostFunctionFor(profile), edges[0]);
+
+        Assert.True(isOnIsland);
+
+        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
+            routerDb.Latest.GetCostFunctionFor(profile), edges[1]);
+
+        Assert.True(isOnIsland);
     }
 
     [Fact]
@@ -69,7 +103,7 @@ public class IslandBuilderTests
             edge = writer.AddEdge(vertex1, vertex2);
             writer.AddEdge(vertex2, vertex3);
         }
-        
+
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
             routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
 
@@ -92,7 +126,7 @@ public class IslandBuilderTests
             edge = writer.AddEdge(vertex1, vertex2);
             writer.AddEdge(vertex2, vertex3);
         }
-        
+
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
             routerDb.Latest.GetCostFunctionFor(new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(1, 0, 1, 0, true))), edge);
 
@@ -116,9 +150,9 @@ public class IslandBuilderTests
             writer.AddEdge(vertex2, vertex3);
             writer.AddEdge(vertex3, vertex1);
         }
-        
+
         var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, 
+        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
             routerDb.Latest.GetCostFunctionFor(new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(1, 0, 1, 0, true))), edge);
 
         Assert.False(isOnIsland);
@@ -183,7 +217,7 @@ public class IslandBuilderTests
 
             return new EdgeFactor(1, 0, 1, 0);
         });
-        
+
         Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
             routerDb.Latest.GetCostFunctionFor(profile), edges[0]));
         Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
@@ -229,7 +263,7 @@ public class IslandBuilderTests
         Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
             routerDb.Latest.GetCostFunctionFor(profile), nonIslandEdge));
     }
-    
+
     [Fact]
     public async Task IslandBuilder_IsOnIsland_EdgeConnectedToNoneIslandNeighbour_ShouldReturnFalse()
     {
@@ -243,7 +277,7 @@ public class IslandBuilderTests
             edges.Add(writer.AddEdge(vertex1, vertex2));
             edges.Add(writer.AddEdge(vertex2, vertex3));
         }
-        
+
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
             routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edges[0], e =>
             {
@@ -254,7 +288,7 @@ public class IslandBuilderTests
 
         Assert.False(isOnIsland);
     }
-    
+
     [Fact]
     public async Task IslandBuilder_IsOnIsland_EdgeConnectedOneWithOneWay_ShouldReturnTrue()
     {
@@ -285,7 +319,7 @@ public class IslandBuilderTests
 
             return null;
         };
-        
+
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[0], isOnIslandAlready);
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
@@ -295,7 +329,7 @@ public class IslandBuilderTests
 
         Assert.True(isOnIsland);
     }
-    
+
     [Fact]
     public async Task IslandBuilder_IsOnIsland_EdgeConnectedOneWithTwoOneWays_ShouldReturnTrue()
     {
@@ -327,7 +361,7 @@ public class IslandBuilderTests
 
             return null;
         };
-        
+
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[0], isOnIslandAlready);
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,

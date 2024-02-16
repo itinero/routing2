@@ -28,7 +28,7 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
-        
+
         IslandManager = new RoutingNetworkIslandManager(maxIslandSize);
         _tiles = new SparseArray<NetworkTile?>(0);
     }
@@ -37,7 +37,7 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
-        IslandManager =  islandManager;
+        IslandManager = islandManager;
         _tiles = tiles;
     }
 

@@ -11,7 +11,7 @@ internal class IslandLabels
     /// The not an island label.
     /// </summary>
     public const uint NotAnIslandLabel = 0;
-    
+
     /// <summary>
     /// Keeps a label for each edge.
     /// - Starting each edge starts with it's own unique Id.
@@ -25,7 +25,7 @@ internal class IslandLabels
     internal IslandLabels(int maxIslandSize)
     {
         _maxIslandSize = maxIslandSize;
-        _islands.Add(0, (uint.MaxValue,false));
+        _islands.Add(0, (uint.MaxValue, false));
         _labelGraph.AddVertex();
     }
 
@@ -68,7 +68,7 @@ internal class IslandLabels
     public (uint label, uint size, bool statusNotFinal) AddTo(uint label, EdgeId edge)
     {
         if (!_islands.TryGetValue(label, out var islandDetails)) throw new ArgumentOutOfRangeException(nameof(label));
-        
+
         if (islandDetails.size < uint.MaxValue) islandDetails.size += 1;
         _islands[label] = (islandDetails.size, islandDetails.statusNotFinal);
         _labels[edge] = label;
@@ -226,7 +226,7 @@ internal class IslandLabels
 
             label = this.Merge(loop);
             loopFound = true;
-            
+
             loop.Clear();
             pathTree.Clear();
             settled.Clear();

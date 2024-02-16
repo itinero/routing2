@@ -19,7 +19,7 @@ internal class RoutingNetworkIslandManager
         this.MaxIslandSize = maxIslandSize;
         _islands = new();
     }
-    
+
     private RoutingNetworkIslandManager(int maxIslandSize, Dictionary<string, Islands> islands)
     {
         this.MaxIslandSize = maxIslandSize;
@@ -27,7 +27,7 @@ internal class RoutingNetworkIslandManager
     }
 
     internal int MaxIslandSize { get; }
-    
+
     internal bool TryGetIslandsFor(string profileName, out Islands islands)
     {
         try
@@ -97,10 +97,10 @@ internal class RoutingNetworkIslandManager
         {
             _tilesInProgressLock.ExitUpgradeableReadLock();
         }
-        
+
         // await the task.
         await task;
-        
+
         // remove from the queue.
         try
         {

@@ -74,7 +74,7 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
                 {
                     if (!(this.IsAcceptable(enumerator) ?? await (this as IEdgeChecker).RunCheckAsync(enumerator, default)))
                     {
-                        
+
                         continue;
                     }
 
@@ -243,21 +243,21 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         }
 
         if (!allOk) return false;
-        
+
         return IsNotOnIsland();
 
         bool? IsNotOnIsland()
         {
             var tailIsland = edgeEnumerator.Tail.TileId;
             if (!edgeEnumerator.Forward) tailIsland = edgeEnumerator.Head.TileId;
-            
+
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var island in _islands)
             {
                 // when an edge is not an island, it is sure it is not an island.
                 var onIsland = island.IsEdgeOnIsland(edgeEnumerator.EdgeId);
                 if (onIsland) return false;
-                
+
                 // if it is not on an island we need to check if the tile was done.
                 if (!island.GetTileDone(tailIsland)) return null; // inconclusive.
             }

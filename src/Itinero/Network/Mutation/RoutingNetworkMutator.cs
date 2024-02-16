@@ -173,7 +173,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// The max island size.
     /// </summary>
     internal RoutingNetworkIslandManager IslandManager => _network.IslandManager;
-    
+
     /// <summary>
     /// Adds a new vertex.
     /// </summary>

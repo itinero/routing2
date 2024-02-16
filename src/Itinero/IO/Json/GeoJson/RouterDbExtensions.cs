@@ -30,7 +30,7 @@ public static class RouterDbExtensions
             bottomRight)? box = null, IEnumerable<Profile>? profiles = null)
     {
         profiles ??= ArraySegment<Profile>.Empty;
-        
+
         using var stream = new MemoryStream();
         using (var jsonWriter = new Utf8JsonWriter(stream))
         {
@@ -188,7 +188,7 @@ public static class RouterDbExtensions
                 ("_tail_tile_id", enumerator.Tail.TileId.ToString()),
                 ("_tail_local_id", enumerator.Tail.LocalId.ToString()),
                 ("_head_tile_id", enumerator.Head.TileId.ToString()),
-                ("_head_local_id", enumerator.Head.LocalId.ToString()), 
+                ("_head_local_id", enumerator.Head.LocalId.ToString()),
                 ("_edge_id", enumerator.EdgeId.ToString())
             });
         }
@@ -199,7 +199,7 @@ public static class RouterDbExtensions
                 ("_head_tile_id", enumerator.Tail.TileId.ToString()),
                 ("_head_local_id", enumerator.Tail.LocalId.ToString()),
                 ("_tail_tile_id", enumerator.Head.TileId.ToString()),
-                ("_tail_local_id", enumerator.Head.LocalId.ToString()), 
+                ("_tail_local_id", enumerator.Head.LocalId.ToString()),
                 ("_edge_id", enumerator.EdgeId.ToString())
             });
         }
@@ -226,11 +226,11 @@ public static class RouterDbExtensions
                 factor.Value.ForwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
             attributes.AddOrReplace($"_{profileName}_speed_backward",
                 factor.Value.BackwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            
+
             if (!routingNetwork.IslandManager.TryGetIslandsFor(profileName, out var islands)) continue;
             if (!islands.GetTileDone(enumerator.Tail.TileId)) continue;
-            
-            if (factor.Value.ForwardFactor > 0) attributes.AddOrReplace($"_{profileName}_island", 
+
+            if (factor.Value.ForwardFactor > 0) attributes.AddOrReplace($"_{profileName}_island",
                 islands.IsEdgeOnIsland(enumerator.EdgeId).ToString().ToLowerInvariant());
         }
 
