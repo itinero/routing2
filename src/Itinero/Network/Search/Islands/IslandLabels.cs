@@ -1,45 +1,44 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using Itinero.Routing.DataStructures;
 
 namespace Itinero.Network.Search.Islands;
 
-/// <summary>
-/// Keeps an island label for edges for a fixed profile.
-/// </summary>
-public class IslandLabels
+internal class IslandLabels
 {
+    /// <summary>
+    /// The not an island label.
+    /// </summary>
+    public const uint NotAnIslandLabel = 0;
+    
     /// <summary>
     /// Keeps a label for each edge.
     /// - Starting each edge starts with it's own unique Id.
     /// - When edges are bidirectionally connected they get take on the lowest Id of their neighbour.
     /// </summary>
-    private readonly Dictionary<(EdgeId id, bool forward), uint> _labels = new();
-    private readonly Dictionary<uint, (uint size, bool canGrow)> _islands = new(); // holds the size per island.
+    private readonly Dictionary<EdgeId, uint> _labels = new();
+    private readonly Dictionary<uint, (uint size, bool statusNotFinal)> _islands = new(); // holds the size per island.
     private readonly IslandLabelGraph _labelGraph = new();
+    private readonly int _maxIslandSize;
 
-    /// <summary>
-    /// The size an island has when it's not considered as an island anymore.
-    /// </summary>
-    public const uint NotAnIslandSize = uint.MaxValue;
-
-    /// <summary>
-    /// The label edges get when they are not considered any island anymore.
-    /// </summary>
-    public const uint NotAnIslandLabel = uint.MaxValue;
+    internal IslandLabels(int maxIslandSize)
+    {
+        _maxIslandSize = maxIslandSize;
+        _islands.Add(0, (uint.MaxValue,false));
+        _labelGraph.AddVertex();
+    }
 
     /// <summary>
     /// Gets all the islands.
     /// </summary>
-    public IEnumerable<(uint label, uint size, bool canGrow)> Islands
+    public IEnumerable<(uint label, uint size, bool statusNotFinal)> Islands
     {
         get
         {
-            foreach (var (label, (size, canGrow)) in _islands)
+            foreach (var (label, (size, statusNotFinal)) in _islands)
             {
-                yield return (label, size, canGrow);
+                yield return (label, size, statusNotFinal);
             }
         }
     }
@@ -48,16 +47,16 @@ public class IslandLabels
     /// Creates a new label.
     /// </summary>
     /// <returns></returns>
-    public (uint label, uint size, bool canGrow) AddNew((EdgeId id, bool forward) edge)
+    public (uint label, uint size, bool statusNotFinal) AddNew(EdgeId edge, bool statusNotFinal = true)
     {
         if (_labels.ContainsKey(edge)) throw new ArgumentOutOfRangeException(nameof(edge));
 
         var label = _labelGraph.AddVertex();
 
         _labels[edge] = label;
-        _islands[label] = (1, true);
+        _islands[label] = (1, statusNotFinal);
 
-        return (label, 1, true);
+        return (label, 1, statusNotFinal);
     }
 
     /// <summary>
@@ -66,12 +65,27 @@ public class IslandLabels
     /// <param name="label"></param>
     /// <param name="edge"></param>
     /// <returns></returns>
-    public void AddTo(uint label, (EdgeId id, bool forward) edge)
+    public (uint label, uint size, bool statusNotFinal) AddTo(uint label, EdgeId edge)
     {
         if (!_islands.TryGetValue(label, out var islandDetails)) throw new ArgumentOutOfRangeException(nameof(label));
-
-        _islands[label] = (islandDetails.size + 1, true);
+        
+        if (islandDetails.size < uint.MaxValue) islandDetails.size += 1;
+        _islands[label] = (islandDetails.size, islandDetails.statusNotFinal);
         _labels[edge] = label;
+
+        if (_islands[label].size >= _maxIslandSize &&
+            label != NotAnIslandLabel)
+        {
+            // this island just grew over the maximum.
+            this.Merge([label, NotAnIslandLabel]);
+            var labelDetails = _islands[NotAnIslandLabel];
+            return (NotAnIslandLabel, labelDetails.size, islandDetails.statusNotFinal);
+        }
+        else
+        {
+            var labelDetails = _islands[label];
+            return (label, labelDetails.size, islandDetails.statusNotFinal);
+        }
     }
 
     /// <summary>
@@ -88,8 +102,38 @@ public class IslandLabels
         var headHasEdge = _labelGraph.HasEdge(head);
         _labelGraph.AddEdge(tail, head);
 
-        if (headHasEdge) return this.FindLoops();
+        if (headHasEdge) return this.FindLoops(head);
         return false;
+    }
+
+    /// <summary>
+    /// Merges the two given islands.
+    /// </summary>
+    /// <param name="tail"></param>
+    /// <param name="head"></param>
+    internal void Merge(uint tail, uint head)
+    {
+        if (tail == head) return;
+
+        if (!_labelGraph.HasVertex(tail)) throw new ArgumentException("Label does not exist", nameof(tail));
+        if (!_labelGraph.HasVertex(head)) throw new ArgumentException("Label does not exist", nameof(head));
+
+        this.Merge([tail, head]);
+
+        // var edgesAdded = false;
+        // if (!_labelGraph.HasEdge(tail, head))
+        // {
+        //     edgesAdded = true;
+        //     _labelGraph.AddEdge(tail, head);
+        // }
+        // if (!_labelGraph.HasEdge(head, tail))
+        // {
+        //     edgesAdded = true;
+        //     _labelGraph.AddEdge(head, tail);
+        // }
+        // if (!edgesAdded) return;
+        //
+        // this.FindLoops(head);
     }
 
     /// <summary>
@@ -98,7 +142,7 @@ public class IslandLabels
     /// <param name="edge"></param>
     /// <param name="label"></param>
     /// <returns></returns>
-    public bool TryGet((EdgeId id, bool forward) edge, out uint label)
+    public bool TryGet(EdgeId edge, out uint label)
     {
         return _labels.TryGetValue(edge, out label);
     }
@@ -109,7 +153,7 @@ public class IslandLabels
     /// <param name="edge"></param>
     /// <param name="island"></param>
     /// <returns></returns>
-    public bool TryGetWithDetails((EdgeId id, bool forward) edge, out (uint label, uint size, bool canGrow) island)
+    public bool TryGetWithDetails(EdgeId edge, out (uint label, uint size, bool statusNotFinal) island)
     {
         island = (0, 0, true);
         if (!_labels.TryGetValue(edge, out var label)) return false;
@@ -117,7 +161,7 @@ public class IslandLabels
         if (!_islands.TryGetValue(label, out var islandState))
             throw new Exception("Island does not exist");
 
-        island = (label, islandState.size, islandState.canGrow);
+        island = (label, islandState.size, statusNotFinal: islandState.statusNotFinal);
         return true;
     }
 
@@ -133,32 +177,18 @@ public class IslandLabels
         _islands[label] = (islandState.size, false);
     }
 
-    /// <summary>
-    /// Finds loops in the island graph and connects looped islands.
-    /// </summary>
-    /// <returns>True if a connection was made, false otherwise.</returns>
-    public bool FindLoops()
+    private bool FindLoops(uint label)
     {
-        // TODO: it's probably better to call reduce here when too much has changed.
-
-        var hasMadeConnection = false;
         var pathTree = new PathTree();
-        var enumerator = _labelGraph.GetEdgeEnumerator();
         var settled = new HashSet<uint>();
         var queue = new Queue<uint>();
         var loop = new HashSet<uint>(); // keeps all with a path back to label, initially only label.
-        uint label = 0;
-        while (label < _labelGraph.VertexCount)
-        {
-            if (!enumerator.MoveTo(label))
-            {
-                label++;
-                continue;
-            }
 
-            queue.Clear();
-            pathTree.Clear();
-            settled.Clear();
+        var loopFound = false;
+        var enumerator = _labelGraph.GetEdgeEnumerator();
+        while (true)
+        {
+            if (!enumerator.MoveTo(label)) throw new Exception("Cannot search for loops on label that does not exist");
 
             loop.Add(label);
             queue.Enqueue(pathTree.Add(label, uint.MaxValue));
@@ -168,17 +198,8 @@ public class IslandLabels
                 var pointer = queue.Dequeue();
                 pathTree.Get(pointer, out var current, out var previous);
 
-                if (settled.Contains(current))
-                {
-                    continue;
-                }
-
-                settled.Add(current);
-
-                if (!enumerator.MoveTo(current))
-                {
-                    continue;
-                }
+                if (!settled.Add(current)) continue;
+                if (!enumerator.MoveTo(current)) continue;
 
                 while (enumerator.MoveNext())
                 {
@@ -196,92 +217,97 @@ public class IslandLabels
                         }
                     }
 
-                    if (settled.Contains(n))
-                    {
-                        continue;
-                    }
-
+                    if (settled.Contains(n)) continue;
                     queue.Enqueue(pathTree.Add(n, pointer));
                 }
             }
 
-            if (loop.Count > 1)
-            {
-                this.Merge(loop);
-                hasMadeConnection = true;
-            }
+            if (loop.Count <= 1) return loopFound;
 
+            label = this.Merge(loop);
+            loopFound = true;
+            
             loop.Clear();
-
-            // move to the next label.
-            label++;
+            pathTree.Clear();
+            settled.Clear();
+            queue.Clear();
         }
-
-        return hasMadeConnection;
     }
 
-    private void Merge(HashSet<uint> labels)
+    private uint Merge(HashSet<uint> labels)
     {
-        // build a list of neighbours of the labels to be removed.
-        var edgeEnumerator = _labelGraph.GetEdgeEnumerator();
-        var bestLabel = uint.MaxValue;
-        var neighbours = new Dictionary<uint, (bool forward, bool backward)>();
-        foreach (var label in labels)
+        while (true)
         {
-            if (label < bestLabel) bestLabel = label;
-            if (!edgeEnumerator.MoveTo(label)) continue;
-
-            while (edgeEnumerator.MoveNext())
+            // build a list of neighbours of the labels to be removed.
+            var edgeEnumerator = _labelGraph.GetEdgeEnumerator();
+            var bestLabel = uint.MaxValue;
+            var neighbours = new Dictionary<uint, (bool forward, bool backward)>();
+            foreach (var label in labels)
             {
-                var n = edgeEnumerator.Head;
-                if (labels.Contains(n)) continue;
+                if (label < bestLabel) bestLabel = label;
+                if (!edgeEnumerator.MoveTo(label)) continue;
 
-                (bool forward, bool backward) data = edgeEnumerator.Forward ? (true, false) : (false, true);
-
-                if (neighbours.TryGetValue(n, out var existingData))
+                while (edgeEnumerator.MoveNext())
                 {
-                    data = (existingData.forward || data.forward, existingData.backward || data.backward);
+                    var n = edgeEnumerator.Head;
+                    if (labels.Contains(n)) continue;
+
+                    (bool forward, bool backward) data = edgeEnumerator.Forward ? (true, false) : (false, true);
+
+                    if (neighbours.TryGetValue(n, out var existingData))
+                    {
+                        data = (existingData.forward || data.forward, existingData.backward || data.backward);
+                    }
+
+                    neighbours[n] = data;
+                }
+            }
+            if (bestLabel == uint.MaxValue) throw new Exception("Cannot merge empty loop");
+
+            // add all edges to the neighbours again.
+            foreach (var (neighbour, data) in neighbours)
+            {
+                if (data.forward)
+                {
+                    if (!_labelGraph.HasEdge(bestLabel, neighbour)) _labelGraph.AddEdge(bestLabel, neighbour);
                 }
 
-                neighbours[n] = data;
+                if (data.backward)
+                {
+                    if (!_labelGraph.HasEdge(neighbour, bestLabel)) _labelGraph.AddEdge(neighbour, bestLabel);
+                }
             }
-        }
 
-        // nothing was to be removed.
-        if (bestLabel == uint.MaxValue) return;
-
-        // add all edges to the neighbours again.
-        foreach (var (neighbour, data) in neighbours)
-        {
-            if (data.forward)
+            var bestData = _islands[bestLabel];
+            foreach (var label in labels)
             {
-                if (!_labelGraph.HasEdge(bestLabel, neighbour)) _labelGraph.AddEdge(bestLabel, neighbour);
+                if (label == bestLabel) continue;
+                _labelGraph.RemoveVertex(label);
+
+                var data = _islands[label];
+                if (bestData.size < uint.MaxValue) bestData.size += data.size;
+                _islands.Remove(label);
             }
-            if (data.backward)
+
+            _islands[bestLabel] = bestData;
+
+            foreach (var k in _labels.Keys.ToArray())
             {
-                if (!_labelGraph.HasEdge(neighbour, bestLabel)) _labelGraph.AddEdge(neighbour, bestLabel);
+                var val = _labels[k];
+                if (val == bestLabel) continue;
+                if (!labels.Contains(val)) continue;
+
+                _labels[k] = bestLabel;
             }
-        }
 
-        var bestData = _islands[bestLabel];
-        foreach (var label in labels)
-        {
-            if (label == bestLabel) continue;
-            _labelGraph.RemoveVertex(label);
+            if (bestLabel == NotAnIslandLabel) return bestLabel;
+            if (_islands[bestLabel].size < _maxIslandSize)
+            {
+                return bestLabel;
+            }
 
-            var data = _islands[label];
-            bestData.size += data.size;
-            _islands.Remove(label);
-        }
-        _islands[bestLabel] = bestData;
-
-        foreach (var k in _labels.Keys)
-        {
-            var val = _labels[k];
-            if (val == bestLabel) continue;
-            if (!labels.Contains(val)) continue;
-
-            _labels[k] = bestLabel;
+            labels = [bestLabel, NotAnIslandLabel];
+            continue;
         }
     }
 }

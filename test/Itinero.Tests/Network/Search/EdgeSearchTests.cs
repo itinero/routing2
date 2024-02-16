@@ -1,6 +1,8 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Network.Search;
+using Itinero.Network.Search.Edges;
 using Xunit;
 
 namespace Itinero.Tests.Network.Search;
@@ -43,7 +45,7 @@ public class EdgeSearchTests
     }
 
     [Fact]
-    public void EdgeSearch_SnapInBox_ShouldSnapToVertex1WhenVertex1Closest()
+    public async Task EdgeSearch_SnapInBox_ShouldSnapToVertex1WhenVertex1Closest()
     {
         var routerDb = new RouterDb();
         EdgeId edge;
@@ -55,14 +57,14 @@ public class EdgeSearchTests
             edge = writer.AddEdge(vertex1, vertex2);
         }
 
-        var snapPoint = routerDb.Latest.SnapInBox(((4.792613983154297 - 0.001, 51.26535213392538 + 0.001, null),
+        var snapPoint = await routerDb.Latest.SnapInBoxAsync(((4.792613983154297 - 0.001, 51.26535213392538 + 0.001, null),
             (4.792613983154297 + 0.001, 51.26535213392538 - 0.001, null)));
         Assert.Equal(edge, snapPoint.EdgeId);
         Assert.Equal(0, snapPoint.Offset);
     }
 
     [Fact]
-    public void EdgeSearch_SnapInBox_ShouldSnapToVertex2WhenVertex2Closest()
+    public async Task EdgeSearch_SnapInBox_ShouldSnapToVertex2WhenVertex2Closest()
     {
         var routerDb = new RouterDb();
         EdgeId edge;
@@ -74,14 +76,14 @@ public class EdgeSearchTests
             edge = writer.AddEdge(vertex1, vertex2);
         }
 
-        var snapPoint = routerDb.Latest.SnapInBox(((4.797506332397461 - 0.001, 51.26674845584085 + 0.001, null),
+        var snapPoint = await routerDb.Latest.SnapInBoxAsync(((4.797506332397461 - 0.001, 51.26674845584085 + 0.001, null),
             (4.797506332397461 + 0.001, 51.26674845584085 - 0.001, null)));
         Assert.Equal(edge, snapPoint.EdgeId);
         Assert.Equal(ushort.MaxValue, snapPoint.Offset);
     }
 
     [Fact]
-    public void EdgeSearch_SnapInBox_ShouldSnapToSegmentWhenMiddleIsClosest()
+    public async Task EdgeSearch_SnapInBox_ShouldSnapToSegmentWhenMiddleIsClosest()
     {
         var routerDb = new RouterDb();
         EdgeId edge;
@@ -94,13 +96,13 @@ public class EdgeSearchTests
         }
 
         (double lon, double lat) middle = ((4.79261398315429 + 4.797506332397461) / 2, (51.26535213392538 + 51.26674845584085) / 2);
-        var snapPoint = routerDb.Latest.SnapInBox(((middle.lon - 0.01, middle.lat + 0.01, null),
+        var snapPoint = await routerDb.Latest.SnapInBoxAsync(((middle.lon - 0.01, middle.lat + 0.01, null),
             (middle.lon + 0.01, middle.lat - 0.01, null)));
         Assert.Equal(edge, snapPoint.EdgeId);
     }
 
     [Fact]
-    public void EdgeSearch_SnapInBox_ShouldSnapToClosestSegment()
+    public async Task EdgeSearch_SnapInBox_ShouldSnapToClosestSegment()
     {
         var routerDb = new RouterDb();
         EdgeId edge1, edge2;
@@ -115,13 +117,13 @@ public class EdgeSearchTests
             edge2 = writer.AddEdge(vertex3, vertex4);
         }
 
-        var snapPoint = routerDb.Latest.SnapInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01, null),
+        var snapPoint = await routerDb.Latest.SnapInBoxAsync(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01, null),
             (4.798600673675537 + 0.01, 51.268748881579405 - 0.01, null)));
         Assert.Equal(edge2, snapPoint.EdgeId);
     }
 
     [Fact]
-    public void EdgeSearch_SnapAllInBox_NonOrthogonal_ShouldSnapToAll()
+    public async Task EdgeSearch_SnapAllInBox_NonOrthogonal_ShouldSnapToAll()
     {
         var routerDb = new RouterDb();
         EdgeId edge1, edge2, edge3;
@@ -139,15 +141,15 @@ public class EdgeSearchTests
             edge3 = writer.AddEdge(vertex5, vertex6);
         }
 
-        var snapPoints = routerDb.Latest.SnapAllInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01, null),
-            (4.798600673675537 + 0.01, 51.268748881579405 - 0.01, null)), nonOrthogonalEdges: true).ToList();
+        var snapPoints = await routerDb.Latest.SnapAllInBoxAsync(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01, null),
+            (4.798600673675537 + 0.01, 51.268748881579405 - 0.01, null)), nonOrthogonalEdges: true).ToListAsync();
         Assert.True(snapPoints.Exists(x => x.EdgeId == edge1));
         Assert.True(snapPoints.Exists(x => x.EdgeId == edge2));
         Assert.True(snapPoints.Exists(x => x.EdgeId == edge3));
     }
 
     [Fact]
-    public void EdgeSearch_SnapAllInBox_ShouldSnapToOrthogonal()
+    public async Task EdgeSearch_SnapAllInBox_ShouldSnapToOrthogonal()
     {
         var routerDb = new RouterDb();
         EdgeId edge1, edge2, edge3;
@@ -165,8 +167,8 @@ public class EdgeSearchTests
             edge3 = writer.AddEdge(vertex5, vertex6);
         }
 
-        var snapPoints = routerDb.Latest.SnapAllInBox(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01, null),
-            (4.798600673675537 + 0.01, 51.268748881579405 - 0.01, null)), nonOrthogonalEdges: false).ToList();
+        var snapPoints = await routerDb.Latest.SnapAllInBoxAsync(((4.798600673675537 - 0.01, 51.268748881579405 + 0.01, null),
+            (4.798600673675537 + 0.01, 51.268748881579405 - 0.01, null)), nonOrthogonalEdges: false).ToListAsync();
         Assert.True(snapPoints.Exists(x => x.EdgeId == edge1));
         Assert.True(snapPoints.Exists(x => x.EdgeId == edge2));
         Assert.False(snapPoints.Exists(x => x.EdgeId == edge3));

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
-using Itinero.Network.Search;
+using Itinero.Network.Search.Edges;
 using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
@@ -18,7 +18,7 @@ namespace Itinero.Snapping;
 /// Just like the `Snapper`, it'll snap to a location.
 /// However, the 'Snapper' will match to any road whereas the `LocationSnapper` will only snap to roads accessible to the selected profiles
 /// </summary>
-internal sealed class Snapper : ISnapper
+internal sealed class Snapper : ISnapper, IEdgeChecker
 {
     private readonly RoutingNetwork _routingNetwork;
     private readonly bool _anyProfile;
@@ -26,11 +26,11 @@ internal sealed class Snapper : ISnapper
     private readonly double _offsetInMeter;
     private readonly double _offsetInMeterMax;
     private readonly double _maxDistance;
-    private readonly IslandBuilder[] _islandBuilders;
+    private readonly Islands[] _islands;
     private readonly ICostFunction[] _costFunctions;
+    private readonly Profile[] _profiles;
 
-    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance,
-        int minIslandSize)
+    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance)
     {
         _routingNetwork = routingNetwork;
         _anyProfile = anyProfile;
@@ -38,59 +38,14 @@ internal sealed class Snapper : ISnapper
         _offsetInMeter = offsetInMeter;
         _offsetInMeterMax = offsetInMeterMax;
         _maxDistance = maxDistance;
+        _profiles = profiles.ToArray();
 
-        // ReSharper disable once PossibleMultipleEnumeration
-        _costFunctions = profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
-        if (minIslandSize == 0)
-        {
-            _islandBuilders = Array.Empty<IslandBuilder>();
-        }
-        else
-        {
-            // ReSharper disable once PossibleMultipleEnumeration
-            _islandBuilders = profiles.Select(p => new IslandBuilder(routingNetwork,
-                new IslandBuilderSettings() { Profile = p, MinIslandSize = minIslandSize })).ToArray();
-        }
-    }
-
-    private bool AcceptableFunc(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
-    {
-        var hasProfiles = _costFunctions.Length > 0;
-        if (!hasProfiles) return true;
-
-        var allOk = true;
-        foreach (var costFunction in _costFunctions)
-        {
-            var costs = costFunction.Get(edgeEnumerator, true,
-                Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
-
-            var profileIsOk = costs.canAccess &&
-                              (!_checkCanStopOn || costs.canStop);
-
-            if (_anyProfile && profileIsOk)
-            {
-                return IsNotOnIsland();
-            }
-
-            allOk = allOk && profileIsOk;
-        }
-        return allOk && IsNotOnIsland();
-
-        bool IsNotOnIsland()
-        {
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var islandBuilder in _islandBuilders)
-            {
-                var onIsland = islandBuilder.IsOnIsland(edgeEnumerator.EdgeId, edgeEnumerator.Forward);
-                if (onIsland) return false;
-            }
-
-            return true;
-        }
+        _costFunctions = _profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
+        _islands = routingNetwork.IslandManager.MaxIslandSize == 0 ? Array.Empty<Islands>() : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
     }
 
     /// <inheritdoc/>
-    public IEnumerable<Result<SnapPoint>> To(VertexId vertexId, bool asDeparture = true)
+    public async IAsyncEnumerable<Result<SnapPoint>> ToAsync(VertexId vertexId, bool asDeparture = true)
     {
         var enumerator = _routingNetwork.GetEdgeEnumerator();
         RoutingNetworkEdgeEnumerator? secondEnumerator = null;
@@ -117,8 +72,9 @@ internal sealed class Snapper : ISnapper
             {
                 if (asDeparture)
                 {
-                    if (!this.AcceptableFunc(enumerator))
+                    if (!(this.IsAcceptable(enumerator) ?? await (this as IEdgeChecker).RunCheckAsync(enumerator, default)))
                     {
+                        
                         continue;
                     }
 
@@ -135,7 +91,7 @@ internal sealed class Snapper : ISnapper
                 {
                     secondEnumerator ??= _routingNetwork.GetEdgeEnumerator();
                     secondEnumerator.MoveTo(enumerator.EdgeId, !enumerator.Forward);
-                    if (!this.AcceptableFunc(secondEnumerator))
+                    if (!(this.IsAcceptable(secondEnumerator) ?? await (this as IEdgeChecker).RunCheckAsync(secondEnumerator, default)))
                     {
                         continue;
                     }
@@ -154,13 +110,13 @@ internal sealed class Snapper : ISnapper
     }
 
     /// <inheritdoc/>
-    public Result<SnapPoint> To(EdgeId edgeId, ushort offset, bool forward = true)
+    public async Task<Result<SnapPoint>> ToAsync(EdgeId edgeId, ushort offset, bool forward = true)
     {
         var enumerator = _routingNetwork.GetEdgeEnumerator();
 
         if (!enumerator.MoveTo(edgeId, forward)) return new Result<SnapPoint>("Edge not found");
 
-        if (!this.AcceptableFunc(enumerator))
+        if (!(this.IsAcceptable(enumerator) ?? await (this as IEdgeChecker).RunCheckAsync(enumerator, default)))
             return new Result<SnapPoint>("Edge cannot be snapped to by configured profiles in the given direction");
 
         return new Result<SnapPoint>(new SnapPoint(edgeId, offset));
@@ -180,7 +136,7 @@ internal sealed class Snapper : ISnapper
         await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest edge.
-        var snapPoint = _routingNetwork.SnapInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
+        var snapPoint = await _routingNetwork.SnapInBoxAsync(box, this, maxDistance: _maxDistance, cancellationToken);
         if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
 
         // retry only if requested.
@@ -198,7 +154,7 @@ internal sealed class Snapper : ISnapper
             cancellationToken);
 
         // snap to closest edge.
-        snapPoint = _routingNetwork.SnapInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
+        snapPoint = await _routingNetwork.SnapInBoxAsync(box, this, maxDistance: _maxDistance, cancellationToken);
         if (snapPoint.EdgeId != EdgeId.Empty)
         {
             return snapPoint;
@@ -219,8 +175,8 @@ internal sealed class Snapper : ISnapper
         await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap all.
-        var snapped = _routingNetwork.SnapAllInBox(box, this.AcceptableFunc, maxDistance: _maxDistance);
-        foreach (var snapPoint in snapped)
+        var snapped = _routingNetwork.SnapAllInBoxAsync(box, this, maxDistance: _maxDistance, cancellationToken: cancellationToken);
+        await foreach (var snapPoint in snapped)
         {
             yield return snapPoint;
         }
@@ -238,7 +194,7 @@ internal sealed class Snapper : ISnapper
         await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest vertex.
-        var vertex = _routingNetwork.SnapToVertexInBox(box, _costFunctions.Length > 0 ? this.AcceptableFunc : null, maxDistance: _maxDistance);
+        var vertex = await _routingNetwork.SnapToVertexInBoxAsync(box, _costFunctions.Length > 0 ? this : null, maxDistance: _maxDistance, cancellationToken: cancellationToken);
         if (vertex.IsEmpty()) return new Result<VertexId>("No vertex in range found");
 
         return vertex;
@@ -257,10 +213,73 @@ internal sealed class Snapper : ISnapper
         await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
         // snap to closest vertex.
-        foreach (var vertex in _routingNetwork.SnapToAllVerticesInBox(box, this.AcceptableFunc,
-                     maxDistance: _maxDistance))
+        await foreach (var vertex in _routingNetwork.SnapToAllVerticesInBoxAsync(box, this,
+                     maxDistance: _maxDistance, cancellationToken: cancellationToken))
         {
             yield return vertex;
         }
+    }
+
+    private bool? IsAcceptable(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
+    {
+        var hasProfiles = _costFunctions.Length > 0;
+        if (!hasProfiles) return true;
+
+        var allOk = true;
+        foreach (var costFunction in _costFunctions)
+        {
+            var costs = costFunction.Get(edgeEnumerator, true,
+                Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+
+            var profileIsOk = costs.canAccess &&
+                              (!_checkCanStopOn || costs.canStop);
+
+            if (_anyProfile && profileIsOk)
+            {
+                return IsNotOnIsland();
+            }
+
+            allOk = allOk && profileIsOk;
+        }
+
+        if (!allOk) return false;
+        
+        return IsNotOnIsland();
+
+        bool? IsNotOnIsland()
+        {
+            var tailIsland = edgeEnumerator.Tail.TileId;
+            if (!edgeEnumerator.Forward) tailIsland = edgeEnumerator.Head.TileId;
+            
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var island in _islands)
+            {
+                // when an edge is not an island, it is sure it is not an island.
+                var onIsland = island.IsEdgeOnIsland(edgeEnumerator.EdgeId);
+                if (onIsland) return false;
+                
+                // if it is not on an island we need to check if the tile was done.
+                if (!island.GetTileDone(tailIsland)) return null; // inconclusive.
+            }
+
+            return true;
+        }
+    }
+
+    bool? IEdgeChecker.IsAcceptable(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)
+    {
+        return this.IsAcceptable(edgeEnumerator);
+    }
+
+    async Task<bool> IEdgeChecker.RunCheckAsync(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, CancellationToken cancellationToken)
+    {
+        foreach (var profile in _profiles)
+        {
+            var tileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
+            await _routingNetwork.IslandManager.BuildForTileAsync(_routingNetwork, profile, tileId, cancellationToken);
+            if (cancellationToken.IsCancellationRequested) return true;
+        }
+
+        return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? throw new Exception("Edges were just calculated");
     }
 }

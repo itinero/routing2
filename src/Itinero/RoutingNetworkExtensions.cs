@@ -25,7 +25,7 @@ public static class RoutingNetworkExtensions
         var s = new SnapperSettings();
         settings?.Invoke(s);
 
-        return new Snapper(routingNetwork, profiles, s.AnyProfile, s.CheckCanStopOn, s.OffsetInMeter, s.OffsetInMeterMax, s.MaxDistance, s.MinIslandSize);
+        return new Snapper(routingNetwork, profiles, s.AnyProfile, s.CheckCanStopOn, s.OffsetInMeter, s.OffsetInMeterMax, s.MaxDistance);
     }
 
     /// <summary>

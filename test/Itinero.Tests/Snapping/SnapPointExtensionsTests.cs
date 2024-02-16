@@ -69,16 +69,16 @@ public class SnapPointExtensionsTests
     }
 
     [Fact]
-    public void Snap_Empty_ShouldFail()
+    public async Task Snap_Empty_ShouldFail()
     {
         var routerDb = new RouterDb();
 
-        var result = routerDb.Latest.Snap().To(new VertexId(0, 1)).ToArray();
+        var result = await routerDb.Latest.Snap().ToAsync(new VertexId(0, 1)).ToArrayAsync();
         Assert.Empty(result);
     }
 
     [Fact]
-    public void Snap_OneVertex_ShouldFail()
+    public async Task Snap_OneVertex_ShouldFail()
     {
         var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
             new (double longitude, double latitude, float? e)[] {
@@ -86,12 +86,12 @@ public class SnapPointExtensionsTests
             },
             Array.Empty<(int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)>());
 
-        var result = routerDb.Latest.Snap().To(vertices[0]);
+        var result = await routerDb.Latest.Snap().ToAsync(vertices[0]).ToArrayAsync();
         Assert.Empty(result);
     }
 
     [Fact]
-    public Task Snap_OneEdge_Vertex1_ShouldReturnOffset0()
+    public async Task Snap_OneEdge_Vertex1_ShouldReturnOffset0()
     {
         var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
             new (double longitude, double latitude, float? e)[] {
@@ -102,16 +102,15 @@ public class SnapPointExtensionsTests
                     (0, 1, null)
             });
 
-        var results = routerDb.Latest.Snap().To(vertices[0]);
+        var results = await routerDb.Latest.Snap().ToAsync(vertices[0]).ToArrayAsync();
         Assert.Single(results);
         var result = results.First();
         Assert.Equal(0, result.Value.Offset);
         Assert.Equal(edges[0], result.Value.EdgeId);
-        return Task.CompletedTask;
     }
 
     [Fact]
-    public Task Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
+    public async Task Snap_OneEdge_Vertex2_ShouldReturnOffsetMax()
     {
         var (routerDb, vertices, edges) = RouterDbScaffolding.BuildRouterDb(
             new (double longitude, double latitude, float? e)[] {
@@ -122,12 +121,11 @@ public class SnapPointExtensionsTests
                     (0, 1, null)
             });
 
-        var results = routerDb.Latest.Snap().To(vertices[1]);
+        var results = await routerDb.Latest.Snap().ToAsync(vertices[1]).ToArrayAsync();
         Assert.Single(results);
         var result = results.First();
         Assert.Equal(ushort.MaxValue, result.Value.Offset);
         Assert.Equal(edges[0], result.Value.EdgeId);
-        return Task.CompletedTask;
     }
 
     [Fact]

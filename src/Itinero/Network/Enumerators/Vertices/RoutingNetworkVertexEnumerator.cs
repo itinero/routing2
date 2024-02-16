@@ -62,7 +62,7 @@ internal class RoutingNetworkVertexEnumerator
 
             // get vertex, if it exists, return true.
             // TODO: this check can be done faster without reading coordinates.
-            if (_tile.TryGetVertex(this.Current, out _, out _, out _))
+            if (_tile.HasVertex(this.Current))
             {
                 return true;
             }

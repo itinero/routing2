@@ -31,7 +31,7 @@ public class SnapperSettings
     public double OffsetInMeterMax { get; set; } = 500;
 
     /// <summary>
-    /// The minimum island size in vertices.
+    /// A flag to control checking for islands.
     /// </summary>
-    public int MinIslandSize { get; set; } = 1024;
+    public bool CheckIslands { get; set; } = true;
 }

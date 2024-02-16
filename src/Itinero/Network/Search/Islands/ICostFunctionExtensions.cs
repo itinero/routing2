@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Routing.Costs;
 
@@ -6,15 +7,21 @@ namespace Itinero.Network.Search.Islands;
 
 internal static class ICostFunctionExtensions
 {
-    public static Func<RoutingNetworkEdgeEnumerator, (bool forward, bool backward)> GetIslandBuilderWeightFunc(
-        this ICostFunction costFunction)
+    /// <summary>
+    /// Gets the cost of a turn from the previous edges sequence to the given edge in the enumerator in a forward direction.
+    ///
+    /// This does NOT include the cost of the previous edges.
+    /// </summary>
+    /// <param name="costFunction"></param>
+    /// <param name="forward"></param>
+    /// <param name="enumerator"></param>
+    /// <param name="previousEdges"></param>
+    /// <returns></returns>
+    public static bool GetIslandBuilderCost(this ICostFunction costFunction,
+        RoutingNetworkEdgeEnumerator enumerator, IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
-        return (enumerator) =>
-        {
-            var (forward, _, _, _) = costFunction.Get(enumerator, true, ArraySegment<(EdgeId edgeId, byte? turn)>.Empty);
-            var (backward, _, _, _) = costFunction.Get(enumerator, false, ArraySegment<(EdgeId edgeId, byte? turn)>.Empty);
+        var cost = costFunction.Get(enumerator, true, previousEdges);
 
-            return (forward, backward);
-        };
+        return cost.canAccess;
     }
 }

@@ -117,10 +117,10 @@ internal static class Program
         return;
         var lux2sp = await latest.Snap(car).ToAsync(lux2);
 
-        latest.Islands(s =>
-        {
-            s.Profile = car;
-        }).IsOnIsland(lux1sp.Value.EdgeId, true);
+        // latest.Islands(s =>
+        // {
+        //     s.Profile = car;
+        // }).IsOnIsland(lux1sp.Value.EdgeId, true);
 
         var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
         var oneToOneGeoJson = oneToOne.ToGeoJson();

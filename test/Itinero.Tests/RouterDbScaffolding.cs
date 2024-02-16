@@ -11,7 +11,10 @@ internal static class RouterDbScaffolding
         (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
             List<(string, string)> attributes)[] edges)
     {
-        var routerDb = new RouterDb();
+        var routerDb = new RouterDb(new RouterDbConfiguration()
+        {
+            MaxIslandSize = 0
+        });
 
         using var writer = routerDb.GetMutableNetwork();
         var vertexIds = new VertexId[vertices.Length];
