@@ -24,8 +24,8 @@ public class DijkstraTests
 
         var latest = routerDb.Latest;
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1).First(),
-            latest.Snap().To(vertex2).First(),
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex2).FirstAsync(),
             (e, pe) => (1, 0));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
@@ -55,8 +55,8 @@ public class DijkstraTests
 
         var latest = routerDb.Latest;
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1).First(),
-            latest.Snap().To(vertex3).First(),
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex3).FirstAsync(),
             (e, ep) => (1, 0));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
@@ -91,8 +91,8 @@ public class DijkstraTests
 
         var latest = routerDb.Latest;
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().To(vertex1).First(),
-            latest.Snap().To(vertex4).First(),
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex4).FirstAsync(),
             (e, ep) => (1, 0));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
@@ -129,8 +129,8 @@ public class DijkstraTests
 
         var latest = routerDb.Latest;
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
-            latest.Snap().ToExact(vertex1, edge3),
-            latest.Snap().ToExact(vertex3, edge3),
+            await latest.Snap().ToExactAsync(vertex1, edge3),
+            await latest.Snap().ToExactAsync(vertex3, edge3),
             (e, ep) =>
             {
                 if (e.EdgeId == edge3)
@@ -182,8 +182,8 @@ public class DijkstraTests
         }
 
         var latest = routerDb.Latest;
-        var snap1 = latest.Snap().To(vertex1).First().Value;
-        var snap2 = latest.Snap().To(vertex2).First().Value;
+        var snap1 = (await latest.Snap().ToAsync(vertex1).FirstAsync()).Value;
+        var snap2 = (await latest.Snap().ToAsync(vertex2).FirstAsync()).Value;
         var snap3 = new SnapPoint(edge, ushort.MaxValue / 4);
         var snap4 = new SnapPoint(edge, ushort.MaxValue / 2);
         var snap5 = new SnapPoint(edge, ushort.MaxValue / 4 + ushort.MaxValue / 2);
@@ -248,8 +248,8 @@ public class DijkstraTests
         }
 
         var latest = routerDb.Latest;
-        var snap1 = latest.Snap().To(vertex1).First().Value;
-        var snap2 = latest.Snap().To(vertex3).First().Value;
+        var snap1 = (await latest.Snap().ToAsync(vertex1).FirstAsync()).Value;
+        var snap2 = (await latest.Snap().ToAsync(vertex3).FirstAsync()).Value;
         var snap3 = new SnapPoint(edge2, ushort.MaxValue / 4);
         var snap4 = new SnapPoint(edge2, ushort.MaxValue / 2);
         var snap5 = new SnapPoint(edge2, (ushort.MaxValue / 4) + (ushort.MaxValue / 2));

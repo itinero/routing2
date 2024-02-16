@@ -56,7 +56,7 @@ public interface ISnapper
     /// <param name="vertexId">The vertex.</param>
     /// <param name="asDeparture">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure at the given vertex, when true, or arrival, when false.</param>
     /// <returns>The results if any. Snapping will fail if a vertex has no edges or cannot be accessed by any configured profiles.</returns>
-    IEnumerable<Result<SnapPoint>> To(VertexId vertexId, bool asDeparture = true);
+    IAsyncEnumerable<Result<SnapPoint>> ToAsync(VertexId vertexId, bool asDeparture = true);
 
     /// <summary>
     /// Snaps to the given vertex.
@@ -65,5 +65,5 @@ public interface ISnapper
     /// <param name="offset">The vertex.</param>
     /// <param name="forward">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure, when true, or arrival, when false.</param>
     /// <returns>The results if any. If the edge cannot be accessed by any configured profiles.</returns>
-    Result<SnapPoint> To(EdgeId edgeId, ushort offset, bool forward = true);
+    Task<Result<SnapPoint>> ToAsync(EdgeId edgeId, ushort offset, bool forward = true);
 }

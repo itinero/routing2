@@ -6,7 +6,7 @@ namespace Itinero.Profiles;
 /// <summary>
 /// A default profile where all factors are '1'.
 /// </summary>
-public class DefaultProfile : Profile
+public sealed class DefaultProfile : Profile
 {
     private readonly Func<IEnumerable<(string key, string value)>, EdgeFactor>? _getEdgeFactor;
     private readonly Func<IEnumerable<(string key, string value)>, TurnCostFactor>? _getTurnCostFactor;

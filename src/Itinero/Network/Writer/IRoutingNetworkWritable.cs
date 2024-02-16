@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Itinero.Network.Enumerators.Edges;
+using Itinero.Network.Search.Islands;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Writer;
@@ -8,6 +9,8 @@ namespace Itinero.Network.Writer;
 internal interface IRoutingNetworkWritable
 {
     int Zoom { get; }
+
+    RoutingNetworkIslandManager IslandManager { get; }
 
     RouterDb RouterDb { get; }
 

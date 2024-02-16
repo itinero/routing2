@@ -76,10 +76,10 @@ public static class ISnapperExtensions
     /// <param name="edgeId">The edge.</param>
     /// <param name="asDeparture">When this has a value, any edge will be checked against the configured profile(s) as suitable for departure at the given vertex, when true, or arrival, when false.</param>
     /// <returns>The result if any. Snapping will fail if a vertex has no edges.</returns>
-    public static Result<SnapPoint> ToExact(this ISnapper snapper, VertexId vertexId, EdgeId edgeId, bool asDeparture = true)
+    public static async Task<Result<SnapPoint>> ToExactAsync(this ISnapper snapper, VertexId vertexId, EdgeId edgeId, bool asDeparture = true)
     {
-        var result = snapper.To(vertexId, asDeparture);
-        foreach (var result1 in result)
+        var result = snapper.ToAsync(vertexId, asDeparture);
+        await foreach (var result1 in result)
         {
             if (result1.Value.EdgeId == edgeId) return result1;
         }

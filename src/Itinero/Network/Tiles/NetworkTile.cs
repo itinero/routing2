@@ -134,6 +134,21 @@ internal partial class NetworkTile
     }
 
     /// <summary>
+    /// Returns true if the vertex exists.
+    /// </summary>
+    /// <param name="vertex"></param>
+    /// <returns></returns>
+    public bool HasVertex(VertexId vertex)
+    {
+        if (vertex.LocalId >= _nextVertexId)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Gets the vertex with the given id.
     /// </summary>
     /// <param name="vertex">The vertex.</param>
