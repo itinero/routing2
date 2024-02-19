@@ -418,7 +418,7 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Restrictions.NetworkRestriction", "rp": "Itinero.IO.Osm_NetworkRestriction.html", "cl": 12, "ucl": 6, "cal": 18, "tl": 67, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Restrictions.OsmTurnRestriction", "rp": "Itinero.IO.Osm_OsmTurnRestriction.html", "cl": 30, "ucl": 0, "cal": 30, "tl": 91, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Restrictions.OsmTurnRestrictionExtensions", "rp": "Itinero.IO.Osm_OsmTurnRestrictionExtensions.html", "cl": 115, "ucl": 95, "cal": 210, "tl": 342, "ct": "LineCoverage", "mc": "-", "cb": 56, "tb": 112, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Restrictions.OsmTurnRestrictionParser", "rp": "Itinero.IO.Osm_OsmTurnRestrictionParser.html", "cl": 92, "ucl": 50, "cal": 142, "tl": 253, "ct": "LineCoverage", "mc": "-", "cb": 47, "tb": 86, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Restrictions.OsmTurnRestrictionParser", "rp": "Itinero.IO.Osm_OsmTurnRestrictionParser.html", "cl": 92, "ucl": 50, "cal": 142, "tl": 253, "ct": "LineCoverage", "mc": "-", "cb": 48, "tb": 88, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.RouterDbExtensions", "rp": "Itinero.IO.Osm_RouterDbExtensions.html", "cl": 16, "ucl": 9, "cal": 25, "tl": 65, "ct": "LineCoverage", "mc": "-", "cb": 7, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.RouterDbStreamTarget", "rp": "Itinero.IO.Osm_RouterDbStreamTarget.html", "cl": 87, "ucl": 95, "cal": 182, "tl": 284, "ct": "LineCoverage", "mc": "-", "cb": 34, "tb": 82, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Streams.CompleteOsmGeoPreprocessor", "rp": "Itinero.IO.Osm_CompleteOsmGeoPreprocessor.html", "cl": 50, "ucl": 7, "cal": 57, "tl": 118, "ct": "LineCoverage", "mc": "-", "cb": 21, "tb": 26, "lch": [], "bch": [], "hc": [] },
@@ -520,7 +520,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero.IO.Osm", "class": "Itinero.IO.Osm.Restrictions.OsmTurnRestrictionParser", "reportPath": "Itinero.IO.Osm_OsmTurnRestrictionParser.html", "methodName": "TryParse(OsmSharp.Relation,System.Func`2<System.Int64,OsmSharp.Way>,Itinero.IO.Osm.Restrictions.OsmTurnRestriction&)", "methodShortName": "TryParse(...)", "fileIndex": 0, "line": 187,
     "metrics": [
-      { "value": 38, "exceeded": true },
+      { "value": 40, "exceeded": true },
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Geo.GeoExtensions", "reportPath": "Itinero_GeoExtensions.html", "methodName": "Intersect(System.ValueTuple`2<System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>,System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>>,System.ValueTuple`2<System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>,System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>>,System.Boolean)", "methodShortName": "Intersect(...)", "fileIndex": 0, "line": 391,
