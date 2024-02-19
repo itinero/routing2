@@ -427,7 +427,7 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Streams.RelationTagsPreprocessor", "rp": "Itinero.IO.Osm_RelationTagsPreprocessor.html", "cl": 48, "ucl": 2, "cal": 50, "tl": 98, "ct": "LineCoverage", "mc": "-", "cb": 15, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.AttributesExtensions", "rp": "Itinero.IO.Osm_AttributesExtensions.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.GlobalEdgeIdExtensions", "rp": "Itinero.IO.Osm_GlobalEdgeIdExtensions.html", "cl": 15, "ucl": 10, "cal": 25, "tl": 44, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 197, "ucl": 61, "cal": 258, "tl": 412, "ct": "LineCoverage", "mc": "-", "cb": 123, "tb": 170, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 198, "ucl": 61, "cal": 259, "tl": 413, "ct": "LineCoverage", "mc": "-", "cb": 125, "tb": 172, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "Itinero.IO.Osm.Tiles",
@@ -465,7 +465,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero.IO.Osm", "class": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "reportPath": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "methodName": "AddTileData(Itinero.Network.Tiles.Standalone.Writer.StandaloneNetworkTileWriter,System.Collections.Generic.IEnumerable`1<OsmSharp.OsmGeo>,System.Action`1<Itinero.IO.Osm.DataProviderSettings>)", "methodShortName": "AddTileData(...)", "fileIndex": 0, "line": 31,
     "metrics": [
-      { "value": 170, "exceeded": true },
+      { "value": 172, "exceeded": true },
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra", "reportPath": "Itinero_Dijkstra.2.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 78,
