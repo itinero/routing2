@@ -163,6 +163,7 @@ public static class StandaloneNetworkTileWriterExtensions
                     }
                 case Relation relation:
                     if (!restrictionParser.IsRestriction(relation, out _)) continue;
+                    if (relation.Members == null) continue;
 
                     // log ways that are members, we need to keep their edge ids ready
                     // or store their global ids when the restriction crosses tile boundaries.
