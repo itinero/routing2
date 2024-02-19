@@ -192,7 +192,7 @@ public class OsmTurnRestrictionParser
         var vias = new List<Way>();
         var tos = new List<Way>();
         long? viaNodeId = null;
-        foreach (var m in relation.Members)
+        foreach (var m in relation.Members ?? ArraySegment<RelationMember>.Empty)
         {
             if (m == null) return new Result<bool>("not all members set");
             if (m.Role != "via" && m.Role != "from" && m.Role != "to") continue;
