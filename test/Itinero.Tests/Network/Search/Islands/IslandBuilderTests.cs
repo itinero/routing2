@@ -185,8 +185,6 @@ public class IslandBuilderTests
         {
             await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
                 routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
-            await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-                routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
         }
 
         Assert.Single(labels.Islands);
@@ -265,7 +263,7 @@ public class IslandBuilderTests
     }
 
     [Fact]
-    public async Task IslandBuilder_IsOnIsland_EdgeConnectedToNoneIslandNeighbour_ShouldReturnFalse()
+    public async Task IslandBuilder_IsOnIsland_EdgeConnectedToNotOnIslandNeighbour_ShouldReturnFalse()
     {
         var routerDb = new RouterDb();
         var edges = new List<EdgeId>();

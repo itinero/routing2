@@ -54,16 +54,16 @@ internal class IslandBuilder
         }
     }
 
-    internal static async Task<bool?> IsOnIslandAsync(RoutingNetwork network, IslandLabels labels, ICostFunction costFunction, EdgeId edgeId,
+    internal static async Task<bool?> IsOnIslandAsync(RoutingNetwork network, IslandLabels labels,
+        ICostFunction costFunction, EdgeId edgeId,
         Func<IEdgeEnumerator, bool?>? isOnIslandAlready = null, CancellationToken cancellationToken = default)
     {
-        // when we get here the edge either has no island yet or the current label is not final yet.
         var edgeEnumerator = network.GetEdgeEnumerator();
-        var backwardEdgeEnumerator = network.GetEdgeEnumerator();
         edgeEnumerator.MoveTo(edgeId, true);
+        var costEnumerator = network.GetEdgeEnumerator();
         var canForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-        backwardEdgeEnumerator.MoveTo(edgeId, false);
-        var canBackward = costFunction.GetIslandBuilderCost(backwardEdgeEnumerator);
+        costEnumerator.MoveTo(edgeId, false);
+        var canBackward = costFunction.GetIslandBuilderCost(costEnumerator);
 
         // test if the edge can be traversed, if not return undefined value.
         if (!canForward && !canBackward) return null;
@@ -90,128 +90,84 @@ internal class IslandBuilder
                 rootIsland = labels.AddNew(edgeId);
             }
         }
+
         if (rootIsland.size >= network.IslandManager.MaxIslandSize)
         {
             if (rootIsland.label != IslandLabels.NotAnIslandLabel)
                 throw new Exception("A large island without the not-an-island label should not exist");
             return false;
         }
-        if (!rootIsland.statusNotFinal) return true; // the island can never ever get bigger anymore.
 
-        // do a breadth-first search and stop when the island is big enough OR the search stops and the edge is on an island.
-        // update any useful info about edges and their island labels along the way.
-        var heap =
-            new BinaryHeap<((EdgeId id, bool forward) edge, byte? turn)>();
-        if (canForward) heap.Push(((edgeId, true), edgeEnumerator.HeadOrder), 1);
-        if (canBackward) heap.Push(((edgeId, false), edgeEnumerator.TailOrder), 1);
-        var visits = new HashSet<(EdgeId id, bool forward)>();
-        while (heap.Count > 0)
+        if (rootIsland.final) return true; // the island can never ever get bigger anymore.
+
+        // search in two parts:
+        // - a search space of routes going towards the edge.
+        // - a search space of routes going away from the edge.
+        // when either of the searches stops before the island is final the edge is on an island.
+
+        var awayHeap = new BinaryHeap<(EdgeId id, bool forward)>();
+        var towardsHeap = new BinaryHeap<(EdgeId id, bool forward)>();
+        var awayVisits = new HashSet<(EdgeId id, bool forward)>();
+        var towardsVisits = new HashSet<(EdgeId id, bool forward)>();
+        if (canForward)
         {
-            // visit the next edge.
-            var (currentEdge, currentTurn) = heap.Pop(out var hops);
-            if (!visits.Add(currentEdge)) continue;
+            awayHeap.Push((edgeId, true), 1);
+            towardsHeap.Push((edgeId, true), 1);
+        }
+        if (canBackward)
+        {
+            awayHeap.Push((edgeId, false), 1);
+            towardsHeap.Push((edgeId, false), 1);
+        }
 
-            // calculate the costs.
-            if (!edgeEnumerator.MoveTo(currentEdge.id, currentEdge.forward))
-                throw new Exception("Enumeration attempted to an edge that does not exist");
-            var currentCanForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-            if (!currentCanForward)
-                throw new Exception("Queued edge always has to be traversable in the queued direction");
-
-            // notify usage of vertex before loading neighbours
-            await network.UsageNotifier.NotifyVertex(network, edgeEnumerator.Tail, cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return true;
-
-            // enumerate the neighbours and see if the label propagates.
-            if (!edgeEnumerator.MoveTo(edgeEnumerator.Head)) throw new Exception("Vertex does not exist");
-            while (edgeEnumerator.MoveNext())
+        while (awayHeap.Count > 0 && towardsHeap.Count > 0)
+        {
+            // do towards
+            while (true)
             {
-                if (cancellationToken.IsCancellationRequested) return true;
-                if (edgeEnumerator.EdgeId == currentEdge.id) continue; // u-turn.
+                if (cancellationToken.IsCancellationRequested) return null;
 
-                // determine cost and see if neighbour is worth looking at.
-                var neighbourCanForward =
-                    costFunction.GetIslandBuilderCost(edgeEnumerator, new[] { (currentEdge.id, currentTurn) });
-                backwardEdgeEnumerator.MoveTo(edgeEnumerator.EdgeId, !edgeEnumerator.Forward);
-                var neighbourCanBackward =
-                    costFunction.GetIslandBuilderCost(backwardEdgeEnumerator);
-                if (!neighbourCanForward && !neighbourCanBackward) continue;
+                if (towardsHeap.Count == 0) break;
+                var currentEdge = towardsHeap.Pop(out var hops);
+                if (!towardsVisits.Add(currentEdge)) continue;
 
-                var neighbourBackward = (backwardEdgeEnumerator.EdgeId, backwardEdgeEnumerator.HeadOrder);
-                backwardEdgeEnumerator.MoveTo(currentEdge.id, !currentEdge.forward);
-                var currentCanBackward =
-                    costFunction.GetIslandBuilderCost(backwardEdgeEnumerator, new[] { neighbourBackward });
+                if (!edgeEnumerator.MoveTo(currentEdge.id, currentEdge.forward))
+                    throw new Exception("Enumeration attempted to an edge that does not exist");
+#if DEBUG
+                // TODO: if we queue the tail vertex then we can avoid this move.
+                var currentCanMove = costFunction.GetIslandBuilderCost(edgeEnumerator);
+                if (!currentCanMove)
+                    throw new Exception(
+                        "Queued edge always has to be traversable in the opposite queued direction in towards search");
+#endif
 
-                // get label for the current edge.
-                if (!labels.TryGetWithDetails(currentEdge.id, out var currentLabelDetails))
-                    throw new Exception("Current should already have been assigned a label");
-                if (!currentLabelDetails.statusNotFinal) continue;
-                var currentLabel = currentLabelDetails.label;
+                // enumerate the neighbours at the tail and propagate labels if a 
+                // move is possible neighbour -> tail -> current.
+                // TODO: queue previous edges too to be able to handle more complex restrictions.
+                var previousEdges =
+                    new (EdgeId edgeId, byte? turn)[] { (edgeEnumerator.EdgeId, edgeEnumerator.TailOrder) };
 
-                // if the neighbour has a final status, no need to continue.
-                var neighbourIsFinal = false;
+                // notify usage of vertex before loading neighbours.
+                await network.UsageNotifier.NotifyVertex(network, edgeEnumerator.Tail, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return null;
 
-                var canTurnForward = currentCanForward && neighbourCanForward; // turn current -> vertex -> neighbour is possible or not.
-                var canTurnBackward = neighbourCanBackward && currentCanBackward; // turn neighbour -> vertex -> current is possible or not.
-
-                if (!canTurnForward && !canTurnBackward) continue;
-
-                if (canTurnForward && canTurnBackward)
+                // enumerate the neighbours and see if the label propagates.
+                if (!edgeEnumerator.MoveTo(edgeEnumerator.Tail)) throw new Exception("Vertex does not exist");
+                while (edgeEnumerator.MoveNext())
                 {
-                    if (!labels.TryGet(edgeEnumerator.EdgeId, out var neighbourLabel))
-                    {
-                        // check if the neighbour has a status already we can use.
-                        var onIslandAlready = isOnIslandAlready?.Invoke(edgeEnumerator);
-                        if (onIslandAlready != null)
-                        {
-                            neighbourIsFinal = true;
+                    if (edgeEnumerator.EdgeId == currentEdge.id) continue;
 
-                            // check and verify status
-                            if (onIslandAlready.Value)
-                            {
-                                // neighbour has a known status and is on an island.
-                                (neighbourLabel, _, _) = labels.AddNew(edgeEnumerator.EdgeId, false);
-                            }
-                            else
-                            {
-                                // neighbour has a known status and is not on an island.
-                                neighbourLabel = IslandLabels.NotAnIslandLabel;
-                                labels.AddTo(neighbourLabel, edgeEnumerator.EdgeId);
-                            }
+                    // see the turn neighbour -> tail -> current is possible.
+                    // this means we need to check the neighbour in it's current backward direction and current in forward.
+                    var canMove = costFunction.GetIslandBuilderCost(edgeEnumerator, false, previousEdges);
+                    if (!canMove) continue;
 
-                            // neighbour already has a label and is connected to the current edge.
-                            labels.Merge(currentLabel, neighbourLabel);
-                        }
-                        else
-                        {
-                            // neighbour has no label or no known status, just assign it the same as the current edge.
-                            labels.AddTo(currentLabel, edgeEnumerator.EdgeId);
-                        }
-                    }
-                    else
-                    {
-                        // neighbour already has a label and is connected to the current edge.
-                        labels.Merge(currentLabel, neighbourLabel);
-                    }
-
-                    // test the original root island, it could now be big enough.
-                    if (labels.TryGetWithDetails(edgeId, out rootIsland))
-                    {
-                        if (rootIsland.size >= network.IslandManager.MaxIslandSize)
-                        {
-                            if (rootIsland.label != IslandLabels.NotAnIslandLabel)
-                                throw new Exception("A large island without the not-an-island label should not exist");
-                            return false;
-                        }
-                        if (!rootIsland.statusNotFinal)
-                            return true; // the island can never ever get bigger anymore.
-                    }
-                }
-                else
-                {
-                    // current is connected to neighbour but only in one way.
+                    // get label for the current edge, we get it here because it could have changed during neighbour processing.
+                    if (!labels.TryGetWithDetails(currentEdge.id, out var currentLabelDetails))
+                        throw new Exception("Current should already have been assigned a label");
 
                     // get or determine neighbour label.
+                    var neighbourIsFinal = false;
                     if (!labels.TryGet(edgeEnumerator.EdgeId, out var neighbourLabel))
                     {
                         // check if the neighbour has a status already we can use.
@@ -224,7 +180,7 @@ internal class IslandBuilder
                             if (onIslandAlready.Value)
                             {
                                 // neighbour has a known status and is on an island.
-                                (neighbourLabel, _, _) = labels.AddNew(edgeEnumerator.EdgeId, false);
+                                (neighbourLabel, _, _) = labels.AddNew(edgeEnumerator.EdgeId, true);
                             }
                             else
                             {
@@ -240,13 +196,8 @@ internal class IslandBuilder
                         }
                     }
 
-                    var madeConnection =
-                        // connect current label to neighbour label.
-                        canTurnForward
-                            ? labels.ConnectTo(currentLabel, neighbourLabel)
-                            :
-                            // connect neighbour label to current label.
-                            labels.ConnectTo(neighbourLabel, currentLabel);
+                    // a connection is made, the path neighbour -> current is possible.
+                    var madeConnection = labels.ConnectTo(neighbourLabel, currentLabelDetails.label);
 
                     // test the original root island, it could now be big enough.
                     if (madeConnection && labels.TryGetWithDetails(edgeId, out rootIsland))
@@ -258,34 +209,144 @@ internal class IslandBuilder
                             return false;
                         }
 
-                        if (!rootIsland.statusNotFinal)
+                        if (rootIsland.final)
                             return true; // the island can never ever get bigger anymore.
                     }
-                }
 
-                // do no queue neighbours when not forward connected or when it already has a final label.
-                if (!canTurnForward || neighbourIsFinal) continue;
+                    if (neighbourIsFinal)
+                    {
+                        // if the neighbour already has a final label there are only two possibilities here:
+                        // - this neighbour is an island, a connection with a non-island will never be made, no need to search further.
+                        // - this neighbour is not an island, a connection with a non-island edge was made, no need to search further.
+                        continue;
+                    }
 
-                // add the neighbour to the queue.
-                var neighbourHops = hops + 1;
-                if (neighbourHops <= network.IslandManager.MaxIslandSize)
-                {
-                    heap.Push(((edgeEnumerator.EdgeId, edgeEnumerator.Forward), edgeEnumerator.HeadOrder),
+                    // add the neighbour to the queue, but in the opposite direction as currently enumerated.
+                    var neighbourHops = hops + 1;
+                    towardsHeap.Push((edgeEnumerator.EdgeId, !edgeEnumerator.Forward),
                         neighbourHops);
                 }
+
+                break;
+            }
+            if (towardsHeap.Count == 0) break;
+
+            // do away.
+            while (true)
+            {
+                if (cancellationToken.IsCancellationRequested) return null;
+
+                if (awayHeap.Count == 0) break;
+                var currentEdge = awayHeap.Pop(out var hops);
+                if (!awayVisits.Add(currentEdge)) continue;
+
+                if (!edgeEnumerator.MoveTo(currentEdge.id, currentEdge.forward))
+                    throw new Exception("Enumeration attempted to an edge that does not exist");
+#if DEBUG
+                // TODO: if we queue the tail vertex then we can avoid this move.
+                var currentCanMove = costFunction.GetIslandBuilderCost(edgeEnumerator);
+                if (!currentCanMove)
+                    throw new Exception(
+                        "Queued edge always has to be traversable in the opposite queued direction in towards search");
+#endif
+
+                // enumerate the neighbours at the tail and propagate labels if a 
+                // move is possible current -> head -> neighbour.
+                // TODO: queue previous edges too to be able to handle more complex restrictions.
+                var previousEdges =
+                    new (EdgeId edgeId, byte? turn)[] { (edgeEnumerator.EdgeId, edgeEnumerator.HeadOrder) };
+
+                // notify usage of vertex before loading neighbours.
+                await network.UsageNotifier.NotifyVertex(network, edgeEnumerator.Head, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return null;
+
+                // enumerate the neighbours and see if the label propagates.
+                if (!edgeEnumerator.MoveTo(edgeEnumerator.Head)) throw new Exception("Vertex does not exist");
+                while (edgeEnumerator.MoveNext())
+                {
+                    if (edgeEnumerator.EdgeId == currentEdge.id) continue;
+
+                    // see the turn current -> head -> neighbour is possible.
+                    var canMove = costFunction.GetIslandBuilderCost(edgeEnumerator, true, previousEdges);
+                    if (!canMove) continue;
+
+                    // get label for the current edge, we get it here because it could have changed during neighbour processing.
+                    if (!labels.TryGetWithDetails(currentEdge.id, out var currentLabelDetails))
+                        throw new Exception("Current should already have been assigned a label");
+
+                    // get or determine neighbour label.
+                    var neighbourIsFinal = false;
+                    if (!labels.TryGet(edgeEnumerator.EdgeId, out var neighbourLabel))
+                    {
+                        // check if the neighbour has a status already we can use.
+                        var onIslandAlready = isOnIslandAlready?.Invoke(edgeEnumerator);
+                        if (onIslandAlready != null)
+                        {
+                            neighbourIsFinal = true;
+
+                            // check and verify status
+                            if (onIslandAlready.Value)
+                            {
+                                // neighbour has a known status and is on an island.
+                                (neighbourLabel, _, _) = labels.AddNew(edgeEnumerator.EdgeId, true);
+                            }
+                            else
+                            {
+                                // neighbour has a known status and is not on an island.
+                                neighbourLabel = IslandLabels.NotAnIslandLabel;
+                                labels.AddTo(neighbourLabel, edgeEnumerator.EdgeId);
+                            }
+                        }
+                        else
+                        {
+                            // neighbour has no label or no known status, just assign it the same as the current edge.
+                            (neighbourLabel, _, _) = labels.AddNew(edgeEnumerator.EdgeId);
+                        }
+                    }
+
+                    // a connection is made, the path current -> neighbour is possible.
+                    var madeConnection = labels.ConnectTo(currentLabelDetails.label, neighbourLabel);
+
+                    // test the original root island, it could now be big enough.
+                    if (madeConnection && labels.TryGetWithDetails(edgeId, out rootIsland))
+                    {
+                        if (rootIsland.size >= network.IslandManager.MaxIslandSize)
+                        {
+                            if (rootIsland.label != IslandLabels.NotAnIslandLabel)
+                                throw new Exception("A large island without the not-an-island label should not exist");
+                            return false;
+                        }
+
+                        if (rootIsland.final)
+                            return true; // the island can never ever get bigger anymore.
+                    }
+
+                    if (neighbourIsFinal)
+                    {
+                        // if the neighbour already has a final label there are only two possibilities here:
+                        // - this neighbour is an island, a connection with a non-island will never be made, no need to search further.
+                        // - this neighbour is not an island, a connection with a non-island edge was made, no need to search further.
+                        continue;
+                    }
+
+                    // add the neighbour to the queue.
+                    var neighbourHops = hops + 1;
+                    awayHeap.Push((edgeEnumerator.EdgeId, edgeEnumerator.Forward),
+                        neighbourHops);
+                }
+
+                break;
             }
         }
 
-        // test again.
-        if (labels.TryGetWithDetails(edgeId, out rootIsland))
-        {
-            if (rootIsland.size >= network.IslandManager.MaxIslandSize) return false;
-            if (!rootIsland.statusNotFinal) return true; // the island can never ever get bigger anymore.
-        }
+        if (!labels.TryGetWithDetails(edgeId, out rootIsland)) throw new Exception("Root should have an island here");
+        if (rootIsland.size >= network.IslandManager.MaxIslandSize)
+            throw new Exception("This should have been tested before");
+        if (rootIsland.final) throw new Exception("This should have been tested before");
 
         // island cannot get bigger anymore.
         // it has also not reached the min size.
-        labels.SetAsComplete(rootIsland.label);
+        labels.SetAsFinal(rootIsland.label);
         return true;
     }
 }

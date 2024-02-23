@@ -18,27 +18,27 @@ internal class IslandLabels
     /// - When edges are bidirectionally connected they get take on the lowest Id of their neighbour.
     /// </summary>
     private readonly Dictionary<EdgeId, uint> _labels = new();
-    private readonly Dictionary<uint, (uint size, bool statusNotFinal)> _islands = new(); // holds the size per island.
+    private readonly Dictionary<uint, (uint size, bool final)> _islands = new(); // holds the size per island.
     private readonly IslandLabelGraph _labelGraph = new();
     private readonly int _maxIslandSize;
 
     internal IslandLabels(int maxIslandSize)
     {
         _maxIslandSize = maxIslandSize;
-        _islands.Add(0, (uint.MaxValue, false));
+        _islands.Add(0, (uint.MaxValue, true));
         _labelGraph.AddVertex();
     }
 
     /// <summary>
     /// Gets all the islands.
     /// </summary>
-    public IEnumerable<(uint label, uint size, bool statusNotFinal)> Islands
+    public IEnumerable<(uint label, uint size, bool final)> Islands
     {
         get
         {
-            foreach (var (label, (size, statusNotFinal)) in _islands)
+            foreach (var (label, (size, final)) in _islands)
             {
-                yield return (label, size, statusNotFinal);
+                yield return (label, size, final);
             }
         }
     }
@@ -47,16 +47,16 @@ internal class IslandLabels
     /// Creates a new label.
     /// </summary>
     /// <returns></returns>
-    public (uint label, uint size, bool statusNotFinal) AddNew(EdgeId edge, bool statusNotFinal = true)
+    public (uint label, uint size, bool final) AddNew(EdgeId edge, bool final = false)
     {
         if (_labels.ContainsKey(edge)) throw new ArgumentOutOfRangeException(nameof(edge));
 
         var label = _labelGraph.AddVertex();
 
         _labels[edge] = label;
-        _islands[label] = (1, statusNotFinal);
+        _islands[label] = (1, final);
 
-        return (label, 1, statusNotFinal);
+        return (label, 1, final);
     }
 
     /// <summary>
@@ -65,12 +65,12 @@ internal class IslandLabels
     /// <param name="label"></param>
     /// <param name="edge"></param>
     /// <returns></returns>
-    public (uint label, uint size, bool statusNotFinal) AddTo(uint label, EdgeId edge)
+    public (uint label, uint size, bool final) AddTo(uint label, EdgeId edge)
     {
         if (!_islands.TryGetValue(label, out var islandDetails)) throw new ArgumentOutOfRangeException(nameof(label));
 
         if (islandDetails.size < uint.MaxValue) islandDetails.size += 1;
-        _islands[label] = (islandDetails.size, islandDetails.statusNotFinal);
+        _islands[label] = (islandDetails.size, final: islandDetails.final);
         _labels[edge] = label;
 
         if (_islands[label].size >= _maxIslandSize &&
@@ -79,12 +79,12 @@ internal class IslandLabels
             // this island just grew over the maximum.
             this.Merge([label, NotAnIslandLabel]);
             var labelDetails = _islands[NotAnIslandLabel];
-            return (NotAnIslandLabel, labelDetails.size, islandDetails.statusNotFinal);
+            return (NotAnIslandLabel, labelDetails.size, final: islandDetails.final);
         }
         else
         {
             var labelDetails = _islands[label];
-            return (label, labelDetails.size, islandDetails.statusNotFinal);
+            return (label, labelDetails.size, final: islandDetails.final);
         }
     }
 
@@ -153,28 +153,28 @@ internal class IslandLabels
     /// <param name="edge"></param>
     /// <param name="island"></param>
     /// <returns></returns>
-    public bool TryGetWithDetails(EdgeId edge, out (uint label, uint size, bool statusNotFinal) island)
+    public bool TryGetWithDetails(EdgeId edge, out (uint label, uint size, bool final) island)
     {
-        island = (0, 0, true);
+        island = (0, 0, false);
         if (!_labels.TryGetValue(edge, out var label)) return false;
 
         if (!_islands.TryGetValue(label, out var islandState))
             throw new Exception("Island does not exist");
 
-        island = (label, islandState.size, statusNotFinal: islandState.statusNotFinal);
+        island = (label, islandState.size, final: islandState.final);
         return true;
     }
 
     /// <summary>
-    /// Sets the given island as complete, it cannot grow any further.
+    /// Sets the given island as final, it cannot grow any further.
     /// </summary>
     /// <param name="label">The label of the island.</param>
-    public void SetAsComplete(uint label)
+    public void SetAsFinal(uint label)
     {
         if (!_islands.TryGetValue(label, out var islandState))
             throw new Exception("Island does not exist");
 
-        _islands[label] = (islandState.size, false);
+        _islands[label] = (islandState.size, true);
     }
 
     private bool FindLoops(uint label)

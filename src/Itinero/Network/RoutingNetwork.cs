@@ -85,11 +85,6 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     /// </summary>
     public int Zoom { get; }
 
-    public int GetMaxIslandSize()
-    {
-        throw new NotImplementedException();
-    }
-
     /// <summary>
     /// Gets the routing network.
     /// </summary>
