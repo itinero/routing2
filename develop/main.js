@@ -329,8 +329,8 @@ var assemblies = [
       { "name": "Itinero.Routing.Costs.ProfileCostFunctionCached", "rp": "Itinero_ProfileCostFunctionCached.html", "cl": 34, "ucl": 19, "cal": 53, "tl": 90, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 24, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.DataStructures.BinaryHeap`1", "rp": "Itinero_BinaryHeap_1.html", "cl": 87, "ucl": 17, "cal": 104, "tl": 185, "ct": "LineCoverage", "mc": "-", "cb": 15, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.DataStructures.PathTree", "rp": "Itinero_PathTree.html", "cl": 41, "ucl": 86, "cal": 127, "tl": 225, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 12, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Routing.Flavours.Dijkstra.Dijkstra", "rp": "Itinero_Dijkstra.html", "cl": 177, "ucl": 32, "cal": 209, "tl": 379, "ct": "LineCoverage", "mc": "-", "cb": 79, "tb": 100, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra", "rp": "Itinero_Dijkstra.2.html", "cl": 219, "ucl": 49, "cal": 268, "tl": 460, "ct": "LineCoverage", "mc": "-", "cb": 112, "tb": 140, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Routing.Flavours.Dijkstra.Dijkstra", "rp": "Itinero_Dijkstra.html", "cl": 176, "ucl": 30, "cal": 206, "tl": 372, "ct": "LineCoverage", "mc": "-", "cb": 78, "tb": 98, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra", "rp": "Itinero_Dijkstra.2.html", "cl": 218, "ucl": 47, "cal": 265, "tl": 453, "ct": "LineCoverage", "mc": "-", "cb": 111, "tb": 138, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Extensions", "rp": "Itinero_Extensions.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 16, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.Flavours.Dijkstra.PathTreeExtensions", "rp": "Itinero_PathTreeExtensions.html", "cl": 24, "ucl": 11, "cal": 35, "tl": 96, "ct": "LineCoverage", "mc": "-", "cb": 7, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.Flavours.Dijkstra.SnapPointExtensions", "rp": "Itinero_SnapPointExtensions.2.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 16, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -470,7 +470,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero", "class": "Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra", "reportPath": "Itinero_Dijkstra.2.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 78,
     "metrics": [
-      { "value": 130, "exceeded": true },
+      { "value": 128, "exceeded": true },
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandBuilder", "reportPath": "Itinero_IslandBuilder.html", "methodName": "IsOnIslandAsync()", "methodShortName": "IsOnIslandAsync()", "fileIndex": 0, "line": 60,
@@ -480,7 +480,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero", "class": "Itinero.Routing.Flavours.Dijkstra.Dijkstra", "reportPath": "Itinero_Dijkstra.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 52,
     "metrics": [
-      { "value": 92, "exceeded": true },
+      { "value": 90, "exceeded": true },
     ]},
   {
     "assembly": "Itinero.IO.Osm.Tiles", "class": "Itinero.IO.Osm.Tiles.Parsers.TileParser", "reportPath": "Itinero.IO.Osm.Tiles_TileParser.html", "methodName": "AddOsmTile(Itinero.Network.Writer.RoutingNetworkWriter,Itinero.IO.Osm.Tiles.GlobalIdMap,Itinero.IO.Osm.Tiles.Tile,Newtonsoft.Json.Linq.JObject)", "methodShortName": "AddOsmTile(...)", "fileIndex": 0, "line": 49,
