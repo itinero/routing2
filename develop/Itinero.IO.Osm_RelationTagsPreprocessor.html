@@ -22,10 +22,10 @@
 <tr><th>Coverable lines:</th><td>50</td></tr>
 <tr><th>Total lines:</th><td>98</td></tr>
 <tr><th>Line coverage:</th><td>96% (48 of 50)</td></tr>
-<tr><th>Covered branches:</th><td>15</td></tr>
-<tr><th>Total branches:</th><td>16</td></tr>
-<tr><th>Branch coverage:</th><td>93.7% (15 of 16)</td></tr>
-<tr><th>Tag:</th><td>216_8339866007</td></tr>
+<tr><th>Covered branches:</th><td>16</td></tr>
+<tr><th>Total branches:</th><td>18</td></tr>
+<tr><th>Branch coverage:</th><td>88.8% (16 of 18)</td></tr>
+<tr><th>Tag:</th><td>217_9956717668</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -33,7 +33,7 @@
 <thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage"><i class="icon-info-circled"></i></a></th></tr></thead>
 <tbody>
 <tr><td title=".ctor(System.Func`3&lt;OsmSharp.Relation,OsmSharp.OsmGeo,System.Boolean&gt;)"><a href="#file0_line22" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>1</td><td>100%</td></tr>
-<tr><td title="MoveNext(System.Boolean,System.Boolean,System.Boolean)"><a href="#file0_line30" class="navigatetohash">MoveNext(...)</a></td><td>100%</td><td>14</td><td>100%</td></tr>
+<tr><td title="MoveNext(System.Boolean,System.Boolean,System.Boolean)"><a href="#file0_line30" class="navigatetohash">MoveNext(...)</a></td><td>93.75%</td><td>16</td><td>100%</td></tr>
 <tr><td title="Current()"><a href="#file0_line77" class="navigatetohash">Current()</a></td><td>50%</td><td>2</td><td>66.66%</td></tr>
 <tr><td title="Reset()"><a href="#file0_line86" class="navigatetohash">Reset()</a></td><td>100%</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_CanReset()"><a href="#file0_line90" class="navigatetohash">get_CanReset()</a></td><td>100%</td><td>1</td><td>100%</td></tr>
@@ -88,7 +88,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;if&nbsp;not&nbsp;relevant,&nbsp;take&nbsp;no&nbsp;more&nbsp;actions.</code></td></tr>
 <tr class="coverableline" title="Covered (6 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(_action(r,&nbsp;null))</code></td></tr>
 <tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (20 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line43"></a><code>43</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(var&nbsp;m&nbsp;in&nbsp;r.Members)</code></td></tr>
+<tr class="coverableline" title="Partially covered (20 visits, 3 of 4 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '20', 'LVS': 'orange'}}"><td class="orange">&nbsp;</td><td class="leftmargin rightmargin right">20</td><td class="rightmargin right"><a id="file0_line43"></a><code>43</code></td><td class="percentagebar percentagebar70"><i class="icon-fork"></i></td><td class="lightorange"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(var&nbsp;m&nbsp;in&nbsp;r.Members&nbsp;??&nbsp;ArraySegment&lt;RelationMember&gt;.Empty)</code></td></tr>
 <tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line44"></a><code>44</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
 <tr class="coverableline" title="Covered (4 visits)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line45"></a><code>45</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var&nbsp;key&nbsp;=&nbsp;new&nbsp;OsmGeoKey(m.Type,&nbsp;m.Id);</code></td></tr>
 <tr class="coverableline" title="Covered (4 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '4', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">4</td><td class="rightmargin right"><a id="file0_line46"></a><code>46</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!_parentRelations.TryGetValue(key,&nbsp;out&nbsp;var&nbsp;e))</code></td></tr>
@@ -146,7 +146,7 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line98"></a><code>98</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />03/19/2024 - 08:33:36<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />07/16/2024 - 12:23:39<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
