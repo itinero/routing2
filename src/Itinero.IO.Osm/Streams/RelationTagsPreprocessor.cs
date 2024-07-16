@@ -40,7 +40,7 @@ internal class RelationTagsPreprocessor : OsmStreamFilter
                 // if not relevant, take no more actions.
                 if (_action(r, null))
                 {
-                    foreach (var m in r.Members)
+                    foreach (var m in r.Members ?? ArraySegment<RelationMember>.Empty)
                     {
                         var key = new OsmGeoKey(m.Type, m.Id);
                         if (!_parentRelations.TryGetValue(key, out var e))
