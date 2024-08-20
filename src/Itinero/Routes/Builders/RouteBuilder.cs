@@ -117,6 +117,11 @@ public class RouteBuilder : IRouteBuilder
                 route.Shape.Add(shapeBetween.Current);
             }
 
+            if (route.Shape.Count == 0)
+            {
+                route.Shape.Add(edgeEnumerator.LocationOnEdge(offset2));
+            }
+
             if (offset1 != 0 ||
                 offset2 != ushort.MaxValue)
             {
