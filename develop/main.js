@@ -310,7 +310,7 @@ var assemblies = [
       { "name": "Itinero.RouterDbConfiguration", "rp": "Itinero_RouterDbConfiguration.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 45, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.RouterDbExtensions", "rp": "Itinero_RouterDbExtensions.3.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 23, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.RouterDbReadSettings", "rp": "Itinero_RouterDbReadSettings.html", "cl": 2, "ucl": 0, "cal": 2, "tl": 21, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Routes.Builders.RouteBuilder", "rp": "Itinero_RouteBuilder.html", "cl": 116, "ucl": 17, "cal": 133, "tl": 231, "ct": "LineCoverage", "mc": "-", "cb": 30, "tb": 34, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Routes.Builders.RouteBuilder", "rp": "Itinero_RouteBuilder.html", "cl": 117, "ucl": 20, "cal": 137, "tl": 236, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 36, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.IRoutePositionExtensions", "rp": "Itinero_IRoutePositionExtensions.html", "cl": 0, "ucl": 115, "cal": 115, "tl": 693, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 50, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.Paths.Path", "rp": "Itinero_Path.html", "cl": 70, "ucl": 80, "cal": 150, "tl": 283, "ct": "LineCoverage", "mc": "-", "cb": 20, "tb": 56, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routes.Paths.PathExtensions", "rp": "Itinero_PathExtensions.html", "cl": 16, "ucl": 105, "cal": 121, "tl": 226, "ct": "LineCoverage", "mc": "-", "cb": 8, "tb": 62, "lch": [], "bch": [], "hc": [] },
@@ -544,6 +544,11 @@ var riskHotspots = [
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Network.Tiles.NetworkTileEnumerator", "reportPath": "Itinero_NetworkTileEnumerator.html", "methodName": "MoveNext()", "methodShortName": "MoveNext()", "fileIndex": 0, "line": 186,
+    "metrics": [
+      { "value": 32, "exceeded": true },
+    ]},
+  {
+    "assembly": "Itinero", "class": "Itinero.Routes.Builders.RouteBuilder", "reportPath": "Itinero_RouteBuilder.html", "methodName": "Build(Itinero.Network.RoutingNetwork,Itinero.Profiles.Profile,Itinero.Routes.Paths.Path)", "methodShortName": "Build(...)", "fileIndex": 0, "line": 42,
     "metrics": [
       { "value": 32, "exceeded": true },
     ]},
