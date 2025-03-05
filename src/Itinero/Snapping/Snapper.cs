@@ -229,7 +229,9 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         foreach (var costFunction in _costFunctions)
         {
             var costs = costFunction.Get(edgeEnumerator, true,
-                Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+                []);
+            if (!costs.canAccess) costs = costFunction.Get(edgeEnumerator, false,
+                    []);
 
             var profileIsOk = costs.canAccess &&
                               (!_checkCanStopOn || costs.canStop);
