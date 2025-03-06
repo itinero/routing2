@@ -230,8 +230,11 @@ public static class RouterDbExtensions
             if (!routingNetwork.IslandManager.TryGetIslandsFor(profileName, out var islands)) continue;
             if (!islands.GetTileDone(enumerator.Tail.TileId)) continue;
 
-            if (factor.Value.ForwardFactor > 0) attributes.AddOrReplace($"_{profileName}_island",
-                islands.IsEdgeOnIsland(enumerator.EdgeId).ToString().ToLowerInvariant());
+            if (factor.Value.ForwardFactor > 0 || factor.Value.BackwardFactor > 0)
+            {
+                attributes.AddOrReplace($"_{profileName}_island",
+                    islands.IsEdgeOnIsland(enumerator.EdgeId).ToString().ToLowerInvariant());
+            }
         }
 
         jsonWriter.WriteProperties(attributes);

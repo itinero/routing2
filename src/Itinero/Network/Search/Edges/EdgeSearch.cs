@@ -33,10 +33,7 @@ internal static class EdgeSearch
         (EdgeId edgeId, ushort offset) bestSnapPoint = (EdgeId.Empty, ushort.MaxValue);
         while (edgeEnumerator.MoveNext())
         {
-            if (bestDistance <= 0)
-            {
-                break; // break when exact on an edge.
-            }
+            if (bestDistance <= 0) break; // break when exact on an edge.
 
             // search for the local snap point that improves the current best snap point.
             (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);

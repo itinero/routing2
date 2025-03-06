@@ -41,7 +41,7 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         _profiles = profiles.ToArray();
 
         _costFunctions = _profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
-        _islands = routingNetwork.IslandManager.MaxIslandSize == 0 ? Array.Empty<Islands>() : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
+        _islands = routingNetwork.IslandManager.MaxIslandSize == 0 ? [] : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
     }
 
     /// <inheritdoc/>
@@ -226,46 +226,54 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         if (!hasProfiles) return true;
 
         var allOk = true;
-        foreach (var costFunction in _costFunctions)
+        for (var p = 0; p < _costFunctions.Length; p++)
         {
+            var costFunction = _costFunctions[p];
+
+            // check for the positive case, can the edge be used in the forward direction.
+            // the backward direction is also done later in the snapping code.
             var costs = costFunction.Get(edgeEnumerator, true,
                 []);
-            if (!costs.canAccess) costs = costFunction.Get(edgeEnumerator, false,
-                    []);
 
-            var profileIsOk = costs.canAccess &&
-                              (!_checkCanStopOn || costs.canStop);
-
-            if (_anyProfile && profileIsOk)
+            // if edge is not accessible, no need to look any further.
+            if (!costs.canAccess)
             {
-                return IsNotOnIsland();
+                allOk = false;
+                continue;
             }
 
-            allOk = allOk && profileIsOk;
-        }
+            // check if needed if the edge can be stopped on.
+            if (_checkCanStopOn)
+            {
+                if (!costs.canStop)
+                {
+                    allOk = false;
+                    continue;
+                }
+            }
 
-        if (!allOk) return false;
-
-        return IsNotOnIsland();
-
-        bool? IsNotOnIsland()
-        {
+            // check if the edge is on an island.
+            // if the result is inclusive null is returned and islands will be built.
             var tailIsland = edgeEnumerator.Tail.TileId;
             if (!edgeEnumerator.Forward) tailIsland = edgeEnumerator.Head.TileId;
+            var islands = _islands[p];
 
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var island in _islands)
+            // when an edge is not an island, it is sure it is not an island.
+            var onIsland = islands.IsEdgeOnIsland(edgeEnumerator.EdgeId);
+            if (onIsland)
             {
-                // when an edge is not an island, it is sure it is not an island.
-                var onIsland = island.IsEdgeOnIsland(edgeEnumerator.EdgeId);
-                if (onIsland) return false;
-
-                // if it is not on an island we need to check if the tile was done.
-                if (!island.GetTileDone(tailIsland)) return null; // inconclusive.
+                allOk = false;
+                continue;
             }
 
-            return true;
+            // if it is not on an island we need to check if the tile was done.
+            if (!islands.GetTileDone(tailIsland)) return null; // inconclusive.
+
+            // any profile is good for a positive result.
+            if (_anyProfile) return true;
         }
+
+        return allOk;
     }
 
     bool? IEdgeChecker.IsAcceptable(IEdgeEnumerator<RoutingNetwork> edgeEnumerator)

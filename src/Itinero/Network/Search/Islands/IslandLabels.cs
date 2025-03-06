@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Routing.DataStructures;
 
 namespace Itinero.Network.Search.Islands;
 
-internal class IslandLabels
+internal class IslandLabels : IEnumerable<(EdgeId edge, uint label)>
 {
     /// <summary>
     /// The not an island label.
@@ -309,5 +310,18 @@ internal class IslandLabels
             labels = [bestLabel, NotAnIslandLabel];
             continue;
         }
+    }
+
+    public IEnumerator<(EdgeId edge, uint label)> GetEnumerator()
+    {
+        foreach (var (key, value) in _labels)
+        {
+            yield return (key, value);
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return this.GetEnumerator();
     }
 }
