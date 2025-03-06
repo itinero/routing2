@@ -2,7 +2,7 @@
     <Import Project="../../Itinero.Common.props" />
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+      <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Itinero.Profiles.Lua</AssemblyName>
         <LangVersion>latest</LangVersion>
         <PackageId>Itinero.Profiles.Lua</PackageId>

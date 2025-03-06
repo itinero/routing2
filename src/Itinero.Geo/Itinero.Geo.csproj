@@ -2,10 +2,10 @@
     <Import Project="../../Itinero.Common.props" />
 
     <PropertyGroup>
+      <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Itinero.Geo</AssemblyName>
         <LangVersion>default</LangVersion>
         <PackageId>Itinero.Geo</PackageId>
-        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
