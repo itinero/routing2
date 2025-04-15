@@ -13,13 +13,13 @@ public class AlternativeRouteCostFunctionTest
     public void AlternativeRouteCostFunction_WithOneVisitedEdge_PenalizedEdge_IsMoreCostly()
     {
         var originalCostFunction = new MockCostFunction(_ => 1);
-        var altCostFunc = new AlternativeRouteCostFunction(originalCostFunction, new HashSet<EdgeId> {
-                new(42, 42)
+        var altCostFunc = new AlternativeRouteCostFunction(originalCostFunction, new Dictionary<EdgeId, int> {
+            { new EdgeId(42, 42), 1 }
             });
         var edgeEnumerator = new EdgeEnumeratorMock(new EdgeId(42, 42));
         edgeEnumerator.MoveNext();
         var (_, _, cost, _) =
-            altCostFunc.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+            altCostFunc.Get(edgeEnumerator, true, []);
         Assert.Equal(2, cost);
     }
 
@@ -27,10 +27,9 @@ public class AlternativeRouteCostFunctionTest
     public void AlternativeRouteCostFunction_WithOneVisitedEdge_NonPenalizedEdge_HasSameCost()
     {
         var originalCostFunction = new MockCostFunction(_ => 1);
-        var altCostFunc = new AlternativeRouteCostFunction(originalCostFunction, new HashSet<EdgeId> {
-                new(42, 42)
-            });
-
+        var altCostFunc = new AlternativeRouteCostFunction(originalCostFunction, new Dictionary<EdgeId, int> {
+            {new EdgeId(42, 42), 2}
+        });
 
         var nonPenalizedEdge = new EdgeEnumeratorMock(new EdgeId(42, 41));
         nonPenalizedEdge.MoveNext();
