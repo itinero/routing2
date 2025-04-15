@@ -8,7 +8,7 @@ namespace Itinero.Routing.Costs;
 internal class AlternativeRouteCostFunction : ICostFunction
 {
     private readonly ICostFunction _originalCostFunction;
-    private readonly HashSet<EdgeId> _moreCostlyEdges;
+    private readonly Dictionary<EdgeId, int> _moreCostlyEdges;
     private readonly double _alreadyVisitedCostFactor;
 
     /// <summary>
@@ -18,7 +18,7 @@ internal class AlternativeRouteCostFunction : ICostFunction
     /// <param name="originalCostFunction"></param>
     /// <param name="moreCostlyEdges"></param>
     /// <param name="alreadyVisitedCostFactor"></param>
-    public AlternativeRouteCostFunction(ICostFunction originalCostFunction, HashSet<EdgeId> moreCostlyEdges, double alreadyVisitedCostFactor = 2.0)
+    public AlternativeRouteCostFunction(ICostFunction originalCostFunction, Dictionary<EdgeId, int> moreCostlyEdges, double alreadyVisitedCostFactor = 2.0)
     {
         _originalCostFunction = originalCostFunction;
         _moreCostlyEdges = moreCostlyEdges;
@@ -30,10 +30,12 @@ internal class AlternativeRouteCostFunction : ICostFunction
     {
         previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
 
-        if (_moreCostlyEdges.Contains(edgeEnumerator.EdgeId))
+        if (_moreCostlyEdges.TryGetValue(edgeEnumerator.EdgeId, out var count))
         {
+            var alreadyVisitedCost = Math.Pow(_alreadyVisitedCostFactor, count);
+
             var (canAccess, canStop, cost, turnCost) = _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);
-            return (canAccess, canStop, cost * _alreadyVisitedCostFactor, turnCost);
+            return (canAccess, canStop, cost * alreadyVisitedCost, turnCost);
         }
 
         return _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);

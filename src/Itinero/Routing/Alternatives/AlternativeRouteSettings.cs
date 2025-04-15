@@ -28,4 +28,9 @@ public class AlternativeRouteSettings
     /// When the weight of the next potential alternative exceeds the weight in this setting the search for alternatives stops. 
     /// </remarks>
     public double MaxWeightIncreasePercentage { get; set; } = 1.5;
+
+    /// <summary>
+    /// The default penalty factor the algorithm uses to penalize already seen edges.
+    /// </summary>
+    public double PenaltyFactor { get; set; } = 2.0;
 }

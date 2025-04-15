@@ -18,8 +18,6 @@ public static class IRouterOneToOneWithAlternativesExtensions
     internal static async Task<Result<IReadOnlyList<Path>>> CalculatePathsAsync(
         this IRouterOneToOneWithAlternatives alternativeRouter, CancellationToken cancellationToken)
     {
-        const double penaltyFactor = 2.0;
-
         var settings = alternativeRouter.Settings;
         var altSettings = alternativeRouter.AlternativeRouteSettings;
         var routingNetwork = alternativeRouter.Network;
@@ -100,10 +98,11 @@ public static class IRouterOneToOneWithAlternativesExtensions
 
         var costThreshold = initialCost * altSettings.MaxWeightIncreasePercentage;
 
-        var seenEdges = new HashSet<EdgeId>();
+        var seenEdges = new Dictionary<EdgeId, int>();
         foreach (var (edge, _, _, _) in initialPath)
         {
-            seenEdges.Add(edge);
+            var count = seenEdges.GetValueOrDefault(edge, 0);
+            seenEdges[edge] = count + 1;
         }
 
         var maxTries = altSettings.MaxNumberOfAlternativeRoutes * 5;
@@ -113,7 +112,7 @@ public static class IRouterOneToOneWithAlternativesExtensions
 
             maxTries--;
             var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges,
-                penaltyFactor);
+                altSettings.PenaltyFactor);
             var (altPath, altCost) = await RunDijkstraAsync(altCostFunction, cancellationToken);
 
             if (altCost > costThreshold)
@@ -134,10 +133,16 @@ public static class IRouterOneToOneWithAlternativesExtensions
             foreach (var (edge, _, _, _) in altPath)
             {
                 totalEdges++;
-                if (!seenEdges.Add(edge))
+                if (seenEdges.TryGetValue(edge, out var count))
                 {
+                    seenEdges[edge] = count + 1;
+
                     // Already seen!
                     alreadyKnownEdges++;
+                }
+                else
+                {
+                    seenEdges[edge] = 1;
                 }
             }
 
@@ -152,6 +157,12 @@ public static class IRouterOneToOneWithAlternativesExtensions
         }
 
         return results;
+    }
+
+    public static async Task<Result<IReadOnlyList<Path>>> PathsAsync(
+        this IRouterOneToOneWithAlternatives withAlternatives, CancellationToken cancellationToken = default)
+    {
+        return await withAlternatives.CalculatePathsAsync(cancellationToken);
     }
 
     public static async Task<Result<IReadOnlyList<Route>>> CalculateAsync(this IRouterOneToOneWithAlternatives withAlternatives, CancellationToken cancellationToken = default)
