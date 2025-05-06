@@ -263,7 +263,7 @@ var assemblies = [
       { "name": "Itinero.Network.RoutingNetworkSnapshotExtensions", "rp": "Itinero_RoutingNetworkSnapshotExtensions.html", "cl": 40, "ucl": 8, "cal": 48, "tl": 124, "ct": "LineCoverage", "mc": "-", "cb": 13, "tb": 26, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Edges.EdgeSearch", "rp": "Itinero_EdgeSearch.html", "cl": 172, "ucl": 60, "cal": 232, "tl": 405, "ct": "LineCoverage", "mc": "-", "cb": 70, "tb": 118, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.ICostFunctionExtensions", "rp": "Itinero_ICostFunctionExtensions.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 27, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Search.Islands.IslandBuilder", "rp": "Itinero_IslandBuilder.html", "cl": 156, "ucl": 55, "cal": 211, "tl": 356, "ct": "LineCoverage", "mc": "-", "cb": 87, "tb": 132, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Search.Islands.IslandBuilder", "rp": "Itinero_IslandBuilder.html", "cl": 158, "ucl": 57, "cal": 215, "tl": 362, "ct": "LineCoverage", "mc": "-", "cb": 89, "tb": 136, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandBuilderExtensions", "rp": "Itinero_IslandBuilderExtensions.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 22, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandLabelGraph", "rp": "Itinero_IslandLabelGraph.html", "cl": 181, "ucl": 40, "cal": 221, "tl": 337, "ct": "LineCoverage", "mc": "-", "cb": 58, "tb": 96, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandLabels", "rp": "Itinero_IslandLabels.html", "cl": 137, "ucl": 41, "cal": 178, "tl": 327, "ct": "LineCoverage", "mc": "-", "cb": 63, "tb": 98, "lch": [], "bch": [], "hc": [] },
@@ -476,7 +476,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandBuilder", "reportPath": "Itinero_IslandBuilder.html", "methodName": "IsOnIslandAsync()", "methodShortName": "IsOnIslandAsync()", "fileIndex": 0, "line": 59,
     "metrics": [
-      { "value": 116, "exceeded": true },
+      { "value": 120, "exceeded": true },
     ]},
   {
     "assembly": "Itinero", "class": "Itinero.Routing.Flavours.Dijkstra.Dijkstra", "reportPath": "Itinero_Dijkstra.html", "methodName": "RunAsync()", "methodShortName": "RunAsync()", "fileIndex": 0, "line": 52,
