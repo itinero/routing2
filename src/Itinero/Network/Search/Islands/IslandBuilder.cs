@@ -57,8 +57,6 @@ internal class IslandBuilder
         ICostFunction costFunction, EdgeId edgeId,
         Func<IEdgeEnumerator, bool?>? isOnIslandAlready = null, CancellationToken cancellationToken = default)
     {
-        if (edgeId is { LocalId: 2147483670, TileId: 92217449 }) Console.WriteLine("");
-
         // to check if an edge is on an island we do the following:
         // - verify it can be used as an origin by searching forward and finding a big connected island.
         // - verify it can be used as a destination by searching backward and finding a big connected island.
@@ -137,7 +135,6 @@ internal class IslandBuilder
             if (originVisits.Count >= (network.IslandManager.MaxIslandSize * 64) ||
                 destinationVisits.Count >= (network.IslandManager.MaxIslandSize * 64))
             {
-                Console.WriteLine($"{originVisits.Count}o & {destinationVisits.Count}d");
                 break;
             }
 
