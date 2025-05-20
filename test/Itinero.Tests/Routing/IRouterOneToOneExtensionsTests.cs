@@ -14,13 +14,13 @@ public class IRouterOneToOneExtensionsTests
     [Fact]
     public async Task IRouterOneToOneExtensions_Calculate_OneEdge_ShouldMatchEdge()
     {
-        var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb(new (double longitude, double latitude, float? e)[] {
-                    (4.801771044731140, 51.268886491558250, (float?) null),
-                    (4.801073670387268, 51.268064181900094, (float?) null)
-                },
-            new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
-                    (0, 1, null)
-            });
+        var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb([
+                (4.801771044731140, 51.268886491558250, (float?)null),
+            (4.801073670387268, 51.268064181900094, (float?)null)
+            ],
+            [
+                (0, 1, null)
+            ]);
 
         var network = routerDb.Latest;
 
