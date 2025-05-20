@@ -107,6 +107,11 @@ internal class BidirectionalDijkstra
         var backwardPath = _backward.GetPathToVisit(best.backward);
         forwardPath.Append(backwardPath.InvertDirection());
 
+        forwardPath.Offset1 = forwardPath.First.direction ? origin.Offset : (ushort)(ushort.MaxValue - origin.Offset);
+        forwardPath.Offset2 = forwardPath.Last.direction
+            ? destination.Offset
+            : (ushort)(ushort.MaxValue - destination.Offset);
+
         return (forwardPath, best.cost);
     }
 

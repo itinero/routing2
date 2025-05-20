@@ -10,6 +10,7 @@ using Itinero.Routes;
 using Itinero.Routes.Paths;
 using Itinero.Routing.Costs;
 using Itinero.Routing.Flavours.Dijkstra;
+using Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 
 namespace Itinero.Routing.Alternatives;
 
@@ -62,15 +63,14 @@ public static class IRouterOneToOneWithAlternativesExtensions
 
             if (source.direction == null && target.direction == null)
             {
-                // Run the undirected dijkstra
-                return await Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
-                    costFunction.GetDijkstraWeightFunc(),
-                    async v =>
-                    {
-                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
-                        if (cancellationToken.IsCancellationRequested) return false;
-                        return CheckMaxDistance(v);
-                    });
+                var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(routingNetwork);
+
+                return await bidirectionalDijkstra.RunAsync(source.sp, target.sp, costFunction, async v =>
+                {
+                    await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return false;
+                    return CheckMaxDistance(v);
+                });
             }
 
             // Run directed dijkstra
