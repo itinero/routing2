@@ -60,7 +60,7 @@ public class BidirectionalDijkstraTests
         var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(latest);
         var (path, _) = await bidirectionalDijkstra.RunAsync(
             await latest.Snap().ToAsync(vertex1).FirstAsync(),
-            await latest.Snap().ToAsync(vertex2).FirstAsync(),
+            await latest.Snap().ToAsync(vertex3).FirstAsync(),
             MockCostFunction.Create(1));
 
         Assert.NotNull(path);
