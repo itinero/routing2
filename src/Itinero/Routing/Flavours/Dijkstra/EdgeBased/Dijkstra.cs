@@ -28,10 +28,11 @@ internal class Dijkstra
         SnapPoint target,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
+        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
+        CancellationToken cancellationToken = default)
     {
         var paths = await this.RunAsync(network, (source, null), new[] { (target, (bool?)null) }, getDijkstraWeight,
-            settled, queued);
+            settled, queued, cancellationToken);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
@@ -41,9 +42,10 @@ internal class Dijkstra
         (SnapPoint sp, bool? direction) target,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
+        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
+        CancellationToken cancellationToken = default)
     {
-        var paths = await this.RunAsync(network, source, new[] { target }, getDijkstraWeight, settled, queued);
+        var paths = await this.RunAsync(network, source, new[] { target }, getDijkstraWeight, settled, queued, cancellationToken);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
@@ -52,10 +54,11 @@ internal class Dijkstra
         IReadOnlyList<SnapPoint> targets,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
+        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
+        CancellationToken cancellationToken = default)
     {
         return await this.RunAsync(network, (source, null), targets.Select(x => (x, (bool?)null)).ToArray(),
-            getDijkstraWeight, settled, queued);
+            getDijkstraWeight, settled, queued, cancellationToken);
     }
 
     /// <summary>
@@ -74,7 +77,8 @@ internal class Dijkstra
         IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null)
+        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
+        CancellationToken cancellationToken = default)
     {
         static double GetWorst((uint pointer, double cost)[] targets)
         {
@@ -253,6 +257,8 @@ internal class Dijkstra
         // keep going until heap is empty.
         while (_heap.Count > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // dequeue new visit.
             var currentPointer = _heap.Pop(out var currentCost);
             var currentVisit = _tree.GetVisit(currentPointer);

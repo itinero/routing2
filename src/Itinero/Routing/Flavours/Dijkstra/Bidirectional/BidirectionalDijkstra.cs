@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -29,7 +30,7 @@ internal class BidirectionalDijkstra
 
     public async Task<(Path? path, double cost)> RunAsync(SnapPoint origin,
         SnapPoint destination, ICostFunction costFunction, Func<VertexId, Task<bool>>? settled = null,
-        Func<VertexId, Task<bool>>? queued = null)
+        Func<VertexId, Task<bool>>? queued = null, CancellationToken cancellationToken = default)
     {
         _costFunction = costFunction;
 
@@ -48,6 +49,8 @@ internal class BidirectionalDijkstra
         var backwardCost = 0d;
         while (!forwardDone || !backwardDone)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!forwardDone)
             {
                 var (p, v, c) = _forward.Pop();

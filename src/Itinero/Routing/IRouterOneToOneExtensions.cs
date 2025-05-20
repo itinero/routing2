@@ -85,7 +85,7 @@ public static class IRouterOneToOneExtensions
             await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
             if (cancellationToken.IsCancellationRequested) return false;
             return CheckMaxDistance(v);
-        });
+        }, cancellationToken: cancellationToken);
 
         if (result == null) return new Result<Path>("Path not found");
 
@@ -105,5 +105,4 @@ public static class IRouterOneToOneExtensions
             return false;
         }
     }
-
 }
