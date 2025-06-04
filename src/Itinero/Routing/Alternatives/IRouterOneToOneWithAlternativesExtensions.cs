@@ -32,7 +32,7 @@ public static class IRouterOneToOneWithAlternativesExtensions
         var costFunction = routingNetwork.GetCostFunctionFor(profile);
 
 
-        var maxBox = settings.MaxBoxFor(routingNetwork, alternativeRouter.Source.sp);
+        var maxBox = settings.MaxBoxFor(routingNetwork, [alternativeRouter.Source.sp, alternativeRouter.Target.sp]);
 
         bool CheckMaxDistance(VertexId v)
         {
@@ -59,17 +59,17 @@ public static class IRouterOneToOneWithAlternativesExtensions
         {
             var source = alternativeRouter.Source;
             var target = alternativeRouter.Target;
-
+            
             if (source.direction == null && target.direction == null)
             {
                 // Run the undirected dijkstra
-                return await Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
+                return await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
                     costFunction.GetDijkstraWeightFunc(),
                     async v =>
                     {
-                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                         if (cancellationToken.IsCancellationRequested) return false;
-                        return CheckMaxDistance(v);
+                        return CheckMaxDistance(v.vertexId);
                     });
             }
 
