@@ -25,7 +25,7 @@ internal class AlternativeRouteCostFunction : ICostFunction
         _alreadyVisitedCostFactor = alreadyVisitedCostFactor;
     }
 
-    public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+    public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
         previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
@@ -34,10 +34,10 @@ internal class AlternativeRouteCostFunction : ICostFunction
         {
             var alreadyVisitedCost = Math.Pow(_alreadyVisitedCostFactor, count);
 
-            var (canAccess, canStop, cost, turnCost) = _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);
+            var (canAccess, canStop, cost, turnCost) = _originalCostFunction.Get(edgeEnumerator, tailToHead, previousEdges);
             return (canAccess, canStop, cost * alreadyVisitedCost, turnCost);
         }
 
-        return _originalCostFunction.Get(edgeEnumerator, forward, previousEdges);
+        return _originalCostFunction.Get(edgeEnumerator, tailToHead, previousEdges);
     }
 }

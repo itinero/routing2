@@ -10,12 +10,16 @@ namespace Itinero.Routes.Paths;
 /// <summary>
 /// Represents a path in a graph as a collection of edges.
 /// </summary>
-public sealed class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
+public sealed class Path : IReadOnlyList<(EdgeId edge, bool forward, ushort offset1, ushort offset2)>
 {
     private readonly List<(EdgeId edge, bool forward)> _edges;
     private readonly RoutingNetworkEdgeEnumerator _edgeEnumerator;
     private readonly RoutingNetwork _network;
 
+    /// <summary>
+    /// Creates a new empty path.
+    /// </summary>
+    /// <param name="network"></param>
     public Path(RoutingNetwork network)
     {
         _network = network;
@@ -278,6 +282,25 @@ public sealed class Path : IEnumerable<(EdgeId edge, bool forward, ushort offset
         static string OffsetPer(ushort offset)
         {
             return $"{(double)offset / ushort.MaxValue * 100:F1}%";
+        }
+    }
+
+    /// <summary>
+    /// Gets the path segment at the given index.
+    /// </summary>
+    /// <param name="index"></param>
+    public (EdgeId edge, bool forward, ushort offset1, ushort offset2) this[int index]
+    {
+        get
+        {
+            ushort offset1 = 0;
+            ushort offset2 = ushort.MaxValue;
+            if (index == 0) offset1 = this.Offset1;
+            if (index == this.Count - 1) offset2 = this.Offset2;
+
+            var s = _edges[index];
+
+            return (s.edge, s.forward, offset1, offset2);
         }
     }
 }

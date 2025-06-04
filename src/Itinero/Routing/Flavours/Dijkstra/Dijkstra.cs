@@ -48,7 +48,7 @@ internal class Dijkstra
     public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network, SnapPoint source,
         IReadOnlyList<SnapPoint> targets,
         DijkstraWeightFunc getDijkstraWeight, Func<VertexId, Task<bool>>? settled = null,
-        Func<VertexId, Task<bool>>? queued = null)
+        Func<VertexId, Task<bool>>? queued = null, CancellationToken cancellationToken = default)
     {
         // Returns the worst cost of all targets, i.e. the cost of the most costly target to reach
         // Will be Double.MAX_VALUE if at least one target hasn't been reached
@@ -185,6 +185,8 @@ internal class Dijkstra
         // keep going until heap is empty.
         while (_heap.Count > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // dequeue new visit.
             var currentPointer = _heap.Pop(out var currentCost);
             var currentVisit = _tree.GetVisit(currentPointer);

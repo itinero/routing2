@@ -22,7 +22,7 @@ internal class ProfileCostFunctionCached : ICostFunction
     }
 
     public (bool canAccess, bool canStop, double cost, double turnCost) Get(
-        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
         previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
@@ -58,8 +58,8 @@ internal class ProfileCostFunctionCached : ICostFunction
         var lengthNullable = edgeEnumerator.Length;
         var length = lengthNullable ??
                      (uint)(edgeEnumerator.EdgeLength() * 100);
-        var cost = forward ? factor.ForwardFactor * length : factor.BackwardFactor * length;
-        var canAccess = forward ? factor.ForwardFactor > 0 : factor.BackwardFactor > 0;
+        var cost = tailToHead ? factor.ForwardFactor * length : factor.BackwardFactor * length;
+        var canAccess = tailToHead ? factor.ForwardFactor > 0 : factor.BackwardFactor > 0;
 
         var totalTurnCost = 0.0;
         var (_, turn) = previousEdges.FirstOrDefault();

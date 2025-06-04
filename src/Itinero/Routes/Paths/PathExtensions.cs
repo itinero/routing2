@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
 namespace Itinero.Routes.Paths;
@@ -190,6 +191,19 @@ public static class PathExtensions
         return merged;
     }
 
+    public static void Append(this Path path, IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> other)
+    {
+        if (path.Offset2 != ushort.MaxValue)
+            throw new Exception("Cannot append another hop to a path not ending at a vertex");
+
+        foreach (var hop in other)
+        {
+            path.Append(hop.edge, hop.forward);
+
+            path.Offset2 = hop.offset2;
+        }
+    }
+
     /// <summary>
     /// Removes the first and/or last edge if they are not part of the path via the offset properties.
     /// </summary>
@@ -222,5 +236,24 @@ public static class PathExtensions
         if (path.Count > 1) return true;
 
         return path.Offset1 != path.Offset2;
+    }
+
+    public static IEnumerable<(EdgeId edge, bool forward, ushort offset1, ushort offset2)> InvertDirection(
+        this Path path)
+    {
+        var pathOffset1 = (ushort)(ushort.MaxValue - path.Offset2);
+        var pathOffset2 = (ushort)(ushort.MaxValue - path.Offset1);
+
+        for (var i = 0; i < path.Count; i++)
+        {
+            var s = path[path.Count - i - 1];
+
+            ushort offset1 = 0;
+            ushort offset2 = ushort.MaxValue;
+            if (i == 0) offset1 = pathOffset1;
+            if (i == path.Count - 1) offset2 = pathOffset2;
+
+            yield return (s.edge, !s.forward, offset1, offset2);
+        }
     }
 }

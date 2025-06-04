@@ -17,7 +17,7 @@ internal class ProfileCostFunction : ICostFunction
     }
 
     public (bool canAccess, bool canStop, double cost, double turnCost) Get(
-        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
         previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
@@ -25,7 +25,7 @@ internal class ProfileCostFunction : ICostFunction
         var factor = _profile.FactorInEdgeDirection(edgeEnumerator);
         var length = edgeEnumerator.Length ??
                      (uint)(edgeEnumerator.EdgeLength() * 100);
-        var directedFactor = forward ? factor.ForwardFactor : factor.BackwardFactor;
+        var directedFactor = tailToHead ? factor.ForwardFactor : factor.BackwardFactor;
         var cost = directedFactor * length;
         var canAccess = directedFactor > 0;
 

@@ -16,7 +16,7 @@ public class MockCostFunction : ICostFunction
     }
 
     public (bool canAccess, bool canStop, double cost, double turnCost) Get(
-        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool forward = true,
+        IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
         previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
