@@ -70,7 +70,7 @@ public static class IRouterOneToOneWithAlternativesExtensions
                         await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                         if (cancellationToken.IsCancellationRequested) return false;
                         return CheckMaxDistance(v.vertexId);
-                    });
+                    }, cancellationToken: cancellationToken);
             }
 
             // Run directed dijkstra
