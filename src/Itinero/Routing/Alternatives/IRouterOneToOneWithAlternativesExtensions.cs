@@ -59,7 +59,7 @@ public static class IRouterOneToOneWithAlternativesExtensions
         {
             var source = alternativeRouter.Source;
             var target = alternativeRouter.Target;
-            
+
             if (source.direction == null && target.direction == null)
             {
                 // Run the undirected dijkstra
