@@ -343,7 +343,7 @@ public static class GeoExtensions
             }
 
             // handle top.
-            var top = box.topLeft.longitude;
+            var top = box.topLeft.latitude;
             if (!box.Overlaps((center.longitude, other.topLeft.latitude, null)))
             {
                 top = other.topLeft.latitude;
