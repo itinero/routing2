@@ -254,20 +254,23 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
 
             // check if the edge is on an island.
             // if the result is inclusive null is returned and islands will be built.
-            var tailIsland = edgeEnumerator.Tail.TileId;
-            if (!edgeEnumerator.Forward) tailIsland = edgeEnumerator.Head.TileId;
-            var islands = _islands[p];
-
-            // when an edge is not an island, it is sure it is not an island.
-            var onIsland = islands.IsEdgeOnIsland(edgeEnumerator.EdgeId);
-            if (onIsland)
+            if (_islands.Length > 0)
             {
-                allOk = false;
-                continue;
-            }
+                var tailIsland = edgeEnumerator.Tail.TileId;
+                if (!edgeEnumerator.Forward) tailIsland = edgeEnumerator.Head.TileId;
+                var islands = _islands[p];
 
-            // if it is not on an island we need to check if the tile was done.
-            if (!islands.GetTileDone(tailIsland)) return null; // inconclusive.
+                // when an edge is not an island, it is sure it is not an island.
+                var onIsland = islands.IsEdgeOnIsland(edgeEnumerator.EdgeId);
+                if (onIsland)
+                {
+                    allOk = false;
+                    continue;
+                }
+
+                // if it is not on an island we need to check if the tile was done.
+                if (!islands.GetTileDone(tailIsland)) return null; // inconclusive.
+            }
 
             // any profile is good for a positive result.
             if (_anyProfile) return true;
