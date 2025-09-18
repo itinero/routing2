@@ -155,6 +155,7 @@ internal class IslandBuilder
                     throw new Exception(
                         "Queued edge always has to be traversable in the opposite queued direction in towards search");
 #endif
+                var currentCanMoveBackwards = costFunction.GetIslandBuilderCost(edgeEnumerator, false);
 
                 // enumerate the neighbours at the tail and propagate labels if a 
                 // move is possible neighbour -> tail -> current.
@@ -186,7 +187,7 @@ internal class IslandBuilder
 
                     // a connection can be made, the path neighbour -> current is possible.
                     var madeConnection = labels.ConnectTo(neighbourLabelDetails.label, currentLabelDetails.label);
-                    if (!madeConnection)
+                    if (!madeConnection && currentCanMoveBackwards)
                     {
                         // check if there is a bidirectional link.
                         var canMoveOtherDirection =
@@ -258,6 +259,7 @@ internal class IslandBuilder
                     throw new Exception(
                         "Queued edge always has to be traversable in the opposite queued direction in towards search");
 #endif
+                var currentCanMoveBackwards = costFunction.GetIslandBuilderCost(edgeEnumerator, false);
 
                 // enumerate the neighbours at the tail and propagate labels if a 
                 // move is possible current -> head -> neighbour.
@@ -288,7 +290,7 @@ internal class IslandBuilder
 
                     // a connection can be made, the path current -> neighbour is possible.
                     var madeConnection = labels.ConnectTo(currentLabelDetails.label, neighbourLabelDetails.label);
-                    if (!madeConnection)
+                    if (!madeConnection && currentCanMoveBackwards)
                     {
                         // check if there is a bidirectional link.
                         var canMoveOtherDirection =

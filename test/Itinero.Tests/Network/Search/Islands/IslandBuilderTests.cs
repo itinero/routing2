@@ -15,7 +15,10 @@ public class IslandBuilderTests
     [Fact]
     public async Task IslandBuilder_IsOnIsland_SingleEdge_ShouldReturnTrue()
     {
-        var routerDb = new RouterDb();
+        var routerDb = new RouterDb(new RouterDbConfiguration()
+        {
+            MaxIslandSize = 2
+        });
         EdgeId edge;
         using (var writer = routerDb.GetMutableNetwork())
         {
@@ -303,7 +306,7 @@ public class IslandBuilderTests
             edges.Add(writer.AddEdge(vertex3, vertex4));
         }
 
-        var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
+        var labels = new IslandLabels(2);
         var profile = new DefaultProfile(getEdgeFactor: (a) =>
         {
             if (!a.Any()) return new EdgeFactor(1, 1, 1, 1);
@@ -320,18 +323,22 @@ public class IslandBuilderTests
 
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[0], isOnIslandAlready);
+        Assert.False(isOnIsland); // we hardcode this not being on an island.
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[1], isOnIslandAlready);
+        Assert.True(isOnIsland);
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[2], isOnIslandAlready);
-
         Assert.True(isOnIsland);
     }
 
     [Fact]
     public async Task IslandBuilder_IsOnIsland_EdgeConnectedOneWithTwoOneWays_ShouldReturnTrue()
     {
-        var routerDb = new RouterDb();
+        var routerDb = new RouterDb(new RouterDbConfiguration()
+        {
+            MaxIslandSize = 2,
+        });
         var edges = new List<EdgeId>();
         using (var writer = routerDb.GetMutableNetwork())
         {
@@ -362,13 +369,15 @@ public class IslandBuilderTests
 
         var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[0], isOnIslandAlready);
+        Assert.False(isOnIsland); // we hardcode this not being on an island
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[1], isOnIslandAlready);
+        Assert.True(isOnIsland);
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[2], isOnIslandAlready);
+        Assert.True(isOnIsland);
         isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
             edges[3], isOnIslandAlready);
-
         Assert.True(isOnIsland);
     }
 }
