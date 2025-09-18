@@ -128,13 +128,13 @@ internal sealed class SparseArray<T> : IEnumerable<(long i, T value)>
                 "Cannot resize an array to a size of zero or smaller.");
         }
 
-        _size = size;
-
         var blockCount = (long)Math.Ceiling((double)size / _blockSize);
         if (blockCount != _blocks.Length)
         {
             Array.Resize(ref _blocks, (int)blockCount);
         }
+
+        _size = size;
     }
 
     /// <summary>
