@@ -7,59 +7,59 @@ public interface INetworkTileEdge
     /// <summary>
     /// Gets the tile id.
     /// </summary>
-    public uint TileId { get; }
+    uint TileId { get; }
 
-    public bool IsEmpty { get; }
+    bool IsEmpty { get; }
 
     /// <summary>
     /// Gets the shape of the given edge (not including vertex locations).
     /// </summary>
-    public IEnumerable<(double longitude, double latitude, float? e)> Shape { get; }
+    IEnumerable<(double longitude, double latitude, float? e)> Shape { get; }
 
     /// <summary>
     /// Gets the attributes of the given edge.
     /// </summary>
-    public IEnumerable<(string key, string value)> Attributes { get; }
+    IEnumerable<(string key, string value)> Attributes { get; }
 
     /// <summary>
     /// Gets the first vertex.
     /// </summary>
-    public VertexId Tail { get; }
+    VertexId Tail { get; }
 
     /// <summary>
     /// Gets the second vertex.
     /// </summary>
-    public VertexId Head { get; }
+    VertexId Head { get; }
 
     /// <summary>
     /// Gets the local edge id.
     /// </summary>
-    public EdgeId EdgeId { get; }
+    EdgeId EdgeId { get; }
 
     /// <summary>
     /// Gets the forward/backward flag.
     /// </summary>
-    public bool Forward { get; }
+    bool Forward { get; }
 
     /// <summary>
     /// Gets the edge profile id, if any.
     /// </summary>
-    public uint? EdgeTypeId { get; }
+    uint? EdgeTypeId { get; }
 
     /// <summary>
     /// Gets the length in centimeters, if any.
     /// </summary>
-    public uint? Length { get; }
+    uint? Length { get; }
 
     /// <summary>
     /// Gets the head index of this edge.
     /// </summary>
-    public byte? HeadOrder { get; }
+    byte? HeadOrder { get; }
 
     /// <summary>
     /// Gets the tail index of this edge.
     /// </summary>
-    public byte? TailOrder { get; }
+    byte? TailOrder { get; }
 
     /// <summary>
     /// Gets the turn cost at the tail turn (source -> [tail -> head]).

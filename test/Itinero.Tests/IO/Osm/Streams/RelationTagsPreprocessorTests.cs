@@ -91,7 +91,7 @@ public class RelationTagsPreprocessorTests
         var completeStream = new RelationTagsPreprocessor(
             (c, o) =>
             {
-                if (o != null) o.Tags = new TagsCollection(new Tag("id", c.Id.ToInvariantString()));
+                o?.Tags = new TagsCollection(new Tag("id", c.Id.ToInvariantString()));
                 return true;
             });
         completeStream.RegisterSource(os);
