@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
@@ -60,7 +61,8 @@ internal class BidirectionalDijkstra
                     if (_backward.TryGetVisit(v.vertex, out var backwardVisit))
                     {
                         var cost = c + backwardVisit.cost;
-                        if (cost < best.cost)
+                        if (cost < best.cost &&
+                            this.CanTurn(p, backwardVisit.p))
                         {
                             best = (p, backwardVisit.p, cost, null);
                         }
@@ -84,7 +86,8 @@ internal class BidirectionalDijkstra
                     if (_forward.TryGetVisit(v.vertex, out var forwardVisit))
                     {
                         var cost = c + forwardVisit.cost;
-                        if (cost < best.cost)
+                        if (cost < best.cost &&
+                            this.CanTurn(forwardVisit.p, p))
                         {
                             best = (forwardVisit.p, p, cost, null);
                         }
@@ -116,6 +119,17 @@ internal class BidirectionalDijkstra
             : (ushort)(ushort.MaxValue - destination.Offset);
 
         return (forwardPath, best.cost);
+    }
+
+    private bool CanTurn(uint forwardPointer, uint backwardPointer)
+    {
+        var (vertex, _, _, _, _) = _forward.GetVisit(forwardPointer);
+        var forwardPrevious = _forward.GetPreviousEdges(forwardPointer).ToList();
+        if (forwardPrevious.Count == 0) return true; // not a turn.
+        var backwardPrevious = _backward.GetPreviousEdges(backwardPointer)
+            .Select(x => x.edge).ToList();
+        if (backwardPrevious.Count == 0) return true; // not a turn.
+        return _forward.CanTurn(vertex, forwardPrevious, backwardPrevious);
     }
 
     internal class BidirectionalDijkstraForward : DijkstraAlgorithm

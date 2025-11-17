@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Routing.DataStructures;
@@ -70,6 +71,65 @@ internal abstract class DijkstraAlgorithm
         }
 
         return (currentPointer, currentVisit, currentCost);
+    }
+
+    internal IEnumerable<(EdgeId edge, byte? turn)> GetPreviousEdges(uint pointer, int maxCount = 16)
+    {
+        using var previous = _tree.GetPreviousEdges(pointer).GetEnumerator();
+        while (previous.MoveNext())
+        {
+            if (maxCount <= 0) yield break;
+            maxCount--;
+
+            yield return previous.Current;
+        }
+    }
+
+    internal bool CanTurn(VertexId vertex,
+        IReadOnlyList<(EdgeId edge, byte? turn)> previousEdges, IReadOnlyList<EdgeId> nextEdges)
+    {
+        if (nextEdges.Count == 0) throw new Exception("Not a turn");
+        if (previousEdges.Count == 0) throw new Exception("Not a turn");
+
+        // no U-turns
+        if (nextEdges[0] == previousEdges[0].edge) return false;
+
+        // check neighbours.
+        var nextChecked = 0;
+        var edges = previousEdges.ToList();
+        while (nextChecked < nextEdges.Count)
+        {
+            var nextEdge = nextEdges[nextChecked];
+            var edgeFound = false;
+
+            if (!_enumerator.MoveTo(vertex)) return false;
+            while (_enumerator.MoveNext())
+            {
+                // filter out if U-turns or visits on the same edge.
+                var neighbourEdge = _enumerator.EdgeId;
+                if (neighbourEdge != nextEdge) continue;
+
+                // gets the cost of the current edge.
+                var (_, turnCost) = this.GetCost(_enumerator, edges);
+
+                if (turnCost is >= double.MaxValue or < 0) return false;
+
+                edges.Add((_enumerator.EdgeId, _enumerator.HeadOrder));
+                vertex = _enumerator.Head;
+                edgeFound = true;
+                break;
+            }
+
+            if (!edgeFound) return false;
+
+            nextChecked++;
+        }
+
+        // if all edges are checked, the turn is possible.
+        if (nextChecked >= nextEdges.Count) return true;
+
+        // target edge not found as neighbour.
+        return false;
     }
 
     internal bool Step(uint pointer, (VertexId vertex, EdgeId edge, bool forward, byte? head, uint previousPointer) visit, double cost)

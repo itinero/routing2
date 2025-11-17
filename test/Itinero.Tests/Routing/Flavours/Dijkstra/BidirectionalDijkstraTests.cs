@@ -75,4 +75,150 @@ public class BidirectionalDijkstraTests
         Assert.True(enumerator.Current.forward);
         Assert.False(enumerator.MoveNext());
     }
+
+    [Fact]
+    public async Task BidirectionalDijkstra_OneToOne_TwoHopsShortest_WithBarrier_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        EdgeId edge1, edge2;
+        VertexId vertex1, vertex2, vertex3;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            edge1 = writer.AddEdge(vertex1, vertex2);
+            edge2 = writer.AddEdge(vertex2, vertex3);
+        }
+
+        var latest = routerDb.Latest;
+        var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(latest);
+        var (path, _) = await bidirectionalDijkstra.RunAsync(
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex3).FirstAsync(),
+            MockCostFunction.Create(1, [vertex2]));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task BidirectionalDijkstra_OneToOne_FourHopsShortest_ShouldFindPath()
+    {
+        var routerDb = new RouterDb();
+        EdgeId edge1, edge2;
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var latest = routerDb.Latest;
+        var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(latest);
+        var (path, _) = await bidirectionalDijkstra.RunAsync(
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex5).FirstAsync(),
+            MockCostFunction.Create(1));
+
+        Assert.NotNull(path);
+    }
+
+    [Fact]
+    public async Task BidirectionalDijkstra_OneToOne_FourHopsShortest_WithBarrier2_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        EdgeId edge1, edge2;
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var latest = routerDb.Latest;
+        var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(latest);
+        var (path, _) = await bidirectionalDijkstra.RunAsync(
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex5).FirstAsync(),
+            MockCostFunction.Create(1, [vertex2]));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task BidirectionalDijkstra_OneToOne_FourHopsShortest_WithBarrier3_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        EdgeId edge1, edge2;
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var latest = routerDb.Latest;
+        var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(latest);
+        var (path, _) = await bidirectionalDijkstra.RunAsync(
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex5).FirstAsync(),
+            MockCostFunction.Create(1, [vertex3]));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task BidirectionalDijkstra_OneToOne_FourHopsShortest_WithBarrier4_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        EdgeId edge1, edge2;
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var latest = routerDb.Latest;
+        var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(latest);
+        var (path, _) = await bidirectionalDijkstra.RunAsync(
+            await latest.Snap().ToAsync(vertex1).FirstAsync(),
+            await latest.Snap().ToAsync(vertex4).FirstAsync(),
+            MockCostFunction.Create(1, [vertex2]));
+
+        Assert.Null(path);
+    }
 }
