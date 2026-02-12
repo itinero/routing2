@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using Itinero.Data;
 using Itinero.Network.Storage;
+using Itinero.Network.Tiles.Standalone.Global;
 using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles.Standalone;
@@ -10,51 +9,61 @@ namespace Itinero.Network.Tiles.Standalone;
 public partial class StandaloneNetworkTile
 {
     private readonly ArrayBase<byte> _crossings = new MemoryArray<byte>(1024);
-    private uint _crossingsPointer = 0;
+    private uint _crossingsPointer;
 
-    internal BoundaryEdgeId AddBoundaryCrossing(bool isToTile, long globalIdFrom, long globalIdTo, VertexId vertex,
-        IEnumerable<(string key, string value)> attributes, uint edgeTypeId, uint length)
+    internal void AddBoundaryCrossing(bool isIncoming, GlobalEdgeId globalEdgeId, VertexId vertex,
+        IEnumerable<(string key, string value)> attributes, uint edgeTypeId)
     {
         if (vertex.TileId != this.NetworkTile.TileId)
             throw new ArgumentException("Can only add boundary crossings that cross into the tile");
 
-        var id = new BoundaryEdgeId(_crossingsPointer);
         _crossings.EnsureMinimumSize(_crossingsPointer + 36);
-        _crossingsPointer += (uint)_crossings.SetDynamicUInt32(_crossingsPointer, isToTile ? (uint)1 : 0);
-        _crossingsPointer += (uint)_crossings.SetDynamicInt64(_crossingsPointer, globalIdFrom);
-        _crossingsPointer += (uint)_crossings.SetDynamicInt64(_crossingsPointer, globalIdTo);
-        _crossingsPointer += (uint)_crossings.SetDynamicUInt32(_crossingsPointer, vertex.LocalId);
-        _crossingsPointer += (uint)_crossings.SetDynamicUInt32(_crossingsPointer, edgeTypeId);
-        _crossingsPointer += (uint)_crossings.SetDynamicUInt32(_crossingsPointer, length);
+        if (isIncoming)
+        {
+            // incoming if vertex is encoded as a positive number.
+            _crossingsPointer += _crossings.SetDynamicInt32(_crossingsPointer, (int)(vertex.LocalId + 1));
+        }
+        else
+        {
+            // outgoing if vertex is encode as a negative number.
+            _crossingsPointer += _crossings.SetDynamicInt32(_crossingsPointer, -(int)(vertex.LocalId + 1));
+        }
+        _crossingsPointer += _crossings.SetDynamicUInt32(_crossingsPointer, edgeTypeId);
+        _crossingsPointer += _crossings.SetGlobalEdgeId(_crossingsPointer, globalEdgeId);
 
         var a = this.SetAttributes(attributes);
-        _crossingsPointer += (uint)_crossings.SetDynamicUInt32(_crossingsPointer, a);
-
-        return id;
+        _crossingsPointer += _crossings.SetDynamicUInt32(_crossingsPointer, a);
     }
 
     /// <summary>
     /// Gets all boundary crossing edges.
     /// </summary>
     /// <returns>An enumerable with all boundary crossing edges.</returns>
-    public IEnumerable<(BoundaryEdgeId id, bool isToTile, long globalIdFrom, long globalIdTo, VertexId vertex, uint edgeTypeId, uint
-        length,
-        IEnumerable<(string key, string value)> attributes)> GetBoundaryCrossings()
+    public IEnumerable<(bool isIncoming, GlobalEdgeId globalEdgeId, VertexId vertex,
+        IEnumerable<(string key, string value)> attributes, uint edgeTypeId)> GetBoundaryCrossings()
     {
         var pointer = 0L;
         while (pointer < _crossingsPointer)
         {
-            var id = new BoundaryEdgeId((uint)pointer);
-            pointer += _crossings.GetDynamicUInt32(pointer, out var direction);
-            pointer += _crossings.GetDynamicInt64(pointer, out var globalIdFrom);
-            pointer += _crossings.GetDynamicInt64(pointer, out var globalIdTo);
-            pointer += _crossings.GetDynamicUInt32(pointer, out var vertexLocalId);
-            pointer += _crossings.GetDynamicUInt32(pointer, out var edgeTypeId);
-            pointer += _crossings.GetDynamicUInt32(pointer, out var length);
-            pointer += _crossings.GetDynamicUInt32(pointer, out var a);
+            _crossingsPointer += _crossings.GetDynamicInt32(_crossingsPointer, out var localIdSigned);
+            bool isIncoming;
+            uint localId;
+            if (localIdSigned > 0)
+            {
+                localId = (uint)(localIdSigned - 1);
+                isIncoming = true;
+            }
+            else
+            {
+                localId = (uint)(-localIdSigned - 1);
+                isIncoming = false;
+            }
+            _crossingsPointer += _crossings.GetDynamicUInt32(_crossingsPointer, out var edgeTypeId);
+            _crossingsPointer += _crossings.GetGlobalEdgeId(_crossingsPointer, out var globalEdgeId);
+            _crossingsPointer += _crossings.GetDynamicUInt32(_crossingsPointer, out var a);
 
-            yield return (id, direction != 0, globalIdFrom, globalIdTo,
-                new VertexId(this.NetworkTile.TileId, vertexLocalId), edgeTypeId, length, this.GetAttributes(a));
+            yield return (isIncoming, globalEdgeId, new VertexId(this.TileId, localId), this.GetAttributes(a),
+                edgeTypeId);
         }
     }
 }

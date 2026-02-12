@@ -3,6 +3,7 @@ using System.IO;
 using Itinero.Data;
 using Itinero.IO;
 using Itinero.Network.Storage;
+using Itinero.Network.Tiles.Standalone.Global;
 using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles;
@@ -23,8 +24,19 @@ internal partial class NetworkTile
 
     private uint _nextStringId = 0;
 
-    private uint SetAttributes(IEnumerable<(string key, string value)> attributes)
+    private uint SetAttributes(IEnumerable<(string key, string value)> attributes, GlobalEdgeId? globalEdgeId)
     {
+        if (globalEdgeId == null)
+        {
+            _nextAttributePointer += _attributes.SetDynamicInt64Nullable(_nextAttributePointer, null);
+        }
+        else
+        {
+            _nextAttributePointer += _attributes.SetDynamicInt64Nullable(_nextAttributePointer, globalEdgeId.Value.EdgeId);
+            _nextAttributePointer += _attributes.SetDynamicUInt32(_nextAttributePointer, globalEdgeId.Value.Tail);
+            _nextAttributePointer += _attributes.SetDynamicUInt32(_nextAttributePointer, globalEdgeId.Value.Head);
+        }
+        
         var start = _nextAttributePointer;
 
         long cPos = start;
@@ -64,16 +76,32 @@ internal partial class NetworkTile
         return start;
     }
 
-    internal IEnumerable<(string key, string value)> GetAttributes(uint? pointer)
+    internal GlobalEdgeId? GetGlobalEdgeId(uint? pointer)
     {
-        if (pointer == null)
-        {
-            yield break;
-        }
+        if (pointer == null) return null;
 
         var p = pointer.Value;
+        p += _attributes.GetDynamicInt64Nullable(p, out var edgeId);
+        if (edgeId == null) return null;
+        p += _attributes.GetDynamicUInt32(p, out var tail);
+        p += _attributes.GetDynamicUInt32(p, out var head);
 
-        var count = -1;
+        return GlobalEdgeId.Create(edgeId.Value, tail, head);
+    }
+
+    internal IEnumerable<(string key, string value)> GetAttributes(uint? pointer)
+    {
+        if (pointer == null) yield break;
+        
+        var p = pointer.Value;
+        p += _attributes.GetDynamicInt64Nullable(p, out var edgeId);
+        if (edgeId != null)
+        {
+            p += _attributes.GetDynamicUInt32(p, out _);
+            p += _attributes.GetDynamicUInt32(p, out _);
+        }
+
+        int count;
         do
         {
             count = _attributes[p];
@@ -81,8 +109,8 @@ internal partial class NetworkTile
 
             for (var i = 0; i < count; i++)
             {
-                p += (uint)_attributes.GetDynamicUInt32(p, out var keyId);
-                p += (uint)_attributes.GetDynamicUInt32(p, out var valId);
+                p += _attributes.GetDynamicUInt32(p, out var keyId);
+                p += _attributes.GetDynamicUInt32(p, out var valId);
 
                 yield return (_strings[keyId], _strings[valId]);
             }

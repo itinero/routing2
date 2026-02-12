@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using OsmSharp;
 
-namespace Itinero.IO.Osm.Restrictions;
+namespace Itinero.IO.Osm.Restrictions.Turns;
 
 /// <summary>
 /// The original OSM turn restriction.

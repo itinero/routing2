@@ -205,4 +205,12 @@ public class BitCoderTests
         Assert.Equal(1, data.GetDynamicUInt32Nullable(0, out var result));
         Assert.Equal((uint?)0, result);
     }
+
+    [Fact]
+    public void BitCoder_ZigZag_0_ShouldDecode_0()
+    {
+        Assert.Equal(0U, BitCoder.ZigZagEncode64(0));
+        Assert.Equal(0U, BitCoder.ZigZagDecode64(0));
+        Assert.Equal(0U, BitCoder.ZigZagDecode64(BitCoder.ZigZagEncode64(0)));
+    }
 }

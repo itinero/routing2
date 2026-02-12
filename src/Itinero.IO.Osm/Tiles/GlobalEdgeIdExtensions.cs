@@ -1,4 +1,5 @@
 using System;
+using Itinero.Network.Tiles.Standalone.Global;
 using OsmSharp;
 
 namespace Itinero.IO.Osm.Tiles;
@@ -20,6 +21,11 @@ internal static class GlobalEdgeIdExtensions
     public static Guid GenerateGlobalEdgeId(this Way way, int node1Idx, int node2Idx)
     {
         return GenerateGlobalEdgeId(way.Id.Value, node1Idx, node2Idx);
+    }
+
+    public static GlobalEdgeId CreateGlobalEdgeId(this Way way, int node1Idx, int node2Idx)
+    {
+        return GlobalEdgeId.Create(way.Id!.Value, node1Idx, node2Idx);
     }
 
     public static Guid GenerateGlobalEdgeId(long wayId, int node1Idx, int node2Idx)

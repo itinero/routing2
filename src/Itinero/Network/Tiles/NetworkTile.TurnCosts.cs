@@ -114,25 +114,25 @@ internal partial class NetworkTile
         _turnCostPointers[vertex.LocalId] = _turnCostPointer.EncodeToNullableData();
 
         // write turn cost types.
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
+        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
 
         // write attributes.
-        var a = this.SetAttributes(attributes);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, a);
+        var a = this.SetAttributes(attributes, null);
+        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, a);
 
         // write prefix sequence.
         var prefixEdges = new List<EdgeId>(prefix);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)prefixEdges.Count);
+        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)prefixEdges.Count);
         foreach (var prefixEdge in prefixEdges)
         {
             if (prefixEdge.TileId == _tileId)
             {
-                _turnCostPointer += (uint)_turnCosts.SetDynamicInt32(_turnCostPointer, (int)prefixEdge.LocalId);
+                _turnCostPointer += _turnCosts.SetDynamicInt32(_turnCostPointer, (int)prefixEdge.LocalId);
             }
             else
             {
-                _turnCostPointer += (uint)_turnCosts.SetDynamicInt32(_turnCostPointer, (int)-(prefixEdge.LocalId + 1));
-                _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, prefixEdge.TileId);
+                _turnCostPointer += _turnCosts.SetDynamicInt32(_turnCostPointer, (int)-(prefixEdge.LocalId + 1));
+                _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, prefixEdge.TileId);
             }
         }
 
@@ -249,7 +249,7 @@ internal partial class NetworkTile
     private void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
     {
         // skip over vertices and next-pointers.
-        var size = this.DecodeVertex(pointer, out _, out var t1);
+        uint size = this.DecodeVertex(pointer, out _, out var t1);
         pointer += size;
         size = this.DecodeVertex(pointer, out _, out var t2);
         pointer += size;
@@ -261,7 +261,7 @@ internal partial class NetworkTile
         // skip edge id if needed.
         if (t1 != t2)
         {
-            size = (uint)_edges.GetDynamicUInt32(pointer, out _);
+            size = _edges.GetDynamicUInt32(pointer, out _);
             pointer += size;
         }
 

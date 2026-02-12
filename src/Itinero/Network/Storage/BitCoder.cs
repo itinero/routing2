@@ -1,4 +1,5 @@
 ﻿using System;
+using Itinero.Network.Tiles.Standalone.Global;
 using Reminiscence.Arrays;
 
 namespace Itinero.Network.Storage;
@@ -7,7 +8,7 @@ internal static class BitCoder
 {
     private const byte Mask = 128 - 1;
 
-    public static long SetDynamicUInt32(this ArrayBase<byte> data, long i, uint value)
+    public static byte SetDynamicUInt32(this ArrayBase<byte> data, long i, uint value)
     {
         var d0 = (byte)(value & Mask);
         value >>= 7;
@@ -60,7 +61,7 @@ internal static class BitCoder
         return 5;
     }
 
-    public static long SetDynamicUInt64(this ArrayBase<byte> data, long i, ulong value)
+    public static byte SetDynamicUInt64(this ArrayBase<byte> data, long i, ulong value)
     {
         var d0 = (byte)(value & Mask);
         value >>= 7;
@@ -193,7 +194,7 @@ internal static class BitCoder
         return 10;
     }
 
-    public static long GetDynamicUInt32(this ArrayBase<byte> data, long i, out uint value)
+    public static byte GetDynamicUInt32(this ArrayBase<byte> data, long i, out uint value)
     {
         if (i >= data.Length) throw new ArgumentOutOfRangeException(nameof(i));
 
@@ -237,7 +238,7 @@ internal static class BitCoder
         return 5;
     }
 
-    public static long GetDynamicUInt64(this ArrayBase<byte> data, long i, out ulong value)
+    public static byte GetDynamicUInt64(this ArrayBase<byte> data, long i, out ulong value)
     {
         if (i >= data.Length) throw new ArgumentOutOfRangeException(nameof(i));
 
@@ -326,36 +327,6 @@ internal static class BitCoder
         return 10;
     }
 
-    public static uint ToUnsigned(int value)
-    {
-        var unsigned = (uint)value;
-        if (value < 0)
-        {
-            unsigned = (uint)-value;
-        }
-
-        unsigned <<= 1;
-        if (value < 0)
-        {
-            unsigned += 1;
-        }
-
-        return unsigned;
-    }
-
-    public static int FromUnsigned(uint unsigned)
-    {
-        var sign = unsigned & (uint)1;
-
-        var value = (int)(unsigned >> 1);
-        if (sign == 1)
-        {
-            value = -value;
-        }
-
-        return value;
-    }
-
     public static long SetGuid(this ArrayBase<byte> data, long i, Guid value)
     {
         var bytes = value.ToByteArray();
@@ -367,7 +338,7 @@ internal static class BitCoder
         return 16;
     }
 
-    public static long GetGuid(this ArrayBase<byte> data, long i, out Guid value)
+    public static byte GetGuid(this ArrayBase<byte> data, long i, out Guid value)
     {
         var bytes = new byte[16];
         for (var b = 0; b < 16; b++)
@@ -379,72 +350,97 @@ internal static class BitCoder
         return 16;
     }
 
-    public static long SetDynamicInt32(this ArrayBase<byte> data, long i, int value)
+    public static byte SetDynamicInt32(this ArrayBase<byte> data, long i, int value)
     {
-        return data.SetDynamicUInt32(i, ToUnsigned(value));
+        return data.SetDynamicUInt32(i, ZigZagEncode32(value));
     }
 
-    public static long GetDynamicInt32(this ArrayBase<byte> data, long i, out int value)
+    public static byte GetDynamicInt32(this ArrayBase<byte> data, long i, out int value)
     {
         if (i >= data.Length) throw new ArgumentOutOfRangeException(nameof(i));
 
         var c = data.GetDynamicUInt32(i, out var unsigned);
-        value = FromUnsigned(unsigned);
+        value = ZigZagDecode32(unsigned);
         return c;
     }
-
-    public static ulong ToUnsigned(long value)
+    
+    public static uint ZigZagEncode32(int value)
     {
-        var unsigned = (ulong)value;
-        if (value < 0)
-        {
-            unsigned = (ulong)-value;
-        }
-
-        unsigned <<= 1;
-        if (value < 0)
-        {
-            unsigned += 1;
-        }
-
-        return unsigned;
+        return (uint)((value << 1) ^ (value >> 31));
+    }
+    
+    public static int ZigZagDecode32(uint value)
+    {
+        return (int)((value >> 1) ^ (~(value & 1) + 1));
+    }
+    
+    public static ulong ZigZagEncode64(long value)
+    {
+        return (ulong)((value << 1) ^ (value >> 63));
+    }
+    
+    public static long ZigZagDecode64(ulong value)
+    {
+        return (long)((value >> 1) ^ (~(value & 1) + 1));
     }
 
-    public static long FromUnsigned(ulong unsigned)
+    public static byte SetDynamicInt64(this ArrayBase<byte> data, long i, long value)
     {
-        var sign = unsigned & (ulong)1;
-
-        var value = (long)(unsigned >> 1);
-        if (sign == 1)
-        {
-            value = -value;
-        }
-
-        return value;
+        return data.SetDynamicUInt64(i, ZigZagEncode64(value));
     }
 
-    public static long SetDynamicInt64(this ArrayBase<byte> data, long i, long value)
-    {
-        return data.SetDynamicUInt64(i, ToUnsigned(value));
-    }
-
-    public static long GetDynamicInt64(this ArrayBase<byte> data, long i, out long value)
+    public static byte GetDynamicInt64(this ArrayBase<byte> data, long i, out long value)
     {
         var c = data.GetDynamicUInt64(i, out var unsigned);
-        value = FromUnsigned(unsigned);
+        value = ZigZagDecode64(unsigned);
         return c;
     }
 
-    public static long SetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, uint? value)
+    public static byte SetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, uint? value)
     {
         value = value == null ? 0 : value + 1;
         return data.SetDynamicUInt32(i, value.Value);
     }
 
-    public static long GetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, out uint? value)
+    public static byte GetDynamicUInt32Nullable(this ArrayBase<byte> data, long i, out uint? value)
     {
         var c = data.GetDynamicUInt32(i, out var unsigned);
         value = unsigned == 0 ? null : (uint?)unsigned - 1;
+        return c;
+    }
+    
+    public static byte SetDynamicUInt64Nullable(this ArrayBase<byte> data, long i, ulong? value)
+    {
+        value = value == null ? 0 : value + 1;
+        return data.SetDynamicUInt64(i, value.Value);
+    }
+
+    public static byte GetDynamicUInt64Nullable(this ArrayBase<byte> data, long i, out ulong? value)
+    {
+        var c = data.GetDynamicUInt64(i, out var unsigned);
+        value = unsigned == 0 ? null : (uint?)unsigned - 1;
+        return c;
+    }
+
+    public static byte SetDynamicInt64Nullable(this ArrayBase<byte> data, long i, long? value)
+    {
+        if (value == null) return data.SetDynamicUInt64(i, 0);
+        
+        var unsigned = ZigZagEncode64(value.Value) + 1;
+        return data.SetDynamicUInt64(i, unsigned);
+    }
+
+    public static byte GetDynamicInt64Nullable(this ArrayBase<byte> data, long i, out long? value)
+    {
+        var c = data.GetDynamicUInt64(i, out var unsigned);
+        if (unsigned == 0)
+        {
+            value = null;
+        }
+        else
+        {
+            value = ZigZagDecode64(unsigned - 1);
+        }
         return c;
     }
 
@@ -463,6 +459,40 @@ internal static class BitCoder
         for (var b = 0; b < bytes; b++)
         {
             value += data[i + b] << (b * 8);
+        }
+    }
+
+    public static byte SetGlobalEdgeId(this ArrayBase<byte> data, long p, GlobalEdgeId globalEdgeId)
+    {
+        var c = data.SetDynamicInt64(p, globalEdgeId.EdgeId);
+        c += data.SetDynamicUInt32(p + c, globalEdgeId.Tail);
+        c += data.SetDynamicUInt32(p + c, globalEdgeId.Head);
+        return c;
+    }
+
+    public static byte GetGlobalEdgeId(this ArrayBase<byte> data, long p, out GlobalEdgeId globalEdgeId)
+    {
+        var c = data.GetDynamicInt64(p, out var edgeId);
+        c += data.GetDynamicUInt32(p + c, out var tail);
+        c += data.GetDynamicUInt32(p + c, out var head);
+        
+        globalEdgeId = GlobalEdgeId.Create(edgeId, tail, head);
+        
+        return c;
+    }
+
+    public static byte SetGlobalEdgeIdNullable(this ArrayBase<byte> data, long p, GlobalEdgeId? globalEdgeId)
+    {
+        if (globalEdgeId == null)
+        {
+            return data.SetDynamicInt64Nullable(p, null);
+        }
+        else
+        {
+            var c = data.SetDynamicInt64Nullable(p, globalEdgeId.Value.EdgeId);
+            c += data.SetDynamicUInt32(p + c, globalEdgeId.Value.Tail);
+            c += data.SetDynamicUInt32(p + c, globalEdgeId.Value.Head);
+            return c;
         }
     }
 }

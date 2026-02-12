@@ -276,11 +276,22 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
 
     /// <summary>
     /// Adds turn costs.
+    ///
+    /// Example, a simple restricted turn is added as:
+    /// - vertex: The vertex the turn occurs at.
+    /// - attributes: describes the type of costs, vehicle profiles should interpret this turn as binary.
+    /// - edges: [FromEdgeId, ToEdgeId]
+    /// - costs: [[0, 1], [0,0]] -> this adds only a cost for the turn (FromEdgeId -> ToEdgeId).
+    ///
+    /// Things to consider:
+    /// - When multiple costs are added on top of each other they are added.
+    /// - A single binary cost is enough to restrict the turn.
+    /// - The actual cost is interpreted by the vehicle profile, the vehicle profile is free to interpret the data being added here.
     /// </summary>
     /// <param name="vertex">The vertex.</param>
     /// <param name="attributes">The attributes.</param>
-    /// <param name="edges">The edges.</param>
-    /// <param name="costs">The costs as a matrix.</param>
+    /// <param name="edges">The edges, the edge should match the ordering in the costs matrix.</param>
+    /// <param name="costs">The costs as a matrix, [fromEdge, toEdge].</param>
     /// <param name="prefix">A path prefix, if any.</param>
     /// <exception cref="ArgumentException"></exception>
     public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,

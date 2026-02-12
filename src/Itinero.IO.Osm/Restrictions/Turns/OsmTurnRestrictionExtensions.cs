@@ -1,98 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Network;
-using OsmSharp;
+using Itinero.Network.Tiles.Standalone.Global;
 
-namespace Itinero.IO.Osm.Restrictions;
+namespace Itinero.IO.Osm.Restrictions.Turns;
 
 public static class OsmTurnRestrictionExtensions
 {
     /// <summary>
-    /// The signature of a function to get edges for the given nodes pair along the given way.
-    /// </summary>
-    public delegate (EdgeId edge, bool forward)? GetEdgeFor(long wayId, int node1Idx, int node2Idx);
-
-    /// <summary>
     /// Converts the given OSM turn restriction into one or more sequences on the network.
     /// </summary>
     /// <param name="osmTurnRestriction">The OSM turn restriction.</param>
-    /// <param name="getEdgeFor">A function to get edges for pairs of nodes for a given way.</param>
     /// <returns>The restriction using network edges and vertices.</returns>
-    public static Result<IEnumerable<NetworkRestriction>> ToNetworkRestrictions(
-        this OsmTurnRestriction osmTurnRestriction,
-        GetEdgeFor getEdgeFor)
+    public static IEnumerable<GlobalRestriction> ToGlobalNetworkRestrictions(this OsmTurnRestriction osmTurnRestriction)
     {
-        // get from edges.
-        var fromEdges = new List<(EdgeId edge, bool forward)>();
-        foreach (var hop in osmTurnRestriction.GetFromHops())
-        {
-            if (hop.IsError) continue;
-            var (way, minStartNode, endNode) = hop.Value;
-
-            // get the from-hop from the two nodes and the way id.
-            var edge = getEdgeFor.GetFromHopEdge(way.Id.Value, minStartNode, endNode);
-            if (edge.HasValue) fromEdges.Add(edge.Value);
-        }
-
-        if (fromEdges.Count == 0)
-        {
-            return new Result<IEnumerable<NetworkRestriction>>(
-                "could not parse any part of the from-part of the restriction");
-        }
-
-        // get to edges.
-        var toEdges = new List<(EdgeId edge, bool forward)>();
-        foreach (var hop in osmTurnRestriction.GetToHops())
-        {
-            if (hop.IsError) continue;
-            var (way, startNode, maxEndNode) = hop.Value;
-
-            // get the from-hop from the two nodes and the way id.
-            var edge = getEdgeFor.GetToHopEdge(way.Id.Value, startNode, maxEndNode);
-            if (edge.HasValue) toEdges.Add(edge.Value);
-        }
-
-        if (toEdges.Count == 0)
-        {
-            return new Result<IEnumerable<NetworkRestriction>>(
-                "could not parse any part of the to-part of the restriction");
-        }
-
-        // get the in between sequence.
-        var viaEdges = new List<(EdgeId edgeId, bool forward)>();
         var viaSequences = osmTurnRestriction.GetViaHops();
-        if (viaSequences.IsError) return viaSequences.ConvertError<IEnumerable<NetworkRestriction>>();
-        foreach (var hop in viaSequences.Value)
+        if (viaSequences == null) yield break;
+
+        foreach (var tailEdge in osmTurnRestriction.GetTailHops())
+        foreach (var headEdge in osmTurnRestriction.GetHeadHops())
         {
-            var (way, startNode, endNode) = hop;
-
-            // get the from-hop from the two nodes and the way id.
-            var edge = getEdgeFor.GetViaHopEdges(way.Id.Value, startNode, endNode);
-            viaEdges.AddRange(edge);
+            IEnumerable<GlobalEdgeId> edges = [tailEdge];
+            edges = edges.Concat(viaSequences).Concat([headEdge]);
+            
+            yield return new GlobalRestriction(edges,
+                osmTurnRestriction.IsProbibitory, osmTurnRestriction.Attributes);
         }
-
-        var networkRestrictions = new List<NetworkRestriction>();
-        foreach (var fromEdge in fromEdges)
-            foreach (var toEdge in toEdges)
-            {
-                var sequence = new List<(EdgeId edgeId, bool forward)> { fromEdge };
-                sequence.AddRange(viaEdges);
-                sequence.Add(toEdge);
-
-                networkRestrictions.Add(new NetworkRestriction(sequence, osmTurnRestriction.IsProbibitory,
-                    osmTurnRestriction.Attributes));
-            }
-
-        return networkRestrictions;
     }
 
-    /// <summary>
-    /// Gets the node that connects the from ways to the via way(s) or nodes.
-    /// </summary>
-    /// <param name="osmTurnRestriction">The turn restriction.</param>
-    /// <returns>The node where the from ways end.</returns>
-    public static Result<long> GetViaFrom(this OsmTurnRestriction osmTurnRestriction)
+    private static long? GetViaTail(this OsmTurnRestriction osmTurnRestriction)
     {
         // assume the restriction has a via-node like most of them.
         var node = osmTurnRestriction.ViaNodeId;
@@ -100,7 +36,7 @@ public static class OsmTurnRestrictionExtensions
 
         // but some have via-ways, so get the node from the first via-way.
         var viaWay = osmTurnRestriction.Via.FirstOrDefault();
-        if (viaWay == null) return new Result<long>("no via node or via way found");
+        if (viaWay == null) return null;
         foreach (var fromWay in osmTurnRestriction.From)
         {
             if (fromWay.Nodes[^1] == viaWay.Nodes[0] ||
@@ -115,50 +51,33 @@ public static class OsmTurnRestrictionExtensions
                 return fromWay.Nodes[0];
             }
         }
-
-        return new Result<long>("no via node found to end the from ways");
+        
+        // not cool, probably restriction not mapped correctly.
+        return null;
     }
 
-    /// <summary>
-    /// Enumerates from ways and their nodes in the direction of the restricted sequence.
-    /// </summary>
-    /// <param name="osmTurnRestriction">The turn restriction.</param>
-    /// <returns>The from ways and for each the start node index where the sequence starts at the earliest and the end node index.</returns>
-    public static IEnumerable<Result<(Way way, int minStartNode, int endNode)>> GetFromHops(
+    private static IEnumerable<GlobalEdgeId> GetTailHops(
         this OsmTurnRestriction osmTurnRestriction)
     {
-        var node = osmTurnRestriction.GetViaFrom();
+        var node = osmTurnRestriction.GetViaTail();
+        if (node == null) yield break;
 
-        var fromWayRestriction = new List<Result<(Way way, int minStartNode, int endNode)>>();
         foreach (var fromWay in osmTurnRestriction.From)
         {
-            if (node.IsError)
-            {
-                fromWayRestriction.Add(node.ConvertError<(Way way, int minStartNode, int endNode)>());
-                continue;
-            }
-
             if (fromWay.Nodes[^1] == node)
             {
-                fromWayRestriction.Add((fromWay, 0, fromWay.Nodes.Length - 1));
+                yield return GlobalEdgeId.Create(fromWay.Id!.Value, 0, fromWay.Nodes.Length - 1);
                 continue;
             }
 
             if (fromWay.Nodes[0] == node)
             {
-                fromWayRestriction.Add((fromWay, fromWay.Nodes.Length - 1, 0));
+                yield return GlobalEdgeId.Create(fromWay.Id!.Value, fromWay.Nodes.Length - 1, 0);
             }
         }
-
-        return fromWayRestriction;
     }
-
-    /// <summary>
-    /// Gets the node that connects the to ways to the via way(s) or nodes.
-    /// </summary>
-    /// <param name="osmTurnRestriction">The turn restriction.</param>
-    /// <returns>The node where the to ways begin.</returns>
-    public static Result<long> GetViaTo(this OsmTurnRestriction osmTurnRestriction)
+    
+    private static long? GetViaHead(this OsmTurnRestriction osmTurnRestriction)
     {
         // assume the restriction has a via-node like most of them.
         var node = osmTurnRestriction.ViaNodeId;
@@ -166,7 +85,7 @@ public static class OsmTurnRestrictionExtensions
 
         // but some have via-ways, so get the node from the first via-way.
         var viaWay = osmTurnRestriction.Via.FirstOrDefault();
-        if (viaWay == null) return new Result<long>("no via node or via way found");
+        if (viaWay == null) return null;
         foreach (var toWay in osmTurnRestriction.To)
         {
             if (toWay.Nodes[^1] == viaWay.Nodes[0] ||
@@ -181,162 +100,68 @@ public static class OsmTurnRestrictionExtensions
                 return toWay.Nodes[0];
             }
         }
-
-        return new Result<long>("no via node found to start the to ways");
+        
+        return null;
     }
 
-    /// <summary>
-    /// Enumerates to ways and their nodes in the direction of the restricted sequence.
-    /// </summary>
-    /// <param name="osmTurnRestriction">The turn restriction.</param>
-    /// <returns>The to ways and for each the node where the to sequence starts and where it ends at the latest.</returns>
-    public static IEnumerable<Result<(Way way, int startNode, int maxEndNode)>> GetToHops(
+    private static IEnumerable<GlobalEdgeId> GetHeadHops(
         this OsmTurnRestriction osmTurnRestriction)
     {
-        var node = osmTurnRestriction.GetViaTo();
+        var node = osmTurnRestriction.GetViaHead();
+        if (node == null) yield break;
 
         // assume the restriction has a via-node like most of them.
-        var toWayResults = new List<Result<(Way way, int startNode, int maxEndNode)>>();
         foreach (var toWay in osmTurnRestriction.To)
         {
-            if (node.IsError)
-            {
-                toWayResults.Add(node.ConvertError<(Way way, int startNode, int endNode)>());
-                continue;
-            }
-
             if (toWay.Nodes[0] == node)
             {
-                toWayResults.Add((toWay, 0, toWay.Nodes.Length - 1));
+                yield return GlobalEdgeId.Create(toWay.Id!.Value, 0, toWay.Nodes.Length - 1);
                 continue;
             }
 
             if (toWay.Nodes[^1] == node)
             {
-                toWayResults.Add((toWay, toWay.Nodes.Length - 1, 0));
+                yield return GlobalEdgeId.Create(toWay.Id!.Value, toWay.Nodes.Length - 1, 0);
             }
         }
-
-        return toWayResults;
     }
-
-    /// <summary>
-    /// Gets the via way segments.
-    /// </summary>
-    /// <param name="osmTurnRestriction">The OSM turn restrictions.</param>
-    /// <returns>The ways and the two node indexes representing the via part.</returns>
-    public static Result<IReadOnlyList<(Way via, int startNode, int endNode)>> GetViaHops(
+    
+    private static IReadOnlyList<GlobalEdgeId>? GetViaHops(
         this OsmTurnRestriction osmTurnRestriction)
     {
-        var node1 = osmTurnRestriction.GetViaFrom();
-        if (node1.IsError) return node1.ConvertError<IReadOnlyList<(Way via, int node1Idx, int node2Idx)>>();
-        var node2 = osmTurnRestriction.GetViaTo();
-        if (node2.IsError) return node2.ConvertError<IReadOnlyList<(Way via, int node1Idx, int node2Idx)>>();
+        var tailNode = osmTurnRestriction.GetViaTail();
+        if (tailNode == null) return null;
+        var headNode = osmTurnRestriction.GetViaHead();
+        if (headNode == null) return null;
 
-        if (node1.Value == node2.Value)
-        {
-            // the most default case, one via node.
-            return Array.Empty<(Way via, int node1Idx, int node2Idx)>();
-        }
-
+        // via is a node if true.
+        if (tailNode.Value == headNode.Value) return ArraySegment<GlobalEdgeId>.Empty;
+        
         // there have to be via ways at this point.
         // it is assumed ways are split to follow along the sequence.
-        var currentNode = node1.Value;
-        var sequences = new List<(Way via, int node1Idx, int node2Idx)>();
+        var currentNode = tailNode.Value;
+        var edges = new List<GlobalEdgeId>();
         foreach (var viaWay in osmTurnRestriction.Via)
         {
             if (viaWay.Nodes[0] == currentNode)
             {
-                sequences.Add((viaWay, 0, viaWay.Nodes.Length - 1));
+                edges.Add(GlobalEdgeId.Create(viaWay.Id!.Value, 0, viaWay.Nodes.Length - 1));
                 currentNode = viaWay.Nodes[^1];
             }
             else if (viaWay.Nodes[^1] == currentNode)
             {
-                sequences.Add((viaWay, viaWay.Nodes.Length - 1, 0));
+                edges.Add(GlobalEdgeId.Create(viaWay.Id!.Value, viaWay.Nodes.Length - 1, 0));
                 currentNode = viaWay.Nodes[0];
             }
             else
             {
-                return new Result<IReadOnlyList<(Way via, int startNode, int endNode)>>(
-                    "one of via ways does not fit in a sequence");
+                return null;
             }
         }
 
-        if (currentNode != node2)
-            return new Result<IReadOnlyList<(Way via, int startNode, int endNode)>>(
-                "last node of via sequence does not match");
+        if (currentNode != headNode)
+            return null;
 
-        return sequences;
-    }
-
-    private static (EdgeId edge, bool forward)? GetFromHopEdge(this GetEdgeFor getEdgeFor, long wayId, int minStartNode, int endNode)
-    {
-        if (minStartNode < endNode)
-        {
-            for (var n = endNode - 1; n >= minStartNode; n--)
-            {
-                var edge = getEdgeFor(wayId, n, endNode);
-                if (edge != null) return edge;
-            }
-        }
-        else
-        {
-            for (var n = endNode + 1; n <= minStartNode; n++)
-            {
-                var edge = getEdgeFor(wayId, n, endNode);
-                if (edge != null) return edge;
-            }
-        }
-
-        return null;
-    }
-
-    private static IEnumerable<(EdgeId edge, bool forward)> GetViaHopEdges(this GetEdgeFor getEdgeFor, long wayId,
-        int startNode, int endNode)
-    {
-        if (startNode < endNode)
-        {
-            for (var n = startNode + 1; n <= endNode; n++)
-            {
-                var edge = getEdgeFor(wayId, startNode, n);
-                if (edge == null) continue;
-
-                startNode = n;
-                yield return edge.Value;
-            }
-        }
-        else
-        {
-            for (var n = startNode - 1; n >= endNode; n--)
-            {
-                var edge = getEdgeFor(wayId, startNode, n);
-                if (edge == null) continue;
-
-                startNode = n;
-                yield return edge.Value;
-            }
-        }
-    }
-
-    private static (EdgeId edge, bool forward)? GetToHopEdge(this GetEdgeFor getEdgeFor, long wayId, int startNode, int maxEndNode)
-    {
-        if (startNode < maxEndNode)
-        {
-            for (var n = startNode + 1; n <= maxEndNode; n++)
-            {
-                var edge = getEdgeFor(wayId, startNode, n);
-                if (edge != null) return edge;
-            }
-        }
-        else
-        {
-            for (var n = startNode - 1; n >= maxEndNode; n--)
-            {
-                var edge = getEdgeFor(wayId, startNode, n);
-                if (edge != null) return edge;
-            }
-        }
-
-        return null;
+        return edges;
     }
 }

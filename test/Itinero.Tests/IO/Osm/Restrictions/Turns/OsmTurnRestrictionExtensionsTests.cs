@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Itinero.IO.Osm.Restrictions;
+using Itinero.IO.Osm.Restrictions.Turns;
 using OsmSharp;
 using OsmSharp.Tags;
 using Xunit;

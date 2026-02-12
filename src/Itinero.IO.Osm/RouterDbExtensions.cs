@@ -56,10 +56,10 @@ public static class RouterDbExtensions
             data = data.ApplyFilter(settings.TagsFilter.Filter);
         }
 
-        // use writer to fill router db.
-        var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, settings.ElevationHandler);
-        routerDbStreamTarget.RegisterSource(data);
-        routerDbStreamTarget.Initialize();
-        routerDbStreamTarget.Pull();
+        // // use writer to fill router db.
+        // var routerDbStreamTarget = new RouterDbStreamTarget(routerDbWriter, settings.ElevationHandler);
+        // routerDbStreamTarget.RegisterSource(data);
+        // routerDbStreamTarget.Initialize();
+        // routerDbStreamTarget.Pull();
     }
 }

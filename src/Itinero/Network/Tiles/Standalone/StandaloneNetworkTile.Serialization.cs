@@ -32,21 +32,6 @@ public partial class StandaloneNetworkTile
         }
     }
 
-    private void WriteGlobal(Stream stream)
-    {
-        stream.WriteVarUInt32(_globalIdPointer);
-        for (var i = 0; i < _globalIdPointer; i++)
-        {
-            stream.WriteByte(_globalIds[i]);
-        }
-
-        stream.WriteVarUInt32(_turnCostPointer);
-        for (var i = 0; i < _turnCostPointer; i++)
-        {
-            stream.WriteByte(_turnCosts[i]);
-        }
-    }
-
     public static StandaloneNetworkTile ReadFrom(Stream stream)
     {
         var version = stream.ReadVarInt32();
@@ -78,23 +63,6 @@ public partial class StandaloneNetworkTile
         for (var i = 0; i < _crossingsPointer; i++)
         {
             _crossings[i] = (byte)stream.ReadByte();
-        }
-    }
-
-    private void ReadGlobal(Stream stream)
-    {
-        _globalIdPointer = stream.ReadVarUInt32();
-        _globalIds.Resize(_globalIdPointer);
-        for (var i = 0; i < _globalIdPointer; i++)
-        {
-            _globalIds[i] = (byte)stream.ReadByte();
-        }
-
-        _turnCostPointer = stream.ReadVarUInt32();
-        _turnCosts.Resize(_turnCostPointer);
-        for (var i = 0; i < _turnCostPointer; i++)
-        {
-            _turnCosts[i] = (byte)stream.ReadByte();
         }
     }
 }

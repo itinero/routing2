@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Itinero.Network;
-using Itinero.Network.Enumerators.Edges;
+using System.Linq;
+using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.IO.Osm.Restrictions.Barriers;
 
@@ -11,40 +11,55 @@ namespace Itinero.IO.Osm.Restrictions.Barriers;
 public static class OsmBarrierExtensions
 {
     /// <summary>
-    /// The signature of a function to get edges for the given nodes pair along the given way.
-    /// </summary>
-    public delegate IEdgeEnumerator GetEdgesFor(long node);
-
-    /// <summary>
-    /// Converts the given barrier into one or more network restrictions
+    /// Converts the given barrier into two or more global network restrictions.
     /// </summary>
     /// <param name="osmBarrier">The OSM barrier.</param>
-    /// <param name="getEdgesFor">A function to get edges for a given node.</param>
     /// <returns>The restrictions using network edges and vertices.</returns>
-    public static Result<IEnumerable<NetworkRestriction>> ToNetworkRestrictions(
-        this OsmBarrier osmBarrier,
-        GetEdgesFor getEdgesFor)
+    public static IEnumerable<GlobalRestriction> ToGlobalNetworkRestrictions(
+        this OsmBarrier osmBarrier)
     {
-        // get all edges starting at the given node.
-        var edges = new List<(EdgeId edge, bool forward)>();
-        var enumerator = getEdgesFor(osmBarrier.Node);
-        while (enumerator.MoveNext())
+        var attributes = osmBarrier.Node.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
+                         ArraySegment<(string key, string value)>.Empty;
+        
+        foreach (var tailHop in osmBarrier.GetTailHops())
+        foreach (var otherHop in osmBarrier.GetTailHops())
         {
-            edges.Add((enumerator.EdgeId, enumerator.Forward));
+            if (tailHop == otherHop) continue;
+
+            var headHop = otherHop.GetInverted();
+
+            yield return new GlobalRestriction([tailHop, headHop], true, attributes);
         }
+    }
 
-        if (edges.Count < 2) return new Result<IEnumerable<NetworkRestriction>>(ArraySegment<NetworkRestriction>.Empty);
+    private static IEnumerable<GlobalEdgeId> GetTailHops(
+        this OsmBarrier osmBarrier)
+    {
+        var node = osmBarrier.Node.Id!.Value;
 
-        // for each two edges create one restriction.
-        var restrictions = new List<NetworkRestriction>();
-        foreach (var from in edges)
-            foreach (var to in edges)
+        foreach (var fromWay in osmBarrier.Ways)
+        {
+            var previous = 0;
+            for (var n = 1; n < fromWay.Nodes.Length; n++)
             {
-                if (from.edge == to.edge) continue;
+                var current = fromWay.Nodes[n];
+                if (current != node) continue;
+                if (n == previous) continue;
 
-                restrictions.Add(new NetworkRestriction(new[] { from, to }, true, osmBarrier.Attributes));
+                yield return GlobalEdgeId.Create(fromWay.Id!.Value, tail: previous, head: n);
+                previous = n;
             }
-
-        return new Result<IEnumerable<NetworkRestriction>>(restrictions);
+            
+            previous = fromWay.Nodes.Length - 1;
+            for (var n = fromWay.Nodes.Length - 2; n >= 0; n--)
+            {
+                var current = fromWay.Nodes[n];
+                if (current != node) continue;
+                if (n == previous) continue;
+                    
+                yield return GlobalEdgeId.Create(fromWay.Id!.Value, tail: previous, head: n);
+                previous = n;
+            }
+        }
     }
 }
