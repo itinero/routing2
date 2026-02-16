@@ -327,7 +327,7 @@ var assemblies = [
       { "name": "Itinero.Routing.Costs.Caches.TurnCostFactorCache", "rp": "Itinero_TurnCostFactorCache.html", "cl": 4, "ucl": 19, "cal": 23, "tl": 40, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.Costs.ICostFunctionExtensions", "rp": "Itinero_ICostFunctionExtensions.2.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 16, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.Costs.ProfileCostFunction", "rp": "Itinero_ProfileCostFunction.html", "cl": 25, "ucl": 2, "cal": 27, "tl": 55, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 14, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Routing.Costs.ProfileCostFunctionCached", "rp": "Itinero_ProfileCostFunctionCached.html", "cl": 34, "ucl": 19, "cal": 53, "tl": 90, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 24, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Routing.Costs.ProfileCostFunctionCached", "rp": "Itinero_ProfileCostFunctionCached.html", "cl": 34, "ucl": 39, "cal": 73, "tl": 119, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 34, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.DataStructures.BinaryHeap`1", "rp": "Itinero_BinaryHeap_1.html", "cl": 89, "ucl": 15, "cal": 104, "tl": 185, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.DataStructures.PathTree", "rp": "Itinero_PathTree.html", "cl": 41, "ucl": 86, "cal": 127, "tl": 225, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 12, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Routing.Flavours.Dijkstra.Bidirectional.BidirectionalDijkstra", "rp": "Itinero_BidirectionalDijkstra.html", "cl": 112, "ucl": 3, "cal": 115, "tl": 188, "ct": "LineCoverage", "mc": "-", "cb": 40, "tb": 48, "lch": [], "bch": [], "hc": [] },
@@ -537,6 +537,11 @@ var riskHotspots = [
     "assembly": "Itinero", "class": "Itinero.Geo.GeoExtensions", "reportPath": "Itinero_GeoExtensions.html", "methodName": "Intersect(System.ValueTuple`2<System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>,System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>>,System.ValueTuple`2<System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>,System.ValueTuple`3<System.Double,System.Double,System.Nullable`1<System.Single>>>,System.Boolean)", "methodShortName": "Intersect(...)", "fileIndex": 0, "line": 391,
     "metrics": [
       { "value": 36, "exceeded": true },
+    ]},
+  {
+    "assembly": "Itinero", "class": "Itinero.Routing.Costs.ProfileCostFunctionCached", "reportPath": "Itinero_ProfileCostFunctionCached.html", "methodName": "Get(Itinero.Network.Enumerators.Edges.IEdgeEnumerator`1<Itinero.Network.RoutingNetwork>,System.Boolean,System.Collections.Generic.IEnumerable`1<System.ValueTuple`2<Itinero.Network.EdgeId,System.Nullable`1<System.Byte>>>)", "methodShortName": "Get(...)", "fileIndex": 0, "line": 27,
+    "metrics": [
+      { "value": 34, "exceeded": true },
     ]},
   {
     "assembly": "Itinero.IO.Osm", "class": "Itinero.IO.Osm.Collections.UnsignedNodeIndex", "reportPath": "Itinero.IO.Osm_UnsignedNodeIndex.html", "methodName": "TryGetIndex(System.Int64)", "methodShortName": "TryGetIndex(...)", "fileIndex": 0, "line": 344,
