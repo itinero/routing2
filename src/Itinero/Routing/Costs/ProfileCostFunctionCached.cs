@@ -64,25 +64,54 @@ internal class ProfileCostFunctionCached : ICostFunction
         var totalTurnCost = 0.0;
         var (_, turn) = previousEdges.FirstOrDefault();
         if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
-        var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
 
-        foreach (var (turnCostType, attributes, turnCost, prefixEdges) in turnCosts)
+        if (tailToHead)
         {
-            // TODO: compare prefix edges with the previous edges.
+            var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
 
-            var turnCostFactor = _turnCostFactorCache.Get(turnCostType);
-            if (turnCostFactor == null)
+            foreach (var (turnCostType, attributes, turnCost, prefixEdges) in turnCosts)
             {
-                turnCostFactor = _profile.TurnCostFactor(attributes);
-                _turnCostFactorCache.Set(turnCostType, turnCostFactor.Value);
-            }
-            if (turnCostFactor.Value.IsBinary && turnCost > 0)
-            {
-                totalTurnCost = double.MaxValue;
-                break;
-            }
+                // TODO: compare prefix edges with the previous edges.
 
-            totalTurnCost += turnCostFactor.Value.CostFactor * turnCost;
+                var turnCostFactor = _turnCostFactorCache.Get(turnCostType);
+                if (turnCostFactor == null)
+                {
+                    turnCostFactor = _profile.TurnCostFactor(attributes);
+                    _turnCostFactorCache.Set(turnCostType, turnCostFactor.Value);
+                }
+
+                if (turnCostFactor.Value.IsBinary && turnCost > 0)
+                {
+                    totalTurnCost = double.MaxValue;
+                    break;
+                }
+
+                totalTurnCost += turnCostFactor.Value.CostFactor * turnCost;
+            }
+        }
+        else
+        {
+            var turnCosts = edgeEnumerator.GetTurnCostFromTail(turn.Value);
+
+            foreach (var (turnCostType, attributes, turnCost, prefixEdges) in turnCosts)
+            {
+                // TODO: compare prefix edges with the previous edges.
+
+                var turnCostFactor = _turnCostFactorCache.Get(turnCostType);
+                if (turnCostFactor == null)
+                {
+                    turnCostFactor = _profile.TurnCostFactor(attributes);
+                    _turnCostFactorCache.Set(turnCostType, turnCostFactor.Value);
+                }
+
+                if (turnCostFactor.Value.IsBinary && turnCost > 0)
+                {
+                    totalTurnCost = double.MaxValue;
+                    break;
+                }
+
+                totalTurnCost += turnCostFactor.Value.CostFactor * turnCost;
+            }
         }
 
         return (canAccess, factor.CanStop, cost, totalTurnCost);
