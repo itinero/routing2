@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM' upload='never'>
+  <node id='-142330' visible='true' lat='50.8638583726' lon='4.34575904346' />
+  <node id='-142333' visible='true' lat='50.8663272892' lon='4.34772199646' />
+  <node id='-142335' visible='true' lat='50.86654565278' lon='4.34763726468' />
+  <node id='-142341' visible='true' lat='50.8674063671' lon='4.3480691776' />
+  <node id='-142349' visible='true' lat='50.86683977355' lon='4.34714299594' />
+  <node id='-142353' visible='true' lat='50.86749485404' lon='4.34761608173' />
+  <node id='-142367' visible='true' lat='50.86443764004' lon='4.34625947113' />
+  <node id='-142369' visible='true' lat='50.86460708314' lon='4.34559664088' />
+  <node id='-142371' visible='true' lat='50.86501752218' lon='4.34676043605' />
+  <node id='-142373' visible='true' lat='50.8648878465' lon='4.34749604504' />
+  <node id='-142377' visible='true' lat='50.86561768982' lon='4.34727893235' />
+  <node id='-142379' visible='true' lat='50.86579251691' lon='4.34674758094' />
+  <node id='-142385' visible='true' lat='50.8670893291' lon='4.35021452311' />
+  <node id='-142387' visible='true' lat='50.86584599442' lon='4.34914125385' />
+  <node id='-142410' visible='true' lat='50.8638984824' lon='4.34551897007' />
+  <way id='-142332' visible='true'>
+    <nd ref='-142330' />
+    <nd ref='-142367' />
+    <nd ref='-142371' />
+    <nd ref='-142377' />
+    <nd ref='-142333' />
+    <nd ref='-142335' />
+    <nd ref='-142341' />
+    <tag k='highway' v='cycleway' />
+  </way>
+  <way id='-142370' visible='true'>
+    <nd ref='-142367' />
+    <nd ref='-142369' />
+    <nd ref='-142410' />
+    <tag k='highway' v='cycleway' />
+  </way>
+  <way id='-142374' visible='true'>
+    <nd ref='-142371' />
+    <nd ref='-142373' />
+    <tag k='highway' v='cycleway' />
+  </way>
+  <way id='-142380' visible='true'>
+    <nd ref='-142377' />
+    <nd ref='-142379' />
+    <tag k='highway' v='cycleway' />
+  </way>
+  <way id='-142393' visible='true'>
+    <nd ref='-142335' />
+    <nd ref='-142349' />
+    <nd ref='-142353' />
+    <nd ref='-142341' />
+    <nd ref='-142385' />
+    <nd ref='-142387' />
+    <nd ref='-142333' />
+    <tag k='highway' v='cycleway' />
+  </way>
+</osm>
