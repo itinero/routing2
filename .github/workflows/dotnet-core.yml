@@ -54,10 +54,8 @@ jobs:
       run: dotnet pack -c release
       working-directory: ./src/Itinero.MapMatching/
     - name: Nuget push
-      run: dotnet nuget push **/*.nupkg --skip-duplicate --source https://nuget.pkg.github.com/itinero/index.json
+      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key "${{ github.token }}" --source https://nuget.pkg.github.com/itinero/index.json
       working-directory: ./src/
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
