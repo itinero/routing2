@@ -120,8 +120,8 @@ public class ModelBuilder
             var isConnected = false;
 
             // use a snap bounding box larger than the search radius
-            // to account for tile boundaries in the spatial index.
-            var snapBox = Math.Max(searchRadius * 3, 200);
+            // to account for tile boundaries and long edges in the spatial index.
+            var snapBox = Math.Max(searchRadius * 3, 500);
             await foreach (var snapPoint in _routingNetwork.Snap(profile, s =>
                                {
                                    s.OffsetInMeter = snapBox;
