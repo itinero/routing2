@@ -15,23 +15,45 @@ public class MapMatcherSettings
     public Profile? Profile { get; set; }
 
     /// <summary>
-    /// The maximum distance ratio between great circle distance and the route distance between two samples.
+    /// GPS noise standard deviation in meters. Controls the emission probability (Gaussian).
+    /// Lower values make the matcher prefer candidates closer to the GPS point.
     /// </summary>
-    public double MaxDistanceRatio { get; set; } = 5.0;
+    public double SigmaZ { get; set; } = 10.0;
 
     /// <summary>
-    /// The maximum distance between a sample and a potential snapping point.
+    /// Transition probability parameter in meters. Controls the exponential distribution
+    /// over the absolute difference between great-circle distance and route distance.
+    /// Higher values are more tolerant of indirect routes.
     /// </summary>
-    public double MaxSnappingDistance { get; set; } = 50;
+    public double Beta { get; set; } = 5.0;
 
     /// <summary>
-    /// Ratio between node costs and transition costs
+    /// The search radius in meters for finding snap point candidates.
     /// </summary>
-    /// <remarks>
-    /// 1 = only transitions.
-    /// 0 = only node weights.
-    /// </remarks>
-    public double TransitionOrSnappingRatio { get; set; } = 0.5;
+    public double SearchRadius { get; set; } = 50;
+
+    /// <summary>
+    /// Minimum distance in meters between consecutive track points.
+    /// Points closer than this are skipped to avoid noise-induced issues.
+    /// </summary>
+    public double MinPointDistance { get; set; } = 10;
+
+    /// <summary>
+    /// Maximum number of consecutive unmatched track points to skip before breaking the model.
+    /// </summary>
+    public int MaxPointSkip { get; set; } = 3;
+
+    /// <summary>
+    /// Maximum great-circle distance in meters between consecutive track points
+    /// before the trace is split into separate models.
+    /// </summary>
+    public double BreakageDistance { get; set; } = 2000;
+
+    /// <summary>
+    /// Maximum factor applied to the great-circle distance between consecutive points
+    /// to limit routing search distance.
+    /// </summary>
+    public double MaxRouteDistanceFactor { get; set; } = 5.0;
 
     internal ModelBuilderSettings ModelBuilderSettings
     {
@@ -39,9 +61,13 @@ public class MapMatcherSettings
         {
             return new ModelBuilderSettings()
             {
-                MaxDistanceRatio = this.MaxDistanceRatio,
-                MaxSnappingDistance = this.MaxSnappingDistance,
-                TransitionOrSnappingRatio = this.TransitionOrSnappingRatio
+                SigmaZ = this.SigmaZ,
+                Beta = this.Beta,
+                SearchRadius = this.SearchRadius,
+                MinPointDistance = this.MinPointDistance,
+                MaxPointSkip = this.MaxPointSkip,
+                BreakageDistance = this.BreakageDistance,
+                MaxRouteDistanceFactor = this.MaxRouteDistanceFactor
             };
         }
     }

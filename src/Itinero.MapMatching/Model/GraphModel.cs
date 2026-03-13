@@ -55,4 +55,19 @@ public class GraphModel
 
         return neighbours;
     }
+
+    /// <summary>
+    /// Gets the edge between two specific nodes, or null if not found.
+    /// </summary>
+    public GraphEdge? GetEdge(int node1, int node2)
+    {
+        if (!_edges.TryGetValue(node1, out var edges)) return null;
+
+        foreach (var edge in edges)
+        {
+            if (edge.Node2 == node2) return edge;
+        }
+
+        return null;
+    }
 }

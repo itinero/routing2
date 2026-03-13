@@ -86,8 +86,6 @@ internal static class TestBench
                 var matcher = routingNetwork.Matcher(s =>
                 {
                     s.Profile = profile;
-                    s.MaxDistanceRatio = 5;
-                    //s.MaxSnappingDistance = 30;
                 });
                 var match = await matcher.MatchAsync(track);
 
