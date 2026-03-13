@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Itinero.MapMatching.IO.GeoJson;
 using Itinero.MapMatching.Model;
 using Itinero.MapMatching.Solver;
 using Itinero.Network;
@@ -76,24 +74,36 @@ public class MapMatcher
 
             // calculate the paths between each matched point pair.
             var rawPaths = new List<Path>();
-            var router = _routingNetwork.Route(_profile);
             for (var l = 2; l < bestMatch.Count - 1; l++)
             {
                 if (cancellationToken.IsCancellationRequested) return ArraySegment<MapMatch>.Empty;
 
-                var sourceNode = trackModel.GetNode(bestMatch[l - 1]);
+                var sourceNodeId = bestMatch[l - 1];
+                var targetNodeId = bestMatch[l];
+                var sourceNode = trackModel.GetNode(sourceNodeId);
+                var targetNode = trackModel.GetNode(targetNodeId);
                 var source = sourceNode.SnapPoint;
-                var targetNode = trackModel.GetNode(bestMatch[l]);
                 var target = targetNode.SnapPoint;
 
                 if (source == null) throw new Exception("Track point should have a snap point");
                 if (target == null) throw new Exception("Track point should have a snap point");
 
-                var path = await router.From(source.Value).To(target.Value).PathAsync(CancellationToken.None);
-                if (path.IsError)
-                    throw new Exception(
-                        $"Raw path calculation failed, it shouldn't fail at this point because it succeeded on the same path before: {path.ErrorMessage}");
-                rawPaths.Add(path);
+                // try to use the cached path from model building.
+                var edge = trackModel.GetEdge(sourceNodeId, targetNodeId);
+                if (edge?.CachedPath != null)
+                {
+                    rawPaths.Add(edge.CachedPath);
+                }
+                else
+                {
+                    // fallback: re-route if no cached path (e.g. same snap point).
+                    var path = await _routingNetwork.Route(new RoutingSettings() { Profile = _profile })
+                        .From(source.Value).To(target.Value).PathAsync(CancellationToken.None);
+                    if (path.IsError)
+                        throw new Exception(
+                            $"Raw path calculation failed, it shouldn't fail at this point because it succeeded on the same path before: {path.ErrorMessage}");
+                    rawPaths.Add(path);
+                }
             }
 
             matches.Add(new MapMatch(track, _profile, rawPaths));

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Itinero.Routes.Paths;
 
 namespace Itinero.MapMatching.Model;
 
@@ -11,6 +12,11 @@ public class GraphEdge
     public double Cost { get; set; }
 
     public List<(string key, string value)>? Attributes { get; set; }
+
+    /// <summary>
+    /// The cached route path between the two snap points, if available.
+    /// </summary>
+    public Path? CachedPath { get; set; }
 
     public override string ToString()
     {
