@@ -13,12 +13,19 @@ public class MapMatch : IReadOnlyList<Path>
     private readonly IReadOnlyList<Path> _paths;
 
     internal MapMatch(Track source, Profile profile,
-        IReadOnlyList<Path> paths)
+        IReadOnlyList<Path> paths, IReadOnlyList<int> matchedTrackPointIndices)
     {
         this.Source = source;
         this.Profile = profile;
         _paths = paths;
+        this.MatchedTrackPointIndices = matchedTrackPointIndices;
     }
+
+    /// <summary>
+    /// The track point indices that were matched. Each raw path [i] connects
+    /// MatchedTrackPointIndices[i] to MatchedTrackPointIndices[i+1].
+    /// </summary>
+    public IReadOnlyList<int> MatchedTrackPointIndices { get; }
 
     /// <summary>
     /// The source track.

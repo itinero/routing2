@@ -106,7 +106,16 @@ public class MapMatcher
                 }
             }
 
-            matches.Add(new MapMatch(track, _profile, rawPaths));
+            // Collect the track point indices from the bestMatch sequence.
+            // bestMatch[0] is a virtual start node, bestMatch[last] is a virtual end node.
+            // The real matched nodes are bestMatch[1] through bestMatch[Count-2].
+            var trackPointIndices = new List<int>();
+            for (var l = 1; l < bestMatch.Count - 1; l++)
+            {
+                trackPointIndices.Add(trackModel.GetNode(bestMatch[l]).TrackPoint!.Value);
+            }
+
+            matches.Add(new MapMatch(track, _profile, rawPaths, trackPointIndices));
         }
 
         return matches;

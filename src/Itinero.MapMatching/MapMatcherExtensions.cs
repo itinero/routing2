@@ -80,6 +80,75 @@ public static class MapMatcherExtensions
         return current;
     }
 
+    /// <summary>
+    /// Returns merged paths with the from/to track point indices preserved through merging.
+    /// Each returned tuple contains the merged path and the original track point index range it spans.
+    /// </summary>
+    public static IEnumerable<(Path path, int fromTrackPointIndex, int toTrackPointIndex)> MergedPathsWithTrackPoints(
+        this MapMatcher matcher, MapMatch match)
+    {
+        if (matcher.Settings.Profile == null) throw new Exception("Cannot build routes without a profile");
+
+        // Build initial list pairing each raw path with its track point index range.
+        var items = new List<(Path path, int from, int to)>();
+        for (var i = 0; i < match.Count; i++)
+        {
+            items.Add((match[i], match.MatchedTrackPointIndices[i], match.MatchedTrackPointIndices[i + 1]));
+        }
+
+        while (true)
+        {
+            var (merged1, hasMerges1) = MergePathsWithIndices(items,
+                (p1, p2) => p1.TryAppend(p2));
+
+            var (merged2, hasMerges2) = MergePathsWithIndices(merged1,
+                (p1, p2) => p1.TryMergeAsUTurn(p2));
+            items = merged2;
+
+            if (!hasMerges1 && !hasMerges2) break;
+        }
+
+        return items;
+    }
+
+    private static (List<(Path path, int from, int to)> paths, bool merged) MergePathsWithIndices(
+        List<(Path path, int from, int to)> items, Func<Path, Path, Path?> merge)
+    {
+        var result = new List<(Path path, int from, int to)>();
+
+        (Path path, int from, int to)? current = null;
+        var hasMerges = false;
+        foreach (var item in items)
+        {
+            item.path.Trim();
+            if (!item.path.HasLength()) continue;
+
+            if (current == null)
+            {
+                current = item;
+                continue;
+            }
+
+            var merged = merge(current.Value.path, item.path);
+            if (merged == null)
+            {
+                result.Add(current.Value);
+                current = item;
+                continue;
+            }
+
+            hasMerges = true;
+            current = (merged, current.Value.from, item.to);
+        }
+
+        if (current != null)
+        {
+            result.Add(current.Value);
+        }
+
+        return (result, hasMerges);
+    }
+
     private static (IEnumerable<Path> paths, bool merged) MergePaths(IEnumerable<Path> paths, Func<Path, Path, Path?> merge)
     {
         var mergedPaths = new List<Path>();
