@@ -9,9 +9,11 @@ using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
 using Itinero.MapMatching.IO.GeoJson;
 using Itinero.MapMatching.Tests.Functional.Domain;
+using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Profiles.Lua;
 using Itinero.Routes;
+using Itinero.Snapping;
 using Neo.IronLua;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
@@ -46,7 +48,8 @@ internal static class TestBench
             // load data using profile.
             var routerDb = new RouterDb(new RouterDbConfiguration()
             {
-                EdgeTypeMap = new DefaultAttributeSetMap()
+                EdgeTypeMap = new DefaultAttributeSetMap(),
+                MaxIslandSize = 0
             });
             await using (var stream = File.OpenRead(test.OsmDataFile))
             {
@@ -80,6 +83,9 @@ internal static class TestBench
                 await using var stream = File.OpenRead(test.TrackFile);
                 track = FromGeoJson(new StreamReader(stream));
             }
+
+            // generate snap debug output.
+            await WriteSnapDebugAsync(routingNetwork, profile, track, test.TrackFile + ".snap-debug.geojson");
 
             try
             {
@@ -141,6 +147,87 @@ internal static class TestBench
         features.Add(new Feature(buffer, new AttributesTable { { "type", "buffer" } }));
 
         return features;
+    }
+
+    private static async Task WriteSnapDebugAsync(RoutingNetwork routingNetwork, Profile profile, Track track, string outputPath)
+    {
+        var features = new FeatureCollection();
+        var searchRadius = 50.0;
+        var snapBox = Math.Max(searchRadius * 3, 500);
+        var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
+
+        for (var i = 0; i < track.Count; i++)
+        {
+            var tp = track[i];
+            var lon = tp.Location.longitude;
+            var lat = tp.Location.latitude;
+
+            // add GPS track point.
+            features.Add(new Feature(
+                new Point(new Coordinate(lon, lat)),
+                new AttributesTable
+                {
+                    { "type", "gps" },
+                    { "index", i }
+                }));
+
+            // get all snap candidates.
+            await foreach (var snapPoint in routingNetwork.Snap(profile, s =>
+                           {
+                               s.OffsetInMeter = snapBox;
+                               s.OffsetInMeterMax = snapBox;
+                           })
+                           .ToAllAsync(lon, lat))
+            {
+                var loc = snapPoint.LocationOnNetwork(routingNetwork);
+                var dist = (lon, lat, (float?)null).DistanceEstimateInMeter(loc);
+                if (dist > searchRadius) continue;
+
+                // get edge attributes for labeling.
+                edgeEnumerator.MoveTo(snapPoint.EdgeId);
+                var attrs = edgeEnumerator.Attributes.ToList();
+                var highway = attrs.FirstOrDefault(a => a.key == "highway").value ?? "?";
+                var name = attrs.FirstOrDefault(a => a.key == "name").value ?? "";
+                var bicycle = attrs.FirstOrDefault(a => a.key == "bicycle").value ?? "";
+
+                var label = $"{highway}";
+                if (!string.IsNullOrEmpty(name)) label += $" ({name})";
+                if (!string.IsNullOrEmpty(bicycle)) label += $" bicycle={bicycle}";
+
+                // add snap candidate point.
+                features.Add(new Feature(
+                    new Point(new Coordinate(loc.longitude, loc.latitude)),
+                    new AttributesTable
+                    {
+                        { "type", "snap" },
+                        { "index", i },
+                        { "edge_id", snapPoint.EdgeId.ToString() },
+                        { "offset", snapPoint.Offset },
+                        { "distance_m", Math.Round(dist, 2) },
+                        { "highway", highway },
+                        { "name", name },
+                        { "bicycle", bicycle },
+                        { "label", label }
+                    }));
+
+                // add line from GPS point to snap candidate.
+                features.Add(new Feature(
+                    new LineString(new[]
+                    {
+                        new Coordinate(lon, lat),
+                        new Coordinate(loc.longitude, loc.latitude)
+                    }),
+                    new AttributesTable
+                    {
+                        { "type", "snap_line" },
+                        { "index", i },
+                        { "distance_m", Math.Round(dist, 2) },
+                        { "label", label }
+                    }));
+            }
+        }
+
+        await File.WriteAllTextAsync(outputPath, features.ToGeoJson());
     }
 
     private static Track FromTsv(TextReader reader)

@@ -39,7 +39,8 @@ internal class Program
             Path.Combine("data", "car", "test4.json"),
             Path.Combine("data", "car", "test5.json"),
             Path.Combine("data", "gpx", "test1.json"),
-            Path.Combine("data", "gpx", "test2.json")
+            Path.Combine("data", "gpx", "test2.json"),
+            Path.Combine("data", "gpx", "test3.json")
         };
 
         // run all for them.
