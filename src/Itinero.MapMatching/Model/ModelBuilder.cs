@@ -93,6 +93,15 @@ public class ModelBuilder
             : ((double, double, float?))default;
         var consecutiveSkips = 0;
 
+        // use a snap bounding box larger than the search radius
+        // to account for tile boundaries and long edges in the spatial index.
+        var snapBox = Math.Max(searchRadius * 3, 500);
+        var snapper = _routingNetwork.Snap(profile, s =>
+        {
+            s.OffsetInMeter = snapBox;
+            s.OffsetInMeterMax = snapBox;
+        });
+
         for (var i = start; i < track.Count; i++)
         {
             var trackPoint = track[i];
@@ -119,14 +128,9 @@ public class ModelBuilder
             var trackPointLayer = new List<int>();
             var isConnected = false;
 
-            // use a snap bounding box larger than the search radius
-            // to account for tile boundaries and long edges in the spatial index.
-            var snapBox = Math.Max(searchRadius * 3, 500);
-            await foreach (var snapPoint in _routingNetwork.Snap(profile, s =>
-                               {
-                                   s.OffsetInMeter = snapBox;
-                                   s.OffsetInMeterMax = snapBox;
-                               })
+            // phase 1: collect all snap candidates and add nodes.
+            var currentCandidates = new List<(SnapPoint snapPoint, int nodeId, double emissionCost)>();
+            await foreach (var snapPoint in snapper
                                .ToAllAsync(trackPointLocation.longitude, trackPointLocation.latitude, cancellationToken: cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested) return (new GraphModel(track), start);
@@ -141,70 +145,126 @@ public class ModelBuilder
                 // add node.
                 var node = new GraphNode() { TrackPoint = i, SnapPoint = snapPoint, Cost = emissionCost };
                 var nodeId = model.AddNode(node);
+                currentCandidates.Add((snapPoint, nodeId, emissionCost));
+            }
 
-                var nodeIsConnected = false;
-
-                // great-circle distance between consecutive track points.
-                var greatCircleDistance = 0.0;
-                if (lastPoint > start || i > start)
+            if (currentCandidates.Count == 0)
+            {
+                consecutiveSkips++;
+                if (consecutiveSkips > maxPointSkip)
                 {
-                    var previousTrackPoint = track[lastPoint];
-                    var previousTrackPointLocation = (previousTrackPoint.Location.longitude,
-                        previousTrackPoint.Location.latitude, (float?)null);
-                    greatCircleDistance = previousTrackPointLocation.DistanceEstimateInMeter(trackPointLocation);
+                    break;
+                }
+                continue;
+            }
+
+            // great-circle distance between consecutive track points.
+            var greatCircleDistance = 0.0;
+            if (lastPoint > start || i > start)
+            {
+                var previousTrackPoint = track[lastPoint];
+                var previousTrackPointLocation = (previousTrackPoint.Location.longitude,
+                    previousTrackPoint.Location.latitude, (float?)null);
+                greatCircleDistance = previousTrackPointLocation.DistanceEstimateInMeter(trackPointLocation);
+            }
+
+            var maxRouteDistance = greatCircleDistance * maxRouteDistanceFactor;
+            var targetSnapPoints = currentCandidates.ConvertAll(c => c.snapPoint);
+
+            // phase 2: for each previous candidate, route one-to-many to all current candidates.
+            var nodeIsConnected = new bool[currentCandidates.Count];
+            foreach (var previousNode in previousLayer)
+            {
+                var previousSnapPoint = model.GetNode(previousNode).SnapPoint;
+
+                if (previousSnapPoint == null)
+                {
+                    // start node: connect to all current candidates with zero transition cost.
+                    for (var c = 0; c < currentCandidates.Count; c++)
+                    {
+                        model.AddEdge(new GraphEdge()
+                        {
+                            Node1 = previousNode,
+                            Node2 = currentCandidates[c].nodeId,
+                            Cost = 0
+                        });
+                        isConnected = true;
+                        nodeIsConnected[c] = true;
+                    }
+                    continue;
                 }
 
-                // add edges from previous layer.
-                foreach (var previousNode in previousLayer)
+                // check for same snap points (zero transition cost).
+                var needsRouting = false;
+                for (var c = 0; c < currentCandidates.Count; c++)
                 {
-                    var previousSnapPoint = model.GetNode(previousNode).SnapPoint;
-                    var transitionCost = 0.0;
-                    Path? cachedPath = null;
-                    var attributes = new List<(string key, string value)>();
-
-                    if (previousSnapPoint != null)
+                    if (previousSnapPoint.Value.EdgeId == currentCandidates[c].snapPoint.EdgeId &&
+                        previousSnapPoint.Value.Offset == currentCandidates[c].snapPoint.Offset)
                     {
-                        if (previousSnapPoint.Value.EdgeId == snapPoint.EdgeId &&
-                            previousSnapPoint.Value.Offset == snapPoint.Offset)
+                        model.AddEdge(new GraphEdge()
                         {
-                            // same snap point, zero transition cost.
-                            transitionCost = 0;
-                        }
-                        else
-                        {
-                            var maxRouteDistance = greatCircleDistance * maxRouteDistanceFactor;
-                            cachedPath = await this.RouteAsync(previousSnapPoint.Value,
-                                snapPoint, profile, maxRouteDistance);
-                            if (cachedPath == null) continue;
-
-                            var routeDistance = cachedPath.LengthInMeters();
-
-                            // Transition cost: Exponential model (negative log probability).
-                            // cost = |greatCircleDistance - routeDistance| / beta
-                            var dt = Math.Abs(greatCircleDistance - routeDistance);
-                            transitionCost = dt * invBeta;
-
-                            attributes.Add(("great_circle_distance", greatCircleDistance.ToString(CultureInfo.InvariantCulture)));
-                            attributes.Add(("route_distance", routeDistance.ToString(CultureInfo.InvariantCulture)));
-                            attributes.Add(("dt", dt.ToString(CultureInfo.InvariantCulture)));
-                        }
+                            Node1 = previousNode,
+                            Node2 = currentCandidates[c].nodeId,
+                            Cost = 0
+                        });
+                        isConnected = true;
+                        nodeIsConnected[c] = true;
                     }
+                    else
+                    {
+                        needsRouting = true;
+                    }
+                }
+
+                if (!needsRouting) continue;
+
+                // one-to-many: single Dijkstra from this previous candidate to all current candidates.
+                var paths = await _routingNetwork.Route(new RoutingSettings() { MaxDistance = maxRouteDistance, Profile = profile })
+                    .From(previousSnapPoint.Value).To(targetSnapPoints).Paths(cancellationToken);
+
+                for (var c = 0; c < currentCandidates.Count; c++)
+                {
+                    // skip same-snap-point pairs already handled above.
+                    if (previousSnapPoint.Value.EdgeId == currentCandidates[c].snapPoint.EdgeId &&
+                        previousSnapPoint.Value.Offset == currentCandidates[c].snapPoint.Offset)
+                        continue;
+
+                    var pathResult = paths[c];
+                    if (pathResult.IsError) continue;
+
+                    var cachedPath = pathResult.Value;
+                    var routeDistance = cachedPath.LengthInMeters();
+
+                    // Transition cost: Exponential model (negative log probability).
+                    // cost = |greatCircleDistance - routeDistance| / beta
+                    var dt = Math.Abs(greatCircleDistance - routeDistance);
+                    var transitionCost = dt * invBeta;
+
+                    var attributes = new List<(string key, string value)>
+                    {
+                        ("great_circle_distance", greatCircleDistance.ToString(CultureInfo.InvariantCulture)),
+                        ("route_distance", routeDistance.ToString(CultureInfo.InvariantCulture)),
+                        ("dt", dt.ToString(CultureInfo.InvariantCulture))
+                    };
 
                     model.AddEdge(new GraphEdge()
                     {
                         Node1 = previousNode,
-                        Node2 = nodeId,
+                        Node2 = currentCandidates[c].nodeId,
                         Cost = transitionCost,
                         Attributes = attributes,
                         CachedPath = cachedPath
                     });
                     isConnected = true;
-                    nodeIsConnected = true;
+                    nodeIsConnected[c] = true;
                 }
+            }
 
-                if (nodeIsConnected)
+            for (var c = 0; c < currentCandidates.Count; c++)
+            {
+                if (nodeIsConnected[c])
                 {
-                    trackPointLayer.Add(nodeId);
+                    trackPointLayer.Add(currentCandidates[c].nodeId);
                 }
             }
 
@@ -243,13 +303,4 @@ public class ModelBuilder
         return (model, lastPoint);
     }
 
-    private async Task<Path?> RouteAsync(SnapPoint snapPoint1, SnapPoint snapPoint2, Profile profile,
-        double maxDistance)
-    {
-        var path = await _routingNetwork.Route(new RoutingSettings() { MaxDistance = maxDistance, Profile = profile })
-            .From(snapPoint1).To(snapPoint2).PathAsync(CancellationToken.None);
-        if (path.IsError) return null;
-
-        return path.Value;
-    }
 }

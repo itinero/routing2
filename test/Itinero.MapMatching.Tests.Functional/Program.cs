@@ -40,7 +40,8 @@ internal class Program
             Path.Combine("data", "car", "test5.json"),
             Path.Combine("data", "gpx", "test1.json"),
             Path.Combine("data", "gpx", "test2.json"),
-            Path.Combine("data", "gpx", "test3.json")
+            Path.Combine("data", "gpx", "test3.json"),
+            Path.Combine("data", "gpx", "test4.json")
         };
 
         // run all for them.
@@ -54,16 +55,18 @@ internal class Program
             Console.Write($"Running {test}");
 
             // run test
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var result = await testData.RunAsync();
+            sw.Stop();
             if (!result.success)
             {
-                Console.WriteLine($"...FAIL: {result.message}");
+                Console.WriteLine($"...FAIL ({sw.Elapsed.TotalMilliseconds:F0}ms): {result.message}");
                 failed = true;
                 continue;
             }
             else
             {
-                Console.WriteLine("...OK");
+                Console.WriteLine($"...OK ({sw.Elapsed.TotalMilliseconds:F0}ms)");
             }
         }
 

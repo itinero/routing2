@@ -84,16 +84,16 @@ internal static class TestBench
                 track = FromGeoJson(new StreamReader(stream));
             }
 
-            // generate snap debug output.
-            await WriteSnapDebugAsync(routingNetwork, profile, track, test.TrackFile + ".snap-debug.geojson");
-
             try
             {
                 var matcher = routingNetwork.Matcher(s =>
                 {
                     s.Profile = profile;
                 });
+                var matchSw = System.Diagnostics.Stopwatch.StartNew();
                 var match = await matcher.MatchAsync(track);
+                matchSw.Stop();
+                Console.Write($" match={matchSw.Elapsed.TotalMilliseconds:F0}ms");
 
                 // check route.
                 var routes = matcher.Routes(match);
