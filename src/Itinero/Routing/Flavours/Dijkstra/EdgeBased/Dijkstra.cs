@@ -446,14 +446,11 @@ internal class Dijkstra
         return paths;
     }
 
+    [ThreadStatic]
+    private static Dijkstra? _default;
+
     /// <summary>
-    /// Gets a default dijkstra instance.
+    /// Gets a default dijkstra instance (reused per thread).
     /// </summary>
-    public static Dijkstra Default
-    {
-        get
-        {
-            return new Dijkstra();
-        }
-    }
+    public static Dijkstra Default => _default ??= new Dijkstra();
 }
