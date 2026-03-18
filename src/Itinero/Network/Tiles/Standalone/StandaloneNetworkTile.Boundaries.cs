@@ -45,7 +45,7 @@ public partial class StandaloneNetworkTile
         var pointer = 0L;
         while (pointer < _crossingsPointer)
         {
-            _crossingsPointer += _crossings.GetDynamicInt32(_crossingsPointer, out var localIdSigned);
+            pointer += _crossings.GetDynamicInt32(pointer, out var localIdSigned);
             bool isIncoming;
             uint localId;
             if (localIdSigned > 0)
@@ -58,9 +58,9 @@ public partial class StandaloneNetworkTile
                 localId = (uint)(-localIdSigned - 1);
                 isIncoming = false;
             }
-            _crossingsPointer += _crossings.GetDynamicUInt32(_crossingsPointer, out var edgeTypeId);
-            _crossingsPointer += _crossings.GetGlobalEdgeId(_crossingsPointer, out var globalEdgeId);
-            _crossingsPointer += _crossings.GetDynamicUInt32(_crossingsPointer, out var a);
+            pointer += _crossings.GetDynamicUInt32(pointer, out var edgeTypeId);
+            pointer += _crossings.GetGlobalEdgeId(pointer, out var globalEdgeId);
+            pointer += _crossings.GetDynamicUInt32(pointer, out var a);
 
             yield return (isIncoming, globalEdgeId, new VertexId(this.TileId, localId), this.GetAttributes(a),
                 edgeTypeId);
