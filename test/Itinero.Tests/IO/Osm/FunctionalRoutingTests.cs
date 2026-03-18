@@ -19,7 +19,7 @@ public class FunctionalRoutingTests
     private static RouterDb LoadOsmData(OsmGeo[] os, Profile profile)
     {
         var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 0 });
-        routerDb.PrepareFor(profile);
+        //routerDb.PrepareFor(profile);
         routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = null;
@@ -308,9 +308,7 @@ public class FunctionalRoutingTests
         Assert.True(route.IsError, "Route through barrier with no alternative should fail");
     }
 
-    [Fact(Skip = "Turn cost attribute flow issue: TurnCostFactor correctly returns Empty for motorcar=yes " +
-                   "(verified by CarProfileTests) but the routing still blocks. Needs investigation into " +
-                   "how turn cost attributes are stored/retrieved during routing.")]
+    [Fact]
     public async Task Barrier_WithMotorcarYes_CarProfile_ShouldPassThrough()
     {
         // same as above but the barrier has motorcar=yes, so the car can pass.

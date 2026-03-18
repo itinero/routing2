@@ -121,8 +121,9 @@ public class RouterDbStreamTarget : OsmStreamTarget
             {
                 barrierWays.Add(way);
                 _restrictionMembers.TryAdd(way.Id!.Value, null);
-                // barrier nodes must be vertices for turn costs.
-                _vertices[way.Nodes[i]] = VertexId.Empty;
+                // barrier nodes must be vertices for turn costs,
+                // but don't overwrite if already created by a previous way.
+                _vertices.TryAdd(way.Nodes[i], VertexId.Empty);
             }
         }
 
