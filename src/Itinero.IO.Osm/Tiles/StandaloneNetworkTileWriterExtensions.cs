@@ -34,11 +34,6 @@ public static class StandaloneNetworkTileWriterExtensions
             return (uint)((y * xMax) + x);
         }
 
-        if (writer.TileId == ToLocalId(8413, 5465, 14))
-        {
-            Console.WriteLine("whaat");
-        }
-        
         // create settings.
         var settings = new DataProviderSettings();
         configure?.Invoke(settings);
@@ -103,8 +98,6 @@ public static class StandaloneNetworkTileWriterExtensions
                     if (node.Id == null) throw new Exception("Id cannot be null");
                     if (node.Longitude == null) throw new Exception("Longitude cannot be null");
                     if (node.Latitude == null) throw new Exception("Latitude cannot be null");
-
-                    if (node.Id == 5924603121 && writer.TileId == 89481433) Console.WriteLine("shaa");
 
                     var nodeInTile = writer.IsInTile(node.Longitude.Value, node.Latitude.Value);
                     nodeLocations[node.Id.Value] = (node.Longitude.Value, node.Latitude.Value,
