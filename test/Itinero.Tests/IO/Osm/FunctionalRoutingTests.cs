@@ -521,4 +521,140 @@ public class FunctionalRoutingTests
 
         Assert.True(route.IsError, "Route through no_right_turn with no alternative should fail");
     }
+
+    [Fact]
+    public async Task OnlyRightTurn_CarProfile_ShouldAllowRight()
+    {
+        // Cross intersection: way1(1→2), way2(2→3 right), way3(2→4 left), way4(2→5 straight).
+        // only_right_turn from way1 via node2 to way2 — only the right turn is allowed.
+        // Route from 1→3 (right) should succeed via the direct path.
+        //
+        //                 node5
+        //                  ↑
+        //                way4
+        //                  |
+        //   node1 ——way1—→ node2 ——way2——→ node3
+        //                  |
+        //                way3
+        //                  ↓
+        //                 node4
+        //
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },
+            new Node { Id = 2, Longitude = 4.802, Latitude = 51.270 },
+            new Node { Id = 3, Longitude = 4.804, Latitude = 51.270 },   // right
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.265 },   // left (south)
+            new Node { Id = 5, Longitude = 4.802, Latitude = 51.275 },   // straight (north)
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 2L, 3 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 3, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 4, Nodes = new[] { 2L, 5 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            // only_right_turn: from way1 via node2 to way2
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(2, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "only_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        // route 1→3 (the allowed right turn) should succeed.
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        Assert.False(snap1.IsError, snap1.ErrorMessage);
+        var snap3 = await network.Snap(profile).ToAsync(4.804, 51.270);
+        Assert.False(snap3.IsError, snap3.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snap3.Value)
+            .CalculateAsync();
+
+        Assert.False(route.IsError, $"Right turn should be allowed: {route.ErrorMessage}");
+    }
+
+    [Fact]
+    public async Task OnlyRightTurn_CarProfile_ShouldBlockOtherTurns()
+    {
+        // same intersection as above, but route from 1→4 (left turn — blocked by only_right_turn).
+        // no alternative path exists, so the route should fail.
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },
+            new Node { Id = 2, Longitude = 4.802, Latitude = 51.270 },
+            new Node { Id = 3, Longitude = 4.804, Latitude = 51.270 },   // right (allowed)
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.265 },   // left (blocked)
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 2L, 3 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 3, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            // only_right_turn: from way1 via node2 to way2
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(2, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "only_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        // route 1→4 (left turn — blocked) should fail.
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        Assert.False(snap1.IsError, snap1.ErrorMessage);
+        var snap4 = await network.Snap(profile).ToAsync(4.802, 51.265);
+        Assert.False(snap4.IsError, snap4.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snap4.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError, "Left turn should be blocked by only_right_turn restriction");
+    }
 }

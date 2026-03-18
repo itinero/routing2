@@ -7,7 +7,7 @@ public partial class StandaloneNetworkTile
 {
     public void WriteTo(Stream stream)
     {
-        var version = 1;
+        var version = 2;
         stream.WriteVarInt32(version);
 
         // write base tile.
@@ -35,7 +35,7 @@ public partial class StandaloneNetworkTile
     public static StandaloneNetworkTile ReadFrom(Stream stream)
     {
         var version = stream.ReadVarInt32();
-        if (version != 1)
+        if (version != 2)
         {
             throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
         }

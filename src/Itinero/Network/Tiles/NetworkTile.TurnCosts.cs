@@ -246,7 +246,7 @@ internal partial class NetworkTile
         }
     }
 
-    private void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
+    internal void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
     {
         // skip over vertices and next-pointers.
         uint size = this.DecodeVertex(pointer, out _, out var t1);

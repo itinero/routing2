@@ -347,7 +347,11 @@ public static class StandaloneNetworkTileWriterExtensions
             var turnCostVertex = lastEdge.Tail;
 
             // only add turn costs around vertices that are in the current tile.
-            if (turnCostVertex.TileId != writer.TileId) continue;
+            if (turnCostVertex.TileId != writer.TileId)
+            {
+                r++;
+                continue;
+            }
 
             var secondToLast = networkRestriction[^2];
             if (networkRestriction.IsProhibitory)
@@ -368,7 +372,11 @@ public static class StandaloneNetworkTileWriterExtensions
                 var to = tileEnumerator.Head;
 
                 // check if the vertex of the restriction is a boundary vertex.
-                if (boundaryVertices.Contains(to)) continue;
+                if (boundaryVertices.Contains(to))
+                {
+                    r++;
+                    continue;
+                }
 
                 // add all the edge other than the one that is in the restriction as restricted turns.
                 tileEnumerator.MoveTo(to);
@@ -383,6 +391,8 @@ public static class StandaloneNetworkTileWriterExtensions
                         [secondToLast.edge, tileEnumerator.EdgeId], costs,
                         networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
                 }
+
+                globalRestrictions.RemoveAt(r);
             }
         }
 

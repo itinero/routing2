@@ -125,6 +125,44 @@ public class RoutingNetworkWriter : IDisposable
 
         // add the turn cost table using the type id.
         tile.AddTurnCosts(vertex, turnCostType.Value, edges, costs, attributes, prefix);
+
+        // for cross-tile edges, the order was set on this tile's copy.
+        // sync the order to the other tile's copy so routing from either side sees it.
+        var enumerator = new NetworkTileEnumerator();
+        enumerator.MoveTo(tile);
+        if (enumerator.MoveTo(vertex))
+        {
+            while (enumerator.MoveNext())
+            {
+                // only cross-tile edges need syncing.
+                if (enumerator.Tail.TileId == enumerator.Head.TileId) continue;
+
+                // Head is always the other vertex (Tail = turn cost vertex we enumerated from).
+                var (otherTile, _) = _network.GetTileForWrite(enumerator.Head.TileId);
+                if (otherTile == null) continue;
+
+                // find the same edge in the other tile by iterating from the other vertex.
+                var otherEnumerator = new NetworkTileEnumerator();
+                otherEnumerator.MoveTo(otherTile);
+                if (!otherEnumerator.MoveTo(enumerator.Head)) continue;
+
+                while (otherEnumerator.MoveNext())
+                {
+                    if (otherEnumerator.EdgeId != enumerator.EdgeId) continue;
+
+                    // found the same edge — copy the order bytes.
+                    // SetTailHeadOrder takes STORED tail/head orders (for vertex1/vertex2 as encoded).
+                    // enumerator.TailOrder = order at turn cost vertex, HeadOrder = order at other vertex.
+                    // Map these to stored positions based on otherEnumerator.Forward:
+                    // Forward=true: vertex1=otherVertex → stored tail=HeadOrder, stored head=TailOrder
+                    // Forward=false: vertex1=turnCostVertex → stored tail=TailOrder, stored head=HeadOrder
+                    otherTile.SetTailHeadOrder(otherEnumerator.EdgePointer,
+                        otherEnumerator.Forward ? enumerator.HeadOrder : enumerator.TailOrder,
+                        otherEnumerator.Forward ? enumerator.TailOrder : enumerator.HeadOrder);
+                    break;
+                }
+            }
+        }
     }
 
     internal void AddTile(NetworkTile tile)
