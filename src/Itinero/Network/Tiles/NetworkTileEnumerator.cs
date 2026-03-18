@@ -12,7 +12,10 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
     private uint _localId;
     private uint? _nextEdgePointer;
     private uint? _shapePointer;
+    private bool _shapePointerDecoded;
     private uint? _attributesPointer;
+    private bool _attributesPointerDecoded;
+    private uint _shapeAttributeStart; // byte position where shape/attribute pointers are encoded.
     private byte? _tailOrder;
     private byte? _headOrder;
 
@@ -128,9 +131,10 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
         this.Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
         _nextEdgePointer++;
 
-        size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
-        _nextEdgePointer += size;
-        size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
+        // store position of shape/attribute pointers for lazy decoding.
+        _shapeAttributeStart = _nextEdgePointer.Value;
+        _shapePointerDecoded = false;
+        _attributesPointerDecoded = false;
 
         if (forward)
         {
@@ -191,6 +195,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
             _tailLocation = null;
             _headOrder = null;
             _tailOrder = null;
+            _shapePointerDecoded = false;
+            _attributesPointerDecoded = false;
             this.EdgePointer = uint.MaxValue;
 
             if (this.Tile == null) throw new InvalidOperationException("Move to graph tile first.");
@@ -243,10 +249,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
             this.Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
             _nextEdgePointer++;
 
-            // get shape and attribute pointers.
-            size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _shapePointer);
-            _nextEdgePointer += size;
-            size = this.Tile.DecodePointer(_nextEdgePointer.Value, out _attributesPointer);
+            // store position of shape/attribute pointers for lazy decoding.
+            _shapeAttributeStart = _nextEdgePointer.Value;
 
             if (vertex1.TileId == this.Tile.TileId && vertex1.LocalId == _localId)
             {
@@ -286,6 +290,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
                 throw new InvalidOperationException("Move to graph tile first.");
             }
 
+            this.EnsureShapePointerDecoded();
+
             if (!this.Forward)
             {
                 return this.Tile.GetShape(_shapePointer).Reverse();
@@ -307,6 +313,8 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
                 throw new InvalidOperationException("Move to graph tile first.");
             }
 
+            this.EnsureAttributesPointerDecoded();
+
             return this.Tile.GetAttributes(_attributesPointer);
         }
     }
@@ -324,8 +332,26 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
                 throw new InvalidOperationException("Move to graph tile first.");
             }
 
+            this.EnsureAttributesPointerDecoded();
+
             return this.Tile.GetGlobalEdgeId(_attributesPointer);
         }
+    }
+
+    private void EnsureShapePointerDecoded()
+    {
+        if (_shapePointerDecoded) return;
+        this.Tile!.DecodePointer(_shapeAttributeStart, out _shapePointer);
+        _shapePointerDecoded = true;
+    }
+
+    private void EnsureAttributesPointerDecoded()
+    {
+        if (_attributesPointerDecoded) return;
+        this.EnsureShapePointerDecoded();
+        var size = this.Tile!.DecodePointer(_shapeAttributeStart, out _shapePointer);
+        this.Tile.DecodePointer(_shapeAttributeStart + (uint)size, out _attributesPointer);
+        _attributesPointerDecoded = true;
     }
 
     /// <summary>
