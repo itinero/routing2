@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Itinero.Routing.DataStructures;
 
@@ -8,10 +8,9 @@ namespace Itinero.Routing.DataStructures;
 internal class BinaryHeap<T>
     where T : struct
 {
-    private T[] _heap; // The objects per priority.
-    private double[] _priorities; // Holds the priorities of this heap.
-    private int _count; // The current count of elements.
-    private uint _latestIndex; // The latest unused index
+    private (T item, double priority)[] _data;
+    private int _count;
+    private uint _latestIndex;
 
     /// <summary>
     /// Creates a new binary heap.
@@ -24,9 +23,7 @@ internal class BinaryHeap<T>
     /// </summary>
     public BinaryHeap(uint initialSize)
     {
-        _heap = new T[initialSize];
-        _priorities = new double[initialSize];
-
+        _data = new (T, double)[initialSize];
         _count = 0;
         _latestIndex = 1;
     }
@@ -41,45 +38,35 @@ internal class BinaryHeap<T>
     /// </summary>
     public void Push(T item, double priority)
     {
-        _count++; // another item was added!
+        _count++;
 
-        // increase size if needed.
-        if (_latestIndex == _priorities.Length - 1)
+        if (_latestIndex == _data.Length - 1)
         {
-            // time to increase size!
-            Array.Resize(ref _heap, _heap.Length * 2);
-            Array.Resize(ref _priorities, _priorities.Length * 2);
+            Array.Resize(ref _data, _data.Length * 2);
         }
 
-        // add the item at the first free point 
-        _priorities[_latestIndex] = priority;
-        _heap[_latestIndex] = item;
+        // add the item at the first free point.
+        _data[_latestIndex] = (item, priority);
 
-        // ... and let it 'bubble' up.
+        // ... and let it 'bubble' up using hole-sinking:
+        // instead of swapping at each level, leave a hole and move it up.
         var bubbleIndex = _latestIndex;
         _latestIndex++;
         while (bubbleIndex != 1)
         {
-            // bubble until the index is one.
             var parentIdx = bubbleIndex / 2;
-            if (_priorities[bubbleIndex] < _priorities[parentIdx])
+            if (priority < _data[parentIdx].priority)
             {
-                // the parent priority is higher; do the swap.
-                var tempPriority = _priorities[parentIdx];
-                var tempItem = _heap[parentIdx];
-                _priorities[parentIdx] = _priorities[bubbleIndex];
-                _heap[parentIdx] = _heap[bubbleIndex];
-                _priorities[bubbleIndex] = tempPriority;
-                _heap[bubbleIndex] = tempItem;
-
+                _data[bubbleIndex] = _data[parentIdx];
                 bubbleIndex = parentIdx;
             }
             else
             {
-                // the parent priority is lower or equal; the item will not bubble up more.
                 break;
             }
         }
+
+        _data[bubbleIndex] = (item, priority);
     }
 
     /// <summary>
@@ -87,7 +74,7 @@ internal class BinaryHeap<T>
     /// </summary>
     public double PeekWeight()
     {
-        return _priorities[1];
+        return _data[1].priority;
     }
 
     /// <summary>
@@ -95,7 +82,7 @@ internal class BinaryHeap<T>
     /// </summary>
     public T Peek()
     {
-        return _heap[1];
+        return _data[1].item;
     }
 
     /// <summary>
@@ -109,69 +96,58 @@ internal class BinaryHeap<T>
             return default;
         }
 
-        var item = _heap[1]; // get the first item.
-        priority = _priorities[1];
+        var result = _data[1];
+        priority = result.priority;
 
-        _count--; // reduce the element count.
-        _latestIndex--; // reduce the latest index.
+        _count--;
+        _latestIndex--;
 
-        var swapItem = 1;
-        var parentPriority = _priorities[_latestIndex];
-        var parentItem = _heap[_latestIndex];
-        _heap[1] = parentItem; // place the last element on top.
-        _priorities[1] = parentPriority; // place the last element on top.
-        do
+        // take the last element and sift it down from the root.
+        var last = _data[_latestIndex];
+        var lastPriority = last.priority;
+
+        // sift down using hole-sinking: move the smaller child up,
+        // place the last element at the final hole position.
+        uint hole = 1;
+        while (true)
         {
-            var parent = swapItem;
-            var swapItemPriority = 0d;
-            if ((2 * parent) + 1 <= _latestIndex)
+            var child = hole * 2;
+            if (child + 1 <= _latestIndex)
             {
-                swapItemPriority = _priorities[2 * parent];
-                var potentialSwapItem = _priorities[(2 * parent) + 1];
-                if (parentPriority >= swapItemPriority)
+                // two children exist — pick the smaller one.
+                if (_data[child + 1].priority < _data[child].priority)
                 {
-                    swapItem = 2 * parent;
-                    if (_priorities[swapItem] >= potentialSwapItem)
-                    {
-                        swapItemPriority = potentialSwapItem;
-                        swapItem = (2 * parent) + 1;
-                    }
+                    child++;
                 }
-                else if (parentPriority >= potentialSwapItem)
-                {
-                    swapItemPriority = potentialSwapItem;
-                    swapItem = (2 * parent) + 1;
-                }
-                else
+
+                if (lastPriority <= _data[child].priority)
                 {
                     break;
                 }
+
+                _data[hole] = _data[child];
+                hole = child;
             }
-            else if (2 * parent <= _latestIndex)
+            else if (child <= _latestIndex)
             {
-                // Only one child exists
-                swapItemPriority = _priorities[2 * parent];
-                if (parentPriority >= swapItemPriority)
-                {
-                    swapItem = 2 * parent;
-                }
-                else
+                // only left child exists.
+                if (lastPriority <= _data[child].priority)
                 {
                     break;
                 }
+
+                _data[hole] = _data[child];
+                hole = child;
             }
             else
             {
                 break;
             }
+        }
 
-            _priorities[parent] = swapItemPriority;
-            _priorities[swapItem] = parentPriority;
-            _heap[parent] = _heap[swapItem];
-            _heap[swapItem] = parentItem;
-        } while (true);
+        _data[hole] = last;
 
-        return item;
+        return result.item;
     }
 
     /// <summary>
