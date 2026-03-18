@@ -118,7 +118,7 @@ public class StandaloneNetworkTileWriter
         var length = (uint)(vertex1Location.DistanceEstimateInMeterShape(
             vertex2Location, shape) * 100);
 
-        return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
+        return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length, globalEdgeId);
     }
 
     /// <summary>
