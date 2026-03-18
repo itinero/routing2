@@ -25,16 +25,6 @@ internal class ProfileCostFunctionCached : ICostFunction
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
-        if (edgeEnumerator.Tail.TileId == 89546973 && edgeEnumerator.Tail.LocalId == 3)
-        {
-            Console.WriteLine("whaat");
-        }
-
-        if (edgeEnumerator.Head.TileId == 89546973 && edgeEnumerator.Head.LocalId == 3)
-        {
-            Console.WriteLine("whaat");
-        }
-        
         previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
 
         // get edge factor and length.
