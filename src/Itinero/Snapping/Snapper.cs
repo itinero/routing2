@@ -230,22 +230,24 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         {
             var costFunction = _costFunctions[p];
 
-            // check for the positive case, can the edge be used in the forward direction.
-            // the backward direction is also done later in the snapping code.
-            var costs = costFunction.Get(edgeEnumerator, true,
-                []);
+            // check if the edge can be used in either direction.
+            // both directions need to be checked here because SnapAllInBoxAsync
+            // deduplicates by EdgeId: a one-way edge first encountered from its
+            // head vertex would be rejected if only the tail-to-head direction is checked.
+            var costs = costFunction.Get(edgeEnumerator, true, []);
+            var costsReverse = costFunction.Get(edgeEnumerator, false, []);
 
-            // if edge is not accessible, no need to look any further.
-            if (!costs.canAccess)
+            // if edge is not accessible in either direction, skip it.
+            if (!costs.canAccess && !costsReverse.canAccess)
             {
                 allOk = false;
                 continue;
             }
 
-            // check if needed if the edge can be stopped on.
+            // check if needed if the edge can be stopped on (in either direction).
             if (_checkCanStopOn)
             {
-                if (!costs.canStop)
+                if (!costs.canStop && !costsReverse.canStop)
                 {
                     allOk = false;
                     continue;

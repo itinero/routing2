@@ -1,0 +1,42 @@
+{
+    "description": "A track with meta data attached.",
+    "profile": {
+        "name": "bicycle.shortest",
+      "file": "data/bicycle.fast.lua"
+    },
+    "trackfile": "data/bicycle/test6-track.geojson",
+    "osmdatafile": "data/bicycle/test6-network.osm.pbf",
+    "expected": {
+        "type": "LineString",
+        "coordinates": [
+            [
+                4.7995394468307495,
+                51.27013503155977
+            ],
+            [
+                4.800494313240048,
+                51.26894354923351
+            ],
+            [
+                4.797897934913633,
+                51.26784601564347
+            ],
+            [
+                4.797350764274594,
+                51.267621135494934
+            ],
+            [
+                4.796717762947079,
+                51.268450165816965
+            ],
+            [
+                4.796170592308042,
+                51.269108009195214
+            ],
+            [
+                4.795800447463987,
+                51.26962487952879
+            ]
+        ]
+    }
+}

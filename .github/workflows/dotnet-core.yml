@@ -4,6 +4,10 @@ on:
   push:
     branches: [ develop ]
 
+permissions:
+  packages: write
+  contents: write
+
 jobs:
   build-and-test:
 
@@ -17,6 +21,9 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+        source-url: https://nuget.pkg.github.com/itinero/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore packages.
       run: dotnet restore
     - name: Build all projects.
@@ -43,8 +50,11 @@ jobs:
     - name: Nuget Pack
       run: dotnet pack -c release
       working-directory: ./src/Itinero.Geo/
+    - name: Nuget Pack
+      run: dotnet pack -c release
+      working-directory: ./src/Itinero.MapMatching/
     - name: Nuget push
-      run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/itinero/index.json
+      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key "${{ github.token }}" --source https://nuget.pkg.github.com/itinero/index.json
       working-directory: ./src/
     - name: Extract branch name
       shell: bash

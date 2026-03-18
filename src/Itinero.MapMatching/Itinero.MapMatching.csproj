@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../../Itinero.Common.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Itinero.MapMatching</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <PackageId>Itinero.MapMatching</PackageId>
+        <Nullable>enable</Nullable>
+        <Description>Map matching for Itinero.</Description>
+        <PackageTags>map-matching;routing;gpx;gps-data</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Itinero\Itinero.csproj" />
+    </ItemGroup>
+
+</Project>

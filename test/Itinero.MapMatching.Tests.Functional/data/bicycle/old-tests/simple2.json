@@ -1,0 +1,22 @@
+{
+  "description": "Single-road world and very closely fitting track",
+  "profile": {
+    "name": "bicycle",
+    "file": "bicycle.lua"
+  },
+  "trackfile": "data/bicycle/simple2.tsv",
+  "osmdatafile": "data/bicycle/simple2.osm",
+  "expected": {
+    "type": "LineString",
+    "coordinates": [
+      [ 4.345759, 50.863858 ],
+      [ 4.346259, 50.864438 ],
+      [ 4.346760, 50.865018 ],
+      [ 4.347279, 50.865618 ],
+      [ 4.347722, 50.866327 ],
+      [ 4.347637, 50.866546 ],
+      [ 4.348069, 50.867406 ],
+      [ 4.350215, 50.867089 ]
+    ]
+  }
+}
