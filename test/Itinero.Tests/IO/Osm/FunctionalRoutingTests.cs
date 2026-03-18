@@ -19,7 +19,7 @@ public class FunctionalRoutingTests
     private static RouterDb LoadOsmData(OsmGeo[] os, Profile profile)
     {
         var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 0 });
-        //routerDb.PrepareFor(profile);
+        routerDb.PrepareFor(profile);
         routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = null;
@@ -386,5 +386,139 @@ public class FunctionalRoutingTests
             .CalculateAsync();
 
         Assert.False(route.IsError, $"Simple 3-node route failed: {route.ErrorMessage}");
+    }
+
+    [Fact]
+    public async Task NoRightTurn_CarProfile_ShouldTakeDetour()
+    {
+        // T-junction: way1(1→2) meets way2(3→2) and way3(2→4).
+        // no_right_turn from way1 to way3 via node 2.
+        // way4(1→3) and way5(3→4) provide a longer alternative.
+        //
+        //   node1 ——way1——→ node2 ——way3——→ node4
+        //     \               ↑              ↑
+        //    way4           way2            way5
+        //       \             |              |
+        //        → node3 ————+——————————————+
+        //
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },
+            new Node { Id = 2, Longitude = 4.801, Latitude = 51.270 },
+            new Node { Id = 3, Longitude = 4.800, Latitude = 51.265 },
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.270 },
+            // direct path: 1→2→4
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 3L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 3, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            // detour: 1→3→4
+            new Way
+            {
+                Id = 4, Nodes = new[] { 1L, 3 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 5, Nodes = new[] { 3L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            // no_right_turn: from way1 via node2 to way3
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(3, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "no_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        Assert.False(snap1.IsError, snap1.ErrorMessage);
+        var snap4 = await network.Snap(profile).ToAsync(4.802, 51.270);
+        Assert.False(snap4.IsError, snap4.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snap4.Value)
+            .CalculateAsync();
+
+        Assert.False(route.IsError, route.ErrorMessage);
+        Assert.NotNull(route.Value);
+
+        // the route should go via node3 (the detour), not directly through node2.
+        // so it should pass through the detour area (lat ~51.265).
+        var goesViaSouth = route.Value.Shape.Any(s => s.latitude < 51.268);
+        Assert.True(goesViaSouth, "Route should detour via node3 (south) due to no_right_turn restriction");
+    }
+
+    [Fact]
+    public async Task NoRightTurn_CarProfile_NoAlternative_ShouldFail()
+    {
+        // same T-junction but without the detour — no_right_turn blocks the only path.
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },
+            new Node { Id = 2, Longitude = 4.801, Latitude = 51.270 },
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.270 },
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 3, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(3, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "no_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        Assert.False(snap1.IsError, snap1.ErrorMessage);
+        var snap4 = await network.Snap(profile).ToAsync(4.802, 51.270);
+        Assert.False(snap4.IsError, snap4.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snap4.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError, "Route through no_right_turn with no alternative should fail");
     }
 }
