@@ -48,3 +48,7 @@ TestResult*.xml
 *.tile
 *.tile.zip
 *.tile.redirect
+
+# allow test data files
+!test/Itinero.Tests/**/*.osm.pbf
+!test/Itinero.Tests/**/*.geojson
