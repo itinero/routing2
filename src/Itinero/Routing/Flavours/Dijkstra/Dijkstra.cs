@@ -85,7 +85,7 @@ internal class Dijkstra
             throw new Exception($"Edge in source {source} not found!");
         }
 
-        var sourceCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+        var sourceCostForward = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
         var sourceForwardVisit = uint.MaxValue;
         if (sourceCostForward > 0)
         {
@@ -101,7 +101,7 @@ internal class Dijkstra
             throw new Exception($"Edge in source {source} not found!");
         }
 
-        var sourceCostBackward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+        var sourceCostBackward = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
         var sourceBackwardVisit = uint.MaxValue;
         if (sourceCostBackward > 0)
         {
@@ -159,7 +159,7 @@ internal class Dijkstra
                         throw new Exception($"Edge in source {source} not found!");
                     }
 
-                    var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost *
+                    var weight = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost *
                                  (target.OffsetFactor() - source.OffsetFactor());
                     bestTargets[t] = (sourceForwardVisit, weight);
                 }
@@ -172,7 +172,7 @@ internal class Dijkstra
                         throw new Exception($"Edge in source {source} not found!");
                     }
 
-                    var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost *
+                    var weight = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost *
                                  (source.OffsetFactor() - target.OffsetFactor());
                     bestTargets[t] = (sourceBackwardVisit, weight);
                 }
@@ -248,7 +248,7 @@ internal class Dijkstra
 
                 // gets the cost of the current edge.
                 var (neighbourCost, turnCost) =
-                    getDijkstraWeight(enumerator, _tree.GetPreviousEdges(currentPointer));
+                    getDijkstraWeight(enumerator, new PreviousEdgeEnumerable(_tree, currentPointer));
                 if (neighbourCost is >= double.MaxValue or <= 0)
                 {
                     continue;

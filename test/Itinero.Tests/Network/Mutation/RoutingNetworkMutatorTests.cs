@@ -162,7 +162,7 @@ public class RoutingNetworkMutatorTests
                 4.797506332397461,
                 51.26674845584085, (float?)null);
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -191,7 +191,7 @@ public class RoutingNetworkMutatorTests
                 4.797506332397461,
                 51.26674845584085, (float?)null);
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -220,8 +220,8 @@ public class RoutingNetworkMutatorTests
                 4.797506332397461,
                 51.26674845584085, (float?)null);
 
-            writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
+            writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "not-residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -252,8 +252,8 @@ public class RoutingNetworkMutatorTests
                 4.797506332397461,
                 51.26674845584085, (float?)null);
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
-            writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
+            writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "not-residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -284,8 +284,8 @@ public class RoutingNetworkMutatorTests
                 4.797506332397461,
                 51.26674845584085, (float?)null);
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
-            writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
+            writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "not-residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -316,8 +316,8 @@ public class RoutingNetworkMutatorTests
                 4.797506332397461,
                 51.26674845584085, (float?)null);
 
-            writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "not-residential") });
+            writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "not-residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -348,7 +348,7 @@ public class RoutingNetworkMutatorTests
                 4.8079561067168015,
                 51.26376332008826, (float?)null);
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.
@@ -377,7 +377,7 @@ public class RoutingNetworkMutatorTests
                 4.8079561067168015,
                 51.26376332008826, (float?)null);
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new[] { ("highway", "residential") });
+            edge = writer.AddEdge(vertex1, vertex2, null, new[] { ("highway", "residential") }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         // delete edge.

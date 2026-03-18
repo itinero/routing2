@@ -54,6 +54,26 @@ public class RoutingNetworkWriter : IDisposable
     }
 
     /// <summary>
+    /// Computes the edge length in centimeters from vertex locations and shape.
+    /// </summary>
+    public uint ComputeEdgeLength(VertexId tail, VertexId head,
+        IEnumerable<(double longitude, double latitude, float? e)>? shape = null)
+    {
+        if (!_network.TryGetVertex(tail, out var lon1, out var lat1, out var e1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {tail} not found.");
+        }
+
+        if (!_network.TryGetVertex(head, out var lon2, out var lat2, out var e2))
+        {
+            throw new ArgumentOutOfRangeException(nameof(head), $"Vertex {head} not found.");
+        }
+
+        return (uint)((lon1, lat1, e1).DistanceEstimateInMeterShape(
+            (lon2, lat2, e2), shape) * 100);
+    }
+
+    /// <summary>
     /// Adds a new edge.
     /// </summary>
     /// <param name="tail">The tail vertex.</param>
@@ -61,14 +81,14 @@ public class RoutingNetworkWriter : IDisposable
     /// <param name="shape">The shape, if any.</param>
     /// <param name="attributes">The attributes, if any.</param>
     /// <param name="edgeTypeId">The edge type id, if any.</param>
-    /// <param name="length">The length, if any.</param>
+    /// <param name="length">The length in centimeters. Use <see cref="ComputeEdgeLength"/> if not known.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public EdgeId AddEdge(VertexId tail, VertexId head,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null, uint? edgeTypeId = null,
-        uint? length = null)
+        IEnumerable<(double longitude, double latitude, float? e)>? shape,
+        IEnumerable<(string key, string value)>? attributes, uint? edgeTypeId,
+        uint length)
     {
         // get the tile (or create it).
         var (tile, edgeTypeMap) = _network.GetTileForWrite(tail.TileId);
@@ -76,23 +96,6 @@ public class RoutingNetworkWriter : IDisposable
 
         // get the edge type id.
         edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
-
-        // get the edge length in centimeters.
-        if (!_network.TryGetVertex(tail, out var longitude, out var latitude, out var e))
-        {
-            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {tail} not found.");
-        }
-
-        var vertex1Location = (longitude, latitude, e);
-        if (!_network.TryGetVertex(head, out longitude, out latitude, out e))
-        {
-            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {head} not found.");
-        }
-
-        var vertex2Location = (longitude, latitude, e);
-
-        length ??= (uint)(vertex1Location.DistanceEstimateInMeterShape(
-            vertex2Location, shape) * 100);
 
         var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
         if (tail.TileId == head.TileId)

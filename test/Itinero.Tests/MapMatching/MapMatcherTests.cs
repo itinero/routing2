@@ -24,7 +24,7 @@ public class MapMatcherTests
         var edgeIds = new List<EdgeId>();
         foreach (var (from, to) in edges)
         {
-            edgeIds.Add(writer.AddEdge(vertexIds[from], vertexIds[to]));
+            edgeIds.Add(writer.AddEdge(vertexIds[from], vertexIds[to], null, null, null, writer.ComputeEdgeLength(vertexIds[from], vertexIds[to])));
         }
         writer.Dispose();
         return (routerDb.Latest, edgeIds);

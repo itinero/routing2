@@ -146,7 +146,7 @@ internal abstract class DijkstraAlgorithm
             if (neighbourEdge == visit.edge) continue;
 
             // gets the cost of the current edge.
-            var (neighbourCost, turnCost) = this.GetCost(_enumerator, _tree.GetPreviousEdges(pointer));
+            var (neighbourCost, turnCost) = this.GetCost(_enumerator, new PreviousEdgeEnumerable(_tree, pointer));
 
             // ignore if cost is 0 or infinite.
             if (neighbourCost is >= double.MaxValue or <= 0) continue;

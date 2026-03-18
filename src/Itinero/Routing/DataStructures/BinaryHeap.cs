@@ -17,7 +17,7 @@ internal class BinaryHeap<T>
     /// Creates a new binary heap.
     /// </summary>
     public BinaryHeap()
-        : this(2) { }
+        : this(1024) { }
 
     /// <summary>
     /// Creates a new binary heap.
@@ -47,8 +47,8 @@ internal class BinaryHeap<T>
         if (_latestIndex == _priorities.Length - 1)
         {
             // time to increase size!
-            Array.Resize(ref _heap, _heap.Length + 100);
-            Array.Resize(ref _priorities, _priorities.Length + 100);
+            Array.Resize(ref _heap, _heap.Length * 2);
+            Array.Resize(ref _priorities, _priorities.Length * 2);
         }
 
         // add the item at the first free point 

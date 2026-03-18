@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Itinero.Geo;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search.Islands;
@@ -237,12 +238,21 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
         var edgeTypeId = attributes != null ? (uint?)edgeTypeFunc(attributes) : null;
-        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId);
+
+        // compute edge length in centimeters.
+        if (!this.TryGetVertex(tail, out var lon1, out var lat1, out var e1))
+            throw new ArgumentException($"Vertex {tail} not found.", nameof(tail));
+        if (!this.TryGetVertex(head, out var lon2, out var lat2, out var e2))
+            throw new ArgumentException($"Vertex {head} not found.", nameof(head));
+        var length = (uint)((lon1, lat1, e1).DistanceEstimateInMeterShape(
+            (lon2, lat2, e2), shape) * 100);
+
+        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
         if (tail.TileId == head.TileId) return edge1;
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         (tile, _) = this.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId);
+        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length);
 
         return edge1;
     }

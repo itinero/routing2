@@ -117,7 +117,7 @@ internal class Dijkstra
             }
 
             var sourceCostForward =
-                getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+                getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
             if (sourceCostForward > 0)
             {
                 // can traverse edge in the forward direction.
@@ -138,7 +138,7 @@ internal class Dijkstra
             }
 
             var sourceCostBackward =
-                getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+                getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
             if (sourceCostBackward > 0)
             {
                 // can traverse edge in the backward direction.
@@ -165,7 +165,7 @@ internal class Dijkstra
                     throw new Exception($"Edge in target {target} not found!");
                 }
 
-                var targetCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>())
+                var targetCostForward = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable))
                     .cost;
                 if (targetCostForward > 0)
                 {
@@ -188,7 +188,7 @@ internal class Dijkstra
                 }
 
                 var targetCostBackward =
-                    getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+                    getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
                 if (targetCostBackward > 0)
                 {
                     if (!targetsPerVertex.TryGetValue(enumerator.Tail, out var targetsAtVertex))
@@ -231,7 +231,7 @@ internal class Dijkstra
                     throw new Exception($"Edge in source {source} not found!");
                 }
 
-                var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost *
+                var weight = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost *
                              (target.sp.OffsetFactor() - source.sp.OffsetFactor());
                 bestTargets[t] = (sourceForwardVisit, weight);
             }
@@ -245,7 +245,7 @@ internal class Dijkstra
                     throw new Exception($"Edge in source {source} not found!");
                 }
 
-                var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost *
+                var weight = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost *
                              (source.sp.OffsetFactor() - target.sp.OffsetFactor());
                 bestTargets[t] = (sourceBackwardVisit, weight);
             }
@@ -323,7 +323,7 @@ internal class Dijkstra
 
                 // gets the cost of the current edge.
                 var (neighbourCost, turnCost) =
-                    getDijkstraWeight(enumerator, _tree.GetPreviousEdges(currentPointer));
+                    getDijkstraWeight(enumerator, new PreviousEdgeEnumerable(_tree, currentPointer));
                 if (neighbourCost is >= double.MaxValue or <= 0)
                 {
                     continue;

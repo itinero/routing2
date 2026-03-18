@@ -238,7 +238,8 @@ internal static class TileParser
                         // close previous segment if any.
                         if (!previousVertex.IsEmpty())
                         {
-                            networkWriter.AddEdge(previousVertex, vertex, shape, attributes);
+                            var length = networkWriter.ComputeEdgeLength(previousVertex, vertex, shape);
+                            networkWriter.AddEdge(previousVertex, vertex, shape, attributes, null, length);
                             updated = true;
                             shape.Clear();
                         }
@@ -274,7 +275,8 @@ internal static class TileParser
                                 "Cannot add segment overlapping tile boundary, node should have already been added.");
                         }
 
-                        networkWriter.AddEdge(previousVertex, vertex, shape, attributes);
+                        var length = networkWriter.ComputeEdgeLength(previousVertex, vertex, shape);
+                        networkWriter.AddEdge(previousVertex, vertex, shape, attributes, null, length);
                         updated = true;
                         shape.Clear();
                     }
@@ -283,7 +285,8 @@ internal static class TileParser
                         // close previous segment if any.
                         if (!previousVertex.IsEmpty())
                         {
-                            networkWriter.AddEdge(previousVertex, vertex, shape, attributes);
+                            var length = networkWriter.ComputeEdgeLength(previousVertex, vertex, shape);
+                            networkWriter.AddEdge(previousVertex, vertex, shape, attributes, null, length);
                             updated = true;
                             shape.Clear();
                         }
