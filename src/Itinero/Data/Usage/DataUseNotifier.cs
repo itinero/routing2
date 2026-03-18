@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -29,6 +28,22 @@ public class DataUseNotifier
         {
             return _listeners.ToList();
         }
+    }
+
+    /// <summary>
+    /// Returns true if all listeners report the vertex data is ready (no async work needed).
+    /// </summary>
+    internal bool IsVertexDataReady(RoutingNetwork network, VertexId vertex)
+    {
+        foreach (var listener in _listeners)
+        {
+            if (!listener.IsVertexDataReady(network, vertex))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     internal async Task NotifyVertex(RoutingNetwork network, VertexId vertex, CancellationToken cancellationToken = default)

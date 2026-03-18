@@ -82,7 +82,10 @@ public static class IRouterOneToOneExtensions
 
         var (result, _) = await bidirectionalDijkstra.RunAsync(source, target, costFunction, async v =>
         {
-            await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+            if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v))
+            {
+                await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+            }
             if (cancellationToken.IsCancellationRequested) return false;
             return CheckMaxDistance(v);
         }, cancellationToken: cancellationToken);

@@ -321,6 +321,157 @@ internal static class AllocationProfiler
         }
         var a9 = GC.GetTotalAllocatedBytes(true);
         Console.WriteLine($"  Attributes enumeration:              {(a9 - b9) / 1024.0:F1} KB ({(a9 - b9) / costCount} bytes/call)");
+
+        // Deep dive: where is the remaining ~4 MB?
+        Console.WriteLine();
+        Console.WriteLine("Remaining allocation breakdown:");
+        Console.WriteLine("===============================");
+
+        // PathTree growth (already pre-sized after warmup, but let's measure)
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var pathTree = new Itinero.Routing.DataStructures.PathTree();
+        pathTree.Clear();
+        var bPt = GC.GetTotalAllocatedBytes(true);
+        for (uint i = 0; i < 10000; i++)
+        {
+            pathTree.Add(i, i, i, i, i, i, i);
+        }
+        var aPt = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  PathTree 10k adds (cold):            {(aPt - bPt) / 1024.0:F1} KB");
+
+        // PathTree warm (already sized)
+        pathTree.Clear();
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        bPt = GC.GetTotalAllocatedBytes(true);
+        for (uint i = 0; i < 10000; i++)
+        {
+            pathTree.Add(i, i, i, i, i, i, i);
+        }
+        aPt = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  PathTree 10k adds (warm):            {(aPt - bPt) / 1024.0:F1} KB");
+
+        // BinaryHeap growth
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var heap = new Itinero.Routing.DataStructures.BinaryHeap<uint>();
+        var bHp = GC.GetTotalAllocatedBytes(true);
+        for (uint i = 0; i < 40000; i++)
+        {
+            heap.Push(i, i * 0.1);
+        }
+        var aHp = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  BinaryHeap 40k pushes (cold):        {(aHp - bHp) / 1024.0:F1} KB");
+
+        heap.Clear();
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        bHp = GC.GetTotalAllocatedBytes(true);
+        for (uint i = 0; i < 40000; i++)
+        {
+            heap.Push(i, i * 0.1);
+        }
+        aHp = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  BinaryHeap 40k pushes (warm):        {(aHp - bHp) / 1024.0:F1} KB");
+
+        // Async overhead: measure just creating and awaiting a completed task
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bAsync = GC.GetTotalAllocatedBytes(true);
+        for (var i = 0; i < 100; i++)
+        {
+            var r = network.Route(profile).From(source).To(target);
+        }
+        var aAsync = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  Route builder (100x, no calc):       {(aAsync - bAsync) / 1024.0:F1} KB ({(aAsync - bAsync) / 100} bytes/call)");
+
+        // Measure 10 routes with warmed data structures
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bRoutes = GC.GetTotalAllocatedBytes(true);
+        for (var i = 0; i < 10; i++)
+        {
+            network.Route(profile).From(source).To(target).CalculateAsync().Wait();
+        }
+        var aRoutes = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  10 warmed routes:                    {(aRoutes - bRoutes) / 1024.0:F1} KB ({(aRoutes - bRoutes) / 10 / 1024.0:F1} KB/route)");
+
+        // Measure HashSet<VertexId>.Contains cost (called per edge in Dijkstra)
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var visitSet = new System.Collections.Generic.HashSet<VertexId>();
+        // Fill it up first
+        vertEnum = network.GetVertexEnumerator();
+        while (vertEnum.MoveNext()) visitSet.Add(vertEnum.Current);
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bContains = GC.GetTotalAllocatedBytes(true);
+        vertEnum = network.GetVertexEnumerator();
+        while (vertEnum.MoveNext()) visitSet.Contains(vertEnum.Current);
+        var aContains = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  HashSet.Contains (10k calls):        {(aContains - bContains) / 1024.0:F1} KB");
+
+        // Measure Dictionary<VertexId, List<int>>.TryGetValue
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var dictTest = new System.Collections.Generic.Dictionary<VertexId, System.Collections.Generic.List<int>>();
+        var bDict = GC.GetTotalAllocatedBytes(true);
+        vertEnum = network.GetVertexEnumerator();
+        while (vertEnum.MoveNext())
+        {
+            dictTest.TryGetValue(vertEnum.Current, out _);
+        }
+        var aDict = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  Dict.TryGetValue (10k calls):        {(aDict - bDict) / 1024.0:F1} KB");
+
+        // Measure Path construction
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bPath = GC.GetTotalAllocatedBytes(true);
+        var route10 = network.Route(profile).From(source).To(target).CalculateAsync().Result;
+        var pathShape = route10.Value.Shape;
+        var aPath = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  1 route + result access:             {(aPath - bPath) / 1024.0:F1} KB");
+        Console.WriteLine($"    Route shape points:                {pathShape.Count}");
+
+        // Measure DijkstraWeightFunc delegate allocation
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var costFunc2 = network.GetCostFunctionFor(profile);
+        var bDel = GC.GetTotalAllocatedBytes(true);
+        var del = Itinero.Routing.Costs.ICostFunctionExtensions.GetDijkstraWeightFunc(costFunc2);
+        var aDel = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  GetDijkstraWeightFunc():             {(aDel - bDel)} bytes");
+
+        // Measure HashSet growth during routing (cold start)
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bHashGrow = GC.GetTotalAllocatedBytes(true);
+        var hashGrow = new System.Collections.Generic.HashSet<VertexId>();
+        vertEnum = network.GetVertexEnumerator();
+        while (vertEnum.MoveNext()) hashGrow.Add(vertEnum.Current);
+        hashGrow.Clear();
+        // Second pass: measure after clear (buckets retained)
+        var aHashGrow = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  HashSet 10k adds (cold):             {(aHashGrow - bHashGrow) / 1024.0:F1} KB");
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        bHashGrow = GC.GetTotalAllocatedBytes(true);
+        vertEnum = network.GetVertexEnumerator();
+        while (vertEnum.MoveNext()) hashGrow.Add(vertEnum.Current);
+        aHashGrow = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  HashSet 10k adds (warm/cleared):     {(aHashGrow - bHashGrow) / 1024.0:F1} KB");
+
+        // Measure async overhead: Task.Wait vs sync
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bAsync2 = GC.GetTotalAllocatedBytes(true);
+        for (var i = 0; i < 1000; i++)
+        {
+            System.Threading.Tasks.Task.CompletedTask.Wait();
+        }
+        var aAsync2 = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  Task.CompletedTask.Wait() (1000x):   {(aAsync2 - bAsync2) / 1024.0:F1} KB");
+
+        // PreviousEdgeEnumerable struct creation cost
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        var bPe = GC.GetTotalAllocatedBytes(true);
+        var dummyTree = new Itinero.Routing.DataStructures.PathTree();
+        for (var i = 0; i < 40000; i++)
+        {
+            var pe = new Itinero.Routing.Flavours.Dijkstra.PreviousEdgeEnumerable(dummyTree, 0);
+            var en = pe.GetEnumerator();
+            en.MoveNext();
+        }
+        var aPe = GC.GetTotalAllocatedBytes(true);
+        Console.WriteLine($"  PreviousEdgeEnumerable (40k):        {(aPe - bPe) / 1024.0:F1} KB ({(aPe - bPe) / 40000} bytes/call)");
     }
 
     private static long EstimateResizeCost(uint initialSize, uint finalSize)

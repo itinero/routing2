@@ -133,7 +133,10 @@ public static class IRouterExtensions
                 costFunction.GetDijkstraWeightFunc(),
                 async v =>
                 {
-                    await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                    if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v.vertexId))
+                    {
+                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                    }
                     return CheckMaxDistance(v.vertexId);
                 });
 
@@ -198,7 +201,10 @@ public static class IRouterExtensions
                 costFunction.GetDijkstraWeightFunc(),
                 async e =>
                 {
-                    await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
+                    if (!routerDb.UsageNotifier.IsVertexDataReady(routerDb, e.vertexId))
+                    {
+                        await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
+                    }
                     return CheckMaxDistance(e.vertexId);
                 });
 
