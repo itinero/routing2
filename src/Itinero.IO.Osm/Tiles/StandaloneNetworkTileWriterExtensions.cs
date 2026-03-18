@@ -263,7 +263,7 @@ public static class StandaloneNetworkTileWriterExtensions
                                      vertices.TryGetValue(tail, out var tailVertex))
                             {
                                 // incoming.
-                                writer.AddOutgoingBoundaryCrossing(globalEdgeId, tailVertex,
+                                writer.AddIncomingBoundaryCrossing(globalEdgeId, tailVertex,
                                     edgeTypeId, attributes);
 
                                 boundaryVertices.Add(tailVertex);
