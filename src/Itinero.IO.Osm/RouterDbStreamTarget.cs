@@ -23,6 +23,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
     private readonly Dictionary<long, Way?> _restrictionMembers = new();
     private readonly OsmBarrierParser _barrierParser = new();
     private readonly Dictionary<long, List<Way>> _barrierNodes = new();
+    private readonly Dictionary<long, Node> _barrierNodeObjects = new();
     private readonly Dictionary<long, (double longitude, double latitude)> _nodeLocations = new();
     private readonly HashSet<long> _usedNodes = new();
     private readonly Dictionary<GlobalEdgeId, EdgeId> _globalEdgeIds = new();
@@ -44,7 +45,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
 
     public override bool OnBeforePull()
     {
-        // execute the first pass.
+        // execute the first pass (skip nodes, process ways and relations).
         this.DoPull(true, false, false);
 
         // move to second pass.
@@ -55,9 +56,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
         // add barriers as turn costs after all edges exist.
         foreach (var (nodeId, ways) in _barrierNodes)
         {
-            if (!_nodeLocations.ContainsKey(nodeId)) continue;
-            var node = new Node { Id = nodeId };
-            // find the original node to get tags - check if it's a barrier.
+            if (!_barrierNodeObjects.TryGetValue(nodeId, out var node)) continue;
             if (!_barrierParser.TryParse(node, ways, out var barrier)) continue;
 
             this.ResolveAndAddTurnCosts(barrier.ToGlobalNetworkRestrictions());
@@ -72,26 +71,18 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (!node.Id.HasValue) return;
         if (!node.Longitude.HasValue || !node.Latitude.HasValue) return;
 
-        if (_firstPass)
-        {
-            // FIRST PASS: detect barrier nodes.
-            if (_barrierParser.IsBarrier(node))
-            {
-                _vertices[node.Id.Value] = VertexId.Empty;
-                _barrierNodes[node.Id.Value] = [];
-            }
-            return;
-        }
+        // first pass skips nodes (DoPull(true, false, false)), so this is always the second pass.
 
-        // SECOND PASS: keep node locations.
+        // keep node locations.
         _nodeLocations[node.Id.Value] = (node.Longitude.Value, node.Latitude.Value);
-        if (!_vertices.TryGetValue(node.Id.Value, out _)) return;
 
-        // store barrier node with tags for later parsing.
-        if (_barrierNodes.ContainsKey(node.Id.Value))
+        // detect barriers — nodes come before ways in the stream, so when AddWay
+        // runs it can check _barrierNodes to track which ways pass through barriers.
+        if (_barrierParser.IsBarrier(node))
         {
-            // replace the placeholder with the actual node that has tags.
-            _barrierNodes[node.Id.Value] = _barrierNodes[node.Id.Value];
+            _vertices[node.Id.Value] = VertexId.Empty;
+            _barrierNodes[node.Id.Value] = [];
+            _barrierNodeObjects[node.Id.Value] = node;
         }
     }
 
@@ -108,12 +99,6 @@ public class RouterDbStreamTarget : OsmStreamTarget
             {
                 var node = way.Nodes[i];
 
-                // track ways for barrier nodes.
-                if (_barrierNodes.TryGetValue(node, out var barrierWays))
-                {
-                    barrierWays.Add(way);
-                }
-
                 if (_usedNodes.Contains(node))
                 {
                     _vertices[node] = VertexId.Empty;
@@ -127,7 +112,19 @@ public class RouterDbStreamTarget : OsmStreamTarget
             return;
         }
 
-        // SECOND PASS: add edges and register GlobalEdgeIds.
+        // SECOND PASS: track barrier ways, add edges, register GlobalEdgeIds.
+
+        // track ways for barrier nodes and mark for edge registration.
+        for (var i = 0; i < way.Nodes.Length; i++)
+        {
+            if (_barrierNodes.TryGetValue(way.Nodes[i], out var barrierWays))
+            {
+                barrierWays.Add(way);
+                _restrictionMembers.TryAdd(way.Id!.Value, null);
+                // barrier nodes must be vertices for turn costs.
+                _vertices[way.Nodes[i]] = VertexId.Empty;
+            }
+        }
 
         // if way is a member of restriction, queue for later.
         var saveEdge = _restrictionMembers.ContainsKey(way.Id.Value);
