@@ -46,12 +46,12 @@ public partial class StandaloneNetworkTile
         if (isProhibitory)
         {
             // isProhibitory if turnCostTypeId is encoded as a positive number.
-            _crossingsPointer += _crossings.SetDynamicInt32(_crossingsPointer, (int)(turnCostTypeId + 1));
+            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt32(_globalRestrictionsPointer, (int)(turnCostTypeId + 1));
         }
         else
         {
             // not isProhibitory if turnCostTypeId is encoded as a negative number.
-            _crossingsPointer += _crossings.SetDynamicInt32(_crossingsPointer, -(int)(turnCostTypeId + 1));
+            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt32(_globalRestrictionsPointer, -(int)(turnCostTypeId + 1));
         }
         _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32(_globalRestrictionsPointer, (uint)edges.Count);
         foreach (var (globalEdgeId, edgeId) in edges)
@@ -98,8 +98,8 @@ public partial class StandaloneNetworkTile
             var edges = new (GlobalEdgeId globalEdgeId, EdgeId? edge)[edgeCount];
             for (var i = 0; i < edgeCount; i++)
             {
-                pointer += _globalRestrictions.GetGlobalEdgeId(_globalRestrictionsPointer, out var globalEdgeId);
-                pointer += _globalRestrictions.GetDynamicUInt32Nullable(_globalRestrictionsPointer, 
+                pointer += _globalRestrictions.GetGlobalEdgeId(pointer, out var globalEdgeId);
+                pointer += _globalRestrictions.GetDynamicUInt32Nullable(pointer,
                     out var localId);
 
                 EdgeId? edgeId = null;
