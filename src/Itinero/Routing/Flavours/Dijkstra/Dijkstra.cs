@@ -22,7 +22,7 @@ internal class Dijkstra
 {
     private readonly PathTree _tree = new();
     private readonly HashSet<VertexId> _visits = new();
-    private readonly BinaryHeap<uint> _heap = new();
+    private readonly BinaryHeap<(uint pointer, VertexId vertex)> _heap = new();
 
     public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source,
         SnapPoint target,
@@ -92,7 +92,7 @@ internal class Dijkstra
             // can traverse edge in the forward direction.
             var sourceOffsetCostForward = sourceCostForward * (1 - source.OffsetFactor());
             sourceForwardVisit = _tree.AddVisit(enumerator, uint.MaxValue);
-            _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
+            _heap.Push((sourceForwardVisit, enumerator.Head), sourceOffsetCostForward);
         }
 
         // add backward.
@@ -108,7 +108,7 @@ internal class Dijkstra
             // can traverse edge in the backward direction.
             var sourceOffsetCostBackward = sourceCostBackward * source.OffsetFactor();
             sourceBackwardVisit = _tree.AddVisit(enumerator, uint.MaxValue);
-            _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
+            _heap.Push((sourceBackwardVisit, enumerator.Head), sourceOffsetCostBackward);
         }
 
         // add targets.
@@ -188,25 +188,27 @@ internal class Dijkstra
             cancellationToken.ThrowIfCancellationRequested();
 
             // dequeue new visit.
-            var currentPointer = _heap.Pop(out var currentCost);
-            var currentVisit = _tree.GetVisit(currentPointer);
-            while (_visits.Contains(currentVisit.vertex))
+            var currentEntry = _heap.Pop(out var currentCost);
+            while (_visits.Contains(currentEntry.vertex))
             {
                 // visited before, skip.
-                currentPointer = uint.MaxValue;
                 if (_heap.Count == 0)
                 {
+                    currentEntry = (uint.MaxValue, default);
                     break;
                 }
 
-                currentPointer = _heap.Pop(out currentCost);
-                currentVisit = _tree.GetVisit(currentPointer);
+                currentEntry = _heap.Pop(out currentCost);
             }
 
+            var currentPointer = currentEntry.pointer;
             if (currentPointer == uint.MaxValue)
             {
                 break;
             }
+
+            // only call GetVisit after the visited check passes.
+            var currentVisit = _tree.GetVisit(currentPointer);
 
             // log visit.
             _visits.Add(currentVisit.vertex);
@@ -317,7 +319,7 @@ internal class Dijkstra
                 }
 
                 // add visit to heap.
-                _heap.Push(neighbourPointer, neighbourCost + currentCost + turnCost);
+                _heap.Push((neighbourPointer, enumerator.Head), neighbourCost + currentCost + turnCost);
             }
         }
 

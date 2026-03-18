@@ -22,7 +22,7 @@ internal class Dijkstra
 {
     private readonly PathTree _tree = new();
     private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new();
-    private readonly BinaryHeap<uint> _heap = new();
+    private readonly BinaryHeap<(uint pointer, EdgeId edgeId, VertexId vertexId)> _heap = new();
 
     public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source,
         SnapPoint target,
@@ -57,7 +57,13 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default)
     {
-        return await this.RunAsync(network, (source, null), targets.Select(x => (x, (bool?)null)).ToArray(),
+        var directedTargets = new (SnapPoint sp, bool? direction)[targets.Count];
+        for (var i = 0; i < targets.Count; i++)
+        {
+            directedTargets[i] = (targets[i], null);
+        }
+
+        return await this.RunAsync(network, (source, null), directedTargets,
             getDijkstraWeight, settled, queued, cancellationToken);
     }
 
@@ -124,7 +130,7 @@ internal class Dijkstra
                 var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
                 sourceForwardVisit =
                     _tree.AddVisit(enumerator, uint.MaxValue);
-                _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
+                _heap.Push((sourceForwardVisit, enumerator.EdgeId, enumerator.Head), sourceOffsetCostForward);
             }
         }
 
@@ -145,7 +151,7 @@ internal class Dijkstra
                 var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
                 sourceBackwardVisit =
                     _tree.AddVisit(enumerator, uint.MaxValue);
-                _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
+                _heap.Push((sourceBackwardVisit, enumerator.EdgeId, enumerator.Head), sourceOffsetCostBackward);
             }
         }
 
@@ -260,33 +266,35 @@ internal class Dijkstra
             cancellationToken.ThrowIfCancellationRequested();
 
             // dequeue new visit.
-            var currentPointer = _heap.Pop(out var currentCost);
-            var currentVisit = _tree.GetVisit(currentPointer);
-            while (_visits.Contains((currentVisit.edge, currentVisit.vertex)))
+            var currentEntry = _heap.Pop(out var currentCost);
+            while (_visits.Contains((currentEntry.edgeId, currentEntry.vertexId)))
             {
                 // visited before, skip.
-                currentPointer = uint.MaxValue;
                 if (_heap.Count == 0)
                 {
+                    currentEntry = (uint.MaxValue, default, default);
                     break;
                 }
 
-                currentPointer = _heap.Pop(out currentCost);
-                currentVisit = _tree.GetVisit(currentPointer);
+                currentEntry = _heap.Pop(out currentCost);
             }
 
+            var currentPointer = currentEntry.pointer;
             if (currentPointer == uint.MaxValue)
             {
                 break;
             }
 
+            // only call GetVisit after the visited check passes.
+            var currentVisit = _tree.GetVisit(currentPointer);
+
             // log visit.
             if (currentVisit.previousPointer != uint.MaxValue)
             {
-                _visits.Add((currentVisit.edge, currentVisit.vertex));
+                _visits.Add((currentEntry.edgeId, currentEntry.vertexId));
             }
 
-            if (settled != null && await settled((currentVisit.edge, currentVisit.vertex)))
+            if (settled != null && await settled((currentEntry.edgeId, currentEntry.vertexId)))
             {
                 // the best cost to this edge has already been found; current visit can not improve this anymore so we continue
                 continue;
@@ -401,7 +409,7 @@ internal class Dijkstra
                 }
 
                 // add visit to heap.
-                _heap.Push(neighbourPointer, neighbourCost + currentCost + turnCost);
+                _heap.Push((neighbourPointer, enumerator.EdgeId, enumerator.Head), neighbourCost + currentCost + turnCost);
             }
         }
 
