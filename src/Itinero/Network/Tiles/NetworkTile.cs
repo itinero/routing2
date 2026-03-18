@@ -5,7 +5,6 @@ using Itinero.IO;
 using Itinero.Network.Storage;
 using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.TurnCosts;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles;
 
@@ -22,15 +21,15 @@ internal partial class NetworkTile
     // the pointers, per vertex, to their first edge.
     // TODO: investigate if it's worth storing these with less precision, one tile will never contain this much data.
     // TODO: investigate if we can not use one-increasing vertex ids but also use their pointers like with the edges.
-    private readonly ArrayBase<uint> _pointers;
+    private uint[] _pointers;
     private uint _nextCrossTileId; // the next id for an edge that crosses tile boundaries.
-    private readonly ArrayBase<uint> _crossEdgePointers; // points to the cross tile boundary edges.
+    private uint[] _crossEdgePointers; // points to the cross tile boundary edges.
 
     // the next edge id.
     private uint _nextEdgeId = 0;
 
     // the edges.
-    private readonly ArrayBase<byte> _edges;
+    private byte[] _edges;
 
     /// <summary>
     /// Creates a new tile.
@@ -45,21 +44,21 @@ internal partial class NetworkTile
         _edgeTypeMapId = edgeTypeMapId ?? Guid.Empty;
         _nextCrossTileId = 0;
 
-        _pointers = new MemoryArray<uint>(0);
-        _edges = new MemoryArray<byte>(0);
-        _crossEdgePointers = new MemoryArray<uint>(0);
+        _pointers = new uint[0];
+        _edges = new byte[0];
+        _crossEdgePointers = new uint[0];
 
-        _coordinates = new MemoryArray<byte>(0);
-        _shapes = new MemoryArray<byte>(0);
-        _attributes = new MemoryArray<byte>(0);
-        _strings = new MemoryArray<string>(0);
+        _coordinates = new byte[0];
+        _shapes = new byte[0];
+        _attributes = new byte[0];
+        _strings = new string[0];
     }
 
-    private NetworkTile(int zoom, uint tileId, Guid edgeTypeMapId, uint nextCrossTileId, ArrayBase<uint> pointers,
-        ArrayBase<byte> edges,
-        ArrayBase<uint> crossEdgePointers, ArrayBase<byte> coordinates, ArrayBase<byte> shapes,
-        ArrayBase<byte> attributes,
-        ArrayBase<string> strings, ArrayBase<byte> turnCosts, uint nextVertexId, uint nextEdgeId,
+    private NetworkTile(int zoom, uint tileId, Guid edgeTypeMapId, uint nextCrossTileId, uint[] pointers,
+        byte[] edges,
+        uint[] crossEdgePointers, byte[] coordinates, byte[] shapes,
+        byte[] attributes,
+        string[] strings, byte[] turnCosts, uint nextVertexId, uint nextEdgeId,
         uint nextAttributePointer,
         uint nextShapePointer, uint nextStringId)
     {
@@ -90,9 +89,9 @@ internal partial class NetworkTile
     /// <returns>The copy of this tile.</returns>
     public NetworkTile Clone()
     {
-        return new(_zoom, _tileId, _edgeTypeMapId, _nextCrossTileId, _pointers.Clone(), _edges.Clone(),
-            _crossEdgePointers.Clone(),
-            _coordinates.Clone(), _shapes.Clone(), _attributes.Clone(), _strings.Clone(), _turnCosts.Clone(),
+        return new(_zoom, _tileId, _edgeTypeMapId, _nextCrossTileId, (uint[])_pointers.Clone(), (byte[])_edges.Clone(),
+            (uint[])_crossEdgePointers.Clone(),
+            (byte[])_coordinates.Clone(), (byte[])_shapes.Clone(), (byte[])_attributes.Clone(), (string[])_strings.Clone(), (byte[])_turnCosts.Clone(),
             _nextVertexId,
             _nextEdgeId, _nextAttributePointer, _nextShapePointer, _nextStringId);
     }
@@ -129,7 +128,7 @@ internal partial class NetworkTile
         _nextVertexId++;
 
         // make room.
-        _pointers.EnsureMinimumSize(vertexId.LocalId, DefaultSizeIncrease);
+        ArrayBaseExtensions.EnsureMinimumSize(ref _pointers, vertexId.LocalId, DefaultSizeIncrease);
 
         return vertexId;
     }
@@ -200,7 +199,7 @@ internal partial class NetworkTile
 
             // generate a new cross tile id and store pointer to edge.
             edgeId = EdgeId.CrossEdgeId(_tileId, _nextCrossTileId);
-            _crossEdgePointers.EnsureMinimumSize(_nextCrossTileId + 1);
+            ArrayBaseExtensions.EnsureMinimumSize(ref _crossEdgePointers, _nextCrossTileId + 1);
             _crossEdgePointers[_nextCrossTileId] = _nextEdgeId;
             _nextCrossTileId++;
         }
@@ -222,9 +221,9 @@ internal partial class NetworkTile
 
         // write the edge data.
         var newEdgePointer = _nextEdgeId;
-        var size = EncodeVertex(_edges, _tileId, _nextEdgeId, vertex1);
+        var size = EncodeVertex(ref _edges, _tileId, _nextEdgeId, vertex1);
         _nextEdgeId += size;
-        size = EncodeVertex(_edges, _tileId, _nextEdgeId, vertex2);
+        size = EncodeVertex(ref _edges, _tileId, _nextEdgeId, vertex2);
         _nextEdgeId += size;
 
         // get previous pointers if vertex already has edges
@@ -244,9 +243,9 @@ internal partial class NetworkTile
         }
 
         // set next pointers.
-        size = EncodePointer(_edges, _nextEdgeId, v1p);
+        size = EncodePointer(ref _edges, _nextEdgeId, v1p);
         _nextEdgeId += size;
-        size = EncodePointer(_edges, _nextEdgeId, v2p);
+        size = EncodePointer(ref _edges, _nextEdgeId, v2p);
         _nextEdgeId += size;
 
         // write edge id explicitly if not in this edge.
@@ -258,10 +257,10 @@ internal partial class NetworkTile
         }
 
         // write edge profile id.
-        _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, edgeTypeId);
+        _nextEdgeId += SetDynamicUIn32Nullable(ref _edges, _nextEdgeId, edgeTypeId);
 
         // write length.
-        _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, length);
+        _nextEdgeId += SetDynamicUIn32Nullable(ref _edges, _nextEdgeId, length);
 
         // set tail and head order.
         _edges.SetTailHeadOrder(_nextEdgeId, null, null);
@@ -274,7 +273,7 @@ internal partial class NetworkTile
             shapePointer = this.SetShape(shape);
         }
 
-        size = EncodePointer(_edges, _nextEdgeId, shapePointer);
+        size = EncodePointer(ref _edges, _nextEdgeId, shapePointer);
         _nextEdgeId += size;
 
         // take care of attributes if any.
@@ -284,7 +283,7 @@ internal partial class NetworkTile
             attributesPointer = this.SetAttributes(attributes ?? [], globalEdgeId);
         }
 
-        size = EncodePointer(_edges, _nextEdgeId, attributesPointer);
+        size = EncodePointer(ref _edges, _nextEdgeId, attributesPointer);
         _nextEdgeId += size;
 
         return edgeId.Value;
@@ -373,8 +372,8 @@ internal partial class NetworkTile
 
             // write edge data again.
             var newEdgePointer = newP;
-            newP += EncodeVertex(_edges, _tileId, newP, vertex1);
-            newP += EncodeVertex(_edges, _tileId, newP, vertex2);
+            newP += EncodeVertex(ref _edges, _tileId, newP, vertex1);
+            newP += EncodeVertex(ref _edges, _tileId, newP, vertex2);
             uint? v1p = null;
             if (vertex1.TileId == _tileId)
             {
@@ -389,8 +388,8 @@ internal partial class NetworkTile
                 _pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
             }
 
-            newP += EncodePointer(_edges, newP, v1p);
-            newP += EncodePointer(_edges, newP, v2P);
+            newP += EncodePointer(ref _edges, newP, v1p);
+            newP += EncodePointer(ref _edges, newP, v2P);
             if (crossEdgeId != null)
             {
                 newP += (uint)_edges.SetDynamicUInt32(newP, crossEdgeId.Value);
@@ -404,8 +403,8 @@ internal partial class NetworkTile
             newP += _edges.SetDynamicUInt32Nullable(newP, length);
             _edges[newP] = tailHeadOrder;
             newP++;
-            newP += EncodePointer(_edges, newP, shapePointer);
-            newP += EncodePointer(_edges, newP, attributePointer);
+            newP += EncodePointer(ref _edges, newP, shapePointer);
+            newP += EncodePointer(ref _edges, newP, attributePointer);
         }
 
         _nextEdgeId = newP;
@@ -415,9 +414,9 @@ internal partial class NetworkTile
     internal NetworkTile CloneForEdgeTypeMap(
         (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
     {
-        var edges = new MemoryArray<byte>(_edges.Length);
-        var pointers = new MemoryArray<uint>(_pointers.Length);
-        var crossEdgePointers = new MemoryArray<uint>(_crossEdgePointers.Length);
+        var edges = new byte[_edges.Length];
+        var pointers = new uint[_pointers.Length];
+        var crossEdgePointers = new uint[_crossEdgePointers.Length];
         var nextEdgeId = _nextEdgeId;
         var p = 0U;
         var newP = 0U;
@@ -449,8 +448,8 @@ internal partial class NetworkTile
 
             // write edge data again.
             var newEdgePointer = newP;
-            newP += EncodeVertex(edges, _tileId, newP, vertex1);
-            newP += EncodeVertex(edges, _tileId, newP, vertex2);
+            newP += EncodeVertex(ref edges, _tileId, newP, vertex1);
+            newP += EncodeVertex(ref edges, _tileId, newP, vertex2);
             uint? v1p = null;
             if (vertex1.TileId == _tileId)
             {
@@ -465,8 +464,8 @@ internal partial class NetworkTile
                 pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
             }
 
-            newP += EncodePointer(edges, newP, v1p);
-            newP += EncodePointer(edges, newP, v2p);
+            newP += EncodePointer(ref edges, newP, v1p);
+            newP += EncodePointer(ref edges, newP, v2p);
             if (crossEdgeId != null)
             {
                 newP += edges.SetDynamicUInt32(newP, crossEdgeId.Value);
@@ -480,8 +479,8 @@ internal partial class NetworkTile
             newP += edges.SetDynamicUInt32Nullable(newP, length);
             edges[newP] = tailHeadOrder;
             newP++;
-            newP += EncodePointer(edges, newP, shapePointer);
-            newP += EncodePointer(edges, newP, attributePointer);
+            newP += EncodePointer(ref edges, newP, shapePointer);
+            newP += EncodePointer(ref edges, newP, attributePointer);
         }
 
         return new NetworkTile(_zoom, _tileId, edgeTypeMap.id, _nextCrossTileId, pointers, edges, crossEdgePointers,
@@ -495,14 +494,14 @@ internal partial class NetworkTile
         return _pointers[vertex];
     }
 
-    internal static byte EncodeVertex(ArrayBase<byte> edges, uint localTileId, uint location, VertexId vertexId)
+    internal static byte EncodeVertex(ref byte[] edges, uint localTileId, uint location, VertexId vertexId)
     {
         if (vertexId.TileId == localTileId)
         {
             // same tile, only store local id.
             if (edges.Length <= location + 5)
             {
-                edges.Resize(edges.Length + DefaultSizeIncrease);
+                Array.Resize(ref edges, edges.Length + DefaultSizeIncrease);
             }
 
             return edges.SetDynamicUInt32(location, vertexId.LocalId);
@@ -511,7 +510,7 @@ internal partial class NetworkTile
         // other tile, store full id.
         if (edges.Length <= location + 10)
         {
-            edges.Resize(edges.Length + DefaultSizeIncrease);
+            Array.Resize(ref edges, edges.Length + DefaultSizeIncrease);
         }
 
         var encodedId = vertexId.Encode();
@@ -544,12 +543,12 @@ internal partial class NetworkTile
         return _crossEdgePointers[edgeCrossId];
     }
 
-    internal static byte EncodePointer(ArrayBase<byte> edges, uint location, uint? pointer)
+    internal static byte EncodePointer(ref byte[] edges, uint location, uint? pointer)
     {
         // TODO: save the diff instead of the full pointer.
         if (edges.Length <= location + 5)
         {
-            edges.Resize(edges.Length + DefaultSizeIncrease);
+            Array.Resize(ref edges, edges.Length + DefaultSizeIncrease);
         }
 
         return edges.SetDynamicUInt32(location,
@@ -563,11 +562,11 @@ internal partial class NetworkTile
         return size;
     }
 
-    internal static byte SetDynamicUIn32Nullable(ArrayBase<byte> edges, uint pointer, uint? data)
+    internal static byte SetDynamicUIn32Nullable(ref byte[] edges, uint pointer, uint? data)
     {
         while (edges.Length <= pointer + 5)
         {
-            edges.Resize(edges.Length + DefaultSizeIncrease);
+            Array.Resize(ref edges, edges.Length + DefaultSizeIncrease);
         }
 
         return edges.SetDynamicUInt32Nullable(pointer, data);
@@ -611,7 +610,7 @@ internal partial class NetworkTile
     {
         // read vertex pointers.
         _nextVertexId = stream.ReadVarUInt32();
-        _pointers.Resize(_nextVertexId);
+        Array.Resize(ref _pointers, (int)_nextVertexId);
         for (var i = 0; i < _nextVertexId; i++)
         {
             _pointers[i] = stream.ReadVarUInt32();
@@ -619,7 +618,7 @@ internal partial class NetworkTile
 
         // read edges.
         _nextEdgeId = stream.ReadVarUInt32();
-        _edges.Resize(_nextEdgeId);
+        Array.Resize(ref _edges, (int)_nextEdgeId);
         for (var i = 0; i < _nextEdgeId; i++)
         {
             _edges[i] = (byte)stream.ReadByte();
@@ -627,7 +626,7 @@ internal partial class NetworkTile
 
         // read cross tile edge pointers.
         _nextCrossTileId = stream.ReadVarUInt32();
-        _crossEdgePointers.Resize(_nextCrossTileId);
+        Array.Resize(ref _crossEdgePointers, (int)_nextCrossTileId);
         for (var i = 0; i < _nextCrossTileId; i++)
         {
             _crossEdgePointers[i] = stream.ReadVarUInt32();

@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Itinero.Network.Storage;
 using Itinero.Network.Tiles.Standalone.Global;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles.Standalone;
 
 public partial class StandaloneNetworkTile
 {
-    private readonly ArrayBase<byte> _crossings = new MemoryArray<byte>(1024);
+    private byte[] _crossings = new byte[1024];
     private uint _crossingsPointer;
 
     internal void AddBoundaryCrossing(bool isIncoming, GlobalEdgeId globalEdgeId, VertexId vertex,
@@ -17,7 +16,7 @@ public partial class StandaloneNetworkTile
         if (vertex.TileId != this.NetworkTile.TileId)
             throw new ArgumentException("Can only add boundary crossings that cross into the tile");
 
-        _crossings.EnsureMinimumSize(_crossingsPointer + 36);
+        ArrayBaseExtensions.EnsureMinimumSize(ref _crossings, _crossingsPointer + 36);
         if (isIncoming)
         {
             // incoming if vertex is encoded as a positive number.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +6,6 @@ using Itinero.IO;
 using Itinero.Network.Storage;
 using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.TurnCosts;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles.Standalone;
 
@@ -16,7 +15,7 @@ public partial class StandaloneNetworkTile
     // the edge of the tiles. we store the global edge ids of the restriction along with the type so we can create the turn cost when the network
     // is being completed
     private uint _globalRestrictionsPointer;
-    private readonly ArrayBase<byte> _globalRestrictions = new MemoryArray<byte>(0);
+    private byte[] _globalRestrictions = new byte[0];
 
     /// <summary>
     /// Adds a global restriction for processing when the tile is loaded.
@@ -37,7 +36,7 @@ public partial class StandaloneNetworkTile
                         (edges.Count * (9 + 5 + 5 + 5));
         while (_globalRestrictions.Length < maxLength)
         {
-            _globalRestrictions.Resize(_globalRestrictions.Length + 256);
+            Array.Resize(ref _globalRestrictions, (int)(_globalRestrictions.Length + 256));
         }
 
         // add turn.
@@ -127,7 +126,7 @@ public partial class StandaloneNetworkTile
     private void ReadGlobal(Stream stream)
     {
         _globalRestrictionsPointer = stream.ReadVarUInt32();
-        _globalRestrictions.Resize(_globalRestrictionsPointer);
+        _globalRestrictions = new byte[_globalRestrictionsPointer];
         for (var i = 0; i < _globalRestrictionsPointer; i++)
         {
             _globalRestrictions[i] = (byte)stream.ReadByte();

@@ -5,15 +5,14 @@ using System.Linq;
 using Itinero.IO;
 using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles;
 
 internal partial class NetworkTile
 {
     private uint _turnCostPointer = 0;
-    private readonly ArrayBase<uint> _turnCostPointers = new MemoryArray<uint>(0);
-    private readonly ArrayBase<byte> _turnCosts = new MemoryArray<byte>(0);
+    private uint[] _turnCostPointers = new uint[0];
+    private byte[] _turnCosts = new byte[0];
 
     internal void AddTurnCosts(VertexId vertex, uint turnCostType,
         EdgeId[] edges, uint[,] costs, IEnumerable<(string key, string value)> attributes,
@@ -98,7 +97,7 @@ internal partial class NetworkTile
         // and initialize new slots with null.
         while (_turnCostPointers.Length <= vertex.LocalId)
         {
-            _turnCostPointers.Resize(_nextVertexId);
+            Array.Resize(ref _turnCostPointers, (int)_nextVertexId);
         }
 
         // make sure there is space in the turn cost array.
@@ -106,12 +105,12 @@ internal partial class NetworkTile
         var maxLength = _turnCostPointer + 5 + 1 + (count * count * 5) + 5;
         while (_turnCosts.Length <= maxLength)
         {
-            _turnCosts.Resize(_turnCosts.Length + DefaultSizeIncrease);
+            Array.Resize(ref _turnCosts, _turnCosts.Length + DefaultSizeIncrease);
         }
 
         // update pointer to reflect new data.
-        var previousPointer = _turnCostPointers[vertex.LocalId].DecodeNullableData();
-        _turnCostPointers[vertex.LocalId] = _turnCostPointer.EncodeToNullableData();
+        var previousPointer = _turnCostPointers[(int)vertex.LocalId].DecodeNullableData();
+        _turnCostPointers[(int)vertex.LocalId] = _turnCostPointer.EncodeToNullableData();
 
         // write turn cost types.
         _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
@@ -137,7 +136,7 @@ internal partial class NetworkTile
         }
 
         // write turn costs.
-        _turnCosts[_turnCostPointer] = (byte)count;
+        _turnCosts[(int)_turnCostPointer] = (byte)count;
         _turnCostPointer++;
         for (var x = 0; x < count; x++)
         {
@@ -172,7 +171,7 @@ internal partial class NetworkTile
             yield break;
         }
 
-        var pointerNullable = _turnCostPointers[vertex.LocalId].DecodeNullableData();
+        var pointerNullable = _turnCostPointers[(int)vertex.LocalId].DecodeNullableData();
         if (pointerNullable == null)
         {
             yield break;
@@ -214,7 +213,7 @@ internal partial class NetworkTile
             }
 
             // read turn cost table.
-            var max = _turnCosts[pointer];
+            var max = _turnCosts[(int)pointer];
             pointer++;
 
             for (var x = 0; x < max; x++)
@@ -313,14 +312,14 @@ internal partial class NetworkTile
     private void ReadTurnCostsFrom(Stream stream)
     {
         var turnCostPointersSize = stream.ReadVarUInt32();
-        _turnCostPointers.Resize(turnCostPointersSize);
+        Array.Resize(ref _turnCostPointers, (int)turnCostPointersSize);
         for (var i = 0; i < turnCostPointersSize; i++)
         {
             _turnCostPointers[i] = stream.ReadVarUInt32();
         }
 
         _turnCostPointer = stream.ReadVarUInt32();
-        _turnCosts.Resize(_turnCostPointer);
+        Array.Resize(ref _turnCosts, (int)_turnCostPointer);
         for (var i = 0; i < _turnCostPointer; i++)
         {
             _turnCosts[i] = (byte)stream.ReadByte();

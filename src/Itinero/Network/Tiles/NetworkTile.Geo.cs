@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using Itinero.IO;
 using Itinero.Network.Storage;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles;
 
@@ -14,12 +13,12 @@ internal partial class NetworkTile
     private const int ElevationSizeInBytes = 2; // 2 bytes = 16 bits = [-32768, 32767], using dm as resolution
 
     // the vertex coordinates.
-    private readonly ArrayBase<byte> _coordinates;
+    private byte[] _coordinates;
     private int? _elevation; // the tile elevation.
 
     // the shapes.
     private uint _nextShapePointer = 0;
-    private readonly ArrayBase<byte> _shapes;
+    private byte[] _shapes;
 
     private void SetCoordinate(uint localId, double longitude, double latitude, float? e)
     {
@@ -47,14 +46,14 @@ internal partial class NetworkTile
         {
             // don't store elevation.
             tileCoordinatePointer = localId * CoordinateSizeInBytes * 2;
-            _coordinates.EnsureMinimumSize(tileCoordinatePointer + (CoordinateSizeInBytes * 2),
+            ArrayBaseExtensions.EnsureMinimumSize(ref _coordinates, tileCoordinatePointer + (CoordinateSizeInBytes * 2),
                 DefaultSizeIncrease);
         }
         else
         {
             // store elevation.
             tileCoordinatePointer = localId * ((CoordinateSizeInBytes * 2) + ElevationSizeInBytes);
-            _coordinates.EnsureMinimumSize(tileCoordinatePointer + (CoordinateSizeInBytes * 2) + ElevationSizeInBytes,
+            ArrayBaseExtensions.EnsureMinimumSize(ref _coordinates, tileCoordinatePointer + (CoordinateSizeInBytes * 2) + ElevationSizeInBytes,
                 DefaultSizeIncrease);
         }
 
@@ -107,7 +106,7 @@ internal partial class NetworkTile
         var pointer = blockPointer + 1;
 
         // make sure there is space for the block pointer.
-        _shapes.EnsureMinimumSize(blockPointer);
+        ArrayBaseExtensions.EnsureMinimumSize(ref _shapes, blockPointer);
 
         var coordinateBlockSize = 8;
         if (_elevation != null)
@@ -131,7 +130,7 @@ internal partial class NetworkTile
             }
 
             // make sure there is space for this coordinate.
-            _shapes.EnsureMinimumSize(pointer + coordinateBlockSize);
+            ArrayBaseExtensions.EnsureMinimumSize(ref _shapes, pointer + coordinateBlockSize);
 
             // store coordinate.
             if (count == 0)
@@ -168,7 +167,7 @@ internal partial class NetworkTile
             if (count == 255)
             {
                 // start a new block, assign 255.
-                _shapes[blockPointer] = 255;
+                _shapes[(int)blockPointer] = 255;
                 blockPointer = pointer;
                 pointer = blockPointer + 1;
                 count = 0;
@@ -178,7 +177,7 @@ internal partial class NetworkTile
         }
 
         // a block is still open, close it.
-        _shapes[blockPointer] = (byte)count;
+        _shapes[(int)blockPointer] = (byte)count;
         _nextShapePointer = pointer;
 
         return originalPointer;
@@ -198,7 +197,7 @@ internal partial class NetworkTile
         (int x, int y, int? eOffset) previous = (int.MaxValue, int.MaxValue, null);
         while (true)
         {
-            count = _shapes[p];
+            count = _shapes[(int)p];
             p++;
 
             for (var i = 0; i < count; i++)
@@ -286,14 +285,14 @@ internal partial class NetworkTile
         }
 
         var coordinateBytes = _nextVertexId * coordinateSize;
-        _coordinates.Resize(coordinateBytes);
+        Array.Resize(ref _coordinates, (int)coordinateBytes);
         for (var i = 0; i < coordinateBytes; i++)
         {
             _coordinates[i] = (byte)stream.ReadByte();
         }
 
         _nextShapePointer = stream.ReadVarUInt32();
-        _shapes.Resize(_nextShapePointer);
+        Array.Resize(ref _shapes, (int)_nextShapePointer);
         for (var i = 0; i < _nextShapePointer; i++)
         {
             _shapes[i] = (byte)stream.ReadByte();

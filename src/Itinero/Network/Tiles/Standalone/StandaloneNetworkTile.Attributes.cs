@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Itinero.IO;
 using Itinero.Network.Storage;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles.Standalone;
 
@@ -11,14 +11,14 @@ public partial class StandaloneNetworkTile
     /// <summary>
     /// Stores the attributes, starting with the number of attributes and then alternating key-value pairs.
     /// </summary>
-    private readonly ArrayBase<byte> _attributes;
+    private byte[] _attributes;
 
     private uint _nextAttributePointer = 0;
 
     /// <summary>
     /// Stores each string once.
     /// </summary>
-    private readonly ArrayBase<string> _strings;
+    private string[] _strings;
 
     private uint _nextStringId = 0;
 
@@ -33,7 +33,7 @@ public partial class StandaloneNetworkTile
         {
             if (_attributes.Length <= p + 16)
             {
-                _attributes.Resize(_attributes.Length + 256);
+                Array.Resize(ref _attributes, (int)(_attributes.Length + 256));
             }
 
             var id = this.AddOrGetString(key);
@@ -44,7 +44,7 @@ public partial class StandaloneNetworkTile
             c++;
             if (c == 255)
             {
-                _attributes[cPos] = 255;
+                _attributes[(int)cPos] = 255;
                 c = 0;
                 cPos = p;
                 p++;
@@ -53,10 +53,10 @@ public partial class StandaloneNetworkTile
 
         if (_attributes.Length <= cPos)
         {
-            _attributes.Resize(_attributes.Length + 256);
+            Array.Resize(ref _attributes, (int)(_attributes.Length + 256));
         }
 
-        _attributes[cPos] = (byte)c;
+        _attributes[(int)cPos] = (byte)c;
 
         _nextAttributePointer = (uint)p;
 
@@ -101,7 +101,7 @@ public partial class StandaloneNetworkTile
 
         if (_strings.Length <= _nextStringId)
         {
-            _strings.Resize(_strings.Length + 256);
+            Array.Resize(ref _strings, (int)(_strings.Length + 256));
         }
 
         var id = _nextStringId;
@@ -129,14 +129,14 @@ public partial class StandaloneNetworkTile
     private void ReadAttributesFrom(Stream stream)
     {
         _nextAttributePointer = stream.ReadVarUInt32();
-        _attributes.Resize(_nextAttributePointer);
+        _attributes = new byte[_nextAttributePointer];
         for (var i = 0; i < _nextAttributePointer; i++)
         {
             _attributes[i] = (byte)stream.ReadByte();
         }
 
         _nextStringId = stream.ReadVarUInt32();
-        _strings.Resize(_nextStringId);
+        _strings = new string[_nextStringId];
         for (var i = 0; i < _nextStringId; i++)
         {
             _strings[i] = stream.ReadWithSizeString();

@@ -49,6 +49,8 @@ TestResult*.xml
 *.tile.zip
 *.tile.redirect
 
+BenchmarkDotNet.Artifacts/
+
 # allow test data files
 !test/Itinero.Tests/**/*.osm.pbf
 !test/Itinero.Tests/**/*.geojson

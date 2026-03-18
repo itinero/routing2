@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System;
+using System.IO;
 using Itinero.IO;
 
 namespace Itinero.Network.Tiles.Standalone;
@@ -59,7 +60,7 @@ public partial class StandaloneNetworkTile
     {
         // read vertex pointers.
         _crossingsPointer = stream.ReadVarUInt32();
-        _crossings.Resize(_crossingsPointer);
+        _crossings = new byte[_crossingsPointer];
         for (var i = 0; i < _crossingsPointer; i++)
         {
             _crossings[i] = (byte)stream.ReadByte();

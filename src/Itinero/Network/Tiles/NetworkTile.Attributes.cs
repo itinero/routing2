@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Itinero.Data;
 using Itinero.IO;
 using Itinero.Network.Storage;
 using Itinero.Network.Tiles.Standalone.Global;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles;
 
@@ -13,14 +13,14 @@ internal partial class NetworkTile
     /// <summary>
     /// Stores the attributes, starting with the number of attributes and then alternating key-value pairs.
     /// </summary>
-    private readonly ArrayBase<byte> _attributes;
+    private byte[] _attributes;
 
     private uint _nextAttributePointer = 0;
 
     /// <summary>
     /// Stores each string once.
     /// </summary>
-    private readonly ArrayBase<string> _strings;
+    private string[] _strings;
 
     private uint _nextStringId = 0;
 
@@ -29,7 +29,7 @@ internal partial class NetworkTile
         // ensure enough space for the globalEdgeId header (up to 20 bytes).
         if (_attributes.Length <= _nextAttributePointer + 20)
         {
-            _attributes.Resize(_attributes.Length + 256);
+            Array.Resize(ref _attributes, _attributes.Length + 256);
         }
 
         // save position before globalEdgeId — GetAttributes/GetGlobalEdgeId read from here.
@@ -53,7 +53,7 @@ internal partial class NetworkTile
         {
             if (_attributes.Length <= p + 16)
             {
-                _attributes.Resize(_attributes.Length + 256);
+                Array.Resize(ref _attributes, _attributes.Length + 256);
             }
 
             var id = this.AddOrGetString(key);
@@ -64,7 +64,7 @@ internal partial class NetworkTile
             c++;
             if (c == 255)
             {
-                _attributes[cPos] = 255;
+                _attributes[(int)cPos] = 255;
                 c = 0;
                 cPos = p;
                 p++;
@@ -73,10 +73,10 @@ internal partial class NetworkTile
 
         if (_attributes.Length <= cPos)
         {
-            _attributes.Resize(_attributes.Length + 256);
+            Array.Resize(ref _attributes, _attributes.Length + 256);
         }
 
-        _attributes[cPos] = (byte)c;
+        _attributes[(int)cPos] = (byte)c;
 
         _nextAttributePointer = (uint)p;
 
@@ -111,7 +111,7 @@ internal partial class NetworkTile
         int count;
         do
         {
-            count = _attributes[p];
+            count = _attributes[(int)p];
             p++;
 
             for (var i = 0; i < count; i++)
@@ -119,7 +119,7 @@ internal partial class NetworkTile
                 p += _attributes.GetDynamicUInt32(p, out var keyId);
                 p += _attributes.GetDynamicUInt32(p, out var valId);
 
-                yield return (_strings[keyId], _strings[valId]);
+                yield return (_strings[(int)keyId], _strings[(int)valId]);
             }
         } while (count == 255);
     }
@@ -128,7 +128,7 @@ internal partial class NetworkTile
     {
         for (uint i = 0; i < _nextStringId; i++)
         {
-            var existing = _strings[i];
+            var existing = _strings[(int)i];
             if (existing == s)
             {
                 return i;
@@ -137,13 +137,13 @@ internal partial class NetworkTile
 
         if (_strings.Length <= _nextStringId)
         {
-            _strings.Resize(_strings.Length + 256);
+            Array.Resize(ref _strings, _strings.Length + 256);
         }
 
         var id = _nextStringId;
         _nextStringId++;
 
-        _strings[id] = s;
+        _strings[(int)id] = s;
         return id;
     }
 
@@ -165,14 +165,14 @@ internal partial class NetworkTile
     private void ReadAttributesFrom(Stream stream)
     {
         _nextAttributePointer = stream.ReadVarUInt32();
-        _attributes.Resize(_nextAttributePointer);
+        Array.Resize(ref _attributes, (int)_nextAttributePointer);
         for (var i = 0; i < _nextAttributePointer; i++)
         {
             _attributes[i] = (byte)stream.ReadByte();
         }
 
         _nextStringId = stream.ReadVarUInt32();
-        _strings.Resize(_nextStringId);
+        Array.Resize(ref _strings, (int)_nextStringId);
         for (var i = 0; i < _nextStringId; i++)
         {
             _strings[i] = stream.ReadWithSizeString();

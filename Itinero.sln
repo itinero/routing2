@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Instructions", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.MapMatching", "src\Itinero.MapMatching\Itinero.MapMatching.csproj", "{AA619C7F-7E45-47A1-BDE0-8420AE78B770}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Itinero.Tests.Benchmarks", "test\Itinero.Tests.Benchmarks\Itinero.Tests.Benchmarks.csproj", "{5DBCB4AA-5CC9-4123-B419-37F1955E739D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -162,6 +164,18 @@ Global
 		{AA619C7F-7E45-47A1-BDE0-8420AE78B770}.Release|x64.Build.0 = Release|Any CPU
 		{AA619C7F-7E45-47A1-BDE0-8420AE78B770}.Release|x86.ActiveCfg = Release|Any CPU
 		{AA619C7F-7E45-47A1-BDE0-8420AE78B770}.Release|x86.Build.0 = Release|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Debug|x64.Build.0 = Debug|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Debug|x86.Build.0 = Debug|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Release|x64.ActiveCfg = Release|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Release|x64.Build.0 = Release|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Release|x86.ActiveCfg = Release|Any CPU
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -176,5 +190,6 @@ Global
 		{2F07A2DD-C804-452E-BAD3-BBF8D0A5ECD7} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 		{ECF968B9-3710-4A06-A1EC-D056A9520922} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
 		{AA619C7F-7E45-47A1-BDE0-8420AE78B770} = {0DE9CEF4-2FE8-4C59-B86E-91B00C67F772}
+		{5DBCB4AA-5CC9-4123-B419-37F1955E739D} = {0EFCE06D-E8CE-461C-A1E1-0AECC1BE06E5}
 	EndGlobalSection
 EndGlobal
