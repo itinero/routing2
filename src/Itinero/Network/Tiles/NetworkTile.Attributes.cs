@@ -26,6 +26,15 @@ internal partial class NetworkTile
 
     private uint SetAttributes(IEnumerable<(string key, string value)> attributes, GlobalEdgeId? globalEdgeId)
     {
+        // ensure enough space for the globalEdgeId header (up to 20 bytes).
+        if (_attributes.Length <= _nextAttributePointer + 20)
+        {
+            _attributes.Resize(_attributes.Length + 256);
+        }
+
+        // save position before globalEdgeId — GetAttributes/GetGlobalEdgeId read from here.
+        var start = _nextAttributePointer;
+
         if (globalEdgeId == null)
         {
             _nextAttributePointer += _attributes.SetDynamicInt64Nullable(_nextAttributePointer, null);
@@ -36,11 +45,9 @@ internal partial class NetworkTile
             _nextAttributePointer += _attributes.SetDynamicUInt32(_nextAttributePointer, globalEdgeId.Value.Tail);
             _nextAttributePointer += _attributes.SetDynamicUInt32(_nextAttributePointer, globalEdgeId.Value.Head);
         }
-        
-        var start = _nextAttributePointer;
 
-        long cPos = start;
-        long p = start + 1;
+        long cPos = _nextAttributePointer;
+        long p = _nextAttributePointer + 1;
         var c = 0;
         foreach (var (key, value) in attributes)
         {

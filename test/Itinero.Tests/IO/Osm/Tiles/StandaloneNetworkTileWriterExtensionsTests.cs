@@ -2,6 +2,7 @@ using System.Linq;
 using Itinero.Indexes;
 using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
+using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.Tiles.Standalone.Writer;
 using Itinero.Tests.Mocks.Indexes;
 using OsmSharp;
@@ -113,8 +114,8 @@ public class StandaloneNetworkTileWriterExtensionsTests
         var boundaryEdge = boundaryEdges[0];
         Assert.Equal(1U, boundaryEdge.edgeTypeId);
         Assert.Equal(0U, boundaryEdge.vertex.LocalId);
-        Assert.Equal(1, boundaryEdge.globalIdFrom);
-        Assert.Equal(2, boundaryEdge.globalIdTo);
+        Assert.True(boundaryEdge.isIncoming);
+        Assert.Equal(GlobalEdgeId.Create(1, 0, 1), boundaryEdge.globalEdgeId);
         Assert.Equal(new (string Key, string value)[] { ("highway", "residential") },
             boundaryEdge.attributes.Where(x => !x.key.StartsWith("_")));
     }

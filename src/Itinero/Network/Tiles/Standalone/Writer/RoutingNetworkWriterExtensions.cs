@@ -1,6 +1,7 @@
-﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Data;
+using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.Writer;
 
 namespace Itinero.Network.Tiles.Standalone.Writer;
@@ -22,80 +23,137 @@ public static class RoutingNetworkWriterExtensions
         // add the tile without boundary crossings.
         writer.AddTile(tile.NetworkTile);
 
-        // add the boundary crossings for tiles that are already loaded.
-        var boundaryEdges = new Dictionary<BoundaryEdgeId, EdgeId>();
-        foreach (var crossing in tile.GetBoundaryCrossings())
+        // register all GlobalEdgeId → EdgeId mappings from the tile's internal edges.
+        var tileEnumerator = new NetworkTileEnumerator();
+        tileEnumerator.MoveTo(tile.NetworkTile);
+        var tileId = tile.TileId;
+        for (uint v = 0; v < tile.NetworkTile.VertexCount; v++)
         {
-            // add crossings in target vertex already in global id set.
-            var other = crossing.isToTile ? crossing.globalIdFrom : crossing.globalIdTo;
-            if (globalIdSet.VertexIdSet.TryGet(other, out var otherVertexId))
+            var vertexId = new VertexId(tileId, v);
+            if (!tileEnumerator.MoveTo(vertexId)) continue;
+
+            while (tileEnumerator.MoveNext())
             {
-                // add the edge.
-                EdgeId newEdge;
-                if (crossing.isToTile)
+                // only process forward edges to avoid double registration.
+                if (!tileEnumerator.Forward) continue;
+
+                var globalEdgeId = tileEnumerator.GlobalEdgeId;
+                if (globalEdgeId != null)
                 {
-                    newEdge = writer.AddEdge(otherVertexId, crossing.vertex,
-                        ArraySegment<(double longitude, double latitude, float? e)>.Empty,
-                        crossing.attributes, crossing.edgeTypeId, crossing.length);
+                    globalIdSet.EdgeIdSet.Set(globalEdgeId.Value, tileEnumerator.EdgeId);
+                }
+            }
+        }
+
+        // process boundary crossings.
+        foreach (var (isIncoming, globalEdgeId, vertex, attributes, edgeTypeId) in tile.GetBoundaryCrossings())
+        {
+            if (globalIdSet.PendingBoundaryCrossings.TryGetValue(globalEdgeId, out var pending))
+            {
+                // match found - the other tile already loaded its half, create the boundary edge.
+                EdgeId newEdge;
+                if (isIncoming)
+                {
+                    // isIncoming=true: vertex is at way tail, pending.vertex is at way head.
+                    newEdge = writer.AddEdge(vertex, pending.vertex, null, attributes, edgeTypeId);
                 }
                 else
                 {
-                    newEdge = writer.AddEdge(crossing.vertex, otherVertexId,
-                        ArraySegment<(double longitude, double latitude, float? e)>.Empty,
-                        crossing.attributes, crossing.edgeTypeId, crossing.length);
+                    // isIncoming=false: vertex is at way head, pending.vertex is at way tail.
+                    newEdge = writer.AddEdge(pending.vertex, vertex, null, attributes, edgeTypeId);
                 }
 
-                // register globally and index crossings.
-                boundaryEdges[crossing.id] = newEdge;
+                // register boundary edge's GlobalEdgeId → EdgeId mapping.
+                globalIdSet.EdgeIdSet.Set(globalEdgeId, newEdge);
+                globalIdSet.PendingBoundaryCrossings.Remove(globalEdgeId);
             }
-
-            // update global id set with the vertex in the tile.
-            globalIdSet.VertexIdSet.Set(crossing.isToTile ? crossing.globalIdTo : crossing.globalIdFrom,
-                crossing.vertex);
+            else
+            {
+                // no match yet - store as pending (materialize attributes).
+                globalIdSet.PendingBoundaryCrossings[globalEdgeId] =
+                    (vertex, attributes.ToArray(), edgeTypeId, isIncoming);
+            }
         }
 
-        // read and store all global edge ids.
-        foreach (var (globalEdgeId, edgeId, boundaryEdgeId) in tile.GetGlobalEdgeIds())
+        // resolve global restrictions from this tile.
+        foreach (var (edges, isProhibitory, turnCostTypeId, restrictionAttributes) in tile.GetGlobalRestrictions())
         {
-            if (edgeId != null)
+            var globalRestriction = new GlobalRestriction(
+                edges.Select(e => e.globalEdgeId),
+                isProhibitory,
+                restrictionAttributes.ToArray());
+
+            if (!TryResolveRestriction(globalRestriction, globalIdSet, writer))
             {
-                globalIdSet.EdgeIdSet.Set(globalEdgeId, edgeId.Value);
-                continue;
+                globalIdSet.PendingRestrictions.Add(globalRestriction);
             }
-
-            if (boundaryEdgeId == null) throw new Exception("global edge has to have at least one edge id");
-            if (!boundaryEdges.TryGetValue(boundaryEdgeId.Value, out var newEdgeId)) continue;
-
-            globalIdSet.EdgeIdSet.Set(globalEdgeId, newEdgeId);
         }
 
-        // add boundary crossing turn cost or register globally.
-        foreach (var crossingTurnCosts in tile.GetGlobalTurnCost())
+        // retry pending restrictions with newly available edges.
+        for (var i = globalIdSet.PendingRestrictions.Count - 1; i >= 0; i--)
         {
-            // check if all edges are in the network and fetch them.
-            var hasAllEdges = true;
-            var edges = crossingTurnCosts.edges.Select(x =>
+            if (TryResolveRestriction(globalIdSet.PendingRestrictions[i], globalIdSet, writer))
             {
-                if (globalIdSet.EdgeIdSet.TryGet(x.globalEdgeId, out var newEdgeId)) return (newEdgeId, x.forward);
-
-                hasAllEdges = false;
-                return (EdgeId.Empty, false);
-            }).ToArray();
-
-            // if all edges are there add turn costs.
-            // if not all edges are there it will be added when the last tile containing an edge for this restriction is added.
-            if (hasAllEdges)
-            {
-                // figure out what vertex the turn costs need to be added at.
-                var edgeEnumerator = writer.GetEdgeEnumerator();
-                if (!edgeEnumerator.MoveTo(edges[^1].Item1, edges[^1].Item2))
-                    throw new Exception("edge should exist");
-                var turnCostVertex = edgeEnumerator.Tail;
-
-                writer.AddTurnCosts(turnCostVertex, crossingTurnCosts.attributes,
-                    edges.Select(x => x.Item1).ToArray(),
-                    crossingTurnCosts.costs, null, crossingTurnCosts.turnCostType);
+                globalIdSet.PendingRestrictions.RemoveAt(i);
             }
+        }
+    }
+
+    private static bool TryResolveRestriction(GlobalRestriction globalRestriction,
+        GlobalNetworkManager globalIdSet, RoutingNetworkWriter writer)
+    {
+        // try to resolve all GlobalEdgeIds to EdgeIds.
+        if (!globalRestriction.TryBuildNetworkRestriction(GetEdge, out var networkRestriction))
+            return false;
+
+        if (networkRestriction!.Count < 2) return true;
+
+        // get last edge and determine turn cost vertex.
+        var last = networkRestriction[^1];
+        var edgeEnumerator = writer.GetEdgeEnumerator();
+        if (!edgeEnumerator.MoveTo(last.edge, last.forward))
+            return false;
+        var turnCostVertex = edgeEnumerator.Tail;
+
+        var secondToLast = networkRestriction[^2];
+
+        if (networkRestriction.IsProhibitory)
+        {
+            // prohibitory: add a single cost entry forbidding this specific turn.
+            var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
+            writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                [secondToLast.edge, last.edge], costs,
+                networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+        }
+        else
+        {
+            // mandatory: add cost for every *other* edge at the vertex.
+            if (!edgeEnumerator.MoveTo(secondToLast.edge, secondToLast.forward))
+                return false;
+            var to = edgeEnumerator.Head;
+
+            edgeEnumerator.MoveTo(to);
+            while (edgeEnumerator.MoveNext())
+            {
+                if (edgeEnumerator.EdgeId == secondToLast.edge ||
+                    edgeEnumerator.EdgeId == last.edge) continue;
+
+                var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
+                writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                    [secondToLast.edge, edgeEnumerator.EdgeId], costs,
+                    networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+            }
+        }
+
+        return true;
+
+        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid)
+        {
+            if (globalIdSet.EdgeIdSet.TryGet(geid, out var edgeId))
+                return (edgeId, true);
+            if (globalIdSet.EdgeIdSet.TryGet(geid.GetInverted(), out edgeId))
+                return (edgeId, false);
+            return null;
         }
     }
 }

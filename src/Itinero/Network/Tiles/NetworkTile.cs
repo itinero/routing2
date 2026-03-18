@@ -286,9 +286,7 @@ internal partial class NetworkTile
 
         size = EncodePointer(_edges, _nextEdgeId, attributesPointer);
         _nextEdgeId += size;
-        
-        _nextEdgeId += SetDynamicUIn32Nullable(_edges, _nextEdgeId, length);
-        
+
         return edgeId.Value;
     }
 
