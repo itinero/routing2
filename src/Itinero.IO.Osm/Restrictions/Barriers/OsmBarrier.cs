@@ -18,7 +18,7 @@ public class OsmBarrier
     /// The node where the barrier exists.
     /// </summary>
     public Node Node { get; }
-    
+
     /// <summary>
     /// The way(s).
     /// </summary>

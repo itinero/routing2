@@ -34,7 +34,8 @@ public class GlobalNetworkManager
     /// When the other tile loads and has a crossing with the same GlobalEdgeId, it creates the edge.
     /// </summary>
     public Dictionary<GlobalEdgeId, (VertexId vertex, IEnumerable<(string key, string value)> attributes,
-        uint edgeTypeId, bool isIncoming)> PendingBoundaryCrossings { get; } = new();
+        uint edgeTypeId, bool isIncoming)> PendingBoundaryCrossings
+    { get; } = new();
 
     /// <summary>
     /// Restrictions that couldn't be resolved yet because not all edges are available.

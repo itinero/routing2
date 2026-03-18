@@ -15,7 +15,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Tags = new TagsCollection(
                 new Tag("type", "restriction"),
                 new Tag("restriction", "no_right_turn"))
@@ -33,7 +34,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Tags = new TagsCollection(
                 new Tag("type", "restriction"),
                 new Tag("restriction", "only_straight_on"))
@@ -51,7 +53,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Tags = new TagsCollection(
                 new Tag("type", "multipolygon"))
         };
@@ -78,7 +81,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Tags = new TagsCollection(
                 new Tag("type", "restriction"),
                 new Tag("restriction:bicycle", "no_left_turn"))
@@ -96,7 +100,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Tags = new TagsCollection(
                 new Tag("type", "restriction"),
                 new Tag("restriction", "not_a_real_restriction"))
@@ -118,7 +123,8 @@ public class OsmTurnRestrictionParserTests
         };
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Members = new[]
             {
                 new RelationMember(1, "from", OsmGeoType.Way),
@@ -154,7 +160,8 @@ public class OsmTurnRestrictionParserTests
         };
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Members = new[]
             {
                 new RelationMember(1, "from", OsmGeoType.Way),
@@ -189,7 +196,8 @@ public class OsmTurnRestrictionParserTests
         };
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Members = new[]
             {
                 new RelationMember(1, "from", OsmGeoType.Way),
@@ -215,7 +223,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Tags = new TagsCollection(new Tag("type", "multipolygon"))
         };
 
@@ -232,7 +241,8 @@ public class OsmTurnRestrictionParserTests
         var parser = new OsmTurnRestrictionParser();
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Members = new[]
             {
                 new RelationMember(1, "from", OsmGeoType.Way),
@@ -258,7 +268,8 @@ public class OsmTurnRestrictionParserTests
         };
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Members = new[]
             {
                 new RelationMember(1, "from", OsmGeoType.Way),
@@ -285,7 +296,8 @@ public class OsmTurnRestrictionParserTests
         };
         var relation = new Relation
         {
-            Id = 1, Version = 1,
+            Id = 1,
+            Version = 1,
             Members = new[]
             {
                 new RelationMember(1, "from", OsmGeoType.Way),

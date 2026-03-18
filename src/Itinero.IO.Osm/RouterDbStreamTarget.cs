@@ -60,7 +60,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
             // find the original node to get tags - check if it's a barrier.
             if (!_barrierParser.TryParse(node, ways, out var barrier)) continue;
 
-            ResolveAndAddTurnCosts(barrier.ToGlobalNetworkRestrictions());
+            this.ResolveAndAddTurnCosts(barrier.ToGlobalNetworkRestrictions());
         }
 
         return false;
@@ -219,7 +219,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (restriction == null)
             throw new Exception("restriction parsing was successful but restriction is null");
 
-        ResolveAndAddTurnCosts(restriction.ToGlobalNetworkRestrictions());
+        this.ResolveAndAddTurnCosts(restriction.ToGlobalNetworkRestrictions());
     }
 
     private void ResolveAndAddTurnCosts(IEnumerable<GlobalRestriction> globalRestrictions)

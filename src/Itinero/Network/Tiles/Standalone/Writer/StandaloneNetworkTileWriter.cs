@@ -120,7 +120,7 @@ public class StandaloneNetworkTileWriter
 
         return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
     }
-    
+
     /// <summary>
     /// Adds a global restriction for processing when the tile is loaded.
     /// </summary>
@@ -132,11 +132,11 @@ public class StandaloneNetworkTileWriter
     {
         // get the turn cost type id.
         var turnCostTypeId = _turnCostTypeMap.func(attributes);
-        
+
         // write to tile.
-        _tile.AddGlobalRestriction(sequence, isProhibitory,turnCostTypeId, attributes);
+        _tile.AddGlobalRestriction(sequence, isProhibitory, turnCostTypeId, attributes);
     }
-    
+
     /// <summary>
     /// Adds turn costs.
     /// </summary>
@@ -177,7 +177,7 @@ public class StandaloneNetworkTileWriter
     /// <param name="tail">The head vertex.</param>
     /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="attributes">The attributes.</param>
-    public void AddIncomingBoundaryCrossing(GlobalEdgeId globalEdgeId,  VertexId tail,
+    public void AddIncomingBoundaryCrossing(GlobalEdgeId globalEdgeId, VertexId tail,
         uint edgeTypeId, IEnumerable<(string key, string value)> attributes)
     {
         _tile.AddBoundaryCrossing(true, globalEdgeId, tail, attributes, edgeTypeId);

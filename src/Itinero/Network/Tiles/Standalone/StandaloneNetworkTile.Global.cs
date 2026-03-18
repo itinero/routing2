@@ -114,7 +114,7 @@ public partial class StandaloneNetworkTile
             yield return (edges, isProhibitory, turnCostType, this.GetAttributes(a));
         }
     }
-    
+
     private void WriteGlobal(Stream stream)
     {
         stream.WriteVarUInt32(_globalRestrictionsPointer);

@@ -82,11 +82,11 @@ public static class StandaloneNetworkTileWriterExtensions
 
         var globalRestrictions = new List<GlobalRestriction>();
         var globalRestrictionEdges = new Dictionary<GlobalEdgeId, EdgeId?>();
-        
+
         var restrictionMembers = new Dictionary<long, Way?>();
         var restrictionParser = new OsmTurnRestrictionParser();
         var barrierNodes = new Dictionary<long, List<Way>>();
-        
+
         var barrierParser = new OsmBarrierParser();
         while (enumerator.MoveNext())
         {
@@ -128,7 +128,7 @@ public static class StandaloneNetworkTileWriterExtensions
                         for (var n = 0; n < way.Nodes.Length; n++)
                         {
                             var wayNode = way.Nodes[n];
-                            
+
                             // if the node is a barrier, at this way to the barrier nodes.
                             if (barrierNodes.TryGetValue(wayNode, out var barrierNodeWays))
                             {
@@ -322,17 +322,17 @@ public static class StandaloneNetworkTileWriterExtensions
         while (r < globalRestrictions.Count)
         {
             var globalNetworkRestriction = globalRestrictions[r];
-            
+
             // try to convert first, and see if all edges are there
             if (!globalNetworkRestriction.TryBuildNetworkRestriction(GetEdgeForGlobalEdge, out var networkRestriction))
             {
                 // the restriction could not be converted,
-                
+
                 //  one of it's edge is a boundary edge and we are working on a single tile right now.
                 r++;
                 continue;
             }
-            
+
             // TODO: log something?
             // all the edges in the restriction are inside this tile.
             if (networkRestriction!.Count < 2)
@@ -357,7 +357,7 @@ public static class StandaloneNetworkTileWriterExtensions
                 writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                     [secondToLast.edge, last.edge], costs,
                     networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
-                
+
                 // best case, the restriction was converted and can be removed.
                 globalRestrictions.RemoveAt(r);
             }
@@ -366,17 +366,17 @@ public static class StandaloneNetworkTileWriterExtensions
                 // hard, we need to add a cost for every *other* edge than then one in the restriction.
                 tileEnumerator.MoveTo(secondToLast.edge, secondToLast.forward);
                 var to = tileEnumerator.Head;
-                
+
                 // check if the vertex of the restriction is a boundary vertex.
                 if (boundaryVertices.Contains(to)) continue;
-                
+
                 // add all the edge other than the one that is in the restriction as restricted turns.
                 tileEnumerator.MoveTo(to);
                 while (tileEnumerator.MoveNext())
                 {
                     if (tileEnumerator.EdgeId == secondToLast.edge ||
                         tileEnumerator.EdgeId == lastEdge.EdgeId) continue;
-                
+
                     // easy, we only add a single cost.
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                     writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
@@ -385,7 +385,7 @@ public static class StandaloneNetworkTileWriterExtensions
                 }
             }
         }
-        
+
         // add global restrictions.
         // also add all edge ids that are already known as an index to use during processing of the tile.
         foreach (var globalNetworkRestriction in globalRestrictions)
@@ -397,8 +397,8 @@ public static class StandaloneNetworkTileWriterExtensions
 
                 return (x, localEdge.Value.edge);
             });
-            
-            writer.AddGlobalRestriction(edges, globalNetworkRestriction.IsProhibitory, 
+
+            writer.AddGlobalRestriction(edges, globalNetworkRestriction.IsProhibitory,
                 globalNetworkRestriction.Attributes);
         }
 

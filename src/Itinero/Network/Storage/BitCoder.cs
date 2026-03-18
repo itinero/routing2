@@ -363,22 +363,22 @@ internal static class BitCoder
         value = ZigZagDecode32(unsigned);
         return c;
     }
-    
+
     public static uint ZigZagEncode32(int value)
     {
         return (uint)((value << 1) ^ (value >> 31));
     }
-    
+
     public static int ZigZagDecode32(uint value)
     {
         return (int)((value >> 1) ^ (~(value & 1) + 1));
     }
-    
+
     public static ulong ZigZagEncode64(long value)
     {
         return (ulong)((value << 1) ^ (value >> 63));
     }
-    
+
     public static long ZigZagDecode64(ulong value)
     {
         return (long)((value >> 1) ^ (~(value & 1) + 1));
@@ -408,7 +408,7 @@ internal static class BitCoder
         value = unsigned == 0 ? null : (uint?)unsigned - 1;
         return c;
     }
-    
+
     public static byte SetDynamicUInt64Nullable(this ArrayBase<byte> data, long i, ulong? value)
     {
         value = value == null ? 0 : value + 1;
@@ -425,7 +425,7 @@ internal static class BitCoder
     public static byte SetDynamicInt64Nullable(this ArrayBase<byte> data, long i, long? value)
     {
         if (value == null) return data.SetDynamicUInt64(i, 0);
-        
+
         var unsigned = ZigZagEncode64(value.Value) + 1;
         return data.SetDynamicUInt64(i, unsigned);
     }
@@ -475,9 +475,9 @@ internal static class BitCoder
         var c = data.GetDynamicInt64(p, out var edgeId);
         c += data.GetDynamicUInt32(p + c, out var tail);
         c += data.GetDynamicUInt32(p + c, out var head);
-        
+
         globalEdgeId = GlobalEdgeId.Create(edgeId, tail, head);
-        
+
         return c;
     }
 

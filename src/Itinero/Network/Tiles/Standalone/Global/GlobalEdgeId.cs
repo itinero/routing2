@@ -19,7 +19,7 @@ public readonly struct GlobalEdgeId : IEquatable<GlobalEdgeId>
     {
         if (tail > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(tail));
         if (head > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(head));
-        
+
         return new GlobalEdgeId(edgeId, (ushort)tail, (ushort)head);
     }
 
@@ -27,7 +27,7 @@ public readonly struct GlobalEdgeId : IEquatable<GlobalEdgeId>
     {
         if (tail > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(tail));
         if (head > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(head));
-        
+
         return new GlobalEdgeId(edgeId, (ushort)tail, (ushort)head);
     }
 
@@ -60,7 +60,7 @@ public readonly struct GlobalEdgeId : IEquatable<GlobalEdgeId>
     {
         return $"{this.EdgeId}_{this.Tail}->{this.Head}";
     }
-    
+
     public bool Equals(GlobalEdgeId other)
     {
         return this.EdgeId == other.EdgeId && this.Tail == other.Tail && this.Head == other.Head;

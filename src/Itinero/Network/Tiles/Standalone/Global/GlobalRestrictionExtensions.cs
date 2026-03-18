@@ -20,7 +20,7 @@ public static class GlobalRestrictionExtensions
         [MaybeNullWhen(false)] out NetworkRestriction? networkRestriction)
     {
         networkRestriction = null;
-        
+
         var edges = new List<(EdgeId edge, bool forward)>();
         foreach (var globalId in globalNetworkRestriction)
         {

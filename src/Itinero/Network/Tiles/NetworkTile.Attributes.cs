@@ -99,7 +99,7 @@ internal partial class NetworkTile
     internal IEnumerable<(string key, string value)> GetAttributes(uint? pointer)
     {
         if (pointer == null) yield break;
-        
+
         var p = pointer.Value;
         p += _attributes.GetDynamicInt64Nullable(p, out var edgeId);
         if (edgeId != null)

@@ -20,16 +20,16 @@ public static class OsmBarrierExtensions
     {
         var attributes = osmBarrier.Node.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
                          ArraySegment<(string key, string value)>.Empty;
-        
+
         foreach (var tailHop in osmBarrier.GetTailHops())
-        foreach (var otherHop in osmBarrier.GetTailHops())
-        {
-            if (tailHop == otherHop) continue;
+            foreach (var otherHop in osmBarrier.GetTailHops())
+            {
+                if (tailHop == otherHop) continue;
 
-            var headHop = otherHop.GetInverted();
+                var headHop = otherHop.GetInverted();
 
-            yield return new GlobalRestriction([tailHop, headHop], true, attributes);
-        }
+                yield return new GlobalRestriction([tailHop, headHop], true, attributes);
+            }
     }
 
     private static IEnumerable<GlobalEdgeId> GetTailHops(
@@ -49,14 +49,14 @@ public static class OsmBarrierExtensions
                 yield return GlobalEdgeId.Create(fromWay.Id!.Value, tail: previous, head: n);
                 previous = n;
             }
-            
+
             previous = fromWay.Nodes.Length - 1;
             for (var n = fromWay.Nodes.Length - 2; n >= 0; n--)
             {
                 var current = fromWay.Nodes[n];
                 if (current != node) continue;
                 if (n == previous) continue;
-                    
+
                 yield return GlobalEdgeId.Create(fromWay.Id!.Value, tail: previous, head: n);
                 previous = n;
             }

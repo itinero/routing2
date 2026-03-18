@@ -18,14 +18,14 @@ public static class OsmTurnRestrictionExtensions
         if (viaSequences == null) yield break;
 
         foreach (var tailEdge in osmTurnRestriction.GetTailHops())
-        foreach (var headEdge in osmTurnRestriction.GetHeadHops())
-        {
-            IEnumerable<GlobalEdgeId> edges = [tailEdge];
-            edges = edges.Concat(viaSequences).Concat([headEdge]);
-            
-            yield return new GlobalRestriction(edges,
-                osmTurnRestriction.IsProbibitory, osmTurnRestriction.Attributes);
-        }
+            foreach (var headEdge in osmTurnRestriction.GetHeadHops())
+            {
+                IEnumerable<GlobalEdgeId> edges = [tailEdge];
+                edges = edges.Concat(viaSequences).Concat([headEdge]);
+
+                yield return new GlobalRestriction(edges,
+                    osmTurnRestriction.IsProbibitory, osmTurnRestriction.Attributes);
+            }
     }
 
     private static long? GetViaTail(this OsmTurnRestriction osmTurnRestriction)
@@ -51,7 +51,7 @@ public static class OsmTurnRestrictionExtensions
                 return fromWay.Nodes[0];
             }
         }
-        
+
         // not cool, probably restriction not mapped correctly.
         return null;
     }
@@ -76,7 +76,7 @@ public static class OsmTurnRestrictionExtensions
             }
         }
     }
-    
+
     private static long? GetViaHead(this OsmTurnRestriction osmTurnRestriction)
     {
         // assume the restriction has a via-node like most of them.
@@ -100,7 +100,7 @@ public static class OsmTurnRestrictionExtensions
                 return toWay.Nodes[0];
             }
         }
-        
+
         return null;
     }
 
@@ -125,7 +125,7 @@ public static class OsmTurnRestrictionExtensions
             }
         }
     }
-    
+
     private static IReadOnlyList<GlobalEdgeId>? GetViaHops(
         this OsmTurnRestriction osmTurnRestriction)
     {
@@ -136,7 +136,7 @@ public static class OsmTurnRestrictionExtensions
 
         // via is a node if true.
         if (tailNode.Value == headNode.Value) return ArraySegment<GlobalEdgeId>.Empty;
-        
+
         // there have to be via ways at this point.
         // it is assumed ways are split to follow along the sequence.
         var currentNode = tailNode.Value;

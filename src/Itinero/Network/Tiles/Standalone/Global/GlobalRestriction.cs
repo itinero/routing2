@@ -40,7 +40,7 @@ public class GlobalRestriction : IReadOnlyList<GlobalEdgeId>
         this.IsProhibitory = isProhibitory;
         this.Attributes = attributes;
     }
-    
+
     /// <summary>
     /// Returns true if the restriction is negative.
     /// </summary>
