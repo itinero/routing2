@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
-using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Xunit;
@@ -12,372 +11,207 @@ namespace Itinero.Tests.Network.Search.Islands;
 
 public class IslandBuilderTests
 {
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_SingleEdge_ShouldReturnTrue()
+    private static async Task BuildIslands(RouterDb routerDb, Profile profile, IEnumerable<EdgeId> edges)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 2
-        });
-        EdgeId edge;
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edge = writer.AddEdge(vertex1, vertex2);
-        }
+        var network = routerDb.Latest;
 
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
-
-        Assert.True(isOnIsland);
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_TwoEdges_MaxSizeTwo_ShouldReturnFalse()
-    {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 2
-        });
-        EdgeId edge;
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edge = writer.AddEdge(vertex1, vertex2);
-            writer.AddEdge(vertex2, vertex3);
-        }
-
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
-
-        Assert.False(isOnIsland);
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_TwoEdgesWithVertexRestriction_MaxSizeTwo_ShouldReturnTrue()
-    {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 2
-        });
-        var edges = new List<EdgeId>();
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edges.Add(writer.AddEdge(vertex1, vertex2));
-            edges.Add(writer.AddEdge(vertex2, vertex3));
-
-            writer.AddTurnCosts(vertex2, new[] { ("barrier", "bollard") },
-                edges.ToArray(), new uint[,] { { 0, 1 }, { 0, 0 } });
-            writer.AddTurnCosts(vertex2, new[] { ("barrier", "bollard") },
-                System.Linq.Enumerable.Reverse(edges).ToArray(), new uint[,] { { 0, 1 }, { 0, 0 } });
-        }
-
-        var profile = new DefaultProfile(getTurnCostFactor: (_) => TurnCostFactor.Binary);
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(profile), edges[0]);
-
-        Assert.True(isOnIsland);
-
-        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(profile), edges[1]);
-
-        Assert.True(isOnIsland);
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_TwoEdges_MaxSizeThree_ShouldReturnTrue()
-    {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 3
-        });
-        EdgeId edge;
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edge = writer.AddEdge(vertex1, vertex2);
-            writer.AddEdge(vertex2, vertex3);
-        }
-
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
-
-        Assert.True(isOnIsland);
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_TwoEdgesOneWay_MinSizeTwo_ShouldReturnTrue()
-    {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 2
-        });
-        EdgeId edge;
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edge = writer.AddEdge(vertex1, vertex2);
-            writer.AddEdge(vertex2, vertex3);
-        }
-
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(1, 0, 1, 0, true))), edge);
-
-        Assert.True(isOnIsland);
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_ThreeEdgeOneWayLoop_ShouldBeOneIslands()
-    {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 3
-        });
-        EdgeId edge;
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edge = writer.AddEdge(vertex1, vertex2);
-            writer.AddEdge(vertex2, vertex3);
-            writer.AddEdge(vertex3, vertex1);
-        }
-
-        var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-            routerDb.Latest.GetCostFunctionFor(new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(1, 0, 1, 0, true))), edge);
-
-        Assert.False(isOnIsland);
-
-        Assert.Single(labels.Islands);
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_OneEdgeWithThreeEdgeLoop_ShouldBeOneIsland()
-    {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 4
-        });
-        var edges = new List<EdgeId>();
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edges.Add(writer.AddEdge(vertex1, vertex2));
-            edges.Add(writer.AddEdge(vertex2, vertex3));
-            edges.Add(writer.AddEdge(vertex3, vertex4));
-            edges.Add(writer.AddEdge(vertex4, vertex2));
-        }
-
-        var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
+        // build islands for all tiles that contain edges
+        var tiles = new HashSet<uint>();
         foreach (var edge in edges)
         {
-            await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-                routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edge);
+            tiles.Add(edge.TileId);
         }
 
-        Assert.Single(labels.Islands);
+        foreach (var tileId in tiles)
+        {
+            await IslandBuilder.BuildForTileAsync(network, profile, tileId, CancellationToken.None);
+        }
+    }
+
+    private static bool IsEdgeOnIsland(RouterDb routerDb, Profile profile, EdgeId edgeId)
+    {
+        var result = IslandBuilder.ResolveEdgeAsync(routerDb.Latest, profile, edgeId, CancellationToken.None).Result;
+        return result == true; // true = island, false/null = not island
     }
 
     [Fact]
-    public async Task IslandBuilder_IsOnIsland_LoopWithOneWay_ShouldBeOneIsland()
+    public async Task IslandBuilder_SingleEdge_ShouldBeIsland()
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
+        EdgeId edge;
+        using (var writer = routerDb.GetMutableNetwork())
         {
-            MaxIslandSize = 3
-        });
+            var v1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            var v2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            edge = writer.AddEdge(v1, v2);
+        }
+
+        await BuildIslands(routerDb, new DefaultProfile(), new[] { edge });
+        Assert.True(IsEdgeOnIsland(routerDb, new DefaultProfile(), edge));
+    }
+
+    [Fact]
+    public async Task IslandBuilder_TwoEdges_MaxSizeTwo_ShouldNotBeIsland()
+    {
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
         var edges = new List<EdgeId>();
         using (var writer = routerDb.GetMutableNetwork())
         {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edges.Add(writer.AddEdge(vertex1, vertex2, attributes: new[] { ("oneway", "yes") }));
-            edges.Add(writer.AddEdge(vertex2, vertex3));
-            edges.Add(writer.AddEdge(vertex3, vertex1));
+            var v1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            var v2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            var v3 = writer.AddVertex(4.797506332397461, 51.26874845584085);
+            edges.Add(writer.AddEdge(v1, v2));
+            edges.Add(writer.AddEdge(v2, v3));
         }
 
-        var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
-        var profile = new DefaultProfile(getEdgeFactor: (a) =>
-        {
-            if (!a.Any()) return new EdgeFactor(1, 1, 1, 1);
-
-            return new EdgeFactor(1, 0, 1, 0);
-        });
-
-        Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-            routerDb.Latest.GetCostFunctionFor(profile), edges[0]));
-        Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-            routerDb.Latest.GetCostFunctionFor(profile), edges[1]));
-        Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-            routerDb.Latest.GetCostFunctionFor(profile), edges[2]));
-
-        Assert.Single(labels.Islands);
+        await BuildIslands(routerDb, new DefaultProfile(), edges);
+        Assert.False(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[0]));
+        Assert.False(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[1]));
     }
 
     [Fact]
-    public async Task IslandBuilder_IsOnIsland_OneIslandWithNonConnectedEdge_ShouldBeTwoIslands()
+    public async Task IslandBuilder_TwoEdges_MaxSizeThree_ShouldBeIsland()
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 3
-        });
-        EdgeId islandEdge;
-        EdgeId nonIslandEdge;
-        using (var writer = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            nonIslandEdge = writer.AddEdge(vertex1, vertex2);
-            writer.AddEdge(vertex2, vertex3);
-            writer.AddEdge(vertex3, vertex1);
-            islandEdge = writer.AddEdge(vertex4, vertex5);
-        }
-
-        var profile = new DefaultProfile(getEdgeFactor: (a) =>
-        {
-            if (!a.Any()) return new EdgeFactor(1, 1, 1, 1);
-
-            return new EdgeFactor(1, 0, 1, 0);
-        });
-
-        var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
-        Assert.True(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-            routerDb.Latest.GetCostFunctionFor(profile), islandEdge));
-        Assert.False(await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels,
-            routerDb.Latest.GetCostFunctionFor(profile), nonIslandEdge));
-    }
-
-    [Fact]
-    public async Task IslandBuilder_IsOnIsland_EdgeConnectedToNotOnIslandNeighbour_ShouldReturnFalse()
-    {
-        var routerDb = new RouterDb();
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 3 });
         var edges = new List<EdgeId>();
         using (var writer = routerDb.GetMutableNetwork())
         {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edges.Add(writer.AddEdge(vertex1, vertex2));
-            edges.Add(writer.AddEdge(vertex2, vertex3));
+            var v1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            var v2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            var v3 = writer.AddVertex(4.797506332397461, 51.26874845584085);
+            edges.Add(writer.AddEdge(v1, v2));
+            edges.Add(writer.AddEdge(v2, v3));
         }
 
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize),
-            routerDb.Latest.GetCostFunctionFor(new DefaultProfile()), edges[0], e =>
-            {
-                if (e.EdgeId == edges[1]) return false;
-
-                return null;
-            });
-
-        Assert.False(isOnIsland);
+        await BuildIslands(routerDb, new DefaultProfile(), edges);
+        Assert.True(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[0]));
+        Assert.True(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[1]));
     }
 
     [Fact]
-    public async Task IslandBuilder_IsOnIsland_EdgeConnectedOneWithOneWay_ShouldReturnTrue()
+    public async Task IslandBuilder_TwoEdgesOneWay_ShouldBeIsland()
     {
-        var routerDb = new RouterDb();
+        // Two one-way edges: they don't connect bidirectionally,
+        // and they don't form a loop, so they're islands.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
         var edges = new List<EdgeId>();
         using (var writer = routerDb.GetMutableNetwork())
         {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edges.Add(writer.AddEdge(vertex1, vertex2));
-            edges.Add(writer.AddEdge(vertex2, vertex3, attributes: new[] { ("oneway", "yes") }));
-            edges.Add(writer.AddEdge(vertex3, vertex4));
+            var v1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            var v2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            var v3 = writer.AddVertex(4.797506332397461, 51.26874845584085);
+            edges.Add(writer.AddEdge(v1, v2, attributes: new[] { ("oneway", "yes") }));
+            edges.Add(writer.AddEdge(v2, v3, attributes: new[] { ("oneway", "yes") }));
         }
 
-        var labels = new IslandLabels(2);
-        var profile = new DefaultProfile(getEdgeFactor: (a) =>
+        var profile = new DefaultProfile(getEdgeFactor: a =>
         {
-            if (!a.Any()) return new EdgeFactor(1, 1, 1, 1);
-
-            return new EdgeFactor(1, 0, 1, 0);
+            if (a.Any(x => x.key == "oneway")) return new EdgeFactor(1, 0, 1, 0);
+            return new EdgeFactor(1, 1, 1, 1);
         });
-        var costFunction = routerDb.Latest.GetCostFunctionFor(profile);
-        Func<IEdgeEnumerator, bool?> isOnIslandAlready = e =>
-        {
-            if (e.EdgeId == edges[0]) return false;
 
-            return null;
-        };
-
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[0], isOnIslandAlready);
-        Assert.False(isOnIsland); // we hardcode this not being on an island.
-        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[1], isOnIslandAlready);
-        Assert.True(isOnIsland);
-        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[2], isOnIslandAlready);
-        Assert.True(isOnIsland);
+        await BuildIslands(routerDb, profile, edges);
+        Assert.True(IsEdgeOnIsland(routerDb, profile, edges[0]));
+        Assert.True(IsEdgeOnIsland(routerDb, profile, edges[1]));
     }
 
     [Fact]
-    public async Task IslandBuilder_IsOnIsland_EdgeConnectedOneWithTwoOneWays_ShouldReturnTrue()
+    public async Task IslandBuilder_OneWayConnectedToBidirectionalOnBothEnds_ShouldNotBeIsland()
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration()
-        {
-            MaxIslandSize = 2,
-        });
+        // One-way edge with bidirectional edges at both tail and head.
+        // Both ends connect to non-island components → not an island.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
         var edges = new List<EdgeId>();
         using (var writer = routerDb.GetMutableNetwork())
         {
-            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
-            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
-            edges.Add(writer.AddEdge(vertex1, vertex2));
-            edges.Add(writer.AddEdge(vertex2, vertex3, attributes: new[] { ("oneway", "yes") }));
-            edges.Add(writer.AddEdge(vertex1, vertex4, attributes: new[] { ("oneway", "yes") }));
-            edges.Add(writer.AddEdge(vertex3, vertex4));
+            var v1 = writer.AddVertex(4.792, 51.265);
+            var v2 = writer.AddVertex(4.794, 51.266);
+            var v3 = writer.AddVertex(4.796, 51.267);
+            var v4 = writer.AddVertex(4.793, 51.264);
+            var v5 = writer.AddVertex(4.798, 51.268);
+            // bidirectional at tail end
+            edges.Add(writer.AddEdge(v4, v1));
+            edges.Add(writer.AddEdge(v1, v2));
+            // one-way edge
+            edges.Add(writer.AddEdge(v2, v3, attributes: new[] { ("oneway", "yes") }));
+            // bidirectional at head end
+            edges.Add(writer.AddEdge(v3, v5));
         }
 
-        var labels = new IslandLabels(routerDb.Latest.IslandManager.MaxIslandSize);
-        var profile = new DefaultProfile(getEdgeFactor: (a) =>
+        var profile = new DefaultProfile(getEdgeFactor: a =>
         {
-            if (!a.Any()) return new EdgeFactor(1, 1, 1, 1);
-
-            return new EdgeFactor(1, 0, 1, 0);
+            if (a.Any(x => x.key == "oneway")) return new EdgeFactor(1, 0, 1, 0);
+            return new EdgeFactor(1, 1, 1, 1);
         });
-        var costFunction = routerDb.Latest.GetCostFunctionFor(profile);
-        Func<IEdgeEnumerator, bool?> isOnIslandAlready = e =>
+
+        await BuildIslands(routerDb, profile, edges);
+        Assert.False(IsEdgeOnIsland(routerDb, profile, edges[0]), "bidirectional edge at tail should not be island");
+        Assert.False(IsEdgeOnIsland(routerDb, profile, edges[1]), "bidirectional edge should not be island");
+        Assert.False(IsEdgeOnIsland(routerDb, profile, edges[2]), "one-way connected on both ends should not be island");
+        // edge 3 (v3→v5) is a bidirectional cul-de-sac connected to the main network at v3.
+        // you can drive in and drive out — it's usable for routing, so it's NOT an island.
+        Assert.False(IsEdgeOnIsland(routerDb, profile, edges[3]), "bidirectional cul-de-sac connected to main network is not an island");
+    }
+
+    [Fact]
+    public async Task IslandBuilder_OneWayDeadEnd_ShouldBeIsland()
+    {
+        // One-way edge where the head end has no bidirectional connection
+        // → dead end, should be an island.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
+        var edges = new List<EdgeId>();
+        using (var writer = routerDb.GetMutableNetwork())
         {
-            if (e.EdgeId == edges[0]) return false;
+            var v1 = writer.AddVertex(4.792, 51.265);
+            var v2 = writer.AddVertex(4.794, 51.266);
+            var v3 = writer.AddVertex(4.796, 51.267);
+            // bidirectional edges
+            edges.Add(writer.AddEdge(v1, v2));
+            edges.Add(writer.AddEdge(v2, v3));
+            // one-way edge — head (v4) is a dead end
+            var v4 = writer.AddVertex(4.798, 51.268);
+            edges.Add(writer.AddEdge(v3, v4, attributes: new[] { ("oneway", "yes") }));
+        }
 
-            return null;
-        };
+        var profile = new DefaultProfile(getEdgeFactor: a =>
+        {
+            if (a.Any(x => x.key == "oneway")) return new EdgeFactor(1, 0, 1, 0);
+            return new EdgeFactor(1, 1, 1, 1);
+        });
 
-        var isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[0], isOnIslandAlready);
-        Assert.False(isOnIsland); // we hardcode this not being on an island
-        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[1], isOnIslandAlready);
-        Assert.True(isOnIsland);
-        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[2], isOnIslandAlready);
-        Assert.True(isOnIsland);
-        isOnIsland = await IslandBuilder.IsOnIslandAsync(routerDb.Latest, labels, costFunction,
-            edges[3], isOnIslandAlready);
-        Assert.True(isOnIsland);
+        await BuildIslands(routerDb, profile, edges);
+        Assert.False(IsEdgeOnIsland(routerDb, profile, edges[0]), "bidirectional edge 0 should not be island");
+        Assert.False(IsEdgeOnIsland(routerDb, profile, edges[1]), "bidirectional edge 1 should not be island");
+        Assert.True(IsEdgeOnIsland(routerDb, profile, edges[2]), "one-way dead end should be island");
+    }
+
+    [Fact]
+    public async Task IslandBuilder_DisconnectedComponent_ShouldBeIsland()
+    {
+        // Two separate groups of edges — the small group is an island.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 3 });
+        var edges = new List<EdgeId>();
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            // large group (3 edges ≥ MaxIslandSize)
+            var v1 = writer.AddVertex(4.792, 51.265);
+            var v2 = writer.AddVertex(4.794, 51.266);
+            var v3 = writer.AddVertex(4.796, 51.267);
+            var v4 = writer.AddVertex(4.798, 51.268);
+            edges.Add(writer.AddEdge(v1, v2));
+            edges.Add(writer.AddEdge(v2, v3));
+            edges.Add(writer.AddEdge(v3, v4));
+
+            // small disconnected group (1 edge < MaxIslandSize)
+            var v5 = writer.AddVertex(4.780, 51.260);
+            var v6 = writer.AddVertex(4.782, 51.261);
+            edges.Add(writer.AddEdge(v5, v6));
+        }
+
+        await BuildIslands(routerDb, new DefaultProfile(), edges);
+        Assert.False(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[0]), "large group edge 0");
+        Assert.False(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[1]), "large group edge 1");
+        Assert.False(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[2]), "large group edge 2");
+        Assert.True(IsEdgeOnIsland(routerDb, new DefaultProfile(), edges[3]), "small disconnected group should be island");
     }
 }

@@ -9,6 +9,7 @@ using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search.Edges;
 using Itinero.Network.Search.Islands;
+using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 
@@ -255,23 +256,41 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
             }
 
             // check if the edge is on an island.
-            // if the result is inclusive null is returned and islands will be built.
             if (_islands.Length > 0)
             {
-                var tailIsland = edgeEnumerator.Tail.TileId;
-                if (!edgeEnumerator.Forward) tailIsland = edgeEnumerator.Head.TileId;
+                var tailTileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
                 var islands = _islands[p];
 
-                // when an edge is not an island, it is sure it is not an island.
-                var onIsland = islands.IsEdgeOnIsland(edgeEnumerator.EdgeId);
-                if (onIsland)
+                // fast path: if the tile is fully done, just check _islandEdges.
+                if (islands.GetTileDone(tailTileId))
                 {
-                    allOk = false;
-                    continue;
+                    if (islands.IsEdgeOnIsland(edgeEnumerator.EdgeId))
+                    {
+                        allOk = false;
+                        continue;
+                    }
+                    // tile done + not in island set → not island.
                 }
+                else
+                {
+                    // tile not done — check DG for already resolved edges.
+                    var onIsland = _routingNetwork.IslandManager.IsEdgeOnIsland(_profiles[p], edgeEnumerator.EdgeId);
+                    if (onIsland == true)
+                    {
+                        allOk = false;
+                        continue;
+                    }
 
-                // if it is not on an island we need to check if the tile was done.
-                if (!islands.GetTileDone(tailIsland)) return null; // inconclusive.
+                    if (onIsland == false)
+                    {
+                        // confirmed not island.
+                    }
+                    else
+                    {
+                        // not yet resolved — return null to trigger async resolution.
+                        return null;
+                    }
+                }
             }
 
             // any profile is good for a positive result.
@@ -290,11 +309,15 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
     {
         foreach (var profile in _profiles)
         {
-            var tileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
-            await _routingNetwork.IslandManager.BuildForTileAsync(_routingNetwork, profile, tileId, cancellationToken);
+            var result = await IslandBuilder.ResolveEdgeAsync(_routingNetwork, profile, edgeEnumerator.EdgeId, cancellationToken);
             if (cancellationToken.IsCancellationRequested) return true;
+
+            if (result == true)
+            {
+                return false; // edge is on an island — not acceptable
+            }
         }
 
-        return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? throw new Exception("Edges were just calculated");
+        return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? true;
     }
 }

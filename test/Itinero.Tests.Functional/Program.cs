@@ -34,7 +34,9 @@ internal static class Program
     {
         Console.WriteLine("Loading from file " + filepath);
         using var routerDbStream = File.OpenRead(filepath);
-        return RouterDb.ReadFrom(routerDbStream);
+        var routerDb = RouterDb.ReadFrom(routerDbStream);
+        routerDb.EdgeTypeMap = new OsmEdgeTypeMap();
+        return routerDb;
     }
 
     private static void ToFile(string path, RouterDb routerDb)
@@ -50,7 +52,8 @@ internal static class Program
         Console.WriteLine("Loading from URL " + url);
         var routerDb = new RouterDb(new RouterDbConfiguration
         {
-            Zoom = 14
+            Zoom = 14,
+            EdgeTypeMap = new OsmEdgeTypeMap()
         });
 
         routerDb.PrepareFor(p);
@@ -118,38 +121,38 @@ internal static class Program
 
         var car = Profiles.Lua.Osm.OsmProfiles.Car;
 
-        // setup a router db with a local osm file (cached as .routerdb).
-        var routerDb = GetOrCreate(car, LuxembourgUrl, "luxembourg-latest.osm.pbf");
-        routerDb.PrepareFor(car);
-
-        var lux1 = (5.99620407852791,
-            49.673960512047614, (float?)0f);
-        var lux2 = (6.124148368835449, 49.588792167215345, (float?)0f);
-
-        var latest = routerDb.Latest;
-        var lux1sp = await latest.Snap(car).ToAsync(lux1);
-        var lux2sp = await latest.Snap(car).ToAsync(lux2);
+        // // setup a router db with a local osm file (cached as .routerdb).
+        // var routerDb = GetOrCreate(car, LuxembourgUrl, "luxembourg-latest.osm.pbf");
+        // routerDb.PrepareFor(car);
+        //
+        // var lux1 = (5.99620407852791,
+        //     49.673960512047614, (float?)0f);
+        // var lux2 = (6.124148368835449, 49.588792167215345, (float?)0f);
+        //
+        // var latest = routerDb.Latest;
+        // var lux1sp = await latest.Snap(car).ToAsync(lux1);
+        // var lux2sp = await latest.Snap(car).ToAsync(lux2);
 
         // latest.Islands(s =>
         // {
         //     s.Profile = car;
         // }).IsOnIsland(lux1sp.Value.EdgeId, true);
 
-        var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
-        var oneToOneGeoJson = oneToOne.ToGeoJson();
-        var routes = await RouterOneToOneWithAlternativeTest.Default.RunAsync(
-            (latest, lux1sp, lux2sp, car)
-        );
-
-        var geoJson = routes.Select(r => r.ToGeoJson()).ToList();
-        Console.WriteLine(geoJson);
+        // var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
+        // var oneToOneGeoJson = oneToOne.ToGeoJson();
+        // var routes = await RouterOneToOneWithAlternativeTest.Default.RunAsync(
+        //     (latest, lux1sp, lux2sp, car)
+        // );
+        //
+        // var geoJson = routes.Select(r => r.ToGeoJson()).ToList();
+        // Console.WriteLine(geoJson);
 
         // === Belgium tests ===
         Directory.CreateDirectory("results");
 
-        routerDb = GetOrCreate(car, BelgiumUrl, "belgium-latest.osm.pbf");
+        var routerDb = GetOrCreate(car, BelgiumUrl, "belgium-latest.osm.pbf");
         routerDb.PrepareFor(car);
-        latest = routerDb.Latest;
+        var latest = routerDb.Latest;
 
         // snap all Belgium test points
         var zellik1 = await SnappingTest.Default.RunAsync(

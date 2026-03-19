@@ -12,6 +12,7 @@ internal class RoutingNetworkIslandManager
     private readonly Dictionary<(string profile, uint tile), Task> _tilesInProgress = new();
     private readonly ReaderWriterLockSlim _tilesInProgressLock = new();
     private readonly Dictionary<string, Islands> _islands;
+    private readonly Dictionary<string, IslandDirectedGraph> _directedGraphs = new();
     private readonly ReaderWriterLockSlim _islandsLock = new();
 
     internal RoutingNetworkIslandManager(int maxIslandSize)
@@ -24,6 +25,65 @@ internal class RoutingNetworkIslandManager
     {
         this.MaxIslandSize = maxIslandSize;
         _islands = islands;
+    }
+
+    /// <summary>
+    /// Checks if an edge is on an island using the directed graph.
+    /// Returns true if island, false if not island, null if inconclusive.
+    /// </summary>
+    internal bool? IsEdgeOnIsland(Profile profile, EdgeId edgeId) =>
+        this.IsEdgeOnIsland(profile.Name, edgeId);
+
+    internal bool? IsEdgeOnIsland(string profileName, EdgeId edgeId)
+    {
+        try
+        {
+            _islandsLock.EnterReadLock();
+
+            if (!_directedGraphs.TryGetValue(profileName, out var dg))
+                return null;
+
+            if (!_islands.TryGetValue(profileName, out var profileIslands))
+                return null;
+            if (profileIslands.IsEdgeOnIsland(edgeId))
+                return true;
+
+            if (dg.IsNotIsland(edgeId))
+                return false;
+
+            return null;
+        }
+        finally
+        {
+            _islandsLock.ExitReadLock();
+        }
+    }
+
+    internal IslandDirectedGraph GetOrCreateDirectedGraph(Profile profile)
+    {
+        try
+        {
+            _islandsLock.EnterUpgradeableReadLock();
+
+            if (_directedGraphs.TryGetValue(profile.Name, out var dg)) return dg;
+
+            try
+            {
+                _islandsLock.EnterWriteLock();
+
+                dg = new IslandDirectedGraph();
+                _directedGraphs[profile.Name] = dg;
+                return dg;
+            }
+            finally
+            {
+                _islandsLock.ExitWriteLock();
+            }
+        }
+        finally
+        {
+            _islandsLock.ExitUpgradeableReadLock();
+        }
     }
 
     internal int MaxIslandSize { get; }

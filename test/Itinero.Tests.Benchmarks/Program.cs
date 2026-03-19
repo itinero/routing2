@@ -7,4 +7,10 @@ if (args.Length > 0 && args[0] == "profile-allocs")
     return;
 }
 
+if (args.Length > 0 && args[0] == "snap-diag")
+{
+    SnapDiagnostic.Run();
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
