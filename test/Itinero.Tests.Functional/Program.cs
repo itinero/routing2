@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
-using Itinero.IO.Osm.Tiles.Parsers;
+
 using Itinero.Profiles;
 using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
@@ -78,8 +78,6 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         EnableLogging();
-
-        TileParser.DownloadFunc = DownloadHelper.Download;
 
         var car = Profiles.Lua.Osm.OsmProfiles.Car;
 

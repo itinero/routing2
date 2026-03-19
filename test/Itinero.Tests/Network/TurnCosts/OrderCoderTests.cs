@@ -1,5 +1,4 @@
-﻿using Itinero.Network.TurnCosts;
-using Reminiscence.Arrays;
+using Itinero.Network.TurnCosts;
 using Xunit;
 
 namespace Itinero.Tests.Network.TurnCosts;
@@ -9,7 +8,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_SetTailHeadOrder_Null_Null_ShouldSet0()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data.SetTailHeadOrder(0, null, null);
 
@@ -19,7 +18,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_SetTailHeadOrder_0_Null_ShouldSet1()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data.SetTailHeadOrder(0, 0, null);
 
@@ -29,7 +28,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_SetTailHeadOrder_Null_0_ShouldSet16()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data.SetTailHeadOrder(0, null, 0);
 
@@ -39,7 +38,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_SetTailHeadOrder_14_14_ShouldSet255()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data.SetTailHeadOrder(0, 14, 14);
 
@@ -49,7 +48,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_GetTailHeadOrder_0_ShouldGet_Null_Null()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data[0] = 0;
 
@@ -64,7 +63,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_GetTailHeadOrder_1_ShouldGet_0_Null()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data[0] = 1;
 
@@ -79,7 +78,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_GetTailHeadOrder_16_ShouldGet_Null_0()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data[0] = 16;
 
@@ -94,7 +93,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_GetTailHeadOrder_17_ShouldGet_0_0()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data[0] = 17;
 
@@ -109,7 +108,7 @@ public class OrderCoderTests
     [Fact]
     public void OrderCoder_GetTailHeadOrder_255_ShouldGet_14_14()
     {
-        var data = new MemoryArray<byte>(1);
+        var data = new byte[1];
 
         data[0] = 255;
 

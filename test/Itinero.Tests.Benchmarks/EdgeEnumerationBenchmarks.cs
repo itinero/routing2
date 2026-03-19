@@ -8,8 +8,7 @@ namespace Itinero.Tests.Benchmarks;
 
 /// <summary>
 /// Benchmarks for edge enumeration — the innermost hot loop during routing.
-/// Measures MoveNext() throughput which is dominated by varint decoding
-/// through the MemoryArray abstraction.
+/// Measures MoveNext() throughput which is dominated by varint decoding.
 /// </summary>
 [MemoryDiagnoser]
 public class EdgeEnumerationBenchmarks

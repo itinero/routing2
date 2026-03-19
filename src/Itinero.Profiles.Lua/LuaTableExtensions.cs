@@ -1,43 +1,33 @@
-﻿using Neo.IronLua;
+using MoonSharp.Interpreter;
 
 namespace Itinero.Profiles.Lua;
 
 internal static class LuaTableExtensions
 {
-    internal static double? GetDouble(this LuaTable table, string key)
+    internal static double? GetDouble(this Table table, string key)
     {
-        var obj = table[key];
-        if (obj == null)
+        var val = table.Get(key);
+        if (val.IsNil() || val.IsVoid())
         {
             return null;
         }
 
-        if (obj is double d)
-        {
-            return d;
-        }
-
-        if (obj is int i)
-        {
-            return i;
-        }
-
-        return (double)obj;
+        return val.CastToNumber();
     }
 
-    internal static bool? GetBoolean(this LuaTable table, string key)
+    internal static bool? GetBoolean(this Table table, string key)
     {
-        var obj = table[key];
-        if (obj == null)
+        var val = table.Get(key);
+        if (val.IsNil() || val.IsVoid())
         {
             return null;
         }
 
-        if (obj is bool b)
+        if (val.Type == DataType.Boolean)
         {
-            return b;
+            return val.Boolean;
         }
 
-        return (bool)obj;
+        return val.CastToBool();
     }
 }

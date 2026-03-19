@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Itinero.IO.Osm;
 using Itinero.MapMatching;
@@ -11,8 +13,8 @@ using Itinero.Profiles.Lua;
 using Itinero.Tests.Mocks.Indexes;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Converters;
 using NetTopologySuite.Operation.Buffer;
-using Newtonsoft.Json;
 using OsmSharp.Streams;
 using Xunit;
 
@@ -23,6 +25,12 @@ public class MapMatchingFunctionalTests
     private static readonly string DataDir = Path.Combine("MapMatching", "data");
 
     private static readonly Dictionary<string, Profile> ProfileCache = new();
+
+    private static readonly JsonSerializerOptions GeoJsonOptions = new()
+    {
+        Converters = { new GeoJsonConverterFactory() },
+        PropertyNameCaseInsensitive = true
+    };
 
     private static Profile LoadProfile(string vehicleFile)
     {
@@ -37,11 +45,11 @@ public class MapMatchingFunctionalTests
     private static async Task RunTestAsync(string testJsonPath)
     {
         var fullPath = Path.Combine(DataDir, testJsonPath);
-        var testData = JsonConvert.DeserializeObject<TestData>(
-            await File.ReadAllTextAsync(fullPath));
+        var json = await File.ReadAllTextAsync(fullPath);
+        var testData = JsonSerializer.Deserialize<TestData>(json, GeoJsonOptions);
 
         // paths in JSON are relative with "data/" prefix, map to our output layout.
-        var profileFile = testData.Profile.File.Replace("data/", DataDir + "/");
+        var profileFile = testData!.Profile.File.Replace("data/", DataDir + "/");
         var trackFile = testData.TrackFile.Replace("data/", DataDir + "/");
         var osmFile = testData.OsmDataFile.Replace("data/", DataDir + "/");
 
@@ -106,10 +114,9 @@ public class MapMatchingFunctionalTests
     private static Track FromGeoJson(TextReader reader)
     {
         var track = new List<TrackPoint>();
-        var jsonSerializer = NetTopologySuite.IO.GeoJsonSerializer.Create();
-        var featureCollection =
-            jsonSerializer.Deserialize<FeatureCollection>(new JsonTextReader(reader));
-        foreach (var feature in featureCollection)
+        var json = reader.ReadToEnd();
+        var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, GeoJsonOptions);
+        foreach (var feature in featureCollection!)
         {
             if (feature.Geometry is not LineString lineString) continue;
             for (var i = 0; i < lineString.Coordinates.Length; i++)
@@ -152,44 +159,27 @@ public class MapMatchingFunctionalTests
 
 internal class TestData
 {
+    [JsonPropertyName("description")]
     public string Description { get; set; } = "";
+
+    [JsonPropertyName("profile")]
     public TestProfileConfig Profile { get; set; } = new();
 
-    [JsonProperty("trackfile")]
+    [JsonPropertyName("trackfile")]
     public string TrackFile { get; set; } = "";
 
-    [JsonProperty("osmdatafile")]
+    [JsonPropertyName("osmdatafile")]
     public string OsmDataFile { get; set; } = "";
 
-    [JsonConverter(typeof(LineStringJsonConverter))]
+    [JsonPropertyName("expected")]
     public LineString Expected { get; set; } = null!;
 }
 
 internal class TestProfileConfig
 {
+    [JsonPropertyName("file")]
     public string File { get; set; } = "";
+
+    [JsonPropertyName("name")]
     public string Name { get; set; } = "";
-}
-
-internal class LineStringJsonConverter : JsonConverter
-{
-    private readonly JsonSerializer _serializer =
-        NetTopologySuite.IO.GeoJsonSerializer.Create();
-
-    public override bool CanConvert(Type objectType)
-    {
-        return objectType == typeof(LineString) || objectType.IsSubclassOf(typeof(LineString));
-    }
-
-    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
-        JsonSerializer serializer)
-    {
-        if (reader.TokenType == JsonToken.Null) return null;
-        return _serializer.Deserialize(reader, typeof(LineString));
-    }
-
-    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
-    {
-        _serializer.Serialize(writer, value);
-    }
 }
