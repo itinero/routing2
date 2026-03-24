@@ -183,12 +183,12 @@ public static class AttributeExtensions
         while (keySize > 0)
         {
             var bytes = new byte[keySize - 1];
-            stream.Read(bytes, 0, bytes.Length);
+            stream.ReadExactly(bytes);
             var key = System.Text.Encoding.Unicode.GetString(bytes);
 
             var valueSize = stream.ReadVarInt32();
             bytes = new byte[valueSize];
-            stream.Read(bytes, 0, bytes.Length);
+            stream.ReadExactly(bytes);
             var value = System.Text.Encoding.Unicode.GetString(bytes);
 
             attributes.Add((key, value));

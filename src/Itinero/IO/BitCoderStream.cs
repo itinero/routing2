@@ -542,7 +542,7 @@ internal static class BitCoderStream
     public static Guid ReadGuid(this Stream data)
     {
         var buffer = new byte[16];
-        data.Read(buffer);
+        data.ReadExactly(buffer);
         return new Guid(buffer);
     }
 

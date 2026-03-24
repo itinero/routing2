@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Tiles;
+using Itinero.Network.Tiles.Standalone.Global;
 // ReSharper disable PossibleMultipleEnumeration
 
 namespace Itinero.Network.Writer;
@@ -82,13 +83,14 @@ public class RoutingNetworkWriter : IDisposable
     /// <param name="attributes">The attributes, if any.</param>
     /// <param name="edgeTypeId">The edge type id, if any.</param>
     /// <param name="length">The length in centimeters. Use <see cref="ComputeEdgeLength"/> if not known.</param>
+    /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public EdgeId AddEdge(VertexId tail, VertexId head,
         IEnumerable<(double longitude, double latitude, float? e)>? shape,
         IEnumerable<(string key, string value)>? attributes, uint? edgeTypeId,
-        uint length)
+        uint length, GlobalEdgeId? globalEdgeId = null)
     {
         // get the tile (or create it).
         var (tile, edgeTypeMap) = _network.GetTileForWrite(tail.TileId);
@@ -97,7 +99,7 @@ public class RoutingNetworkWriter : IDisposable
         // get the edge type id.
         edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
 
-        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
+        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length, globalEdgeId);
         if (tail.TileId == head.TileId)
         {
             return edge1;
@@ -105,7 +107,7 @@ public class RoutingNetworkWriter : IDisposable
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         (tile, _) = _network.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length);
+        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length, globalEdgeId);
 
         return edge1;
     }

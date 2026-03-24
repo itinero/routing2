@@ -56,13 +56,13 @@ public static class RoutingNetworkWriterExtensions
                 {
                     // isIncoming=true: vertex is at way tail, pending.vertex is at way head.
                     var length = writer.ComputeEdgeLength(vertex, pending.vertex);
-                    newEdge = writer.AddEdge(vertex, pending.vertex, null, attributes, edgeTypeId, length);
+                    newEdge = writer.AddEdge(vertex, pending.vertex, null, attributes, edgeTypeId, length, globalEdgeId);
                 }
                 else
                 {
                     // isIncoming=false: vertex is at way head, pending.vertex is at way tail.
                     var length = writer.ComputeEdgeLength(pending.vertex, vertex);
-                    newEdge = writer.AddEdge(pending.vertex, vertex, null, attributes, edgeTypeId, length);
+                    newEdge = writer.AddEdge(pending.vertex, vertex, null, attributes, edgeTypeId, length, globalEdgeId);
                 }
 
                 // register boundary edge's GlobalEdgeId → EdgeId mapping.

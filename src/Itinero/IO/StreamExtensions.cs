@@ -22,7 +22,7 @@ internal static class StreamExtensions
     {
         var size = stream.ReadInt64();
         var data = new byte[size];
-        stream.Read(data, 0, (int)size);
+        stream.ReadExactly(data, 0, (int)size);
 
         return System.Text.Encoding.Unicode.GetString(data, 0, data.Length);
     }
