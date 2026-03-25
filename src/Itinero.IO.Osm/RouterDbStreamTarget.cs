@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Geo.Elevation;
-using Itinero.IO.Osm.Restrictions;
 using Itinero.IO.Osm.Restrictions.Barriers;
+using Itinero.IO.Osm.Restrictions.Turns;
+using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
 using Itinero.Network.Mutation;
+using Itinero.Network.Tiles.Standalone.Global;
 using OsmSharp;
 using OsmSharp.Streams;
 
@@ -20,11 +22,11 @@ public class RouterDbStreamTarget : OsmStreamTarget
     private readonly OsmTurnRestrictionParser _restrictionParser = new();
     private readonly Dictionary<long, Way?> _restrictionMembers = new();
     private readonly OsmBarrierParser _barrierParser = new();
-    private readonly List<OsmBarrier> _osmBarriers = new();
+    private readonly Dictionary<long, List<Way>> _barrierNodes = new();
+    private readonly Dictionary<long, Node> _barrierNodeObjects = new();
     private readonly Dictionary<long, (double longitude, double latitude)> _nodeLocations = new();
     private readonly HashSet<long> _usedNodes = new();
-    private readonly List<OsmTurnRestriction> _osmTurnRestrictions = new();
-    private readonly Dictionary<(long wayId, int node1Idx, int node2Idx), EdgeId> _restrictedEdges = new();
+    private readonly Dictionary<GlobalEdgeId, EdgeId> _globalEdgeIds = new();
 
     /// <inheritdoc />
     public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
@@ -43,31 +45,22 @@ public class RouterDbStreamTarget : OsmStreamTarget
 
     public override bool OnBeforePull()
     {
-        // execute the first pass.
+        // execute the first pass (skip nodes, process ways and relations).
         this.DoPull(true, false, false);
-
-        // add barriers as turn weights.
-        var tileEnumerator = _mutableRouterDb.GetEdgeEnumerator();
-        var networkRestrictions = new List<NetworkRestriction>();
-        foreach (var osmBarrier in _osmBarriers)
-        {
-            var networkBarriersResult = osmBarrier.ToNetworkRestrictions(n =>
-            {
-                if (!_vertices.TryGetValue(n, out var v)) throw new Exception("Node should exist as vertex");
-                tileEnumerator.MoveTo(v);
-                return tileEnumerator;
-            });
-            if (networkBarriersResult.IsError) continue;
-
-            networkRestrictions.AddRange(networkBarriersResult.Value);
-        }
-
-        this.AddNetworkRestrictions(networkRestrictions);
 
         // move to second pass.
         _firstPass = false;
         this.Source.Reset();
         this.DoPull();
+
+        // add barriers as turn costs after all edges exist.
+        foreach (var (nodeId, ways) in _barrierNodes)
+        {
+            if (!_barrierNodeObjects.TryGetValue(nodeId, out var node)) continue;
+            if (!_barrierParser.TryParse(node, ways, out var barrier)) continue;
+
+            this.ResolveAndAddTurnCosts(barrier.ToGlobalNetworkRestrictions());
+        }
 
         return false;
     }
@@ -78,27 +71,18 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (!node.Id.HasValue) return;
         if (!node.Longitude.HasValue || !node.Latitude.HasValue) return;
 
-        // FIRST PASS: ignore nodes.
-        if (_firstPass)
-        {
-            if (_barrierParser.IsBarrier(node))
-            {
-                // make sure the barriers are core nodes, they need a turn cost.
-                // log nodes are barriers to be able to detect their ways,
-                //      only take nodes in the tile to mark as barrier.
-                _vertices[node.Id.Value] = VertexId.Empty;
-            }
-            return;
-        }
+        // first pass skips nodes (DoPull(true, false, false)), so this is always the second pass.
 
-        // SECOND PASS: keep node locations.
+        // keep node locations.
         _nodeLocations[node.Id.Value] = (node.Longitude.Value, node.Latitude.Value);
-        if (!_vertices.TryGetValue(node.Id.Value, out _)) return;
 
-        // a vertex can be a barrier, check here.
-        if (_barrierParser.TryParse(node, out var barrier))
+        // detect barriers — nodes come before ways in the stream, so when AddWay
+        // runs it can check _barrierNodes to track which ways pass through barriers.
+        if (_barrierParser.IsBarrier(node))
         {
-            _osmBarriers.Add(barrier);
+            _vertices[node.Id.Value] = VertexId.Empty;
+            _barrierNodes[node.Id.Value] = [];
+            _barrierNodeObjects[node.Id.Value] = node;
         }
     }
 
@@ -114,6 +98,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
             for (var i = 0; i < way.Nodes.Length; i++)
             {
                 var node = way.Nodes[i];
+
                 if (_usedNodes.Contains(node))
                 {
                     _vertices[node] = VertexId.Empty;
@@ -127,7 +112,20 @@ public class RouterDbStreamTarget : OsmStreamTarget
             return;
         }
 
-        // SECOND PASS: keep restricted ways and add edges.
+        // SECOND PASS: track barrier ways, add edges, register GlobalEdgeIds.
+
+        // track ways for barrier nodes and mark for edge registration.
+        for (var i = 0; i < way.Nodes.Length; i++)
+        {
+            if (_barrierNodes.TryGetValue(way.Nodes[i], out var barrierWays))
+            {
+                barrierWays.Add(way);
+                _restrictionMembers.TryAdd(way.Id!.Value, null);
+                // barrier nodes must be vertices for turn costs,
+                // but don't overwrite if already created by a previous way.
+                _vertices.TryAdd(way.Nodes[i], VertexId.Empty);
+            }
+        }
 
         // if way is a member of restriction, queue for later.
         var saveEdge = _restrictionMembers.ContainsKey(way.Id.Value);
@@ -171,18 +169,22 @@ public class RouterDbStreamTarget : OsmStreamTarget
                 continue;
             }
 
-            // add edges.
+            // add edge.
             var filteredTags = way.Tags?.Select(x => (x.Key, x.Value));
             var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
                 shape,
                 filteredTags);
 
-            // check if this edge needs saving for restriction.
-            var edgeIdKey = (way.Id.Value, vertex1Idx, n);
-            if (saveEdge) _restrictedEdges[edgeIdKey] = edgeId;
+            // register GlobalEdgeId → EdgeId for restriction resolution.
+            if (saveEdge)
+            {
+                var globalEdgeId = way.CreateGlobalEdgeId(vertex1Idx, n);
+                _globalEdgeIds[globalEdgeId] = edgeId;
+            }
 
             // move to next part.
             vertex1 = vertex2;
+            vertex1Idx = n;
             shape.Clear();
         }
     }
@@ -215,46 +217,27 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (restriction == null)
             throw new Exception("restriction parsing was successful but restriction is null");
 
-        var networkRestrictionResult = restriction.ToNetworkRestrictions((long wayId, int startNode, int endNode) =>
-        {
-            if (startNode < endNode)
-            {
-                if (!_restrictedEdges.TryGetValue((wayId, startNode, endNode), out var edgeId)) return null;
-
-                return (edgeId, true);
-            }
-            else
-            {
-                if (!_restrictedEdges.TryGetValue((wayId, endNode, startNode), out var edgeId)) return null;
-
-                return (edgeId, false);
-            }
-        });
-        if (networkRestrictionResult.IsError) return;
-
-        this.AddNetworkRestrictions(networkRestrictionResult.Value);
+        this.ResolveAndAddTurnCosts(restriction.ToGlobalNetworkRestrictions());
     }
 
-    private void AddNetworkRestrictions(IEnumerable<NetworkRestriction> networkRestrictions)
+    private void ResolveAndAddTurnCosts(IEnumerable<GlobalRestriction> globalRestrictions)
     {
         var enumerator = _mutableRouterDb.GetEdgeEnumerator();
-        foreach (var networkRestriction in networkRestrictions)
+        foreach (var globalRestriction in globalRestrictions)
         {
-            if (networkRestriction.Count < 2)
-            {
-                // TODO: log something?
+            if (!globalRestriction.TryBuildNetworkRestriction(GetEdge, out var networkRestriction))
                 continue;
-            }
+
+            if (networkRestriction!.Count < 2) continue;
 
             // get last edge and turn cost vertex.
             var last = networkRestriction[^1];
-            var lastEdge = _mutableRouterDb.GetEdge(last.edge, last.forward);
-            var turnCostVertex = lastEdge.Tail;
+            if (!enumerator.MoveTo(last.edge, last.forward)) continue;
+            var turnCostVertex = enumerator.Tail;
 
             var secondToLast = networkRestriction[^2];
             if (networkRestriction.IsProhibitory)
             {
-                // easy, we only add a single cost.
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                 _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                     new[] { secondToLast.edge, last.edge }, costs,
@@ -262,23 +245,32 @@ public class RouterDbStreamTarget : OsmStreamTarget
             }
             else
             {
-                // hard, we need to add a cost for every *other* edge than then one in the restriction.
-                enumerator.MoveTo(secondToLast.edge, secondToLast.forward);
+                if (!enumerator.MoveTo(secondToLast.edge, secondToLast.forward)) continue;
                 var to = enumerator.Head;
                 enumerator.MoveTo(to);
 
                 while (enumerator.MoveNext())
                 {
                     if (enumerator.EdgeId == secondToLast.edge ||
-                        enumerator.EdgeId == lastEdge.EdgeId) continue;
+                        enumerator.EdgeId == last.edge) continue;
 
-                    // easy, we only add a single cost.
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                     _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                         new[] { secondToLast.edge, enumerator.EdgeId }, costs,
                         networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
                 }
             }
+        }
+
+        return;
+
+        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid)
+        {
+            if (_globalEdgeIds.TryGetValue(geid, out var edgeId))
+                return (edgeId, true);
+            if (_globalEdgeIds.TryGetValue(geid.GetInverted(), out edgeId))
+                return (edgeId, false);
+            return null;
         }
     }
 }

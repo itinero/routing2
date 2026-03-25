@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Tiles;
+using Itinero.Network.Tiles.Standalone.Global;
 // ReSharper disable PossibleMultipleEnumeration
 
 namespace Itinero.Network.Writer;
@@ -54,6 +55,26 @@ public class RoutingNetworkWriter : IDisposable
     }
 
     /// <summary>
+    /// Computes the edge length in centimeters from vertex locations and shape.
+    /// </summary>
+    public uint ComputeEdgeLength(VertexId tail, VertexId head,
+        IEnumerable<(double longitude, double latitude, float? e)>? shape = null)
+    {
+        if (!_network.TryGetVertex(tail, out var lon1, out var lat1, out var e1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {tail} not found.");
+        }
+
+        if (!_network.TryGetVertex(head, out var lon2, out var lat2, out var e2))
+        {
+            throw new ArgumentOutOfRangeException(nameof(head), $"Vertex {head} not found.");
+        }
+
+        return (uint)((lon1, lat1, e1).DistanceEstimateInMeterShape(
+            (lon2, lat2, e2), shape) * 100);
+    }
+
+    /// <summary>
     /// Adds a new edge.
     /// </summary>
     /// <param name="tail">The tail vertex.</param>
@@ -61,14 +82,15 @@ public class RoutingNetworkWriter : IDisposable
     /// <param name="shape">The shape, if any.</param>
     /// <param name="attributes">The attributes, if any.</param>
     /// <param name="edgeTypeId">The edge type id, if any.</param>
-    /// <param name="length">The length, if any.</param>
+    /// <param name="length">The length in centimeters. Use <see cref="ComputeEdgeLength"/> if not known.</param>
+    /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public EdgeId AddEdge(VertexId tail, VertexId head,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null, uint? edgeTypeId = null,
-        uint? length = null)
+        IEnumerable<(double longitude, double latitude, float? e)>? shape,
+        IEnumerable<(string key, string value)>? attributes, uint? edgeTypeId,
+        uint length, GlobalEdgeId? globalEdgeId = null)
     {
         // get the tile (or create it).
         var (tile, edgeTypeMap) = _network.GetTileForWrite(tail.TileId);
@@ -77,24 +99,7 @@ public class RoutingNetworkWriter : IDisposable
         // get the edge type id.
         edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
 
-        // get the edge length in centimeters.
-        if (!_network.TryGetVertex(tail, out var longitude, out var latitude, out var e))
-        {
-            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {tail} not found.");
-        }
-
-        var vertex1Location = (longitude, latitude, e);
-        if (!_network.TryGetVertex(head, out longitude, out latitude, out e))
-        {
-            throw new ArgumentOutOfRangeException(nameof(tail), $"Vertex {head} not found.");
-        }
-
-        var vertex2Location = (longitude, latitude, e);
-
-        length ??= (uint)(vertex1Location.DistanceEstimateInMeterShape(
-            vertex2Location, shape) * 100);
-
-        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
+        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length, globalEdgeId);
         if (tail.TileId == head.TileId)
         {
             return edge1;
@@ -102,7 +107,7 @@ public class RoutingNetworkWriter : IDisposable
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         (tile, _) = _network.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length);
+        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length, globalEdgeId);
 
         return edge1;
     }
@@ -125,6 +130,44 @@ public class RoutingNetworkWriter : IDisposable
 
         // add the turn cost table using the type id.
         tile.AddTurnCosts(vertex, turnCostType.Value, edges, costs, attributes, prefix);
+
+        // for cross-tile edges, the order was set on this tile's copy.
+        // sync the order to the other tile's copy so routing from either side sees it.
+        var enumerator = new NetworkTileEnumerator();
+        enumerator.MoveTo(tile);
+        if (enumerator.MoveTo(vertex))
+        {
+            while (enumerator.MoveNext())
+            {
+                // only cross-tile edges need syncing.
+                if (enumerator.Tail.TileId == enumerator.Head.TileId) continue;
+
+                // Head is always the other vertex (Tail = turn cost vertex we enumerated from).
+                var (otherTile, _) = _network.GetTileForWrite(enumerator.Head.TileId);
+                if (otherTile == null) continue;
+
+                // find the same edge in the other tile by iterating from the other vertex.
+                var otherEnumerator = new NetworkTileEnumerator();
+                otherEnumerator.MoveTo(otherTile);
+                if (!otherEnumerator.MoveTo(enumerator.Head)) continue;
+
+                while (otherEnumerator.MoveNext())
+                {
+                    if (otherEnumerator.EdgeId != enumerator.EdgeId) continue;
+
+                    // found the same edge — copy the order bytes.
+                    // SetTailHeadOrder takes STORED tail/head orders (for vertex1/vertex2 as encoded).
+                    // enumerator.TailOrder = order at turn cost vertex, HeadOrder = order at other vertex.
+                    // Map these to stored positions based on otherEnumerator.Forward:
+                    // Forward=true: vertex1=otherVertex → stored tail=HeadOrder, stored head=TailOrder
+                    // Forward=false: vertex1=turnCostVertex → stored tail=TailOrder, stored head=HeadOrder
+                    otherTile.SetTailHeadOrder(otherEnumerator.EdgePointer,
+                        otherEnumerator.Forward ? enumerator.HeadOrder : enumerator.TailOrder,
+                        otherEnumerator.Forward ? enumerator.TailOrder : enumerator.HeadOrder);
+                    break;
+                }
+            }
+        }
     }
 
     internal void AddTile(NetworkTile tile)

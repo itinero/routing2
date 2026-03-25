@@ -1,5 +1,4 @@
-﻿using System;
-using Reminiscence.Arrays;
+using System;
 
 namespace Itinero.Network.TurnCosts;
 
@@ -7,7 +6,7 @@ internal static class OrderCoder
 {
     internal const int MaxOrderHeadTail = 14;
 
-    public static void SetTailHeadOrder(this ArrayBase<byte> data, long i, byte? tail, byte? head)
+    public static void SetTailHeadOrder(this byte[] data, long i, byte? tail, byte? head)
     {
         if (tail.HasValue && tail.Value > MaxOrderHeadTail)
         {
@@ -32,15 +31,15 @@ internal static class OrderCoder
             d += (head.Value + 1) * 16;
         }
 
-        data[i] = (byte)d;
+        data[(int)i] = (byte)d;
     }
 
-    public static void GetTailHeadOrder(this ArrayBase<byte> data, long i, ref byte? tail, ref byte? head)
+    public static void GetTailHeadOrder(this byte[] data, long i, ref byte? tail, ref byte? head)
     {
         tail = null;
         head = null;
 
-        var d = data[i];
+        var d = data[(int)i];
         if (d == 0)
         {
             return;

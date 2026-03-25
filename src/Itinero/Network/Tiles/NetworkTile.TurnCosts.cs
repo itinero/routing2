@@ -5,15 +5,14 @@ using System.Linq;
 using Itinero.IO;
 using Itinero.Network.Storage;
 using Itinero.Network.TurnCosts;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles;
 
 internal partial class NetworkTile
 {
     private uint _turnCostPointer = 0;
-    private readonly ArrayBase<uint> _turnCostPointers = new MemoryArray<uint>(0);
-    private readonly ArrayBase<byte> _turnCosts = new MemoryArray<byte>(0);
+    private uint[] _turnCostPointers = new uint[0];
+    private byte[] _turnCosts = new byte[0];
 
     internal void AddTurnCosts(VertexId vertex, uint turnCostType,
         EdgeId[] edges, uint[,] costs, IEnumerable<(string key, string value)> attributes,
@@ -98,7 +97,7 @@ internal partial class NetworkTile
         // and initialize new slots with null.
         while (_turnCostPointers.Length <= vertex.LocalId)
         {
-            _turnCostPointers.Resize(_nextVertexId);
+            Array.Resize(ref _turnCostPointers, (int)_nextVertexId);
         }
 
         // make sure there is space in the turn cost array.
@@ -106,38 +105,38 @@ internal partial class NetworkTile
         var maxLength = _turnCostPointer + 5 + 1 + (count * count * 5) + 5;
         while (_turnCosts.Length <= maxLength)
         {
-            _turnCosts.Resize(_turnCosts.Length + DefaultSizeIncrease);
+            Array.Resize(ref _turnCosts, _turnCosts.Length + DefaultSizeIncrease);
         }
 
         // update pointer to reflect new data.
-        var previousPointer = _turnCostPointers[vertex.LocalId].DecodeNullableData();
-        _turnCostPointers[vertex.LocalId] = _turnCostPointer.EncodeToNullableData();
+        var previousPointer = _turnCostPointers[(int)vertex.LocalId].DecodeNullableData();
+        _turnCostPointers[(int)vertex.LocalId] = _turnCostPointer.EncodeToNullableData();
 
         // write turn cost types.
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
+        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
 
         // write attributes.
-        var a = this.SetAttributes(attributes);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, a);
+        var a = this.SetAttributes(attributes, null);
+        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, a);
 
         // write prefix sequence.
         var prefixEdges = new List<EdgeId>(prefix);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)prefixEdges.Count);
+        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)prefixEdges.Count);
         foreach (var prefixEdge in prefixEdges)
         {
             if (prefixEdge.TileId == _tileId)
             {
-                _turnCostPointer += (uint)_turnCosts.SetDynamicInt32(_turnCostPointer, (int)prefixEdge.LocalId);
+                _turnCostPointer += _turnCosts.SetDynamicInt32(_turnCostPointer, (int)prefixEdge.LocalId);
             }
             else
             {
-                _turnCostPointer += (uint)_turnCosts.SetDynamicInt32(_turnCostPointer, (int)-(prefixEdge.LocalId + 1));
-                _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, prefixEdge.TileId);
+                _turnCostPointer += _turnCosts.SetDynamicInt32(_turnCostPointer, (int)-(prefixEdge.LocalId + 1));
+                _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, prefixEdge.TileId);
             }
         }
 
         // write turn costs.
-        _turnCosts[_turnCostPointer] = (byte)count;
+        _turnCosts[(int)_turnCostPointer] = (byte)count;
         _turnCostPointer++;
         for (var x = 0; x < count; x++)
         {
@@ -172,7 +171,7 @@ internal partial class NetworkTile
             yield break;
         }
 
-        var pointerNullable = _turnCostPointers[vertex.LocalId].DecodeNullableData();
+        var pointerNullable = _turnCostPointers[(int)vertex.LocalId].DecodeNullableData();
         if (pointerNullable == null)
         {
             yield break;
@@ -214,7 +213,7 @@ internal partial class NetworkTile
             }
 
             // read turn cost table.
-            var max = _turnCosts[pointer];
+            var max = _turnCosts[(int)pointer];
             pointer++;
 
             for (var x = 0; x < max; x++)
@@ -246,10 +245,10 @@ internal partial class NetworkTile
         }
     }
 
-    private void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
+    internal void SetTailHeadOrder(uint pointer, byte? tailOrder, byte? headOrder)
     {
         // skip over vertices and next-pointers.
-        var size = this.DecodeVertex(pointer, out _, out var t1);
+        uint size = this.DecodeVertex(pointer, out _, out var t1);
         pointer += size;
         size = this.DecodeVertex(pointer, out _, out var t2);
         pointer += size;
@@ -261,7 +260,7 @@ internal partial class NetworkTile
         // skip edge id if needed.
         if (t1 != t2)
         {
-            size = (uint)_edges.GetDynamicUInt32(pointer, out _);
+            size = _edges.GetDynamicUInt32(pointer, out _);
             pointer += size;
         }
 
@@ -313,17 +312,45 @@ internal partial class NetworkTile
     private void ReadTurnCostsFrom(Stream stream)
     {
         var turnCostPointersSize = stream.ReadVarUInt32();
-        _turnCostPointers.Resize(turnCostPointersSize);
+        Array.Resize(ref _turnCostPointers, (int)turnCostPointersSize);
         for (var i = 0; i < turnCostPointersSize; i++)
         {
             _turnCostPointers[i] = stream.ReadVarUInt32();
         }
 
         _turnCostPointer = stream.ReadVarUInt32();
-        _turnCosts.Resize(_turnCostPointer);
+        Array.Resize(ref _turnCosts, (int)_turnCostPointer);
         for (var i = 0; i < _turnCostPointer; i++)
         {
             _turnCosts[i] = (byte)stream.ReadByte();
         }
+    }
+
+    private void ReadTurnCostsFrom(byte[] data, ref int offset)
+    {
+        var turnCostPointersSize = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _turnCostPointers, (int)turnCostPointersSize);
+        for (var i = 0; i < turnCostPointersSize; i++)
+        {
+            _turnCostPointers[i] = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        }
+
+        _turnCostPointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _turnCosts, (int)_turnCostPointer);
+        Buffer.BlockCopy(data, offset, _turnCosts, 0, (int)_turnCostPointer);
+        offset += (int)_turnCostPointer;
+    }
+
+    private void WriteTurnCostsTo(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, (uint)_turnCostPointers.Length);
+        for (var i = 0; i < _turnCostPointers.Length; i++)
+        {
+            BitCoderBuffer.SetVarUInt32(data, ref offset, _turnCostPointers[i]);
+        }
+
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _turnCostPointer);
+        Buffer.BlockCopy(_turnCosts, 0, data, offset, (int)_turnCostPointer);
+        offset += (int)_turnCostPointer;
     }
 }

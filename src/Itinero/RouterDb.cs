@@ -41,7 +41,7 @@ public sealed partial class RouterDb : IRouterDbMutable
         _turnCostTypeIndex = configuration.TurnCostTypeIndex;
         _turnCostTypeMap = configuration.TurnCostTypeMap ?? AttributeSetMap.Default();
 
-        this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
+        this.ProfileConfiguration = new RouterDbProfileConfiguration();
     }
 
     private RouterDb(Stream stream, RouterDbReadSettings settings)
@@ -67,7 +67,7 @@ public sealed partial class RouterDb : IRouterDbMutable
 
         this.EdgeTypeMap = AttributeSetMap.Default();
         _turnCostTypeMap = AttributeSetMap.Default();
-        this.ProfileConfiguration = new RouterDbProfileConfiguration(this);
+        this.ProfileConfiguration = new RouterDbProfileConfiguration();
     }
 
     /// <summary>

@@ -27,13 +27,30 @@ internal class BidirectionalDijkstra
         _forward = new BidirectionalDijkstraForward(this);
     }
 
-    public static BidirectionalDijkstra ForNetwork(RoutingNetwork routingNetwork) => new(routingNetwork);
+    [ThreadStatic]
+    private static BidirectionalDijkstra? _cached;
+
+    public static BidirectionalDijkstra ForNetwork(RoutingNetwork routingNetwork)
+    {
+        var cached = _cached;
+        if (cached != null && cached._routingNetwork == routingNetwork)
+        {
+            return cached;
+        }
+
+        cached = new BidirectionalDijkstra(routingNetwork);
+        _cached = cached;
+        return cached;
+    }
 
     public async Task<(Path? path, double cost)> RunAsync(SnapPoint origin,
         SnapPoint destination, ICostFunction costFunction, Func<VertexId, Task<bool>>? settled = null,
         Func<VertexId, Task<bool>>? queued = null, CancellationToken cancellationToken = default)
     {
         _costFunction = costFunction;
+
+        _forward.Clear();
+        _backward.Clear();
 
         (uint forward, uint backward, double cost, Path? singleHopPath) best = (uint.MaxValue, uint.MaxValue, double.MaxValue, null);
         if (_routingNetwork.TrySingleHop(origin, destination, costFunction, out var singleHopPath, out var singleHopCost))
@@ -153,6 +170,11 @@ internal class BidirectionalDijkstra
             return true;
         }
 
+        protected override (double cost, double turnCost) GetCost(RoutingNetworkEdgeEnumerator edgeEnumerator, PreviousEdgeEnumerable previousEdges)
+        {
+            return _bidirectionalDijkstra._costFunction.GetCost(edgeEnumerator, true, previousEdges);
+        }
+
         protected override (double cost, double turnCost) GetCost(RoutingNetworkEdgeEnumerator edgeEnumerator, IEnumerable<(EdgeId edge, byte? turn)> previousEdges)
         {
             return _bidirectionalDijkstra._costFunction.GetCost(edgeEnumerator, true, previousEdges);
@@ -178,6 +200,11 @@ internal class BidirectionalDijkstra
         protected override bool OnSettled(uint visit, VertexId vertex, double cost)
         {
             return true;
+        }
+
+        protected override (double cost, double turnCost) GetCost(RoutingNetworkEdgeEnumerator edgeEnumerator, PreviousEdgeEnumerable previousEdges)
+        {
+            return _bidirectionalDijkstra._costFunction.GetCost(edgeEnumerator, false, previousEdges);
         }
 
         protected override (double cost, double turnCost) GetCost(RoutingNetworkEdgeEnumerator edgeEnumerator, IEnumerable<(EdgeId edge, byte? turn)> previousEdges)

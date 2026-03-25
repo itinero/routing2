@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
+using Itinero.Network.Tiles;
 using Xunit;
 
 namespace Itinero.Tests.Network.Writer;
@@ -17,7 +17,7 @@ public class RoutingNetworkWriterTests
             (4.7868, 51.2643, (float?) null)
         });
 
-        Assert.Equal(Tile.WorldToTile(4.7868, 51.2643, network.Zoom).LocalId, vertices[0].TileId);
+        Assert.Equal(TileStatic.ToLocalId(4.7868, 51.2643, network.Zoom), vertices[0].TileId);
         Assert.Equal((uint)0, vertices[0].LocalId);
     }
 
@@ -67,10 +67,9 @@ public class RoutingNetworkWriterTests
             (4.7868, 51.2643, (float?) null)
         });
 
-        var tile = Tile.FromLocalId(vertices[0].TileId, network.Zoom);
-        Assert.Equal((uint)8409, tile.X);
-        Assert.Equal((uint)5465, tile.Y);
-        Assert.Equal(14, tile.Zoom);
+        var tile = TileStatic.ToTile(network.Zoom, vertices[0].TileId);
+        Assert.Equal((uint)8409, tile.x);
+        Assert.Equal((uint)5465, tile.y);
     }
 
     [Fact]

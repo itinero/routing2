@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using Reminiscence;
-using Reminiscence.Arrays;
-using Reminiscence.IO;
+using System;
+using System.Collections.Generic;
 
 namespace Itinero.IO.Osm.Collections;
 
@@ -12,25 +10,16 @@ internal sealed class UnsignedNodeIndex
 {
     // keeps all coordinates in a form [id, lat * 10.000.000, lon * 10.000.000]
     // assumes coordinates are added from a sorted source: TODO: make sure that the source read by the routerdb is sorted.
-    private readonly ArrayBase<int> _data;
-    private readonly ArrayBase<int> _index;
+    private int[] _data;
+    private int[] _index;
 
     /// <summary>
     /// Creates a new node coordinates cache.
     /// </summary>
     public UnsignedNodeIndex()
     {
-        _index = new MemoryArray<int>(1024 * 1024);
-        _data = new MemoryArray<int>(0);
-    }
-
-    /// <summary>
-    /// Creates a new node coordinates cache.
-    /// </summary>
-    public UnsignedNodeIndex(MemoryMap map)
-    {
-        _index = new Array<int>(map, 1024 * 1024);
-        _data = new Array<int>(map, 0);
+        _index = new int[1024 * 1024];
+        _data = new int[0];
     }
 
     private List<long>? _overflows = null; // overflows is null before sorting.
@@ -44,9 +33,9 @@ internal sealed class UnsignedNodeIndex
         int int1, int2;
         long2doubleInt(id, out int1, out int2);
 
-        _index.EnsureMinimumSize(_idx + 2);
-        _index[_idx + 0] = int1;
-        _index[_idx + 1] = int2;
+        EnsureMinimumSize(ref _index, _idx + 2);
+        _index[(int)(_idx + 0)] = int1;
+        _index[(int)(_idx + 1)] = int2;
         _idx += 2;
     }
 
@@ -76,29 +65,29 @@ internal sealed class UnsignedNodeIndex
     public void SortAndConvertIndex()
     {
         _overflows = new List<long>();
-        _index.Resize(_idx);
+        Array.Resize(ref _index, (int)_idx);
 
         Logging.Logger.Log("NodeIndex", Logging.TraceEventType.Information, "Sorting node id's...");
         QuickSort.Sort((i) =>
         {
-            var int1 = _index[i * 2 + 0];
-            var int2 = _index[i * 2 + 1];
+            var int1 = _index[(int)(i * 2 + 0)];
+            var int2 = _index[(int)(i * 2 + 1)];
             return doubleInt2long(int1, int2);
         },
             (i, j) =>
             {
-                var int1 = _index[i * 2 + 0];
-                var int2 = _index[i * 2 + 1];
-                _index[i * 2 + 0] = _index[j * 2 + 0];
-                _index[i * 2 + 1] = _index[j * 2 + 1];
-                _index[j * 2 + 0] = int1;
-                _index[j * 2 + 1] = int2;
+                var int1 = _index[(int)(i * 2 + 0)];
+                var int2 = _index[(int)(i * 2 + 1)];
+                _index[(int)(i * 2 + 0)] = _index[(int)(j * 2 + 0)];
+                _index[(int)(i * 2 + 1)] = _index[(int)(j * 2 + 1)];
+                _index[(int)(j * 2 + 0)] = int1;
+                _index[(int)(j * 2 + 1)] = int2;
             }, 0, _index.Length / 2 - 1);
 
         for (long i = 0; i < _index.Length / 2; i++)
         {
-            var int1 = _index[i * 2 + 0];
-            var int2 = _index[i * 2 + 1];
+            var int1 = _index[(int)(i * 2 + 0)];
+            var int2 = _index[(int)(i * 2 + 1)];
             var id = doubleInt2long(int1, int2);
 
             while (id >= (long)int.MaxValue * (long)(_overflows.Count + 1))
@@ -106,10 +95,10 @@ internal sealed class UnsignedNodeIndex
                 _overflows.Add(i);
             }
 
-            _index[i] = (int)(id - (long)int.MaxValue * (long)_overflows.Count);
+            _index[(int)i] = (int)(id - (long)int.MaxValue * (long)_overflows.Count);
         }
 
-        _index.Resize(_index.Length / 2);
+        Array.Resize(ref _index, _index.Length / 2);
         _idx = _index.Length;
     }
 
@@ -120,8 +109,8 @@ internal sealed class UnsignedNodeIndex
     {
         get
         {
-            var int1 = _index[idx * 2 + 0];
-            var int2 = _index[idx * 2 + 1];
+            var int1 = _index[(int)(idx * 2 + 0)];
+            var int2 = _index[(int)(idx * 2 + 1)];
             return doubleInt2long(int1, int2);
         }
     }
@@ -133,9 +122,9 @@ internal sealed class UnsignedNodeIndex
     {
         var idx = this.TryGetIndex(id);
 
-        _data.EnsureMinimumSize(idx * 2 + 2, int.MaxValue);
-        _data[idx * 2 + 0] = unchecked((int)vertex);
-        _data[idx * 2 + 1] = int.MinValue;
+        EnsureMinimumSize(ref _data, idx * 2 + 2, int.MaxValue);
+        _data[(int)(idx * 2 + 0)] = unchecked((int)vertex);
+        _data[(int)(idx * 2 + 1)] = int.MinValue;
     }
 
     /// <summary>
@@ -146,16 +135,16 @@ internal sealed class UnsignedNodeIndex
         var lat = (int)(latitude * 10000000);
         var lon = (int)(longitude * 10000000);
 
-        _data.EnsureMinimumSize(idx * 2 + 2, int.MaxValue);
+        EnsureMinimumSize(ref _data, idx * 2 + 2, int.MaxValue);
 
-        if (_data[idx * 2 + 1] == int.MinValue)
+        if (_data[(int)(idx * 2 + 1)] == int.MinValue)
         {
             // this is already a core vertex, no need to overwrite this more valuable data.
             return;
         }
 
-        _data[idx * 2 + 0] = lat;
-        _data[idx * 2 + 1] = lon;
+        _data[(int)(idx * 2 + 0)] = lat;
+        _data[(int)(idx * 2 + 1)] = lon;
     }
 
     /// <summary>
@@ -176,8 +165,8 @@ internal sealed class UnsignedNodeIndex
             return false;
         }
 
-        vertex = unchecked((uint)_data[idx * 2 + 0]);
-        return _data[idx * 2 + 1] == int.MinValue;
+        vertex = unchecked((uint)_data[(int)(idx * 2 + 0)]);
+        return _data[(int)(idx * 2 + 1)] == int.MinValue;
     }
 
     /// <summary>
@@ -276,12 +265,12 @@ internal sealed class UnsignedNodeIndex
             return false;
         }
         else if (_data.Length > idx * 2 + 1 &&
-                 _data[idx * 2 + 1] == int.MinValue)
+                 _data[(int)(idx * 2 + 1)] == int.MinValue)
         { // this is a core-vertex, no coordinates here anymore.
             latitude = float.MaxValue;
             longitude = float.MaxValue;
             isCore = this.IsCoreNodeAtIndex(idx, id);
-            vertex = unchecked((uint)_data[idx * 2 + 0]);
+            vertex = unchecked((uint)_data[(int)(idx * 2 + 0)]);
             return true;
         }
 
@@ -446,15 +435,15 @@ internal sealed class UnsignedNodeIndex
             }
         }
 
-        return (long)_index[index] + (long)(int.MaxValue * (long)overflow);
+        return (long)_index[(int)index] + (long)(int.MaxValue * (long)overflow);
     }
 
     private bool GetLatLon(long index, out float latitude, out float longitude)
     {
         index = index * 2;
 
-        var lat = _data[index + 0];
-        var lon = _data[index + 1];
+        var lat = _data[(int)(index + 0)];
+        var lon = _data[(int)(index + 1)];
 
         if (lat == int.MaxValue && lon == int.MaxValue)
         {
@@ -472,4 +461,12 @@ internal sealed class UnsignedNodeIndex
     /// Returns the number of elements.
     /// </summary>
     public long Count => _index.Length;
+
+    private static void EnsureMinimumSize(ref int[] array, long position, long step = 16)
+    {
+        if (array.Length > position) return;
+        var newSize = array.Length + step;
+        while (newSize <= position) newSize += step;
+        Array.Resize(ref array, (int)newSize);
+    }
 }

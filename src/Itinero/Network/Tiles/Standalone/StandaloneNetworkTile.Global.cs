@@ -1,138 +1,150 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Itinero.IO;
 using Itinero.Network.Storage;
+using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.TurnCosts;
-using Reminiscence.Arrays;
 
 namespace Itinero.Network.Tiles.Standalone;
 
 public partial class StandaloneNetworkTile
 {
-    private uint _turnCostPointer = 0;
-    private readonly ArrayBase<byte> _turnCosts = new MemoryArray<byte>(0);
+    // here we store all the data about global restrictions that could not be turned into turn costs yet because the network is not complete at
+    // the edge of the tiles. we store the global edge ids of the restriction along with the type so we can create the turn cost when the network
+    // is being completed
+    private uint _globalRestrictionsPointer;
+    private byte[] _globalRestrictions = new byte[0];
 
-    internal void AddGlobalTurnCosts((Guid globalEdgeId, bool forward)[] edges, uint[,] costs, uint turnCostType,
-        IEnumerable<(string key, string value)> attributes)
+    /// <summary>
+    /// Adds a global restriction for processing when the tile is loaded.
+    /// </summary>
+    /// <param name="sequence">The sequence of global edge ids with local edge ids if they are already known.</param>
+    /// <param name="isProhibitory">The type of restriction.</param>
+    /// <param name="turnCostTypeId">The turn cost type, already determined.</param>
+    /// <param name="attributes">The raw attributes of the restriction.</param>
+    public void AddGlobalRestriction(IEnumerable<(GlobalEdgeId globalEdgeId, EdgeId? edge)> sequence,
+        bool isProhibitory, uint turnCostTypeId, IEnumerable<(string key, string value)> attributes)
     {
-        if (edges.Length > OrderCoder.MaxOrderHeadTail)
-        {
-            throw new ArgumentException(
+        var edges = sequence.ToList();
+        if (edges.Count > OrderCoder.MaxOrderHeadTail) throw new ArgumentException(
                 $"Cannot add turn costs for vertices with more than {OrderCoder.MaxOrderHeadTail} edges.");
-        }
 
         // make sure there is space in the turn cost array.
-        var maxLength = _turnCostPointer + 5 + 5 + 5 +
-                        (edges.Length * (16 + 5)) +
-                        (costs.GetLength(0) * costs.GetLength(1) * 5);
-        while (_turnCosts.Length < maxLength)
+        var maxLength = _globalRestrictionsPointer + 5 + 5 + 5 +
+                        (edges.Count * (9 + 5 + 5 + 5));
+        while (_globalRestrictions.Length < maxLength)
         {
-            _turnCosts.Resize(_turnCosts.Length + 256);
+            Array.Resize(ref _globalRestrictions, (int)(_globalRestrictions.Length + 256));
         }
 
         // add turn.
         var a = this.SetAttributes(attributes);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, a);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
-        _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)edges.Length);
-        for (var i = 0; i < edges.Length; i++)
+        _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32(_globalRestrictionsPointer, a);
+        if (isProhibitory)
         {
-            var (globalEdgeId, forward) = edges[i];
-
-            _turnCostPointer += (uint)_turnCosts.SetGuid(_turnCostPointer, globalEdgeId);
-            _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)(forward ? 1 : 0));
+            // isProhibitory if turnCostTypeId is encoded as a positive number.
+            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt32(_globalRestrictionsPointer, (int)(turnCostTypeId + 1));
         }
-
-        for (var x = 0; x < costs.GetLength(0); x++)
-            for (var y = 0; y < costs.GetLength(1); y++)
+        else
+        {
+            // not isProhibitory if turnCostTypeId is encoded as a negative number.
+            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt32(_globalRestrictionsPointer, -(int)(turnCostTypeId + 1));
+        }
+        _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32(_globalRestrictionsPointer, (uint)edges.Count);
+        foreach (var (globalEdgeId, edgeId) in edges)
+        {
+            _globalRestrictionsPointer += _globalRestrictions.SetGlobalEdgeId(_globalRestrictionsPointer, globalEdgeId);
+            if (edgeId == null)
             {
-                _turnCostPointer += (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, costs[x, y]);
-            }
-    }
-
-    /// <summary>
-    /// Gets all the global turn costs.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<((Guid globalEdgeId, bool forward)[] edges, uint[,] costs, uint turnCostType,
-        IEnumerable<(string key, string value)> attributes)> GetGlobalTurnCost()
-    {
-        var pointer = 0L;
-        while (pointer < _turnCostPointer)
-        {
-            pointer += _turnCosts.GetDynamicUInt32(pointer, out var a);
-            pointer += _turnCosts.GetDynamicUInt32(pointer, out var turnCostType);
-            pointer += _turnCosts.GetDynamicUInt32(pointer, out var edgeCount);
-            var edges = new (Guid globalEdgeId, bool forward)[edgeCount];
-            for (var i = 0; i < edgeCount; i++)
-            {
-                _turnCostPointer += (uint)_turnCosts.GetGuid(_turnCostPointer, out var globalEdgeId);
-                _turnCostPointer += (uint)_turnCosts.GetDynamicUInt32(_turnCostPointer, out var forwardValue);
-                var forward = forwardValue == 1;
-
-                edges[i] = (globalEdgeId, forward);
-            }
-
-            var costs = new uint[edges.Length, edges.Length];
-            for (var x = 0; x < costs.GetLength(0); x++)
-                for (var y = 0; y < costs.GetLength(1); y++)
-                {
-                    pointer += _crossings.GetDynamicUInt32(pointer, out var cost);
-                    costs[x, y] = cost;
-                }
-
-            yield return (edges, costs, turnCostType, this.GetAttributes(a));
-        }
-    }
-
-    private uint _globalIdPointer = 0;
-    private readonly ArrayBase<byte> _globalIds = new MemoryArray<byte>(0);
-
-    internal void AddGlobalIdFor(EdgeId edgeId, Guid globalEdgeId)
-    {
-        // make sure there is space.
-        var maxLength = _globalIdPointer + 16 + 5;
-        while (_globalIds.Length < maxLength)
-        {
-            _globalIds.Resize(_globalIds.Length + 64);
-        }
-
-        _globalIdPointer += (uint)_globalIds.SetGuid(_globalIdPointer, globalEdgeId);
-        _globalIdPointer += (uint)_globalIds.SetDynamicInt32(_globalIdPointer, (int)edgeId.LocalId);
-    }
-
-    internal void AddGlobalIdFor(BoundaryEdgeId boundaryEdgeId, Guid globalEdgeId)
-    {
-        // make sure there is space.
-        var maxLength = _globalIdPointer + 16 + 5;
-        while (_globalIds.Length < maxLength)
-        {
-            _globalIds.Resize(_globalIds.Length + 64);
-        }
-
-        _globalIdPointer += (uint)_globalIds.SetGuid(_globalIdPointer, globalEdgeId);
-        _globalIdPointer += (uint)_globalIds.SetDynamicInt32(_globalIdPointer, (int)-(boundaryEdgeId.LocalId + 1));
-    }
-
-    /// <summary>
-    /// Gets all the global edge ids.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<(Guid globalEdgeId, EdgeId? edgeId, BoundaryEdgeId? boundaryEdgeId)> GetGlobalEdgeIds()
-    {
-        var pointer = 0L;
-        while (pointer < _turnCostPointer)
-        {
-            pointer += _turnCosts.GetGuid(pointer, out var globalEdgeId);
-            pointer += _turnCosts.GetDynamicInt32(pointer, out var localId);
-
-            if (localId >= 0)
-            {
-                yield return (globalEdgeId, new EdgeId(this.TileId, (uint)localId), null);
+                _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32Nullable(_globalRestrictionsPointer,
+                    null);
             }
             else
             {
-                yield return (globalEdgeId, null, new BoundaryEdgeId((uint)-localId - 1));
+                _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32Nullable(_globalRestrictionsPointer,
+                    edgeId.Value.LocalId);
             }
         }
+    }
+
+    /// <summary>
+    /// Gets all the global restrictions.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<(IReadOnlyList<(GlobalEdgeId globalEdgeId, EdgeId? edgeId)> edges, bool isProhibitory, uint turnCostTypeId,
+        IEnumerable<(string key, string value)> attributes)> GetGlobalRestrictions()
+    {
+        var pointer = 0L;
+        while (pointer < _globalRestrictionsPointer)
+        {
+            pointer += _globalRestrictions.GetDynamicUInt32(pointer, out var a);
+            pointer += _globalRestrictions.GetDynamicInt32(pointer, out var turnCostTypeSigned);
+            uint turnCostType;
+            bool isProhibitory;
+            if (turnCostTypeSigned > 0)
+            {
+                isProhibitory = true;
+                turnCostType = (uint)turnCostTypeSigned - 1;
+            }
+            else
+            {
+                isProhibitory = false;
+                turnCostType = (uint)(-turnCostTypeSigned - 1);
+            }
+            pointer += _globalRestrictions.GetDynamicUInt32(pointer, out var edgeCount);
+            var edges = new (GlobalEdgeId globalEdgeId, EdgeId? edge)[edgeCount];
+            for (var i = 0; i < edgeCount; i++)
+            {
+                pointer += _globalRestrictions.GetGlobalEdgeId(pointer, out var globalEdgeId);
+                pointer += _globalRestrictions.GetDynamicUInt32Nullable(pointer,
+                    out var localId);
+
+                EdgeId? edgeId = null;
+                if (localId != null)
+                {
+                    edgeId = new EdgeId(this.TileId, localId.Value);
+                }
+
+                edges[i] = (globalEdgeId, edgeId);
+            }
+
+            yield return (edges, isProhibitory, turnCostType, this.GetAttributes(a));
+        }
+    }
+
+    private void WriteGlobal(Stream stream)
+    {
+        stream.WriteVarUInt32(_globalRestrictionsPointer);
+        for (var i = 0; i < _globalRestrictionsPointer; i++)
+        {
+            stream.WriteByte(_globalRestrictions[i]);
+        }
+    }
+
+    private void ReadGlobal(Stream stream)
+    {
+        _globalRestrictionsPointer = stream.ReadVarUInt32();
+        _globalRestrictions = new byte[_globalRestrictionsPointer];
+        for (var i = 0; i < _globalRestrictionsPointer; i++)
+        {
+            _globalRestrictions[i] = (byte)stream.ReadByte();
+        }
+    }
+
+    private void ReadGlobal(byte[] data, ref int offset)
+    {
+        _globalRestrictionsPointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        _globalRestrictions = new byte[_globalRestrictionsPointer];
+        Buffer.BlockCopy(data, offset, _globalRestrictions, 0, (int)_globalRestrictionsPointer);
+        offset += (int)_globalRestrictionsPointer;
+    }
+
+    private void WriteGlobal(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _globalRestrictionsPointer);
+        Buffer.BlockCopy(_globalRestrictions, 0, data, offset, (int)_globalRestrictionsPointer);
+        offset += (int)_globalRestrictionsPointer;
     }
 }

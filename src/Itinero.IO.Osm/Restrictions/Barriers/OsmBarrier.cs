@@ -8,30 +8,30 @@ namespace Itinero.IO.Osm.Restrictions.Barriers;
 /// </summary>
 public class OsmBarrier
 {
-    private OsmBarrier(long node, IEnumerable<(string key, string value)> attributes)
+    private OsmBarrier(Node node, IEnumerable<Way> ways)
     {
         this.Node = node;
-        this.Attributes = attributes;
+        this.Ways = ways;
     }
 
     /// <summary>
-    /// The node where the barrier exists at.
+    /// The node where the barrier exists.
     /// </summary>
-    public long Node { get; }
+    public Node Node { get; }
 
     /// <summary>
-    /// The attributes associated with the barrier.
+    /// The way(s).
     /// </summary>
-    public IEnumerable<(string key, string value)> Attributes { get; }
+    public IEnumerable<Way> Ways { get; private set; }
 
     /// <summary>
     /// Creates a new barrier.
     /// </summary>
     /// <param name="node">The node.</param>
-    /// <param name="attributes">The attributes.</param>
+    /// <param name="ways">The ways that contain the node.</param>
     /// <returns>The barrier.</returns>
-    public static OsmBarrier Create(long node, IEnumerable<(string key, string value)> attributes)
+    public static OsmBarrier Create(Node node, IEnumerable<Way> ways)
     {
-        return new OsmBarrier(node, attributes);
+        return new OsmBarrier(node, ways);
     }
 }

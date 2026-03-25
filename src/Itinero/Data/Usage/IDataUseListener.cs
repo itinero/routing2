@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
 
@@ -17,7 +17,20 @@ public interface IDataUseListener
     IDataUseListener? CloneForNewNetwork(RoutingNetwork routingNetwork);
 
     /// <summary>
-    /// Called when a vertex is touched.
+    /// Returns true if the data for the given vertex is ready and no async loading is needed.
+    /// This is the fast path — called synchronously on every vertex during routing.
+    /// When this returns true, <see cref="VertexTouched"/> will not be called for this vertex.
+    /// </summary>
+    /// <param name="network">The network.</param>
+    /// <param name="vertex">The vertex being touched.</param>
+    /// <returns>True if the vertex data is already available, false if async loading may be needed.</returns>
+    bool IsVertexDataReady(RoutingNetwork network, VertexId vertex)
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// Called when a vertex is touched and <see cref="IsVertexDataReady"/> returned false.
     /// </summary>
     /// <param name="network">The network.</param>
     /// <param name="vertex">The vertex that was touched.</param>

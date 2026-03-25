@@ -11,7 +11,7 @@ internal abstract class DijkstraAlgorithm
 {
     private readonly PathTree _tree = new();
     private readonly Dictionary<VertexId, (uint p, double cost)> _settled = [];
-    private readonly BinaryHeap<uint> _heap = new();
+    private readonly BinaryHeap<(uint pointer, VertexId vertex)> _heap = new();
     protected readonly RoutingNetworkEdgeEnumerator _enumerator;
     protected readonly RoutingNetwork _network;
 
@@ -27,6 +27,9 @@ internal abstract class DijkstraAlgorithm
     protected abstract bool OnQueued(uint visit, EdgeId edge, (double cost, double turnCost) edgeCost, VertexId vertex, double totalCost);
 
     protected abstract bool OnSettled(uint visit, VertexId vertex, double cost);
+
+    protected abstract (double cost, double turnCost) GetCost(RoutingNetworkEdgeEnumerator edgeEnumerator,
+        PreviousEdgeEnumerable previousEdges);
 
     protected abstract (double cost, double turnCost) GetCost(RoutingNetworkEdgeEnumerator edgeEnumerator,
         IEnumerable<(EdgeId edge, byte? turn)> previousEdges);
@@ -53,24 +56,32 @@ internal abstract class DijkstraAlgorithm
         if (!_enumerator.MoveTo(edgeId, forward)) throw new Exception($"Edge not found!");
 
         var v = _tree.AddVisit(_enumerator, uint.MaxValue);
-        _heap.Push(v, cost);
+        _heap.Push((v, _enumerator.Head), cost);
         return v;
     }
 
     internal (uint pointer, (VertexId vertex, EdgeId edge, bool forward, byte? head, uint previousPointer) visit, double cost) Pop()
     {
-        var currentPointer = _heap.Pop(out var currentCost);
-        var currentVisit = _tree.GetVisit(currentPointer);
-        while (!_settled.TryAdd(currentVisit.vertex, (currentPointer, currentCost)))
+        var currentEntry = _heap.Pop(out var currentCost);
+        while (!_settled.TryAdd(currentEntry.vertex, (currentEntry.pointer, currentCost)))
         {
-            currentPointer = uint.MaxValue;
-            if (_heap.Count == 0) break;
+            if (_heap.Count == 0)
+            {
+                currentEntry = (uint.MaxValue, default);
+                break;
+            }
 
-            currentPointer = _heap.Pop(out currentCost);
-            currentVisit = _tree.GetVisit(currentPointer);
+            currentEntry = _heap.Pop(out currentCost);
         }
 
-        return (currentPointer, currentVisit, currentCost);
+        if (currentEntry.pointer == uint.MaxValue)
+        {
+            return (uint.MaxValue, default, currentCost);
+        }
+
+        // only call GetVisit after the settled check passes.
+        var currentVisit = _tree.GetVisit(currentEntry.pointer);
+        return (currentEntry.pointer, currentVisit, currentCost);
     }
 
     internal IEnumerable<(EdgeId edge, byte? turn)> GetPreviousEdges(uint pointer, int maxCount = 16)
@@ -146,7 +157,7 @@ internal abstract class DijkstraAlgorithm
             if (neighbourEdge == visit.edge) continue;
 
             // gets the cost of the current edge.
-            var (neighbourCost, turnCost) = this.GetCost(_enumerator, _tree.GetPreviousEdges(pointer));
+            var (neighbourCost, turnCost) = this.GetCost(_enumerator, new PreviousEdgeEnumerable(_tree, pointer));
 
             // ignore if cost is 0 or infinite.
             if (neighbourCost is >= double.MaxValue or <= 0) continue;
@@ -162,7 +173,7 @@ internal abstract class DijkstraAlgorithm
             if (!this.OnQueued(neighbourPointer, _enumerator.EdgeId, (neighbourCost, turnCost), _enumerator.Head, totalCost)) continue;
 
             // add visit to heap.
-            _heap.Push(neighbourPointer, totalCost);
+            _heap.Push((neighbourPointer, _enumerator.Head), totalCost);
         }
 
         return true;

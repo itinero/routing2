@@ -4,7 +4,7 @@ using System.Linq;
 using OsmSharp;
 using OsmSharp.Db;
 
-namespace Itinero.IO.Osm.Restrictions;
+namespace Itinero.IO.Osm.Restrictions.Turns;
 
 /// <summary>
 /// Parses OSM restrictions. Input is an OSM relation restriction, output is one or more restricted sequences of vertices.

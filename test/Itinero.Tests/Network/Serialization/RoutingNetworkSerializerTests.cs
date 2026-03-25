@@ -52,10 +52,10 @@ public class RoutingNetworkSerializerTests
             vertex1 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
             vertex2 = writer.AddVertex(4.7868, 51.2643); // https://www.openstreetmap.org/#map=15/51.2643/4.7868
 
-            edge = writer.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] {
+            edge = writer.AddEdge(vertex1, vertex2, null, new (string key, string value)[] {
                     ("highway", "residential"),
                     ("maxspeed", "50")
-                });
+                }, null, writer.ComputeEdgeLength(vertex1, vertex2));
         }
 
         var stream = new MemoryStream();

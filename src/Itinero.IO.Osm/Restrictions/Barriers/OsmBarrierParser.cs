@@ -25,9 +25,10 @@ public class OsmBarrierParser
     /// Tries to parse a barrier.
     /// </summary>
     /// <param name="node">The node.</param>
+    /// <param name="ways">The ways containing the node the barrier is on.</param>
     /// <param name="barrier">The barrier, if any.</param>
     /// <returns>True if parsing succeeded.</returns>
-    public bool TryParse(Node node, [NotNullWhen(returnValue: true)] out OsmBarrier? barrier)
+    public bool TryParse(Node node, IEnumerable<Way> ways, [NotNullWhen(returnValue: true)] out OsmBarrier? barrier)
     {
         if (node.Id == null) throw new ArgumentException("Node with id null cannot be a barrier");
 
@@ -35,7 +36,7 @@ public class OsmBarrierParser
 
         if (!this.IsBarrier(node)) return false;
 
-        barrier = OsmBarrier.Create(node.Id.Value, node.Tags.Select(t => (t.Key, t.Value)).ToList());
+        barrier = OsmBarrier.Create(node, ways);
 
         return true;
     }

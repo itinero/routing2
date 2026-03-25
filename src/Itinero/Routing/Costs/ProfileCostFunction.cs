@@ -35,7 +35,9 @@ internal class ProfileCostFunction : ICostFunction
         if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
 
         // there are turn costs.
-        var turnCosts = edgeEnumerator.GetTurnCostToTail(turn.Value);
+        var turnCosts = tailToHead
+            ? edgeEnumerator.GetTurnCostToTail(turn.Value)
+            : edgeEnumerator.GetTurnCostFromTail(turn.Value);
         foreach (var (_, attributes, turnCost, prefixEdges) in turnCosts)
         {
             // TODO: compare prefix edges with the previous edges.

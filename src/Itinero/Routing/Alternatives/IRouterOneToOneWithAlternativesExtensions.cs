@@ -78,7 +78,10 @@ public static class IRouterOneToOneWithAlternativesExtensions
                 costFunction.GetDijkstraWeightFunc(),
                 async v =>
                 {
-                    await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                    if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v.vertexId))
+                    {
+                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                    }
                     if (cancellationToken.IsCancellationRequested) return false;
                     return CheckMaxDistance(v.vertexId);
                 }, cancellationToken: cancellationToken);

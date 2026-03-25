@@ -5,10 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Itinero.IO.Json.GeoJson;
 using Itinero.IO.Osm;
-using Itinero.IO.Osm.Tiles.Parsers;
-using Itinero.Network.Search.Islands;
+
 using Itinero.Profiles;
-using Itinero.Profiles.Lua;
 using Itinero.Snapping;
 using Itinero.Tests.Functional.Download;
 using Itinero.Tests.Functional.Tests;
@@ -23,9 +21,6 @@ namespace Itinero.Tests.Functional;
 
 internal static class Program
 {
-    private static readonly string LuxembourgUrl =
-        "http://planet.anyways.eu/planet/europe/luxembourg/luxembourg-latest.osm.pbf";
-
     private static readonly string BelgiumUrl =
         "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf";
 
@@ -33,7 +28,9 @@ internal static class Program
     {
         Console.WriteLine("Loading from file " + filepath);
         using var routerDbStream = File.OpenRead(filepath);
-        return RouterDb.ReadFrom(routerDbStream);
+        var routerDb = RouterDb.ReadFrom(routerDbStream);
+        routerDb.EdgeTypeMap = new OsmEdgeTypeMap();
+        return routerDb;
     }
 
     private static void ToFile(string path, RouterDb routerDb)
@@ -49,7 +46,8 @@ internal static class Program
         Console.WriteLine("Loading from URL " + url);
         var routerDb = new RouterDb(new RouterDbConfiguration
         {
-            Zoom = 14
+            Zoom = 14,
+            EdgeTypeMap = new OsmEdgeTypeMap()
         });
 
         routerDb.PrepareFor(p);
@@ -63,335 +61,166 @@ internal static class Program
         return routerDb;
     }
 
+    private static RouterDb GetOrCreate(Profile p, string url, string localFile = "latest.osm.pbf")
+    {
+        var routerDbFile = Path.ChangeExtension(localFile, ".routerdb");
+        if (File.Exists(routerDbFile))
+        {
+            return FromFile(routerDbFile);
+        }
+
+        var routerDb = FromUrl(p, url, localFile);
+        ToFile(routerDbFile, routerDb);
+        return routerDb;
+    }
+
 
     private static async Task Main(string[] args)
     {
         EnableLogging();
 
-        TileParser.DownloadFunc = DownloadHelper.Download;
-
-        //var routerDb = RouterDb.ReadFrom(File.OpenRead("data.routerdb")); 
-
-        // // create a new srtm data instance.
-        // // it accepts a folder to download and cache data into.
-        // var srtmCache = new DirectoryInfo("srtm-cache");
-        // if (!srtmCache.Exists) {
-        //     srtmCache.Create();
-        // }
-
-        // // setup elevation integration.
-        // var srtmData = new SRTMData(srtmCache.FullName) {
-        //     GetMissingCell = (path, name) => {
-        //         var filename = name + ".hgt.zip";
-        //         var hgt = Path.Combine(path, filename);
-        //
-        //         if (SourceHelpers.Download(hgt, "http://planet.anyways.eu/srtm/" + filename)) {
-        //             return true;
-        //         }
-        //
-        //         return false;
-        //     }
-        // };
-        //
-        // ElevationHandler.Default = new ElevationHandler((lat, lon) => {
-        //     var elevation = srtmData.GetElevation(lat, lon);
-        //     if (!elevation.HasValue) {
-        //         return 0;
-        //     }
-        //
-        //     return (short) elevation;
-        // });
-
         var car = Profiles.Lua.Osm.OsmProfiles.Car;
 
-        // setup a router db with a local osm file.
-        var routerDb = FromUrl(car, LuxembourgUrl, "luxembourg-latest.osm.pbf");
+        // === Belgium tests ===
+        Directory.CreateDirectory("results");
 
-        var lux1 = (5.99620407852791,
-            49.673960512047614, (float?)0f);
-        var lux2 = (6.124148368835449, 49.588792167215345, (float?)0f);
-
+        var routerDb = GetOrCreate(car, BelgiumUrl, "belgium-latest.osm.pbf");
+        routerDb.PrepareFor(car);
         var latest = routerDb.Latest;
-        var lux1sp = await latest.Snap(car).ToAsync(lux1);
-        var lux1spLocation = lux1sp.Value.LocationOnNetwork(routerDb.Latest);
-        return;
-        var lux2sp = await latest.Snap(car).ToAsync(lux2);
 
-        // latest.Islands(s =>
-        // {
-        //     s.Profile = car;
-        // }).IsOnIsland(lux1sp.Value.EdgeId, true);
+        // all test locations
+        var locations = new (string name, double longitude, double latitude)[]
+        {
+            ("zellik1", 4.27392840385437, 50.884507285755205),
+            ("zellik2", 4.275886416435242, 50.88336336674239),
+            ("wechelderzande1", 4.80129, 51.26774),
+            ("wechelderzande2", 4.794577360153198, 51.26723850107129),
+            ("wechelderzande4", 4.796256422996521, 51.261015209797186),
+            ("wechelderzande5", 4.795172810554504, 51.267413036466706),
+            ("vorselaar1", 4.7668540477752686, 51.23757128291549),
+            ("bruggeStation", 3.214899, 51.195129),
+            ("stationDuinberge", 3.26358318328857, 51.3381990351222),
+            ("stekene", 4.03705, 51.20637),
+            ("heldergem", 3.93702, 50.88283),
+            ("ninove", 4.02486, 50.83536),
+            ("pepingen", 4.15410, 50.76274),
+            ("lebbeke", 4.13916, 51.00328),
+            ("hamme", 4.13371, 51.09755)
+        };
 
-        var oneToOne = await RouterOneToOneTest.Default.RunAsync((latest, lux1sp, lux2sp, car));
-        var oneToOneGeoJson = oneToOne.ToGeoJson();
-        var routes = await RouterOneToOneWithAlternativeTest.Default.RunAsync(
-            (latest, lux1sp, lux2sp, car)
-        );
+        // snap all test locations (cold + hot)
+        var snapPoints = new Dictionary<string, SnapPoint>();
+        foreach (var (name, longitude, latitude) in locations)
+        {
+            await SnappingTest.Default.RunAsync(
+                (latest, longitude, latitude, car), $"Snapping cold: {name}");
+            var sp = await SnappingTest.Default.RunAsync(
+                (latest, longitude, latitude, car), $"Snapping hot: {name}");
+            snapPoints[name] = sp;
+        }
 
-        var geoJson = routes.Select(r => r.ToGeoJson()).ToList();
-        Console.WriteLine(geoJson);
-        // SnappingTests.RunTests(routerDb, bicycle);
-        //  routerDb = FromFile("/data/work/data/OSM/test/itinero2/data.routerdb");
-        // SnappingTests.RunTestsBe(routerDb, bicycle);
+        // route between all pairs
+        var failed = new List<(string from, string to)>();
+        for (var i = 0; i < locations.Length; i++)
+        {
+            for (var j = 0; j < locations.Length; j++)
+            {
+                if (i == j) continue;
 
-        //
-        // var route = RouterOneToOneTest.Default.RunAsync((latest, lesotho1, lesotho2, bicycle),
-        //     $"Route cold: {nameof(lesotho1)} -> {nameof(lesotho2)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, lesotho1, lesotho2, bicycle),
-        //     $"Route hot: {nameof(lesotho1)} -> {nameof(lesotho2)}", 100);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(lesotho1)}-{nameof(lesotho2)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // routerDb = RouterDbSerializeDeserializeTest.Default.RunAsync(routerDb,
-        //     "Serializing/deserializing current routerdb.");
-        // latest = routerDb.Network;
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, lesotho1, lesotho2, bicycle),
-        //     $"Route cold (after deserialization): {nameof(lesotho1)} -> {nameof(lesotho2)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, lesotho1, lesotho2, bicycle),
-        //     $"Route hot (after deserialization): {nameof(lesotho1)} -> {nameof(lesotho2)}", 100);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(lesotho1)}-{nameof(lesotho2)}-after.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik1, zellik2, bicycle),
-        //     $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik1, zellik2, bicycle),
-        //     $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 100);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, wechelderzande1, vorselaar1, bicycle),
-        //     $"Route cold: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, wechelderzande1, vorselaar1, bicycle),
-        //     $"Route hot: {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 100);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // routerDb = RouterDbSerializeDeserializeTest.Default.RunAsync(routerDb,
-        //     "Serializing/deserializing current routerdb.");
-        // latest = routerDb.Network;
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, wechelderzande1, vorselaar1, bicycle),
-        //     $"Route cold (after deserialization): {nameof(wechelderzande1)} -> {nameof(vorselaar1)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, wechelderzande1, vorselaar1, bicycle),
-        //     $"Route hot (after deserialization): {nameof(wechelderzande1)} -> {nameof(vorselaar1)}", 100);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande1)}-{nameof(vorselaar1)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, bruggeStation, stationDuinberge, bicycle),
-        //     $"Route cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
-        // route = RouterOneToOneTest.Default.RunAsync((latest, bruggeStation, stationDuinberge, bicycle),
-        //     $"Route host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
-        // File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik1, zellik2, bicycle),
-        //     $"Route cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik1, zellik2, bicycle),
-        //     $"Route hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik2, zellik1, bicycle),
-        //     $"Route cold: {nameof(zellik2)} -> {nameof(zellik1)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik2, zellik1, bicycle),
-        //     $"Route hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, ninove, bicycle),
-        //     $"Route cold: {nameof(heldergem)} -> {nameof(ninove)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, ninove, bicycle),
-        //     $"Route hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // Parallel.For(0, 10, (i) =>
-        // {
-        //     RouterOneToOneTest.Default.RunAsync((latest, heldergem, ninove, bicycle),
-        //         $"Routing parallel: {nameof(heldergem)} -> {nameof(ninove)}");
-        // });
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik1, zellik2, bicycle),
-        //     $"Route (after deserialization) cold: {nameof(zellik1)} -> {nameof(zellik2)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik1, zellik2, bicycle),
-        //     $"Route (after deserialization) hot: {nameof(zellik1)} -> {nameof(zellik2)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(zellik1)}-{nameof(zellik2)}-deserialized.geojson"), 
-        //     route.ToGeoJson());
-        //     
-        // route = RouterOneToOneTest.Default.RunAsync((latest, bruggeStation, stationDuinberge, bicycle),
-        //     $"Route (after deserialization) cold: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}"); 
-        // route = RouterOneToOneTest.Default.RunAsync((latest, bruggeStation, stationDuinberge, bicycle),
-        //     $"Route (after deserialization) host: {nameof(bruggeStation)} -> {nameof(stationDuinberge)}");
-        // File.WriteAllText(Path.Combine("results", $"{nameof(bruggeStation)}-{nameof(stationDuinberge)}-deserialized.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik2, zellik1, bicycle),
-        //     $"Route (after deserialization) cold: {nameof(zellik2)} -> {nameof(zellik1)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, zellik2, zellik1, bicycle),
-        //     $"Route (after deserialization) hot: {nameof(zellik2)} -> {nameof(zellik1)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(zellik2)}-{nameof(zellik1)}-deserialized.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, ninove, bicycle),
-        //     $"Route (after deserialization) cold: {nameof(heldergem)} -> {nameof(ninove)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, ninove, bicycle),
-        //     $"Route (after deserialization) hot: {nameof(heldergem)} -> {nameof(ninove)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}-deserialized.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // Parallel.For(0, 10, (i) =>
-        // {
-        //     RouterOneToOneTest.Default.RunAsync((latest, heldergem, ninove, bicycle),
-        //         $"Routing (after deserialization) parallel: {nameof(heldergem)} -> {nameof(ninove)}");
-        // });
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, pepingen, bicycle),
-        //     $"Route cold: {nameof(heldergem)} -> {nameof(pepingen)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, pepingen, bicycle),
-        //     $"Route hot: {nameof(heldergem)} -> {nameof(pepingen)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(pepingen)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, lebbeke, bicycle),
-        //     $"Route cold: {nameof(heldergem)} -> {nameof(lebbeke)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, lebbeke, bicycle),
-        //     $"Route hot: {nameof(heldergem)} -> {nameof(lebbeke)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(lebbeke)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, stekene, bicycle),
-        //     $"Route cold: {nameof(heldergem)} -> {nameof(stekene)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, stekene, bicycle),
-        //     $"Route hot: {nameof(heldergem)} -> {nameof(stekene)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(stekene)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, hamme, bicycle),
-        //     $"Route cold: {nameof(heldergem)} -> {nameof(hamme)}");
-        // route = RouterOneToOneTest.Default.RunAsync((latest, heldergem, hamme, bicycle),
-        //     $"Route hot: {nameof(heldergem)} -> {nameof(hamme)}", 10);
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(hamme)}.geojson"), 
-        //     route.ToGeoJson());
-        //
-        // route = RouterOneToOneDirectedTest.Default.RunAsync((latest, (wechelderzande5, DirectionEnum.East),
-        //     (wechelderzande2, DirectionEnum.West), bicycle));
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.East)}-" +
-        //                                           $"{nameof(wechelderzande2)}_{nameof(DirectionEnum.West)}.geojson"),route.ToGeoJson());
-        // route = RouterOneToOneDirectedTest.Default.RunAsync((latest, (wechelderzande5, DirectionEnum.East),
-        //     (wechelderzande2, null), bicycle));
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.East)}-" +
-        //                                           $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
-        // route = RouterOneToOneDirectedTest.Default.RunAsync((latest, (wechelderzande5, DirectionEnum.West),
-        //     (wechelderzande2, null), bicycle));
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande5)}_{nameof(DirectionEnum.West)}-" +
-        //                                           $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
-        //
-        // route = RouterOneToOneDirectedTest.Default.RunAsync((latest, (wechelderzande4, DirectionEnum.South),
-        //     (wechelderzande2, null), bicycle));
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande4)}_{nameof(DirectionEnum.South)}-" +
-        //                                           $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
-        // route = RouterOneToOneDirectedTest.Default.RunAsync((latest, (wechelderzande4, DirectionEnum.North),
-        //     (wechelderzande2, null), bicycle));
-        // File.WriteAllText(Path.Combine("results", $"{nameof(wechelderzande4)}_{nameof(DirectionEnum.North)}-" +
-        //                                           $"{nameof(wechelderzande2)}.geojson"),route.ToGeoJson());
-        //
-        // var oneToManyRoutes = RouterOneToManyTest.Default.RunAsync(
-        //     (latest, heldergem, new[] {ninove, pepingen, lebbeke}, bicycle),
-        //     $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-        // oneToManyRoutes = RouterOneToManyTest.Default.RunAsync(
-        //     (latest, heldergem, new[] {ninove, pepingen, lebbeke}, bicycle),
-        //     $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
-        //     oneToManyRoutes[0].ToGeoJson());
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-        //     oneToManyRoutes[1].ToGeoJson());
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-2.geojson"),
-        //     oneToManyRoutes[2].ToGeoJson());
-        //
-        // // tests for many to one routing.
-        // var manyToOneRoutes = RouterManyToOneTest.Default.RunAsync((latest, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
-        //     $"Routes (many to one) cold: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
-        // manyToOneRoutes = RouterManyToOneTest.Default.RunAsync((latest, new [] {ninove, pepingen, lebbeke}, heldergem, bicycle),
-        //     $"Routes (many to one) hot: {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)} -> {nameof(heldergem)}");
-        // File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-0.geojson"),
-        //     manyToOneRoutes[0].ToGeoJson());
-        // File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-1.geojson"),
-        //     manyToOneRoutes[1].ToGeoJson());
-        // File.WriteAllText(Path.Combine("results", $"{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-{nameof(heldergem)}-2.geojson"),
-        //     manyToOneRoutes[2].ToGeoJson());
-        //
-        // manyToOneRoutes = RouterOneToManyTest.Default.RunAsync((latest, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
-        //     $"Routes (one to many) cold: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-        // manyToOneRoutes = RouterOneToManyTest.Default.RunAsync((latest, heldergem, new [] {ninove, pepingen, lebbeke}, bicycle),
-        //     $"Routes (one to many) hot: {nameof(heldergem)} -> {nameof(ninove)},{nameof(pepingen)},{nameof(lebbeke)}");
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-0.geojson"),
-        //     manyToOneRoutes[0].ToGeoJson());
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-        //     manyToOneRoutes[1].ToGeoJson());
-        // File.WriteAllText(Path.Combine("results", $"{nameof(heldergem)}-{nameof(ninove)}_{nameof(pepingen)}_{nameof(lebbeke)}-1.geojson"),
-        //     manyToOneRoutes[2].ToGeoJson());
-        //
-        // for (var j = 0; j < 5; j++)
-        // {
-        //     // setup a router db with a routable tiles data provider.
-        //     routerDb = new RouterDb(new RouterDbConfiguration()
-        //     {
-        //         Zoom = 14
-        //     });
-        //     routerDb.Mutate(mutable =>
-        //     {
-        //         mutable.PrepareFor(bicycle);
-        //     });
-        //     routerDb.UseRouteableTiles(s =>
-        //     {
-        //         s.Url = "https://data1.anyways.eu/tiles/20200527-080000";
-        //     });
-        //     latest = routerDb.Network;
-        //
-        //     var deSterre = await SnappingTest.Default.RunAsync((latest, 3.715675, 51.026164, profile: bicycle),
-        //         $"Snapping cold: deSterre");
-        //
-        //     var targets = new[]
-        //     {
-        //         SnappingTest.Default.RunAsync((latest, 3.70137870311737, 51.1075870861261, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.7190705537796, 51.0883577942415, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.74058723449707, 51.0563671057799, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.65520179271698, 51.0472956366036, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.71066987514496, 51.0358985842182, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.75632107257843, 51.0386479278862, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.76888453960419, 51.0175340229811, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.79708528518677, 51.0028081059898, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.65046501159668, 50.9970656297241, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.82958829402924, 50.9917511038545, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.80167186260223, 50.9801985244791, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.62783789634705, 50.960774752016, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.79114151000977, 50.9705486324505, profile: bicycle),
-        //             $"Snapping cold."),
-        //         SnappingTest.Default.RunAsync((latest, 3.78133535385132, 50.9535197402615, profile: bicycle),
-        //             $"Snapping cold."),
-        //     };
-        //     
-        //     Parallel.For(0, 10, (i) =>
-        //     {
-        //         manyToOneRoutes = RouterManyToOneTest.Default.RunAsync((latest, targets, deSterre, bicycle),
-        //             $"Route cold: many to one to {nameof(deSterre)}");
-        //         manyToOneRoutes = RouterManyToOneTest.Default.RunAsync((latest, targets, deSterre, bicycle),
-        //             $"Route hot: many to one to {nameof(deSterre)}");
-        //     });
-        // }
+                var from = locations[i].name;
+                var to = locations[j].name;
+
+                try
+                {
+                    var route = await RouterOneToOneTest.Default.RunAsync(
+                        (latest, snapPoints[from], snapPoints[to], car),
+                        $"Route: {from} -> {to}");
+                    File.WriteAllText(
+                        Path.Combine("results", $"{from}-{to}.geojson"),
+                        route.ToGeoJson());
+                }
+                catch (Exception ex)
+                {
+                    failed.Add((from, to));
+                    Log.Warning($"Route failed: {from} -> {to}: {ex.Message}");
+                }
+            }
+        }
+
+        if (failed.Count > 0)
+        {
+            Log.Warning($"{failed.Count} routes failed:");
+            foreach (var (from, to) in failed)
+            {
+                Log.Warning($"  {from} -> {to}");
+            }
+        }
+
+        // parallel routing tests
+        var allSnapPoints = locations.Select(l => snapPoints[l.name]).ToArray();
+        await Parallel.ForEachAsync(Enumerable.Range(0, 10), async (_, _) =>
+        {
+            try
+            {
+                await RouterOneToOneTest.Default.RunAsync(
+                    (latest, allSnapPoints[0], allSnapPoints[^1], car),
+                    $"Route parallel: {locations[0].name} -> {locations[^1].name}");
+            }
+            catch (Exception)
+            {
+                // already reported in sequential run
+            }
+        });
+
+        // one-to-many routing tests (each location to all others)
+        for (var i = 0; i < locations.Length; i++)
+        {
+            var source = allSnapPoints[i];
+            var targets = allSnapPoints.Where((_, idx) => idx != i).ToArray();
+            var targetNames = locations.Where((_, idx) => idx != i).Select(l => l.name).ToArray();
+
+            try
+            {
+                var oneToManyRoutes = await RouterOneToManyTest.Default.RunAsync(
+                    (latest, source, targets, car),
+                    $"Routes (one to many): {locations[i].name} -> {string.Join(",", targetNames)}");
+                for (var r = 0; r < oneToManyRoutes.Length; r++)
+                {
+                    File.WriteAllText(
+                        Path.Combine("results", $"one-to-many-{locations[i].name}-{targetNames[r]}.geojson"),
+                        oneToManyRoutes[r].ToGeoJson());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"One-to-many failed from {locations[i].name}: {ex.Message}");
+            }
+        }
+
+        // many-to-one routing tests (all others to each location)
+        for (var i = 0; i < locations.Length; i++)
+        {
+            var target = allSnapPoints[i];
+            var sources = allSnapPoints.Where((_, idx) => idx != i).ToArray();
+            var sourceNames = locations.Where((_, idx) => idx != i).Select(l => l.name).ToArray();
+
+            try
+            {
+                var manyToOneRoutes = await RouterManyToOneTest.Default.RunAsync(
+                    (latest, sources, target, car),
+                    $"Routes (many to one): {string.Join(",", sourceNames)} -> {locations[i].name}");
+                for (var r = 0; r < manyToOneRoutes.Length; r++)
+                {
+                    File.WriteAllText(
+                        Path.Combine("results", $"many-to-one-{sourceNames[r]}-{locations[i].name}.geojson"),
+                        manyToOneRoutes[r].ToGeoJson());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"Many-to-one failed to {locations[i].name}: {ex.Message}");
+            }
+        }
     }
 
     private static void EnableLogging()

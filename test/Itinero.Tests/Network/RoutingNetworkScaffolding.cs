@@ -62,7 +62,7 @@ public static class RoutingNetworkScaffolding
         for (var e = 0; e < edges.Length; e++)
         {
             edgeIds[e] = writer.AddEdge(vertexIds[edges[e].from], vertexIds[edges[e].to],
-                edges[e].shape, edges[e].attributes);
+                edges[e].shape, edges[e].attributes, null, writer.ComputeEdgeLength(vertexIds[edges[e].from], vertexIds[edges[e].to], edges[e].shape));
         }
 
         return (vertexIds, edgeIds);

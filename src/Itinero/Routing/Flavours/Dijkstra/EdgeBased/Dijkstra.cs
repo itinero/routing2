@@ -22,7 +22,7 @@ internal class Dijkstra
 {
     private readonly PathTree _tree = new();
     private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new();
-    private readonly BinaryHeap<uint> _heap = new();
+    private readonly BinaryHeap<(uint pointer, EdgeId edgeId, VertexId vertexId)> _heap = new();
 
     public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source,
         SnapPoint target,
@@ -57,7 +57,13 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default)
     {
-        return await this.RunAsync(network, (source, null), targets.Select(x => (x, (bool?)null)).ToArray(),
+        var directedTargets = new (SnapPoint sp, bool? direction)[targets.Count];
+        for (var i = 0; i < targets.Count; i++)
+        {
+            directedTargets[i] = (targets[i], null);
+        }
+
+        return await this.RunAsync(network, (source, null), directedTargets,
             getDijkstraWeight, settled, queued, cancellationToken);
     }
 
@@ -117,14 +123,14 @@ internal class Dijkstra
             }
 
             var sourceCostForward =
-                getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+                getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
             if (sourceCostForward > 0)
             {
                 // can traverse edge in the forward direction.
                 var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
                 sourceForwardVisit =
                     _tree.AddVisit(enumerator, uint.MaxValue);
-                _heap.Push(sourceForwardVisit, sourceOffsetCostForward);
+                _heap.Push((sourceForwardVisit, enumerator.EdgeId, enumerator.Head), sourceOffsetCostForward);
             }
         }
 
@@ -138,14 +144,14 @@ internal class Dijkstra
             }
 
             var sourceCostBackward =
-                getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+                getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
             if (sourceCostBackward > 0)
             {
                 // can traverse edge in the backward direction.
                 var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
                 sourceBackwardVisit =
                     _tree.AddVisit(enumerator, uint.MaxValue);
-                _heap.Push(sourceBackwardVisit, sourceOffsetCostBackward);
+                _heap.Push((sourceBackwardVisit, enumerator.EdgeId, enumerator.Head), sourceOffsetCostBackward);
             }
         }
 
@@ -165,7 +171,7 @@ internal class Dijkstra
                     throw new Exception($"Edge in target {target} not found!");
                 }
 
-                var targetCostForward = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>())
+                var targetCostForward = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable))
                     .cost;
                 if (targetCostForward > 0)
                 {
@@ -188,7 +194,7 @@ internal class Dijkstra
                 }
 
                 var targetCostBackward =
-                    getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost;
+                    getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
                 if (targetCostBackward > 0)
                 {
                     if (!targetsPerVertex.TryGetValue(enumerator.Tail, out var targetsAtVertex))
@@ -231,7 +237,7 @@ internal class Dijkstra
                     throw new Exception($"Edge in source {source} not found!");
                 }
 
-                var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost *
+                var weight = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost *
                              (target.sp.OffsetFactor() - source.sp.OffsetFactor());
                 bestTargets[t] = (sourceForwardVisit, weight);
             }
@@ -245,7 +251,7 @@ internal class Dijkstra
                     throw new Exception($"Edge in source {source} not found!");
                 }
 
-                var weight = getDijkstraWeight(enumerator, Enumerable.Empty<(EdgeId edge, byte? turn)>()).cost *
+                var weight = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost *
                              (source.sp.OffsetFactor() - target.sp.OffsetFactor());
                 bestTargets[t] = (sourceBackwardVisit, weight);
             }
@@ -260,33 +266,35 @@ internal class Dijkstra
             cancellationToken.ThrowIfCancellationRequested();
 
             // dequeue new visit.
-            var currentPointer = _heap.Pop(out var currentCost);
-            var currentVisit = _tree.GetVisit(currentPointer);
-            while (_visits.Contains((currentVisit.edge, currentVisit.vertex)))
+            var currentEntry = _heap.Pop(out var currentCost);
+            while (_visits.Contains((currentEntry.edgeId, currentEntry.vertexId)))
             {
                 // visited before, skip.
-                currentPointer = uint.MaxValue;
                 if (_heap.Count == 0)
                 {
+                    currentEntry = (uint.MaxValue, default, default);
                     break;
                 }
 
-                currentPointer = _heap.Pop(out currentCost);
-                currentVisit = _tree.GetVisit(currentPointer);
+                currentEntry = _heap.Pop(out currentCost);
             }
 
+            var currentPointer = currentEntry.pointer;
             if (currentPointer == uint.MaxValue)
             {
                 break;
             }
 
+            // only call GetVisit after the visited check passes.
+            var currentVisit = _tree.GetVisit(currentPointer);
+
             // log visit.
             if (currentVisit.previousPointer != uint.MaxValue)
             {
-                _visits.Add((currentVisit.edge, currentVisit.vertex));
+                _visits.Add((currentEntry.edgeId, currentEntry.vertexId));
             }
 
-            if (settled != null && await settled((currentVisit.edge, currentVisit.vertex)))
+            if (settled != null && await settled((currentEntry.edgeId, currentEntry.vertexId)))
             {
                 // the best cost to this edge has already been found; current visit can not improve this anymore so we continue
                 continue;
@@ -323,7 +331,7 @@ internal class Dijkstra
 
                 // gets the cost of the current edge.
                 var (neighbourCost, turnCost) =
-                    getDijkstraWeight(enumerator, _tree.GetPreviousEdges(currentPointer));
+                    getDijkstraWeight(enumerator, new PreviousEdgeEnumerable(_tree, currentPointer));
                 if (neighbourCost is >= double.MaxValue or <= 0)
                 {
                     continue;
@@ -401,7 +409,7 @@ internal class Dijkstra
                 }
 
                 // add visit to heap.
-                _heap.Push(neighbourPointer, neighbourCost + currentCost + turnCost);
+                _heap.Push((neighbourPointer, enumerator.EdgeId, enumerator.Head), neighbourCost + currentCost + turnCost);
             }
         }
 
@@ -446,14 +454,11 @@ internal class Dijkstra
         return paths;
     }
 
+    [ThreadStatic]
+    private static Dijkstra? _default;
+
     /// <summary>
-    /// Gets a default dijkstra instance.
+    /// Gets a default dijkstra instance (reused per thread).
     /// </summary>
-    public static Dijkstra Default
-    {
-        get
-        {
-            return new Dijkstra();
-        }
-    }
+    public static Dijkstra Default => _default ??= new Dijkstra();
 }

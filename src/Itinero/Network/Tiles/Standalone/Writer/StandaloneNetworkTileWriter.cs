@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Itinero.Geo;
+using Itinero.Network.Tiles.Standalone.Global;
+
 // ReSharper disable PossibleMultipleEnumeration
 
 namespace Itinero.Network.Tiles.Standalone.Writer;
@@ -87,12 +89,14 @@ public class StandaloneNetworkTileWriter
     /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="shape">The shape, if any.</param>
     /// <param name="attributes">The attributes, if any.</param>
+    /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns>The edge id.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, uint edgeTypeId,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null)
+        IEnumerable<(string key, string value)>? attributes = null,
+        GlobalEdgeId? globalEdgeId = null)
     {
         if (_tile.TileId != vertex1.TileId) throw new ArgumentException("Vertex not in tile");
         if (_tile.TileId != vertex2.TileId) throw new ArgumentException("Vertex not in tile");
@@ -114,19 +118,24 @@ public class StandaloneNetworkTileWriter
         var length = (uint)(vertex1Location.DistanceEstimateInMeterShape(
             vertex2Location, shape) * 100);
 
-        return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length);
+        return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length, globalEdgeId);
     }
 
-    public void AddGlobalIdFor(EdgeId edgeId, Guid globalEdgeId)
+    /// <summary>
+    /// Adds a global restriction for processing when the tile is loaded.
+    /// </summary>
+    /// <param name="sequence">The sequence of global edge ids with local edge ids if they are already known.</param>
+    /// <param name="isProhibitory">The type of restriction.</param>
+    /// <param name="attributes">The raw attributes of the restriction.</param>
+    public void AddGlobalRestriction(IEnumerable<(GlobalEdgeId globalEdgeId, EdgeId? edge)> sequence,
+        bool isProhibitory, IEnumerable<(string key, string value)> attributes)
     {
-        _tile.AddGlobalIdFor(edgeId, globalEdgeId);
-    }
+        // get the turn cost type id.
+        var turnCostTypeId = _turnCostTypeMap.func(attributes);
 
-    public void AddGlobalIdFor(BoundaryEdgeId boundaryEdgeId, Guid globalEdgeId)
-    {
-        _tile.AddGlobalIdFor(boundaryEdgeId, globalEdgeId);
+        // write to tile.
+        _tile.AddGlobalRestriction(sequence, isProhibitory, turnCostTypeId, attributes);
     }
-
 
     /// <summary>
     /// Adds turn costs.
@@ -149,31 +158,29 @@ public class StandaloneNetworkTileWriter
     }
 
     /// <summary>
-    /// Adds a new boundary crossing.
+    /// Adds a new outgoing boundary crossing.
     /// </summary>
-    /// <param name="from">The from node and vertex, inside the tile.</param>
-    /// <param name="to">The to node.</param>
+    /// <param name="globalEdgeId">The global edge id, a stable identified to match boundary edges.</param>
+    /// <param name="tail">The tail vertex.</param>
     /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="attributes">The attributes.</param>
-    /// <param name="length">The length in centimeters.</param>
-    public BoundaryEdgeId AddBoundaryCrossing((VertexId vertex, long node) from, long to,
-        uint edgeTypeId, IEnumerable<(string key, string value)> attributes, uint length)
+    public void AddOutgoingBoundaryCrossing(GlobalEdgeId globalEdgeId, VertexId tail,
+        uint edgeTypeId, IEnumerable<(string key, string value)> attributes)
     {
-        return _tile.AddBoundaryCrossing(false, from.node, to, from.vertex, attributes, edgeTypeId, length);
+        _tile.AddBoundaryCrossing(false, globalEdgeId, tail, attributes, edgeTypeId);
     }
 
     /// <summary>
-    /// Adds a new boundary crossing.
+    /// Adds a new incoming boundary crossing.
     /// </summary>
-    /// <param name="from">The from node.</param>
-    /// <param name="to">The to node and vertex, inside the tile.</param>
+    /// <param name="globalEdgeId">The global edge id, a stable identified to match boundary edges.</param>
+    /// <param name="tail">The head vertex.</param>
     /// <param name="edgeTypeId">The edge type id.</param>
     /// <param name="attributes">The attributes.</param>
-    /// <param name="length">The length in centimeters.</param>
-    public BoundaryEdgeId AddBoundaryCrossing(long from, (VertexId vertex, long node) to,
-        uint edgeTypeId, IEnumerable<(string key, string value)> attributes, uint length)
+    public void AddIncomingBoundaryCrossing(GlobalEdgeId globalEdgeId, VertexId tail,
+        uint edgeTypeId, IEnumerable<(string key, string value)> attributes)
     {
-        return _tile.AddBoundaryCrossing(true, from, to.node, to.vertex, attributes, edgeTypeId, length);
+        _tile.AddBoundaryCrossing(true, globalEdgeId, tail, attributes, edgeTypeId);
     }
 
     /// <summary>

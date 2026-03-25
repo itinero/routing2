@@ -146,6 +146,11 @@ function turn_cost_factor(attributes, result)
     -- get factors for barriers, if any.
     local barrier = attributes.barrier
     if barrier ~= nil then
+        -- check if this vehicle type has explicit access through the barrier.
+        local access = can_access(attributes, result)
+        if access == true then
+            return
+        end
         result.factor = -1
         return
     end

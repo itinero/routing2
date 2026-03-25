@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using Itinero.Geo;
-using Itinero.IO.Osm.Restrictions;
 using Itinero.IO.Osm.Restrictions.Barriers;
+using Itinero.IO.Osm.Restrictions.Turns;
 using Itinero.IO.Osm.Streams;
 using Itinero.Network;
 using Itinero.Network.Tiles.Standalone;
+using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.Tiles.Standalone.Writer;
 using OsmSharp;
 using OsmSharp.Streams;
@@ -29,6 +28,12 @@ public static class StandaloneNetworkTileWriterExtensions
     public static void AddTileData(this StandaloneNetworkTileWriter writer, IEnumerable<OsmGeo> tileData,
         Action<DataProviderSettings>? configure = null)
     {
+        static uint ToLocalId(uint x, uint y, int zoom)
+        {
+            var xMax = 1 << zoom;
+            return (uint)((y * xMax) + x);
+        }
+
         // create settings.
         var settings = new DataProviderSettings();
         configure?.Invoke(settings);
@@ -67,18 +72,23 @@ public static class StandaloneNetworkTileWriterExtensions
         var coreNodes = new HashSet<long>();
         // keep a set of boundary nodes, all boundary nodes (first node outside the tile).
         var boundaryNodes = new HashSet<long>();
+        // keep a set of boundary vertices.
+        var boundaryVertices = new HashSet<VertexId>();
 
         // first pass to:
         // - mark nodes are core, they are to be become vertices later.
         // - parse restrictions and keep restricted edges and mark nodes as core.
         using var enumerator = data.GetEnumerator();
 
-        var osmTurnRestrictions = new List<OsmTurnRestriction>();
-        var restrictedEdges = new Dictionary<Guid, BoundaryOrLocalEdgeId?>();
+        var globalRestrictions = new List<GlobalRestriction>();
+        var globalRestrictionEdges = new Dictionary<GlobalEdgeId, EdgeId?>();
+
         var restrictionMembers = new Dictionary<long, Way?>();
         var restrictionParser = new OsmTurnRestrictionParser();
+        var barrierNodes = new Dictionary<long, List<Way>>();
 
-        var osmBarriers = new List<OsmBarrier>();
+        var wayEdgeTypes = new Dictionary<long, (uint edgeTypeId, (string key, string value)[] attributes)>();
+
         var barrierParser = new OsmBarrierParser();
         while (enumerator.MoveNext())
         {
@@ -101,6 +111,7 @@ public static class StandaloneNetworkTileWriterExtensions
                         // log nodes are barriers to be able to detect their ways,
                         //      only take nodes in the tile to mark as barrier.
                         coreNodes.Add(node.Id.Value);
+                        barrierNodes.Add(node.Id.Value, []);
                     }
 
                     break;
@@ -110,15 +121,25 @@ public static class StandaloneNetworkTileWriterExtensions
                     {
                         // calculate edge type and determine if there is relevant data.
                         var attributes = way.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
-                                         ArraySegment<(string key, string value)>.Empty;
+                                         Array.Empty<(string key, string value)>();
                         var edgeTypeId = edgeTypeMap(attributes);
                         if (edgeTypeId == emptyEdgeType) continue;
+
+                        // cache for pass 2 to avoid recomputing.
+                        wayEdgeTypes[way.Id!.Value] = (edgeTypeId, attributes);
 
                         // mark as core nodes used twice or nodes representing a boundary crossing.
                         bool? previousInTile = null;
                         for (var n = 0; n < way.Nodes.Length; n++)
                         {
                             var wayNode = way.Nodes[n];
+
+                            // if the node is a barrier, at this way to the barrier nodes.
+                            if (barrierNodes.TryGetValue(wayNode, out var barrierNodeWays))
+                            {
+                                restrictionMembers[way.Id!.Value] = null;
+                                barrierNodeWays.Add(way);
+                            }
 
                             // check if the node is in the tile or not.
                             if (!nodeLocations.TryGetValue(wayNode, out var value))
@@ -143,7 +164,7 @@ public static class StandaloneNetworkTileWriterExtensions
                             }
 
                             // boundary crossing, from outside to in.
-                            if (previousInTile is false && inTile == true)
+                            if (previousInTile is false && inTile)
                             {
                                 boundaryNodes.Add(way.Nodes[n - 1]);
                                 coreNodes.Add(way.Nodes[n]);
@@ -199,10 +220,12 @@ public static class StandaloneNetworkTileWriterExtensions
                         if (!writer.IsInTile(node.Longitude.Value, node.Latitude.Value)) continue;
                         vertices[node.Id.Value] = writer.AddVertex(node.Longitude.Value, node.Latitude.Value);
 
-                        // a core not can be a barrier, check here.
-                        if (barrierParser.TryParse(node, out var barrier))
+                        // a core node can be a barrier, check here.
+                        if (barrierNodes.TryGetValue(node.Id.Value, out var barrierWays))
                         {
-                            osmBarriers.Add(barrier);
+                            if (!barrierParser.TryParse(node, barrierWays, out var barrier))
+                                throw new Exception("node in the barriers list is not a barrier");
+                            globalRestrictions.AddRange(barrier.ToGlobalNetworkRestrictions());
                         }
                     }
 
@@ -213,47 +236,40 @@ public static class StandaloneNetworkTileWriterExtensions
                     {
                         if (restrictionMembers.ContainsKey(way.Id.Value)) restrictionMembers[way.Id.Value] = way;
 
-                        var attributes = way.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
-                                         ArraySegment<(string key, string value)>.Empty;
-                        var edgeTypeId = edgeTypeMap(attributes);
-                        if (edgeTypeId == emptyEdgeType) continue;
+                        // use cached values from pass 1.
+                        if (!wayEdgeTypes.TryGetValue(way.Id!.Value, out var cached)) continue;
+                        var (edgeTypeId, attributes) = cached;
 
                         // add all boundaries, if any.
                         for (var n = 1; n < way.Nodes.Length; n++)
                         {
-                            var from = way.Nodes[n - 1];
-                            var to = way.Nodes[n];
-                            var globalEdgeId = way.GenerateGlobalEdgeId(n - 1, n);
+                            var tail = way.Nodes[n - 1];
+                            var head = way.Nodes[n];
+                            var globalEdgeId = way.CreateGlobalEdgeId(n - 1, n);
 
-                            var fromLocation = nodeLocations[from];
-                            var toLocation = nodeLocations[to];
-
-                            var length = (uint)((fromLocation.longitude, fromLocation.latitude, (float?)null)
-                                .DistanceEstimateInMeter(
-                                    (toLocation.longitude, toLocation.latitude, (float?)null)) * 100);
-
-                            if (boundaryNodes.Contains(from) &&
-                                vertices.TryGetValue(to, out var vertexId))
+                            if (boundaryNodes.Contains(tail) &&
+                                vertices.TryGetValue(head, out var headVertex))
                             {
-                                var boundaryEdgeId = writer.AddBoundaryCrossing(from, (vertexId, to),
-                                    edgeTypeId, attributes.Concat(globalEdgeId), length);
-                                if (restrictionMembers.ContainsKey(way.Id.Value))
-                                    restrictedEdges[globalEdgeId] = new BoundaryOrLocalEdgeId(boundaryEdgeId);
+                                // outgoing.
+                                writer.AddOutgoingBoundaryCrossing(globalEdgeId, headVertex,
+                                    edgeTypeId, attributes);
+
+                                boundaryVertices.Add(headVertex);
                             }
-                            else if (boundaryNodes.Contains(to) &&
-                                     vertices.TryGetValue(from, out vertexId))
+                            else if (boundaryNodes.Contains(head) &&
+                                     vertices.TryGetValue(tail, out var tailVertex))
                             {
-                                var boundaryEdgeId = writer.AddBoundaryCrossing((vertexId, from), to,
-                                    edgeTypeId, attributes.Concat(globalEdgeId), length);
-                                if (restrictionMembers.ContainsKey(way.Id.Value))
-                                    restrictedEdges[globalEdgeId] = new BoundaryOrLocalEdgeId(boundaryEdgeId);
+                                // incoming.
+                                writer.AddIncomingBoundaryCrossing(globalEdgeId, tailVertex,
+                                    edgeTypeId, attributes);
+
+                                boundaryVertices.Add(tailVertex);
                             }
                         }
 
                         // add regular edges, if any.
                         var shape = new List<(double longitude, double latitude, float? e)>();
                         VertexId? previousVertex = null;
-                        var previousNode = -1;
 
                         for (var n = 0; n < way.Nodes.Length; n++)
                         {
@@ -276,24 +292,23 @@ public static class StandaloneNetworkTileWriterExtensions
 
                             if (previousVertex != null)
                             {
-                                var globalEdgeId = way.GenerateGlobalEdgeId(previousNode, n);
+                                var globalEdgeId = way.CreateGlobalEdgeId(n - 1, n);
                                 var edgeId = writer.AddEdge(previousVertex.Value, vertexId, edgeTypeId, shape,
-                                    attributes.Concat(globalEdgeId));
+                                    attributes, globalEdgeId);
                                 shape.Clear();
 
                                 if (restrictionMembers.ContainsKey(way.Id.Value))
-                                    restrictedEdges[globalEdgeId] = new BoundaryOrLocalEdgeId(edgeId);
+                                    globalRestrictionEdges[globalEdgeId] = edgeId;
                             }
 
                             previousVertex = vertexId;
-                            previousNode = n;
                         }
 
                         break;
                     }
                 case Relation relation:
                     var result = restrictionParser.TryParse(relation, (wayId) =>
-                            restrictionMembers.TryGetValue(wayId, out var member) ? member : null,
+                            restrictionMembers.GetValueOrDefault(wayId),
                         out var osmTurnRestriction);
 
                     if (result.IsError) continue;
@@ -301,52 +316,32 @@ public static class StandaloneNetworkTileWriterExtensions
                     if (osmTurnRestriction == null)
                         throw new Exception("Parsing restriction was successful but not returned");
 
-                    osmTurnRestrictions.Add(osmTurnRestriction);
-
+                    globalRestrictions.AddRange(osmTurnRestriction.ToGlobalNetworkRestrictions());
                     break;
             }
         }
 
-        // add barriers as turn weights.
         var tileEnumerator = writer.GetEnumerator();
-        var networkRestrictions = new List<NetworkRestriction>();
-        foreach (var osmBarrier in osmBarriers)
+        var r = 0;
+        while (r < globalRestrictions.Count)
         {
-            var networkBarriersResult = osmBarrier.ToNetworkRestrictions(n =>
+            var globalNetworkRestriction = globalRestrictions[r];
+
+            // try to convert first, and see if all edges are there
+            if (!globalNetworkRestriction.TryBuildNetworkRestriction(GetEdgeForGlobalEdge, out var networkRestriction))
             {
-                if (!vertices.TryGetValue(n, out var v)) throw new Exception("Node should exist as vertex");
-                tileEnumerator.MoveTo(v);
-                return tileEnumerator;
-            });
-            if (networkBarriersResult.IsError) continue;
+                // the restriction could not be converted,
 
-            networkRestrictions.AddRange(networkBarriersResult.Value);
-        }
+                //  one of it's edge is a boundary edge and we are working on a single tile right now.
+                r++;
+                continue;
+            }
 
-        // add restrictions as turn weights.
-        foreach (var osmTurnRestriction in osmTurnRestrictions)
-        {
-            var networkRestrictionsResult = osmTurnRestriction.ToNetworkRestrictions((wayId, node1, node2) =>
+            // TODO: log something?
+            // all the edges in the restriction are inside this tile.
+            if (networkRestriction!.Count < 2)
             {
-                var (globalId, forward) = GlobalEdgeIdExtensions.GenerateGlobalEdgeIdAndDirection(wayId, node1, node2);
-
-                if (!restrictedEdges.TryGetValue(globalId, out var boundaryOrLocalEdgeId)) return null;
-
-                if (boundaryOrLocalEdgeId?.LocalId != null) return (boundaryOrLocalEdgeId.Value.LocalId.Value, forward);
-
-                return null;
-            });
-            if (networkRestrictionsResult.IsError) continue;
-
-            networkRestrictions.AddRange(networkRestrictionsResult.Value);
-        }
-
-        // convert network restrictions to turn costs.
-        foreach (var networkRestriction in networkRestrictions)
-        {
-            if (networkRestriction.Count < 2)
-            {
-                // TODO: log something?
+                globalRestrictions.RemoveAt(r);
                 continue;
             }
 
@@ -356,7 +351,11 @@ public static class StandaloneNetworkTileWriterExtensions
             var turnCostVertex = lastEdge.Tail;
 
             // only add turn costs around vertices that are in the current tile.
-            if (turnCostVertex.TileId != writer.TileId) continue;
+            if (turnCostVertex.TileId != writer.TileId)
+            {
+                r++;
+                continue;
+            }
 
             var secondToLast = networkRestriction[^2];
             if (networkRestriction.IsProhibitory)
@@ -364,16 +363,27 @@ public static class StandaloneNetworkTileWriterExtensions
                 // easy, we only add a single cost.
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                 writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                    new[] { secondToLast.edge, last.edge }, costs,
+                    [secondToLast.edge, last.edge], costs,
                     networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+
+                // best case, the restriction was converted and can be removed.
+                globalRestrictions.RemoveAt(r);
             }
             else
             {
                 // hard, we need to add a cost for every *other* edge than then one in the restriction.
                 tileEnumerator.MoveTo(secondToLast.edge, secondToLast.forward);
                 var to = tileEnumerator.Head;
-                tileEnumerator.MoveTo(to);
 
+                // check if the vertex of the restriction is a boundary vertex.
+                if (boundaryVertices.Contains(to))
+                {
+                    r++;
+                    continue;
+                }
+
+                // add all the edge other than the one that is in the restriction as restricted turns.
+                tileEnumerator.MoveTo(to);
                 while (tileEnumerator.MoveNext())
                 {
                     if (tileEnumerator.EdgeId == secondToLast.edge ||
@@ -382,28 +392,47 @@ public static class StandaloneNetworkTileWriterExtensions
                     // easy, we only add a single cost.
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                     writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                        new[] { secondToLast.edge, tileEnumerator.EdgeId }, costs,
+                        [secondToLast.edge, tileEnumerator.EdgeId], costs,
                         networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
                 }
+
+                globalRestrictions.RemoveAt(r);
             }
         }
 
-        // add global ids.
-        foreach (var (globalEdgeId, restrictedEdge) in restrictedEdges)
+        // add global restrictions.
+        // also add all edge ids that are already known as an index to use during processing of the tile.
+        foreach (var globalNetworkRestriction in globalRestrictions)
         {
-            if (restrictedEdge?.LocalId != null)
+            var edges = globalNetworkRestriction.Select(x =>
             {
-                writer.AddGlobalIdFor(restrictedEdge.Value.LocalId.Value, globalEdgeId);
-            }
-            else if (restrictedEdge?.BoundaryId != null)
-            {
-                writer.AddGlobalIdFor(restrictedEdge.Value.BoundaryId.Value, globalEdgeId);
-            }
+                var localEdge = GetEdgeForGlobalEdge(x);
+                if (localEdge == null) return (x, (EdgeId?)null);
+
+                return (x, localEdge.Value.edge);
+            });
+
+            writer.AddGlobalRestriction(edges, globalNetworkRestriction.IsProhibitory,
+                globalNetworkRestriction.Attributes);
         }
 
-        // we can only add turn restrictions when all their edges 
-        // are full within a single tile, when they are not we add them
-        // to the tile as boundary restrictions using global edge ids.
+        return;
+
+        // convert network restrictions to turn costs.
+        (EdgeId edge, bool forward)? GetEdgeForGlobalEdge(GlobalEdgeId globalEdgeId)
+        {
+            if (globalRestrictionEdges.TryGetValue(globalEdgeId, out var edgeId) && edgeId.HasValue)
+            {
+                return (edgeId.Value, true);
+            }
+
+            if (globalRestrictionEdges.TryGetValue(globalEdgeId.GetInverted(), out edgeId) && edgeId.HasValue)
+            {
+                return (edgeId.Value, false);
+            }
+
+            return null;
+        }
     }
 
     internal static IStandaloneNetworkTileEnumerator GetEnumerator(this StandaloneNetworkTileWriter writer)

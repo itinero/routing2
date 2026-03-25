@@ -1,23 +1,23 @@
-﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Itinero.Network;
+using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Data;
 
 /// <summary>
-/// A default global id set for Guid ids.
+/// A global id set mapping global edge ids to local edge ids.
 /// </summary>
-public sealed class GlobalEdgeIdSet : IEnumerable<(Guid globalId, EdgeId edgeId)>
+public sealed class GlobalEdgeIdSet : IEnumerable<(GlobalEdgeId globalId, EdgeId edgeId)>
 {
-    private readonly Dictionary<Guid, EdgeId> _set = new();
+    private readonly Dictionary<GlobalEdgeId, EdgeId> _set = new();
 
     /// <summary>
     /// Sets a new mapping.
     /// </summary>
     /// <param name="globalEdgeId">The global edge id.</param>
     /// <param name="edgeId">The local edge id.</param>
-    public void Set(Guid globalEdgeId, EdgeId edgeId)
+    public void Set(GlobalEdgeId globalEdgeId, EdgeId edgeId)
     {
         _set[globalEdgeId] = edgeId;
     }
@@ -26,7 +26,7 @@ public sealed class GlobalEdgeIdSet : IEnumerable<(Guid globalId, EdgeId edgeId)
     /// Removes a mapping.
     /// </summary>
     /// <param name="globalEdgeId">The global edge id.</param>
-    public void Remove(Guid globalEdgeId)
+    public void Remove(GlobalEdgeId globalEdgeId)
     {
         _set.Remove(globalEdgeId);
     }
@@ -37,7 +37,7 @@ public sealed class GlobalEdgeIdSet : IEnumerable<(Guid globalId, EdgeId edgeId)
     /// <param name="globalEdgeId">The global edge id.</param>
     /// <param name="edgeId">The edge associated with the given global edge, if any.</param>
     /// <returns>True if a mapping exists, false otherwise.</returns>
-    public bool TryGet(Guid globalEdgeId, out EdgeId edgeId)
+    public bool TryGet(GlobalEdgeId globalEdgeId, out EdgeId edgeId)
     {
         return _set.TryGetValue(globalEdgeId, out edgeId);
     }
@@ -46,7 +46,7 @@ public sealed class GlobalEdgeIdSet : IEnumerable<(Guid globalId, EdgeId edgeId)
     /// Returns an enumerator that iterates through the collection.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-    public IEnumerator<(Guid globalId, EdgeId edgeId)> GetEnumerator()
+    public IEnumerator<(GlobalEdgeId globalId, EdgeId edgeId)> GetEnumerator()
     {
         foreach (var (key, value) in _set)
         {

@@ -2,7 +2,7 @@
   <Import Project="../../Itinero.Common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Itinero.IO.Osm</AssemblyName>
     <LangVersion>latest</LangVersion>
     <PackageId>Itinero.IO.Osm</PackageId>

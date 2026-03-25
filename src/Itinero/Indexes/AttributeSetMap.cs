@@ -30,7 +30,7 @@ public class AttributeSetMap
     /// <returns>A subset of attributes.</returns>
     public virtual IEnumerable<(string key, string value)> Map(IEnumerable<(string key, string value)> attributes)
     {
-        return Enumerable.Empty<(string key, string value)>();
+        return attributes;
     }
 
     /// <summary>

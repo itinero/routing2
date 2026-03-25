@@ -63,7 +63,7 @@ internal static class ItineroAsserts
         var distance = expected.DistanceEstimateInMeter(actual);
         if (distance > toleranceInMeters)
         {
-            Assert.True(false, "Coordinates are too far apart to be considered at the same location.");
+            Assert.Fail("Coordinates are too far apart to be considered at the same location.");
         }
     }
 

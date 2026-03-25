@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Itinero.Geo;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search.Islands;
@@ -237,12 +238,21 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
         var edgeTypeId = attributes != null ? (uint?)edgeTypeFunc(attributes) : null;
-        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId);
+
+        // compute edge length in centimeters.
+        if (!this.TryGetVertex(tail, out var lon1, out var lat1, out var e1))
+            throw new ArgumentException($"Vertex {tail} not found.", nameof(tail));
+        if (!this.TryGetVertex(head, out var lon2, out var lat2, out var e2))
+            throw new ArgumentException($"Vertex {head} not found.", nameof(head));
+        var length = (uint)((lon1, lat1, e1).DistanceEstimateInMeterShape(
+            (lon2, lat2, e2), shape) * 100);
+
+        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
         if (tail.TileId == head.TileId) return edge1;
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         (tile, _) = this.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId);
+        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length);
 
         return edge1;
     }
@@ -276,11 +286,22 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
 
     /// <summary>
     /// Adds turn costs.
+    ///
+    /// Example, a simple restricted turn is added as:
+    /// - vertex: The vertex the turn occurs at.
+    /// - attributes: describes the type of costs, vehicle profiles should interpret this turn as binary.
+    /// - edges: [FromEdgeId, ToEdgeId]
+    /// - costs: [[0, 1], [0,0]] -> this adds only a cost for the turn (FromEdgeId -> ToEdgeId).
+    ///
+    /// Things to consider:
+    /// - When multiple costs are added on top of each other they are added.
+    /// - A single binary cost is enough to restrict the turn.
+    /// - The actual cost is interpreted by the vehicle profile, the vehicle profile is free to interpret the data being added here.
     /// </summary>
     /// <param name="vertex">The vertex.</param>
     /// <param name="attributes">The attributes.</param>
-    /// <param name="edges">The edges.</param>
-    /// <param name="costs">The costs as a matrix.</param>
+    /// <param name="edges">The edges, the edge should match the ordering in the costs matrix.</param>
+    /// <param name="costs">The costs as a matrix, [fromEdge, toEdge].</param>
     /// <param name="prefix">A path prefix, if any.</param>
     /// <exception cref="ArgumentException"></exception>
     public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
