@@ -82,8 +82,6 @@ jobs:
     - name: Cleanup
       run: rm -r ${{ steps.extract_branch.outputs.branch }}-new/
     - name: Cleanup
-      run: rm -r src/Itinero.IO.Osm.Tiles/ontology
-    - name: Cleanup
       run: rm -r test/Itinero.Tests/TestResults/
     - name: Commit test results.
       run: git config --local user.email "action@github.com" && git config --local user.name "GitHub Action" && git stage -A && git commit -m "Added new coverage results for ${{ steps.extract_branch.outputs.branch }}"
