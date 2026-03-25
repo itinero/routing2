@@ -142,4 +142,32 @@ public partial class StandaloneNetworkTile
             _strings[i] = stream.ReadWithSizeString();
         }
     }
+
+    private void ReadAttributesFrom(byte[] data, ref int offset)
+    {
+        _nextAttributePointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        _attributes = new byte[_nextAttributePointer];
+        Buffer.BlockCopy(data, offset, _attributes, 0, (int)_nextAttributePointer);
+        offset += (int)_nextAttributePointer;
+
+        _nextStringId = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        _strings = new string[_nextStringId];
+        for (var i = 0; i < _nextStringId; i++)
+        {
+            _strings[i] = BitCoderBuffer.GetWithSizeString(data, ref offset);
+        }
+    }
+
+    private void WriteAttributesTo(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextAttributePointer);
+        Buffer.BlockCopy(_attributes, 0, data, offset, (int)_nextAttributePointer);
+        offset += (int)_nextAttributePointer;
+
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextStringId);
+        for (var i = 0; i < _nextStringId; i++)
+        {
+            BitCoderBuffer.SetWithSizeString(data, ref offset, _strings[i]);
+        }
+    }
 }

@@ -66,4 +66,79 @@ public partial class StandaloneNetworkTile
             _crossings[i] = (byte)stream.ReadByte();
         }
     }
+
+    public static StandaloneNetworkTile ReadFrom(byte[] data, int offset)
+    {
+        var version = BitCoderBuffer.GetVarInt32(data, ref offset);
+        if (version != 2)
+        {
+            throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
+        }
+
+        var networkTile = NetworkTile.ReadFromBuffer(data, ref offset);
+        var standaloneNetworkTile = new StandaloneNetworkTile(networkTile);
+
+        standaloneNetworkTile.ReadEdgesAndVerticesFrom(data, ref offset);
+        standaloneNetworkTile.ReadAttributesFrom(data, ref offset);
+        standaloneNetworkTile.ReadGlobal(data, ref offset);
+
+        return standaloneNetworkTile;
+    }
+
+    private void ReadEdgesAndVerticesFrom(byte[] data, ref int offset)
+    {
+        _crossingsPointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        _crossings = new byte[_crossingsPointer];
+        Buffer.BlockCopy(data, offset, _crossings, 0, (int)_crossingsPointer);
+        offset += (int)_crossingsPointer;
+    }
+
+    public byte[] ToBytes()
+    {
+        var maxSize = this.GetSerializedSizeUpperBound();
+        var buffer = new byte[maxSize];
+        var offset = 0;
+        this.WriteToBuffer(buffer, ref offset);
+        if (offset == maxSize) return buffer;
+        var result = new byte[offset];
+        Buffer.BlockCopy(buffer, 0, result, 0, offset);
+        return result;
+    }
+
+    private void WriteToBuffer(byte[] data, ref int offset)
+    {
+        const int version = 2;
+        BitCoderBuffer.SetVarInt32(data, ref offset, version);
+
+        this.NetworkTile.WriteToBuffer(data, ref offset);
+        this.WriteEdgesAndVerticesTo(data, ref offset);
+        this.WriteAttributesTo(data, ref offset);
+        this.WriteGlobal(data, ref offset);
+    }
+
+    private void WriteEdgesAndVerticesTo(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _crossingsPointer);
+        Buffer.BlockCopy(_crossings, 0, data, offset, (int)_crossingsPointer);
+        offset += (int)_crossingsPointer;
+    }
+
+    private int GetSerializedSizeUpperBound()
+    {
+        var size = 5;
+        size += this.NetworkTile.GetSerializedSizeUpperBound();
+
+        size += 5 + (int)_crossingsPointer;
+
+        size += 5 + (int)_nextAttributePointer;
+        size += 5;
+        for (var i = 0; i < _nextStringId; i++)
+        {
+            size += 8 + System.Text.Encoding.Unicode.GetByteCount(_strings[i]);
+        }
+
+        size += 5 + (int)_globalRestrictionsPointer;
+
+        return size;
+    }
 }

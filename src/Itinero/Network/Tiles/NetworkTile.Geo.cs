@@ -298,4 +298,44 @@ internal partial class NetworkTile
             _shapes[i] = (byte)stream.ReadByte();
         }
     }
+
+    private void ReadGeoFrom(byte[] data, ref int offset)
+    {
+        _elevation = BitCoderBuffer.GetVarInt32Nullable(data, ref offset);
+
+        var coordinateSize = CoordinateSizeInBytes * 2;
+        if (_elevation != null)
+        {
+            coordinateSize += ElevationSizeInBytes;
+        }
+
+        var coordinateBytes = (int)(_nextVertexId * coordinateSize);
+        Array.Resize(ref _coordinates, coordinateBytes);
+        Buffer.BlockCopy(data, offset, _coordinates, 0, coordinateBytes);
+        offset += coordinateBytes;
+
+        _nextShapePointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _shapes, (int)_nextShapePointer);
+        Buffer.BlockCopy(data, offset, _shapes, 0, (int)_nextShapePointer);
+        offset += (int)_nextShapePointer;
+    }
+
+    private void WriteGeoTo(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarInt32Nullable(data, ref offset, _elevation);
+
+        var coordinateSize = CoordinateSizeInBytes * 2;
+        if (_elevation != null)
+        {
+            coordinateSize += ElevationSizeInBytes;
+        }
+
+        var coordinateBytes = (int)(_nextVertexId * coordinateSize);
+        Buffer.BlockCopy(_coordinates, 0, data, offset, coordinateBytes);
+        offset += coordinateBytes;
+
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextShapePointer);
+        Buffer.BlockCopy(_shapes, 0, data, offset, (int)_nextShapePointer);
+        offset += (int)_nextShapePointer;
+    }
 }

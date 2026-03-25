@@ -632,4 +632,45 @@ internal partial class NetworkTile
             _crossEdgePointers[i] = stream.ReadVarUInt32();
         }
     }
+
+    private void ReadEdgesAndVerticesFrom(byte[] data, ref int offset)
+    {
+        _nextVertexId = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _pointers, (int)_nextVertexId);
+        for (var i = 0; i < _nextVertexId; i++)
+        {
+            _pointers[i] = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        }
+
+        _nextEdgeId = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _edges, (int)_nextEdgeId);
+        Buffer.BlockCopy(data, offset, _edges, 0, (int)_nextEdgeId);
+        offset += (int)_nextEdgeId;
+
+        _nextCrossTileId = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _crossEdgePointers, (int)_nextCrossTileId);
+        for (var i = 0; i < _nextCrossTileId; i++)
+        {
+            _crossEdgePointers[i] = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        }
+    }
+
+    private void WriteEdgesAndVerticesTo(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextVertexId);
+        for (var i = 0; i < _nextVertexId; i++)
+        {
+            BitCoderBuffer.SetVarUInt32(data, ref offset, _pointers[i]);
+        }
+
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextEdgeId);
+        Buffer.BlockCopy(_edges, 0, data, offset, (int)_nextEdgeId);
+        offset += (int)_nextEdgeId;
+
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextCrossTileId);
+        for (var i = 0; i < _nextCrossTileId; i++)
+        {
+            BitCoderBuffer.SetVarUInt32(data, ref offset, _crossEdgePointers[i]);
+        }
+    }
 }

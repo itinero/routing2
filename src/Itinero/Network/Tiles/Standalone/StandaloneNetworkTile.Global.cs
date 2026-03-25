@@ -132,4 +132,19 @@ public partial class StandaloneNetworkTile
             _globalRestrictions[i] = (byte)stream.ReadByte();
         }
     }
+
+    private void ReadGlobal(byte[] data, ref int offset)
+    {
+        _globalRestrictionsPointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        _globalRestrictions = new byte[_globalRestrictionsPointer];
+        Buffer.BlockCopy(data, offset, _globalRestrictions, 0, (int)_globalRestrictionsPointer);
+        offset += (int)_globalRestrictionsPointer;
+    }
+
+    private void WriteGlobal(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _globalRestrictionsPointer);
+        Buffer.BlockCopy(_globalRestrictions, 0, data, offset, (int)_globalRestrictionsPointer);
+        offset += (int)_globalRestrictionsPointer;
+    }
 }

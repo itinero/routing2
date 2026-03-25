@@ -325,4 +325,32 @@ internal partial class NetworkTile
             _turnCosts[i] = (byte)stream.ReadByte();
         }
     }
+
+    private void ReadTurnCostsFrom(byte[] data, ref int offset)
+    {
+        var turnCostPointersSize = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _turnCostPointers, (int)turnCostPointersSize);
+        for (var i = 0; i < turnCostPointersSize; i++)
+        {
+            _turnCostPointers[i] = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        }
+
+        _turnCostPointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
+        Array.Resize(ref _turnCosts, (int)_turnCostPointer);
+        Buffer.BlockCopy(data, offset, _turnCosts, 0, (int)_turnCostPointer);
+        offset += (int)_turnCostPointer;
+    }
+
+    private void WriteTurnCostsTo(byte[] data, ref int offset)
+    {
+        BitCoderBuffer.SetVarUInt32(data, ref offset, (uint)_turnCostPointers.Length);
+        for (var i = 0; i < _turnCostPointers.Length; i++)
+        {
+            BitCoderBuffer.SetVarUInt32(data, ref offset, _turnCostPointers[i]);
+        }
+
+        BitCoderBuffer.SetVarUInt32(data, ref offset, _turnCostPointer);
+        Buffer.BlockCopy(_turnCosts, 0, data, offset, (int)_turnCostPointer);
+        offset += (int)_turnCostPointer;
+    }
 }

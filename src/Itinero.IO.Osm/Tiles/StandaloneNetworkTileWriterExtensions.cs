@@ -87,6 +87,8 @@ public static class StandaloneNetworkTileWriterExtensions
         var restrictionParser = new OsmTurnRestrictionParser();
         var barrierNodes = new Dictionary<long, List<Way>>();
 
+        var wayEdgeTypes = new Dictionary<long, (uint edgeTypeId, (string key, string value)[] attributes)>();
+
         var barrierParser = new OsmBarrierParser();
         while (enumerator.MoveNext())
         {
@@ -119,9 +121,12 @@ public static class StandaloneNetworkTileWriterExtensions
                     {
                         // calculate edge type and determine if there is relevant data.
                         var attributes = way.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
-                                         ArraySegment<(string key, string value)>.Empty;
+                                         Array.Empty<(string key, string value)>();
                         var edgeTypeId = edgeTypeMap(attributes);
                         if (edgeTypeId == emptyEdgeType) continue;
+
+                        // cache for pass 2 to avoid recomputing.
+                        wayEdgeTypes[way.Id!.Value] = (edgeTypeId, attributes);
 
                         // mark as core nodes used twice or nodes representing a boundary crossing.
                         bool? previousInTile = null;
@@ -231,10 +236,9 @@ public static class StandaloneNetworkTileWriterExtensions
                     {
                         if (restrictionMembers.ContainsKey(way.Id.Value)) restrictionMembers[way.Id.Value] = way;
 
-                        var attributes = way.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
-                                         ArraySegment<(string key, string value)>.Empty;
-                        var edgeTypeId = edgeTypeMap(attributes);
-                        if (edgeTypeId == emptyEdgeType) continue;
+                        // use cached values from pass 1.
+                        if (!wayEdgeTypes.TryGetValue(way.Id!.Value, out var cached)) continue;
+                        var (edgeTypeId, attributes) = cached;
 
                         // add all boundaries, if any.
                         for (var n = 1; n < way.Nodes.Length; n++)
