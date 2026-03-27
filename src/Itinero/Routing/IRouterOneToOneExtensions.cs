@@ -25,7 +25,8 @@ public static class IRouterOneToOneExtensions
     public static async Task<Result<Path>> PathAsync(this IRouterOneToOne oneToOneRouter,
         CancellationToken cancellationToken = default)
     {
-        if (oneToOneRouter.Source.direction == null && oneToOneRouter.Target.direction == null)
+        if (oneToOneRouter.Source.direction == null && oneToOneRouter.Target.direction == null &&
+            !oneToOneRouter.Settings.Profile.TurnCostFactorEnabled)
         {
             return await oneToOneRouter.CalculateAsync(oneToOneRouter.Source.sp, oneToOneRouter.Target.sp,
                 cancellationToken);

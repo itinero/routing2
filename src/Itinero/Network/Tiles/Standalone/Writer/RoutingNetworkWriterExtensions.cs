@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Data;
@@ -126,6 +127,7 @@ public static class RoutingNetworkWriterExtensions
             writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                 [secondToLast.edge, last.edge], costs,
                 networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+
         }
         else
         {
@@ -155,6 +157,36 @@ public static class RoutingNetworkWriterExtensions
                 return (edgeId, true);
             if (globalIdSet.EdgeIdSet.TryGet(geid.GetInverted(), out edgeId))
                 return (edgeId, false);
+
+            // exact match not found — search for a subsection sharing the
+            // endpoint closest to the restricted vertex.
+            // for tail->head: keep head stable, search tail from head-1 toward 0
+            // for inverted head->tail: keep tail stable, search head from tail+1 toward max
+            if (geid.Tail < geid.Head)
+            {
+                // forward direction: head is the restricted vertex, search toward it
+                for (var t = geid.Head - 1; t > geid.Tail; t--)
+                {
+                    var sub = GlobalEdgeId.Create(geid.EdgeId, t, geid.Head);
+                    if (globalIdSet.EdgeIdSet.TryGet(sub, out edgeId))
+                        return (edgeId, true);
+                    if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out edgeId))
+                        return (edgeId, false);
+                }
+            }
+            else
+            {
+                // reversed direction: tail is the restricted vertex, search away from it
+                for (var h = geid.Tail - 1; h > geid.Head; h--)
+                {
+                    var sub = GlobalEdgeId.Create(geid.EdgeId, geid.Tail, h);
+                    if (globalIdSet.EdgeIdSet.TryGet(sub, out edgeId))
+                        return (edgeId, true);
+                    if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out edgeId))
+                        return (edgeId, false);
+                }
+            }
+
             return null;
         }
     }

@@ -32,6 +32,12 @@ public abstract class Profile
     public abstract TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes);
 
     /// <summary>
+    /// Gets whether turn cost factors are enabled for this profile.
+    /// When true, edge-based routing is used to properly handle turn restrictions.
+    /// </summary>
+    public virtual bool TurnCostFactorEnabled => false;
+
+    /// <summary>
     /// Gets a stable hashcode, this hashcode doesn't change between runs.
     /// </summary>
     /// <remarks>

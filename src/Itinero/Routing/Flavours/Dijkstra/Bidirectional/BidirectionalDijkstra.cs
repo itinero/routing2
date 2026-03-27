@@ -18,6 +18,7 @@ internal class BidirectionalDijkstra
     private readonly BidirectionalDijkstraForward _forward;
     private readonly BidirectionalDijkstraBackward _backward;
     private ICostFunction _costFunction;
+    internal (uint forward, uint backward, double cost, Path? singleHopPath) _best;
 
     internal BidirectionalDijkstra(RoutingNetwork routingNetwork)
     {
@@ -52,10 +53,10 @@ internal class BidirectionalDijkstra
         _forward.Clear();
         _backward.Clear();
 
-        (uint forward, uint backward, double cost, Path? singleHopPath) best = (uint.MaxValue, uint.MaxValue, double.MaxValue, null);
+        _best = (uint.MaxValue, uint.MaxValue, double.MaxValue, null);
         if (_routingNetwork.TrySingleHop(origin, destination, costFunction, out var singleHopPath, out var singleHopCost))
         {
-            best = (uint.MaxValue, uint.MaxValue, singleHopCost, singleHopPath);
+            _best = (uint.MaxValue, uint.MaxValue, singleHopCost, singleHopPath);
         }
 
         _backward.Push(costFunction, destination, false);
@@ -78,10 +79,10 @@ internal class BidirectionalDijkstra
                     if (_backward.TryGetVisit(v.vertex, out var backwardVisit))
                     {
                         var cost = c + backwardVisit.cost;
-                        if (cost < best.cost &&
+                        if (cost < _best.cost &&
                             this.CanTurn(p, backwardVisit.p))
                         {
-                            best = (p, backwardVisit.p, cost, null);
+                            _best = (p, backwardVisit.p, cost, null);
                         }
                     }
 
@@ -103,10 +104,10 @@ internal class BidirectionalDijkstra
                     if (_forward.TryGetVisit(v.vertex, out var forwardVisit))
                     {
                         var cost = c + forwardVisit.cost;
-                        if (cost < best.cost &&
+                        if (cost < _best.cost &&
                             this.CanTurn(forwardVisit.p, p))
                         {
-                            best = (forwardVisit.p, p, cost, null);
+                            _best = (forwardVisit.p, p, cost, null);
                         }
                     }
 
@@ -120,14 +121,17 @@ internal class BidirectionalDijkstra
                 }
             }
 
-            if (best.cost < (forwardCost + backwardCost)) break;
+            if (_best.cost < (forwardCost + backwardCost))
+            {
+                break;
+            }
         }
 
-        if (best.cost >= double.MaxValue) return (null, double.MaxValue);
-        if (best.forward == uint.MaxValue) return (best.singleHopPath, best.cost);
+        if (_best.cost >= double.MaxValue) return (null, double.MaxValue);
+        if (_best.forward == uint.MaxValue) return (_best.singleHopPath, _best.cost);
 
-        var forwardPath = _forward.GetPathToVisit(best.forward);
-        var backwardPath = _backward.GetPathToVisit(best.backward);
+        var forwardPath = _forward.GetPathToVisit(_best.forward);
+        var backwardPath = _backward.GetPathToVisit(_best.backward);
         forwardPath.Append(backwardPath.InvertDirection());
 
         forwardPath.Offset1 = forwardPath.First.direction ? origin.Offset : (ushort)(ushort.MaxValue - origin.Offset);
@@ -135,7 +139,7 @@ internal class BidirectionalDijkstra
             ? destination.Offset
             : (ushort)(ushort.MaxValue - destination.Offset);
 
-        return (forwardPath, best.cost);
+        return (forwardPath, _best.cost);
     }
 
     private bool CanTurn(uint forwardPointer, uint backwardPointer)
@@ -162,6 +166,16 @@ internal class BidirectionalDijkstra
 
         protected override bool OnQueued(uint visit, EdgeId edge, (double cost, double turnCost) edgeCost, VertexId vertex, double totalCost)
         {
+            // check if the neighbor vertex is already settled by the backward search
+            if (_bidirectionalDijkstra._backward.TryGetVisit(vertex, out var backwardVisit))
+            {
+                var combinedCost = totalCost + backwardVisit.cost;
+                if (combinedCost < _bidirectionalDijkstra._best.cost)
+                {
+                    _bidirectionalDijkstra._best = (visit, backwardVisit.p, combinedCost, null);
+                }
+            }
+
             return true;
         }
 
@@ -194,6 +208,16 @@ internal class BidirectionalDijkstra
 
         protected override bool OnQueued(uint visit, EdgeId edge, (double cost, double turnCost) edgeCost, VertexId vertex, double totalCost)
         {
+            // check if the neighbor vertex is already settled by the forward search
+            if (_bidirectionalDijkstra._forward.TryGetVisit(vertex, out var forwardVisit))
+            {
+                var combinedCost = totalCost + forwardVisit.cost;
+                if (combinedCost < _bidirectionalDijkstra._best.cost)
+                {
+                    _bidirectionalDijkstra._best = (forwardVisit.p, visit, combinedCost, null);
+                }
+            }
+
             return true;
         }
 
