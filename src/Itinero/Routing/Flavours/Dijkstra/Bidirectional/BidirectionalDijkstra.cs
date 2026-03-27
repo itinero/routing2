@@ -170,7 +170,8 @@ internal class BidirectionalDijkstra
             if (_bidirectionalDijkstra._backward.TryGetVisit(vertex, out var backwardVisit))
             {
                 var combinedCost = totalCost + backwardVisit.cost;
-                if (combinedCost < _bidirectionalDijkstra._best.cost)
+                if (combinedCost < _bidirectionalDijkstra._best.cost &&
+                    _bidirectionalDijkstra.CanTurn(visit, backwardVisit.p))
                 {
                     _bidirectionalDijkstra._best = (visit, backwardVisit.p, combinedCost, null);
                 }
@@ -212,7 +213,8 @@ internal class BidirectionalDijkstra
             if (_bidirectionalDijkstra._forward.TryGetVisit(vertex, out var forwardVisit))
             {
                 var combinedCost = totalCost + forwardVisit.cost;
-                if (combinedCost < _bidirectionalDijkstra._best.cost)
+                if (combinedCost < _bidirectionalDijkstra._best.cost &&
+                    _bidirectionalDijkstra.CanTurn(forwardVisit.p, visit))
                 {
                     _bidirectionalDijkstra._best = (forwardVisit.p, visit, combinedCost, null);
                 }
