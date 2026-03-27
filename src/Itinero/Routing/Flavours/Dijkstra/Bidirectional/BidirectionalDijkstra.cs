@@ -121,10 +121,7 @@ internal class BidirectionalDijkstra
                 }
             }
 
-            if (_best.cost < (forwardCost + backwardCost))
-            {
-                break;
-            }
+            if (_best.cost < (forwardCost + backwardCost)) break;
         }
 
         if (_best.cost >= double.MaxValue) return (null, double.MaxValue);
@@ -169,9 +166,12 @@ internal class BidirectionalDijkstra
             // check if the neighbor vertex is already settled by the backward search
             if (_bidirectionalDijkstra._backward.TryGetVisit(vertex, out var backwardVisit))
             {
+                // reject U-turns: forward and backward must not arrive via the same edge
+                var backwardEdge = _bidirectionalDijkstra._backward.GetVisit(backwardVisit.p).edge;
+                if (edge == backwardEdge) return true;
+
                 var combinedCost = totalCost + backwardVisit.cost;
-                if (combinedCost < _bidirectionalDijkstra._best.cost &&
-                    _bidirectionalDijkstra.CanTurn(visit, backwardVisit.p))
+                if (combinedCost < _bidirectionalDijkstra._best.cost)
                 {
                     _bidirectionalDijkstra._best = (visit, backwardVisit.p, combinedCost, null);
                 }
@@ -212,9 +212,12 @@ internal class BidirectionalDijkstra
             // check if the neighbor vertex is already settled by the forward search
             if (_bidirectionalDijkstra._forward.TryGetVisit(vertex, out var forwardVisit))
             {
+                // reject U-turns: forward and backward must not arrive via the same edge
+                var forwardEdge = _bidirectionalDijkstra._forward.GetVisit(forwardVisit.p).edge;
+                if (edge == forwardEdge) return true;
+
                 var combinedCost = totalCost + forwardVisit.cost;
-                if (combinedCost < _bidirectionalDijkstra._best.cost &&
-                    _bidirectionalDijkstra.CanTurn(forwardVisit.p, visit))
+                if (combinedCost < _bidirectionalDijkstra._best.cost)
                 {
                     _bidirectionalDijkstra._best = (forwardVisit.p, visit, combinedCost, null);
                 }

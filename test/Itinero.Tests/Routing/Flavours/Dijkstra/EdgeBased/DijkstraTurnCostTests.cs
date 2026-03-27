@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Network.TurnCosts;
@@ -128,6 +129,118 @@ public class DijkstraTurnCostTests
                 if (tcs > 0) tcs = -1;
                 return (1, tcs);
             });
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task Dijkstra_OneToOne_TwoHops_WithBarrier_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        VertexId vertex1, vertex2, vertex3;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+        }
+
+        var barriers = new HashSet<VertexId> { vertex2 };
+        var latest = routerDb.Latest;
+        var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
+            (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
+            (await latest.Snap().ToAsync(vertex3).FirstAsync(), null),
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task Dijkstra_OneToOne_FourHops_WithBarrier2_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var barriers = new HashSet<VertexId> { vertex2 };
+        var latest = routerDb.Latest;
+        var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
+            (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
+            (await latest.Snap().ToAsync(vertex5).FirstAsync(), null),
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task Dijkstra_OneToOne_FourHops_WithBarrier3_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var barriers = new HashSet<VertexId> { vertex3 };
+        var latest = routerDb.Latest;
+        var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
+            (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
+            (await latest.Snap().ToAsync(vertex5).FirstAsync(), null),
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
+
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public async Task Dijkstra_OneToOne_FourHops_WithBarrier4_ShouldNotFindPath()
+    {
+        var routerDb = new RouterDb();
+        VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
+            vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+            vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085);
+
+            writer.AddEdge(vertex1, vertex2);
+            writer.AddEdge(vertex2, vertex3);
+            writer.AddEdge(vertex3, vertex4);
+            writer.AddEdge(vertex4, vertex5);
+        }
+
+        var barriers = new HashSet<VertexId> { vertex2 };
+        var latest = routerDb.Latest;
+        var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
+            (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
+            (await latest.Snap().ToAsync(vertex4).FirstAsync(), null),
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
+
         Assert.Null(path);
     }
 }
