@@ -106,7 +106,9 @@ public static class RoutingNetworkWriterExtensions
         GlobalNetworkManager globalIdSet, RoutingNetworkWriter writer)
     {
         // try to resolve all GlobalEdgeIds to EdgeIds.
-        if (!globalRestriction.TryBuildNetworkRestriction(GetEdge, out var networkRestriction))
+        if (!globalRestriction.TryBuildNetworkRestriction(
+                (Func<GlobalEdgeId, ushort?, (EdgeId edge, bool forward)?>)GetEdge,
+                out var networkRestriction))
             return false;
 
         if (networkRestriction!.Count < 2) return true;
@@ -151,7 +153,7 @@ public static class RoutingNetworkWriterExtensions
 
         return true;
 
-        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid)
+        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid, ushort? pivot = null)
         {
             if (globalIdSet.EdgeIdSet.TryGet(geid, out var edgeId))
                 return (edgeId, true);
@@ -159,35 +161,66 @@ public static class RoutingNetworkWriterExtensions
                 return (edgeId, false);
 
             // exact match not found — search for a subsection sharing the
-            // endpoint closest to the restricted vertex.
-            // for tail->head: keep head stable, search tail from head-1 toward 0
-            // for inverted head->tail: keep tail stable, search head from tail+1 toward max
-            if (geid.Tail < geid.Head)
+            // endpoint closest to the restricted vertex. When a pivot is given
+            // (the shared endpoint with the adjacent edge in a restriction chain),
+            // search adjacent to that pivot. Otherwise default to the head end
+            // (turn restriction "to" semantics: head is the restricted vertex).
+            var lo = Math.Min(geid.Tail, geid.Head);
+            var hi = Math.Max(geid.Tail, geid.Head);
+            var fwd = geid.Tail < geid.Head;
+            var pivotIsHi = pivot.HasValue ? pivot.Value == hi : fwd;
+
+            for (var d = 1; d < hi - lo; d++)
             {
-                // forward direction: head is the restricted vertex, search toward it
-                for (var t = geid.Head - 1; t > geid.Tail; t--)
+                if (pivotIsHi)
                 {
-                    var sub = GlobalEdgeId.Create(geid.EdgeId, t, geid.Head);
-                    if (globalIdSet.EdgeIdSet.TryGet(sub, out edgeId))
-                        return (edgeId, true);
-                    if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out edgeId))
-                        return (edgeId, false);
+                    if (TryHi(d, out var r)) return r;
                 }
-            }
-            else
-            {
-                // reversed direction: tail is the restricted vertex, search away from it
-                for (var h = geid.Tail - 1; h > geid.Head; h--)
+                else
                 {
-                    var sub = GlobalEdgeId.Create(geid.EdgeId, geid.Tail, h);
-                    if (globalIdSet.EdgeIdSet.TryGet(sub, out edgeId))
-                        return (edgeId, true);
-                    if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out edgeId))
-                        return (edgeId, false);
+                    if (TryLo(d, out var r)) return r;
                 }
             }
 
             return null;
+
+            bool TryLo(int d, out (EdgeId edge, bool forward)? result)
+            {
+                result = null;
+                var h = lo + d;
+                if (h >= hi) return false;
+                var sub = GlobalEdgeId.Create(geid.EdgeId, lo, h);
+                if (globalIdSet.EdgeIdSet.TryGet(sub, out var eId))
+                {
+                    result = fwd ? (eId, true) : (eId, false);
+                    return true;
+                }
+                if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out eId))
+                {
+                    result = fwd ? (eId, false) : (eId, true);
+                    return true;
+                }
+                return false;
+            }
+
+            bool TryHi(int d, out (EdgeId edge, bool forward)? result)
+            {
+                result = null;
+                var t = hi - d;
+                if (t <= lo) return false;
+                var sub = GlobalEdgeId.Create(geid.EdgeId, t, hi);
+                if (globalIdSet.EdgeIdSet.TryGet(sub, out var eId))
+                {
+                    result = fwd ? (eId, true) : (eId, false);
+                    return true;
+                }
+                if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out eId))
+                {
+                    result = fwd ? (eId, false) : (eId, true);
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
