@@ -9,6 +9,7 @@ using Itinero.Network.Attributes;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search;
 using Itinero.Network.Search.Edges;
+using Itinero.Network.TurnCosts;
 using Itinero.Profiles;
 
 namespace Itinero.IO.Json.GeoJson;
@@ -137,6 +138,9 @@ public static class RouterDbExtensions
                 }
             }
         }
+
+        // write turn cost features.
+        jsonWriter.WriteTurnCostFeatures(routingNetwork, edges);
     }
 
     /// <summary>
@@ -279,5 +283,141 @@ public static class RouterDbExtensions
         jsonWriter.WritePropertyName("geometry");
         jsonWriter.WriteLineString(enumerator.GetCompleteShape());
         jsonWriter.WriteFeatureEnd();
+    }
+
+    /// <summary>
+    /// Writes turn cost features for all edges in the set.
+    /// </summary>
+    public static void WriteTurnCostFeatures(this Utf8JsonWriter jsonWriter, RoutingNetwork routingNetwork,
+        HashSet<EdgeId> edges)
+    {
+        var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
+        var secondEdgeEnumerator = routingNetwork.GetEdgeEnumerator();
+
+        foreach (var edgeId in edges)
+        {
+            if (!edgeEnumerator.MoveTo(edgeId)) continue;
+
+            // turn costs from head (edge traversed tail→head, then turning).
+            if (edgeEnumerator.HeadOrder != null)
+            {
+                secondEdgeEnumerator.MoveTo(edgeEnumerator.Head);
+                while (secondEdgeEnumerator.MoveNext())
+                {
+                    if (secondEdgeEnumerator.EdgeId == edgeEnumerator.EdgeId) continue;
+                    if (secondEdgeEnumerator.TailOrder == null) continue;
+
+                    foreach (var turnCost in
+                             edgeEnumerator.GetTurnCostFromHead(secondEdgeEnumerator.TailOrder.Value))
+                    {
+                        if (turnCost.cost == 0) continue;
+
+                        var shape = edgeEnumerator.GetCompleteShape()
+                            .Concat(secondEdgeEnumerator.GetCompleteShape());
+                        jsonWriter.WriteTurnCostFeature(edgeEnumerator.EdgeId, secondEdgeEnumerator.EdgeId,
+                            turnCost, OffsetRight(shape, 5.0));
+                    }
+                }
+            }
+
+            // turn costs from tail (edge traversed head→tail, then turning).
+            if (edgeEnumerator.TailOrder != null)
+            {
+                secondEdgeEnumerator.MoveTo(edgeEnumerator.Tail);
+                while (secondEdgeEnumerator.MoveNext())
+                {
+                    if (secondEdgeEnumerator.EdgeId == edgeEnumerator.EdgeId) continue;
+                    if (secondEdgeEnumerator.TailOrder == null) continue;
+
+                    foreach (var turnCost in
+                             edgeEnumerator.GetTurnCostFromTail(secondEdgeEnumerator.TailOrder.Value))
+                    {
+                        if (turnCost.cost == 0) continue;
+
+                        var shape = edgeEnumerator.GetCompleteShape().Reverse()
+                            .Concat(secondEdgeEnumerator.GetCompleteShape());
+                        jsonWriter.WriteTurnCostFeature(edgeEnumerator.EdgeId, secondEdgeEnumerator.EdgeId,
+                            turnCost, OffsetRight(shape, 5.0));
+                    }
+                }
+            }
+        }
+    }
+
+    private static void WriteTurnCostFeature(this Utf8JsonWriter jsonWriter,
+        EdgeId fromEdge, EdgeId toEdge,
+        (uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost,
+            IEnumerable<EdgeId> prefixEdges) turnCost,
+        IEnumerable<(double longitude, double latitude, float? e)> shape)
+    {
+        jsonWriter.WriteFeatureStart();
+        var attributes = turnCost.attributes.ToList();
+        attributes.AddRange(new (string key, string value)[]
+        {
+            ("_type", "turn_cost"),
+            ("_from_edge", fromEdge.ToString()),
+            ("_to_edge", toEdge.ToString()),
+            ("_prefix", string.Join(",", turnCost.prefixEdges.Select(x => x.ToString()))),
+            ("_cost", turnCost.cost.ToString()),
+            ("_turn_cost_type", turnCost.turnCostType.ToString())
+        });
+        jsonWriter.WriteProperties(attributes);
+        jsonWriter.WritePropertyName("geometry");
+        jsonWriter.WriteLineString(shape);
+        jsonWriter.WriteFeatureEnd();
+    }
+
+    private static IEnumerable<(double longitude, double latitude, float? e)> OffsetRight(
+        IEnumerable<(double longitude, double latitude, float? e)> coordinates, double offsetMeters)
+    {
+        var coords = coordinates.ToList();
+        if (coords.Count < 2)
+        {
+            foreach (var c in coords) yield return c;
+            yield break;
+        }
+
+        for (var i = 0; i < coords.Count; i++)
+        {
+            var (lon, lat, e) = coords[i];
+
+            // get direction from adjacent points.
+            double dx, dy;
+            if (i == 0)
+            {
+                dx = coords[i + 1].longitude - lon;
+                dy = coords[i + 1].latitude - lat;
+            }
+            else if (i == coords.Count - 1)
+            {
+                dx = lon - coords[i - 1].longitude;
+                dy = lat - coords[i - 1].latitude;
+            }
+            else
+            {
+                dx = coords[i + 1].longitude - coords[i - 1].longitude;
+                dy = coords[i + 1].latitude - coords[i - 1].latitude;
+            }
+
+            // convert to meters for proper normalization.
+            var latRad = lat * Math.PI / 180.0;
+            var cosLat = Math.Cos(latRad);
+            var dxM = dx * 111320.0 * cosLat;
+            var dyM = dy * 111320.0;
+
+            var lenM = Math.Sqrt(dxM * dxM + dyM * dyM);
+            if (lenM < 0.001)
+            {
+                yield return (lon, lat, e);
+                continue;
+            }
+
+            // right perpendicular in meters (rotate 90° clockwise).
+            var perpXM = dyM / lenM * offsetMeters;
+            var perpYM = -dxM / lenM * offsetMeters;
+
+            // convert back to degrees.
+            yield return (lon + perpXM / (111320.0 * cosLat), lat + perpYM / 111320.0, e);
+        }
     }
 }
