@@ -435,7 +435,7 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Streams.RelationTagsPreprocessor", "rp": "Itinero.IO.Osm_RelationTagsPreprocessor.html", "cl": 48, "ucl": 2, "cal": 50, "tl": 98, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 18, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.AttributesExtensions", "rp": "Itinero.IO.Osm_AttributesExtensions.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.GlobalEdgeIdExtensions", "rp": "Itinero.IO.Osm_GlobalEdgeIdExtensions.html", "cl": 3, "ucl": 25, "cal": 28, "tl": 50, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 0, "ucl": 254, "cal": 254, "tl": 442, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 144, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 0, "ucl": 257, "cal": 257, "tl": 443, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 144, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "Itinero.MapMatching",
