@@ -270,6 +270,7 @@ public static class StandaloneNetworkTileWriterExtensions
                         // add regular edges, if any.
                         var shape = new List<(double longitude, double latitude, float? e)>();
                         VertexId? previousVertex = null;
+                        var previousVertexIdx = -1;
 
                         for (var n = 0; n < way.Nodes.Length; n++)
                         {
@@ -278,6 +279,7 @@ public static class StandaloneNetworkTileWriterExtensions
                             if (boundaryNodes.Contains(wayNode))
                             {
                                 previousVertex = null;
+                                previousVertexIdx = -1;
                                 shape.Clear();
                                 continue;
                             }
@@ -292,7 +294,7 @@ public static class StandaloneNetworkTileWriterExtensions
 
                             if (previousVertex != null)
                             {
-                                var globalEdgeId = way.CreateGlobalEdgeId(n - 1, n);
+                                var globalEdgeId = way.CreateGlobalEdgeId(previousVertexIdx, n);
                                 var edgeId = writer.AddEdge(previousVertex.Value, vertexId, edgeTypeId, shape,
                                     attributes, globalEdgeId);
                                 shape.Clear();
@@ -302,6 +304,7 @@ public static class StandaloneNetworkTileWriterExtensions
                             }
 
                             previousVertex = vertexId;
+                            previousVertexIdx = n;
                         }
 
                         break;
@@ -330,8 +333,6 @@ public static class StandaloneNetworkTileWriterExtensions
             // try to convert first, and see if all edges are there
             if (!globalNetworkRestriction.TryBuildNetworkRestriction(GetEdgeForGlobalEdge, out var networkRestriction))
             {
-                // the restriction could not be converted,
-
                 //  one of it's edge is a boundary edge and we are working on a single tile right now.
                 r++;
                 continue;

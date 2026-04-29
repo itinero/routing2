@@ -3,7 +3,7 @@
   
   <!--- Package information, Version -->
   <PropertyGroup>
-    <PackageVersion>2.0.20-alpha-000</PackageVersion>
+    <PackageVersion>2.0.21-alpha-000</PackageVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Description>Itinero - Routeplanning for .NET.</Description>
     <Copyright>Itinero BV</Copyright>
