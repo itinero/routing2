@@ -285,7 +285,7 @@ var assemblies = [
       { "name": "Itinero.Network.Tiles.NetworkTileExtensions", "rp": "Itinero_NetworkTileExtensions.html", "cl": 0, "ucl": 6, "cal": 6, "tl": 27, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Tiles.Standalone.Global.GlobalEdgeId", "rp": "Itinero_GlobalEdgeId.html", "cl": 25, "ucl": 14, "cal": 39, "tl": 88, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 14, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Tiles.Standalone.Global.GlobalRestriction", "rp": "Itinero_GlobalRestriction.html", "cl": 12, "ucl": 6, "cal": 18, "tl": 67, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 2, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Tiles.Standalone.Global.GlobalRestrictionExtensions", "rp": "Itinero_GlobalRestrictionExtensions.html", "cl": 27, "ucl": 1, "cal": 28, "tl": 67, "ct": "LineCoverage", "mc": "-", "cb": 14, "tb": 18, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Tiles.Standalone.Global.GlobalRestrictionExtensions", "rp": "Itinero_GlobalRestrictionExtensions.html", "cl": 25, "ucl": 5, "cal": 30, "tl": 79, "ct": "LineCoverage", "mc": "-", "cb": 8, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Tiles.Standalone.Global.NetworkRestriction", "rp": "Itinero_NetworkRestriction.html", "cl": 12, "ucl": 6, "cal": 18, "tl": 63, "ct": "LineCoverage", "mc": "-", "cb": 1, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Tiles.Standalone.Mutation.RoutingNetworkMutableExtensions", "rp": "Itinero_RoutingNetworkMutableExtensions.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 33, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Tiles.Standalone.StandaloneNetworkTile", "rp": "Itinero_StandaloneNetworkTile.html", "cl": 0, "ucl": 348, "cal": 348, "tl": 568, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 74, "lch": [], "bch": [], "hc": [] },
@@ -435,7 +435,7 @@ var assemblies = [
       { "name": "Itinero.IO.Osm.Streams.RelationTagsPreprocessor", "rp": "Itinero.IO.Osm_RelationTagsPreprocessor.html", "cl": 48, "ucl": 2, "cal": 50, "tl": 98, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 18, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.AttributesExtensions", "rp": "Itinero.IO.Osm_AttributesExtensions.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.IO.Osm.Tiles.GlobalEdgeIdExtensions", "rp": "Itinero.IO.Osm_GlobalEdgeIdExtensions.html", "cl": 3, "ucl": 25, "cal": 28, "tl": 50, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 0, "ucl": 254, "cal": 254, "tl": 442, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 144, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.IO.Osm.Tiles.StandaloneNetworkTileWriterExtensions", "rp": "Itinero.IO.Osm_StandaloneNetworkTileWriterExtensions.html", "cl": 0, "ucl": 257, "cal": 257, "tl": 443, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 144, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "Itinero.MapMatching",
