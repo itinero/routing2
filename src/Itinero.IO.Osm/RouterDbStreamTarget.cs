@@ -264,13 +264,26 @@ public class RouterDbStreamTarget : OsmStreamTarget
 
         return;
 
-        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid)
+        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid, bool isFirst)
         {
             if (_globalEdgeIds.TryGetValue(geid, out var edgeId))
                 return (edgeId, true);
             if (_globalEdgeIds.TryGetValue(geid.GetInverted(), out edgeId))
                 return (edgeId, false);
-            return null;
+
+            return Itinero.Network.Tiles.Standalone.Global.GlobalRestrictionExtensions
+                .WalkFromAnchor(geid, isFirst, TryGet);
+
+            bool TryGet(GlobalEdgeId q, out EdgeId result)
+            {
+                if (_globalEdgeIds.TryGetValue(q, out var v))
+                {
+                    result = v;
+                    return true;
+                }
+                result = default;
+                return false;
+            }
         }
     }
 }

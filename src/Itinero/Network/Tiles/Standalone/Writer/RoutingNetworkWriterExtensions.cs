@@ -106,9 +106,7 @@ public static class RoutingNetworkWriterExtensions
         GlobalNetworkManager globalIdSet, RoutingNetworkWriter writer)
     {
         // try to resolve all GlobalEdgeIds to EdgeIds.
-        if (!globalRestriction.TryBuildNetworkRestriction(
-                (Func<GlobalEdgeId, ushort?, (EdgeId edge, bool forward)?>)GetEdge,
-                out var networkRestriction))
+        if (!globalRestriction.TryBuildNetworkRestriction(GetEdge, out var networkRestriction))
             return false;
 
         if (networkRestriction!.Count < 2) return true;
@@ -153,74 +151,19 @@ public static class RoutingNetworkWriterExtensions
 
         return true;
 
-        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid, ushort? pivot = null)
+        (EdgeId edge, bool forward)? GetEdge(GlobalEdgeId geid, bool isFirst)
         {
+            // exact match short-circuit (cheap check before walking).
             if (globalIdSet.EdgeIdSet.TryGet(geid, out var edgeId))
                 return (edgeId, true);
             if (globalIdSet.EdgeIdSet.TryGet(geid.GetInverted(), out edgeId))
                 return (edgeId, false);
 
-            // exact match not found — search for a subsection sharing the
-            // endpoint closest to the restricted vertex. When a pivot is given
-            // (the shared endpoint with the adjacent edge in a restriction chain),
-            // search adjacent to that pivot. Otherwise default to the head end
-            // (turn restriction "to" semantics: head is the restricted vertex).
-            var lo = Math.Min(geid.Tail, geid.Head);
-            var hi = Math.Max(geid.Tail, geid.Head);
-            var fwd = geid.Tail < geid.Head;
-            var pivotIsHi = pivot.HasValue ? pivot.Value == hi : fwd;
-
-            for (var d = 1; d < hi - lo; d++)
-            {
-                if (pivotIsHi)
-                {
-                    if (TryHi(d, out var r)) return r;
-                }
-                else
-                {
-                    if (TryLo(d, out var r)) return r;
-                }
-            }
-
-            return null;
-
-            bool TryLo(int d, out (EdgeId edge, bool forward)? result)
-            {
-                result = null;
-                var h = lo + d;
-                if (h >= hi) return false;
-                var sub = GlobalEdgeId.Create(geid.EdgeId, lo, h);
-                if (globalIdSet.EdgeIdSet.TryGet(sub, out var eId))
-                {
-                    result = fwd ? (eId, true) : (eId, false);
-                    return true;
-                }
-                if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out eId))
-                {
-                    result = fwd ? (eId, false) : (eId, true);
-                    return true;
-                }
-                return false;
-            }
-
-            bool TryHi(int d, out (EdgeId edge, bool forward)? result)
-            {
-                result = null;
-                var t = hi - d;
-                if (t <= lo) return false;
-                var sub = GlobalEdgeId.Create(geid.EdgeId, t, hi);
-                if (globalIdSet.EdgeIdSet.TryGet(sub, out var eId))
-                {
-                    result = fwd ? (eId, true) : (eId, false);
-                    return true;
-                }
-                if (globalIdSet.EdgeIdSet.TryGet(sub.GetInverted(), out eId))
-                {
-                    result = fwd ? (eId, false) : (eId, true);
-                    return true;
-                }
-                return false;
-            }
+            // walk from the chain-anchor end; first edge anchors at Head, every
+            // subsequent edge anchors at Tail (chain invariant: previous.Head ==
+            // current.Tail).
+            return GlobalRestrictionExtensions.WalkFromAnchor(geid, isFirst,
+                globalIdSet.EdgeIdSet.TryGet);
         }
     }
 }

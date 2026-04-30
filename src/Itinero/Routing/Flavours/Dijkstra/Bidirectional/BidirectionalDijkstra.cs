@@ -171,7 +171,8 @@ internal class BidirectionalDijkstra
                 if (edge == backwardEdge) return true;
 
                 var combinedCost = totalCost + backwardVisit.cost;
-                if (combinedCost < _bidirectionalDijkstra._best.cost)
+                if (combinedCost < _bidirectionalDijkstra._best.cost &&
+                    _bidirectionalDijkstra.CanTurn(visit, backwardVisit.p))
                 {
                     _bidirectionalDijkstra._best = (visit, backwardVisit.p, combinedCost, null);
                 }
@@ -217,7 +218,8 @@ internal class BidirectionalDijkstra
                 if (edge == forwardEdge) return true;
 
                 var combinedCost = totalCost + forwardVisit.cost;
-                if (combinedCost < _bidirectionalDijkstra._best.cost)
+                if (combinedCost < _bidirectionalDijkstra._best.cost &&
+                    _bidirectionalDijkstra.CanTurn(forwardVisit.p, visit))
                 {
                     _bidirectionalDijkstra._best = (forwardVisit.p, visit, combinedCost, null);
                 }

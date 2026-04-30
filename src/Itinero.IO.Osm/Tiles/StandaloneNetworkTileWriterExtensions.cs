@@ -402,16 +402,16 @@ public static class StandaloneNetworkTileWriterExtensions
         }
 
         // add global restrictions.
-        // also add all edge ids that are already known as an index to use during processing of the tile.
+        // also cache resolved edge ids per chain position for the runtime retry.
         foreach (var globalNetworkRestriction in globalRestrictions)
         {
-            var edges = globalNetworkRestriction.Select(x =>
+            var edges = new (GlobalEdgeId, EdgeId?)[globalNetworkRestriction.Count];
+            for (var i = 0; i < globalNetworkRestriction.Count; i++)
             {
-                var localEdge = GetEdgeForGlobalEdge(x);
-                if (localEdge == null) return (x, (EdgeId?)null);
-
-                return (x, localEdge.Value.edge);
-            });
+                var x = globalNetworkRestriction[i];
+                var localEdge = GetEdgeForGlobalEdge(x, i == 0);
+                edges[i] = (x, localEdge?.edge);
+            }
 
             writer.AddGlobalRestriction(edges, globalNetworkRestriction.IsProhibitory,
                 globalNetworkRestriction.Attributes);
@@ -420,7 +420,7 @@ public static class StandaloneNetworkTileWriterExtensions
         return;
 
         // convert network restrictions to turn costs.
-        (EdgeId edge, bool forward)? GetEdgeForGlobalEdge(GlobalEdgeId globalEdgeId)
+        (EdgeId edge, bool forward)? GetEdgeForGlobalEdge(GlobalEdgeId globalEdgeId, bool isFirst)
         {
             if (globalRestrictionEdges.TryGetValue(globalEdgeId, out var edgeId) && edgeId.HasValue)
             {
@@ -432,7 +432,18 @@ public static class StandaloneNetworkTileWriterExtensions
                 return (edgeId.Value, false);
             }
 
-            return null;
+            return GlobalRestrictionExtensions.WalkFromAnchor(globalEdgeId, isFirst, TryGet);
+
+            bool TryGet(GlobalEdgeId geid, out EdgeId result)
+            {
+                if (globalRestrictionEdges.TryGetValue(geid, out var v) && v.HasValue)
+                {
+                    result = v.Value;
+                    return true;
+                }
+                result = default;
+                return false;
+            }
         }
     }
 

@@ -657,4 +657,237 @@ public class FunctionalRoutingTests
 
         Assert.True(route.IsError, "Left turn should be blocked by only_right_turn restriction");
     }
+
+    [Fact]
+    public async Task Barrier_CarProfile_BollardAtSharedNodeWithToWayInteriorJunction_ShouldBlockRoute()
+    {
+        // End-to-end variant of the resolver bug: bollard at the shared node
+        // between way 1 (a→bollard) and way 2 (bollard→j2→c). Way 3 (j2→x)
+        // forces an interior junction at j2 that splits way 2 into stored
+        // sub-edges (way2, 0, 1) and (way2, 1, 2). The bollard's "going from a
+        // toward c" restriction (chain [(way1, 0, 1), (way2, 0, 2)]) hits the
+        // resolver bug: way2's tail-hop subsection search falls on the wrong
+        // sub-edge (way2, 1, 2) instead of the bollard-adjacent (way2, 0, 1).
+        // The misplaced turn cost lands on j2 with an unfireable edge pair,
+        // so traversal from a through bollard to c is no longer blocked.
+        //
+        // Without the bug, the route from a→c is impossible (no alternative).
+        // With the bug, the router happily routes straight through. This test
+        // expects the route to fail; it currently succeeds and so the test
+        // is RED until the resolver is fixed.
+
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.269 },
+            new Node
+            {
+                Id = 2, Longitude = 4.801, Latitude = 51.269,
+                Tags = new TagsCollection(new Tag("barrier", "bollard"))
+            },
+            new Node { Id = 3, Longitude = 4.802, Latitude = 51.269 },
+            new Node { Id = 4, Longitude = 4.803, Latitude = 51.269 },
+            new Node { Id = 5, Longitude = 4.802, Latitude = 51.270 },
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 2L, 3, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 3, Nodes = new[] { 3L, 5 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        var snapA = await network.Snap(profile).ToAsync(4.800, 51.269);
+        Assert.False(snapA.IsError, snapA.ErrorMessage);
+        var snapC = await network.Snap(profile).ToAsync(4.803, 51.269);
+        Assert.False(snapC.IsError, snapC.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snapA.Value)
+            .To(snapC.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError,
+            "Route from a to c should fail — bollard blocks the only path through. " +
+            "If this test passes, the bollard turn cost has been misplaced (resolver bug).");
+    }
+
+    [Fact(Skip = "Diagnostic-only — kept for reference, not a real test.")]
+    public async Task DEBUG_DumpDiagForExistingPassingBollardTest()
+    {
+        // re-run the existing passing test pattern with the same diagnostic so
+        // we can compare the turn-cost data structure to the failing case.
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },
+            new Node
+            {
+                Id = 2, Longitude = 4.8005, Latitude = 51.2695,
+                Tags = new TagsCollection(new Tag("barrier", "bollard"))
+            },
+            new Node { Id = 3, Longitude = 4.801, Latitude = 51.269 },
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 2L, 3 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        var diag = new System.Text.StringBuilder();
+        var enumerator = network.GetEdgeEnumerator();
+        foreach (var v in network.GetVertices())
+        {
+            if (!network.TryGetVertex(v, out var vLon, out var vLat, out _)) continue;
+            enumerator.MoveTo(v);
+            var anyOrder = false;
+            var info = new System.Text.StringBuilder();
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.TailOrder != null || enumerator.HeadOrder != null)
+                {
+                    anyOrder = true;
+                    info.Append($"e{enumerator.EdgeId} t={enumerator.TailOrder} h={enumerator.HeadOrder} fwd={enumerator.Forward}; ");
+                    for (byte src = 0; src < 4; src++)
+                    {
+                        foreach (var tc in enumerator.GetTurnCostFromTail(src))
+                            info.Append($"[fromTail src={src} cost={tc.cost}] ");
+                        foreach (var tc in enumerator.GetTurnCostFromHead(src))
+                            info.Append($"[fromHead src={src} cost={tc.cost}] ");
+                    }
+                }
+            }
+            if (anyOrder) diag.Append($"\nv({vLon:F5},{vLat:F5}): {info}");
+        }
+
+        // intentionally fail to dump diag.
+        Assert.Fail($"DIAG of passing test: {diag}");
+    }
+
+    [Fact(Skip = "Diagnostic control — confirms simple bollard still blocks; kept for reference.")]
+    public async Task DEBUG_Barrier_CarProfile_BollardSameStructureNoWay3_ShouldBlock()
+    {
+        // sanity: same node/way ids as the failing test but with way 3 removed
+        // and j2 not present. bollard with simple way 2 → should block (existing
+        // mechanism). this isolates whether the issue is in the resolver or in
+        // some other behavior of the test's larger network.
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.269 },
+            new Node
+            {
+                Id = 2, Longitude = 4.801, Latitude = 51.269,
+                Tags = new TagsCollection(new Tag("barrier", "bollard"))
+            },
+            new Node { Id = 4, Longitude = 4.803, Latitude = 51.269 },
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        var snapA = await network.Snap(profile).ToAsync(4.800, 51.269);
+        var snapC = await network.Snap(profile).ToAsync(4.803, 51.269);
+        var route = await network.Route(profile)
+            .From(snapA.Value)
+            .To(snapC.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError, "control: simple bollard with no interior junction should still block");
+    }
+
+    [Fact]
+    public async Task TurnRestriction_CarProfile_NoStraightOn_WithToWayInteriorJunction_ShouldBlockRoute()
+    {
+        // End-to-end variant of the resolver bug for turn restrictions.
+        // OSM relation: from=way1 [a, via], via=node 'via', to=way2 [via, j2, c],
+        // restriction=no_straight_on. Way 3 [j2, x] makes j2 an interior
+        // junction that splits way 2 into (way2, 0, 1) and (way2, 1, 2).
+        //
+        // Resolver chain: [(way1, 0, 1), (way2, 0, 2)]. Head-hop's subsection
+        // search falls on the wrong sub-edge (way2, 1, 2) instead of the
+        // via-adjacent (way2, 0, 1). The misplaced turn cost lands on j2,
+        // not on via, so the no-straight-on restriction is unenforced and
+        // a→c routes straight through.
+
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.269 },
+            new Node { Id = 2, Longitude = 4.801, Latitude = 51.269 },
+            new Node { Id = 3, Longitude = 4.802, Latitude = 51.269 },
+            new Node { Id = 4, Longitude = 4.803, Latitude = 51.269 },
+            new Node { Id = 5, Longitude = 4.802, Latitude = 51.270 },
+            new Way
+            {
+                Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 2, Nodes = new[] { 2L, 3, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Way
+            {
+                Id = 3, Nodes = new[] { 3L, 5 },
+                Tags = new TagsCollection(new Tag("highway", "residential"))
+            },
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(2, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "no_straight_on"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+
+        var snapA = await network.Snap(profile).ToAsync(4.800, 51.269);
+        Assert.False(snapA.IsError, snapA.ErrorMessage);
+        var snapC = await network.Snap(profile).ToAsync(4.803, 51.269);
+        Assert.False(snapC.IsError, snapC.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snapA.Value)
+            .To(snapC.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError,
+            "Route from a to c should fail — no_straight_on blocks the only path through. " +
+            "If this test passes, the turn-restriction cost has been misplaced (resolver bug).");
+    }
 }
