@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Itinero.IO.Osm;
@@ -656,6 +657,209 @@ public class FunctionalRoutingTests
             .CalculateAsync();
 
         Assert.True(route.IsError, "Left turn should be blocked by only_right_turn restriction");
+    }
+
+    [Fact]
+    public async Task OnlyRightTurn_TurnCostFactorEnabledProfile_ShouldBlockStraightOn()
+    {
+        // Mirrors the publish-api scenario: profiles in publish-api set
+        // TurnCostFactorEnabled=true, which makes the router dispatch to
+        // EdgeBased.Dijkstra. The existing OnlyRightTurn tests use
+        // OsmProfiles.Car (Lua, TurnCostFactorEnabled=false → BidirectionalDijkstra).
+        // This test confirms the engine + resolver pair handle only_right_turn
+        // when going through the EdgeBased path.
+        //
+        // Setup: from way1, via node 2, only_right_turn to way2 (right).
+        // way3 is the "straight on" alternative — must be blocked.
+        // way4 is the "left" — also must be blocked.
+        // Routing 1 → straight (node 5) must fail.
+        var profile = new TurnCostFactorEnabledCarProfile();
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },          // origin
+            new Node { Id = 2, Longitude = 4.802, Latitude = 51.270 },          // via
+            new Node { Id = 3, Longitude = 4.802, Latitude = 51.272 },          // right (north of via)
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.265 },          // left (south of via)
+            new Node { Id = 5, Longitude = 4.804, Latitude = 51.270 },          // straight (east of via)
+            new Way { Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 2, Nodes = new[] { 2L, 3 },
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 3, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 4, Nodes = new[] { 2L, 5 },
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(2, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "only_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        Assert.False(snap1.IsError, snap1.ErrorMessage);
+        var snapStraight = await network.Snap(profile).ToAsync(4.804, 51.270);
+        Assert.False(snapStraight.IsError, snapStraight.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snapStraight.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError,
+            "Going straight (way1 → way4) must fail under only_right_turn even with TurnCostFactorEnabled=true profile");
+    }
+
+    /// <summary>
+    /// Same as <see cref="Itinero.Profiles.Lua.Osm.OsmProfiles.Car"/> but with
+    /// TurnCostFactorEnabled=true to dispatch to EdgeBased.Dijkstra (matches
+    /// publish-api's profile mode).
+    /// </summary>
+    private sealed class TurnCostFactorEnabledCarProfile : Profile
+    {
+        public override string Name => "test-car-tcf-enabled";
+        public override bool TurnCostFactorEnabled => true;
+        public override EdgeFactor Factor(IEnumerable<(string key, string value)> attributes)
+        {
+            // accept "highway=residential" as a routable forward+backward edge with realistic speed.
+            foreach (var (k, v) in attributes)
+            {
+                if (k == "highway" && v == "residential")
+                {
+                    return new EdgeFactor(1, 1, 5000, 5000); // 50 km/h ≈ 13.89 m/s × 100
+                }
+            }
+            return EdgeFactor.NoFactor;
+        }
+        public override TurnCostFactor TurnCostFactor(IEnumerable<(string key, string value)> attributes)
+        {
+            // any restriction relation tagged with restriction=* is a hard block.
+            foreach (var (k, _) in attributes)
+            {
+                if (k == "restriction") return Itinero.Profiles.TurnCostFactor.Binary;
+            }
+            return Itinero.Profiles.TurnCostFactor.Empty;
+        }
+    }
+
+    [Fact]
+    public async Task OnlyRightTurn_CarProfile_FromWaySplitByInteriorJunction_ShouldStillBlockLeftTurn()
+    {
+        // Same intersection as OnlyRightTurn_CarProfile_ShouldBlockOtherTurns,
+        // but the FROM-way is split by an interior junction:
+        //   way 1 = [a, j, via]   (a→via, but split at j by way 4)
+        //   way 4 = [j, x]        (creates interior junction at j)
+        //   way 2 = [via, right]  (the only allowed turn — right)
+        //   way 3 = [via, left]   (must remain blocked)
+        // Routing a→left must still fail despite the from-way being split.
+        // Stresses the walk-from-anchor resolver under the mandatory branch.
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },          // a
+            new Node { Id = 5, Longitude = 4.801, Latitude = 51.270 },          // j (interior junction)
+            new Node { Id = 2, Longitude = 4.802, Latitude = 51.270 },          // via
+            new Node { Id = 3, Longitude = 4.804, Latitude = 51.270 },          // right (allowed)
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.265 },          // left (blocked)
+            new Node { Id = 6, Longitude = 4.801, Latitude = 51.272 },          // x (north of j)
+            new Way { Id = 1, Nodes = new[] { 1L, 5, 2 },                       // a → j → via (3 nodes)
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 4, Nodes = new[] { 5L, 6 },                           // j → x (makes j a junction)
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 2, Nodes = new[] { 2L, 3 },                           // via → right
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 3, Nodes = new[] { 2L, 4 },                           // via → left
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(2, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "only_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        Assert.False(snap1.IsError, snap1.ErrorMessage);
+        var snap4 = await network.Snap(profile).ToAsync(4.802, 51.265);
+        Assert.False(snap4.IsError, snap4.ErrorMessage);
+
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snap4.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError,
+            "Left turn (way1 → way3) should remain blocked by only_right_turn even though way1 has an interior junction");
+    }
+
+    [Fact]
+    public async Task OnlyRightTurn_CarProfile_ToWaySplitByInteriorJunction_ShouldStillBlockLeftTurn()
+    {
+        // Mandatory restriction with the TO-way (the allowed direction) split by an interior junction:
+        //   way 1 = [a, via]
+        //   way 2 = [via, j, right]   (the allowed turn, but split at j by way 5)
+        //   way 5 = [j, x]            (interior junction at j)
+        //   way 3 = [via, left]       (must remain blocked)
+        // Routing a→left must still fail.
+        var profile = OsmProfiles.Car;
+        var routerDb = LoadOsmData(new OsmGeo[]
+        {
+            new Node { Id = 1, Longitude = 4.800, Latitude = 51.270 },
+            new Node { Id = 2, Longitude = 4.802, Latitude = 51.270 },           // via
+            new Node { Id = 5, Longitude = 4.803, Latitude = 51.270 },           // j
+            new Node { Id = 3, Longitude = 4.804, Latitude = 51.270 },           // right
+            new Node { Id = 4, Longitude = 4.802, Latitude = 51.265 },           // left
+            new Node { Id = 6, Longitude = 4.803, Latitude = 51.272 },           // x
+            new Way { Id = 1, Nodes = new[] { 1L, 2 },
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 2, Nodes = new[] { 2L, 5, 3 },                        // via → j → right
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 5, Nodes = new[] { 5L, 6 },                           // splits way 2 at j
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Way { Id = 3, Nodes = new[] { 2L, 4 },
+                Tags = new TagsCollection(new Tag("highway", "residential")) },
+            new Relation
+            {
+                Id = 1,
+                Members = new[]
+                {
+                    new RelationMember(1, "from", OsmGeoType.Way),
+                    new RelationMember(2, "via", OsmGeoType.Node),
+                    new RelationMember(2, "to", OsmGeoType.Way)
+                },
+                Tags = new TagsCollection(
+                    new Tag("type", "restriction"),
+                    new Tag("restriction", "only_right_turn"))
+            }
+        }, profile);
+
+        var network = routerDb.Latest;
+        var snap1 = await network.Snap(profile).ToAsync(4.800, 51.270);
+        var snap4 = await network.Snap(profile).ToAsync(4.802, 51.265);
+        var route = await network.Route(profile)
+            .From(snap1.Value)
+            .To(snap4.Value)
+            .CalculateAsync();
+
+        Assert.True(route.IsError,
+            "Left turn should remain blocked even when the to-way (right turn target) is split by an interior junction");
     }
 
     [Fact]

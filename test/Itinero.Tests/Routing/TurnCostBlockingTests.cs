@@ -262,6 +262,60 @@ public class TurnCostBlockingTests
     }
 
     [Fact]
+    public async Task Routing_OnlyRightTurn_TurnCostFactorEnabled_OneToOne_ShouldBlockStraightOn()
+    {
+        // Mandatory restriction shape ("only_right_turn"): from-edge enters via,
+        // only the right-turn edge is allowed out, all other exits forbidden.
+        // We model it directly as a turn-cost layout (skipping the OSM resolver):
+        //
+        //              right (b_right)
+        //                 ^
+        //                 |
+        //   a -- e_from ->v-- e_straight ---> b_straight
+        //                 |
+        //              ... (no left in this minimal case)
+        //
+        // Cost layout at v: forbid (e_from -> e_straight). Going (e_from -> e_right)
+        // remains free (only-right-turn permits it).
+        // Routing a -> b_straight must fail.
+        // Profile uses TurnCostFactorEnabled=true (matches publish-api).
+        var routerDb = new RouterDb();
+        routerDb.PrepareFor(BlockingProfile(turnCostFactorEnabled: true));
+        VertexId a, via, bRight, bStraight;
+        EdgeId eFrom, eRight, eStraight;
+        using (var mutable = routerDb.GetMutableNetwork())
+        {
+            a = mutable.AddVertex(4.800, 51.270);
+            via = mutable.AddVertex(4.802, 51.270);
+            bRight = mutable.AddVertex(4.803, 51.272); // north of via
+            bStraight = mutable.AddVertex(4.804, 51.270); // east of via (straight on)
+
+            eFrom = mutable.AddEdge(a, via);
+            eRight = mutable.AddEdge(via, bRight);
+            eStraight = mutable.AddEdge(via, bStraight);
+
+            // forbid (e_from -> e_straight) at via — the "going straight" turn.
+            mutable.AddTurnCosts(via,
+                new[] { ("type", "restriction"), ("restriction", "only_right_turn") },
+                new[] { eFrom, eStraight },
+                new uint[,] { { 0, 1 }, { 0, 0 } });
+        }
+
+        var network = routerDb.Latest;
+        var profile = BlockingProfile(turnCostFactorEnabled: true);
+        var snapA = await network.Snap().ToAsync(a).FirstAsync();
+        var snapStraight = await network.Snap().ToAsync(bStraight).FirstAsync();
+
+        var route = await network.Route(profile)
+            .From(snapA)
+            .To(snapStraight)
+            .CalculateAsync();
+
+        Assert.True(route.IsError,
+            "route a -> bStraight must fail — only_right_turn forbids the straight-on turn at via");
+    }
+
+    [Fact]
     public async Task Routing_OneToOne_TurnCostFactorEnabled_BollardAtSharedNodeWithToWaySplit_ShouldBlockRoute()
     {
         // Covers the dispatch path used when a profile sets TurnCostFactorEnabled=true:
