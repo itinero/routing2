@@ -120,17 +120,21 @@ internal partial class NetworkTile
         _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, a);
 
         // write prefix sequence.
+        // Use Int64 so the same-tile/foreign-tile signal (sign of the encoded value) round-trips
+        // correctly for any uint LocalId, including CrossEdgeIds where LocalId >= 0x7FFFFFFF.
+        // (Int32 would silently overflow-wrap to a positive value when LocalId has the high bit set,
+        // making the reader misread foreign edges as same-tile and skip the tile id varint.)
         var prefixEdges = new List<EdgeId>(prefix);
         _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, (uint)prefixEdges.Count);
         foreach (var prefixEdge in prefixEdges)
         {
             if (prefixEdge.TileId == _tileId)
             {
-                _turnCostPointer += _turnCosts.SetDynamicInt32(_turnCostPointer, (int)prefixEdge.LocalId);
+                _turnCostPointer += _turnCosts.SetDynamicInt64(_turnCostPointer, (long)prefixEdge.LocalId);
             }
             else
             {
-                _turnCostPointer += _turnCosts.SetDynamicInt32(_turnCostPointer, (int)-(prefixEdge.LocalId + 1));
+                _turnCostPointer += _turnCosts.SetDynamicInt64(_turnCostPointer, -(long)prefixEdge.LocalId - 1);
                 _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, prefixEdge.TileId);
             }
         }
@@ -188,6 +192,7 @@ internal partial class NetworkTile
             var attributes = this.GetAttributes(a);
 
             // read prefix edges.
+            // Pair with the Int64 writer above; Int32 would mis-decode the sign for CrossEdgeIds.
             IEnumerable<EdgeId> prefixEdges = ArraySegment<EdgeId>.Empty;
             pointer += (uint)_turnCosts.GetDynamicUInt32(pointer, out var prefixEdgeCount);
             if (prefixEdgeCount > 0)
@@ -195,7 +200,7 @@ internal partial class NetworkTile
                 var prefixEdgesList = new List<EdgeId>();
                 while (prefixEdgeCount > 0)
                 {
-                    pointer += (uint)_turnCosts.GetDynamicInt32(pointer, out var signedLocalId);
+                    pointer += (uint)_turnCosts.GetDynamicInt64(pointer, out var signedLocalId);
                     if (signedLocalId >= 0)
                     {
                         prefixEdgesList.Add(new EdgeId(this.TileId, (uint)signedLocalId));
@@ -203,7 +208,7 @@ internal partial class NetworkTile
                     else
                     {
                         pointer += (uint)_turnCosts.GetDynamicUInt32(pointer, out var tileId);
-                        prefixEdgesList.Add(new EdgeId(tileId, (uint)-signedLocalId - 1));
+                        prefixEdgesList.Add(new EdgeId(tileId, (uint)(-signedLocalId - 1)));
                     }
 
                     prefixEdgeCount--;

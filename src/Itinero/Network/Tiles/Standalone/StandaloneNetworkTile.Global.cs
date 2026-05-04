@@ -42,15 +42,18 @@ public partial class StandaloneNetworkTile
         // add turn.
         var a = this.SetAttributes(attributes);
         _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32(_globalRestrictionsPointer, a);
+        // Use Int64 so the sign-as-prohibitory-flag signal round-trips for any uint turnCostTypeId.
+        // Int32 would silently wrap for ids with the high bit set; for typical small ids the encoded
+        // byte sequence is identical to the previous Int32 encoding.
         if (isProhibitory)
         {
             // isProhibitory if turnCostTypeId is encoded as a positive number.
-            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt32(_globalRestrictionsPointer, (int)(turnCostTypeId + 1));
+            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt64(_globalRestrictionsPointer, (long)(turnCostTypeId + 1));
         }
         else
         {
             // not isProhibitory if turnCostTypeId is encoded as a negative number.
-            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt32(_globalRestrictionsPointer, -(int)(turnCostTypeId + 1));
+            _globalRestrictionsPointer += _globalRestrictions.SetDynamicInt64(_globalRestrictionsPointer, -(long)(turnCostTypeId + 1));
         }
         _globalRestrictionsPointer += _globalRestrictions.SetDynamicUInt32(_globalRestrictionsPointer, (uint)edges.Count);
         foreach (var (globalEdgeId, edgeId) in edges)
@@ -80,7 +83,7 @@ public partial class StandaloneNetworkTile
         while (pointer < _globalRestrictionsPointer)
         {
             pointer += _globalRestrictions.GetDynamicUInt32(pointer, out var a);
-            pointer += _globalRestrictions.GetDynamicInt32(pointer, out var turnCostTypeSigned);
+            pointer += _globalRestrictions.GetDynamicInt64(pointer, out var turnCostTypeSigned);
             uint turnCostType;
             bool isProhibitory;
             if (turnCostTypeSigned > 0)

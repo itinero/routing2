@@ -17,15 +17,18 @@ public partial class StandaloneNetworkTile
             throw new ArgumentException("Can only add boundary crossings that cross into the tile");
 
         ArrayBaseExtensions.EnsureMinimumSize(ref _crossings, _crossingsPointer + 36);
+        // Use Int64 so the sign-as-direction signal round-trips for any uint LocalId. Int32 would
+        // silently wrap to the wrong sign for LocalIds with the high bit set; for typical small
+        // vertex LocalIds the encoded byte sequence is identical to the previous Int32 encoding.
         if (isIncoming)
         {
             // incoming if vertex is encoded as a positive number.
-            _crossingsPointer += _crossings.SetDynamicInt32(_crossingsPointer, (int)(vertex.LocalId + 1));
+            _crossingsPointer += _crossings.SetDynamicInt64(_crossingsPointer, (long)(vertex.LocalId + 1));
         }
         else
         {
             // outgoing if vertex is encode as a negative number.
-            _crossingsPointer += _crossings.SetDynamicInt32(_crossingsPointer, -(int)(vertex.LocalId + 1));
+            _crossingsPointer += _crossings.SetDynamicInt64(_crossingsPointer, -(long)(vertex.LocalId + 1));
         }
         _crossingsPointer += _crossings.SetDynamicUInt32(_crossingsPointer, edgeTypeId);
         _crossingsPointer += _crossings.SetGlobalEdgeId(_crossingsPointer, globalEdgeId);
@@ -44,7 +47,7 @@ public partial class StandaloneNetworkTile
         var pointer = 0L;
         while (pointer < _crossingsPointer)
         {
-            pointer += _crossings.GetDynamicInt32(pointer, out var localIdSigned);
+            pointer += _crossings.GetDynamicInt64(pointer, out var localIdSigned);
             bool isIncoming;
             uint localId;
             if (localIdSigned > 0)
