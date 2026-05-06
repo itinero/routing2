@@ -454,11 +454,13 @@ internal class Dijkstra
         return paths;
     }
 
-    [ThreadStatic]
-    private static Dijkstra? _default;
-
     /// <summary>
-    /// Gets a default dijkstra instance (reused per thread).
+    /// Gets a fresh Dijkstra instance for this call. Was previously a [ThreadStatic]
+    /// reuse, but that's unsafe under async/await + ThreadPool reuse: thread A starts
+    /// a routing call on instance D, awaits a callback, returns to the pool, picks up
+    /// a second routing call — Default returns the same D, and now two routing calls
+    /// mutate D's _heap/_visits/_tree concurrently → "concurrent update" crash.
+    /// Allocating three small collections per call is cheap vs. the routing work.
     /// </summary>
-    public static Dijkstra Default => _default ??= new Dijkstra();
+    public static Dijkstra Default => new();
 }

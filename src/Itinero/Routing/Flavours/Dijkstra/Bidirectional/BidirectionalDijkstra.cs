@@ -28,20 +28,17 @@ internal class BidirectionalDijkstra
         _forward = new BidirectionalDijkstraForward(this);
     }
 
-    [ThreadStatic]
-    private static BidirectionalDijkstra? _cached;
-
+    /// <summary>
+    /// Returns a fresh BidirectionalDijkstra instance for this call. Was previously a
+    /// [ThreadStatic] cache, but that's unsafe under async/await + ThreadPool reuse:
+    /// thread A starts a routing call on instance D, awaits a callback, returns to the
+    /// pool, picks up a second routing call — ForNetwork returns the same D, and now
+    /// two routing calls mutate D's mutable state (forward/backward _heap/_visits/_tree)
+    /// concurrently → "concurrent update" crash. Fresh per call is cheap vs. routing work.
+    /// </summary>
     public static BidirectionalDijkstra ForNetwork(RoutingNetwork routingNetwork)
     {
-        var cached = _cached;
-        if (cached != null && cached._routingNetwork == routingNetwork)
-        {
-            return cached;
-        }
-
-        cached = new BidirectionalDijkstra(routingNetwork);
-        _cached = cached;
-        return cached;
+        return new BidirectionalDijkstra(routingNetwork);
     }
 
     public async Task<(Path? path, double cost)> RunAsync(SnapPoint origin,
