@@ -184,8 +184,20 @@ internal class IslandBuilder
 
             edgeEnumerator.MoveTo(edgeId, forward);
             var targetVertex = edgeEnumerator.Head;
-            var order = edgeEnumerator.HeadOrder;
-            var prevEdges = order.HasValue ? new (EdgeId, byte?)[] { (edgeId, order) } : null;
+
+            // Pre-position helper enumerators on edgeId in both traversal directions so
+            // we can hand them to the two-enumerator GetIslandBuilderCost primitive:
+            //   edgeIdFrom: head = targetVertex (for canGoTo, where edgeId is the "from")
+            //   edgeIdTo:   tail = targetVertex (for canComeFrom, where edgeId is the "to")
+            var edgeIdFrom = edgeEnumerator.Network.GetEdgeEnumerator();
+            edgeIdFrom.MoveTo(edgeId, forward);
+            var edgeIdTo = edgeEnumerator.Network.GetEdgeEnumerator();
+            edgeIdTo.MoveTo(edgeId, !forward);
+
+            // Reusable probe positioned on the current neighbor in its
+            // "arriving at targetVertex" direction (head = targetVertex), used as the
+            // "from" side of canComeFrom.
+            var neighborArriving = edgeEnumerator.Network.GetEdgeEnumerator();
 
             if (!edgeEnumerator.MoveTo(targetVertex)) continue;
 
@@ -210,8 +222,10 @@ internal class IslandBuilder
                     neighborDgVertex = neighborId;
                 }
 
-                // can this edge travel TO the neighbor?
-                var canGoTo = costFunction.GetIslandBuilderCost(edgeEnumerator, true, prevEdges);
+                // canGoTo (edgeId → neighbor at the shared vertex):
+                //   from = edgeIdFrom (head = targetVertex)
+                //   to   = edgeEnumerator on the neighbor (tail = targetVertex by iteration)
+                var canGoTo = costFunction.GetIslandBuilderCost(edgeIdFrom, edgeEnumerator);
                 if (canGoTo)
                 {
                     dg.AddDirectedLink(edgeId, neighborDgVertex);
@@ -225,12 +239,12 @@ internal class IslandBuilder
                     }
                 }
 
-                // can the neighbor travel TO this edge (arrive at the shared vertex)?
-                // no turn cost check — just check if the neighbor can be traversed
-                // in the direction that arrives at the shared vertex.
-                // if Forward=true: tail is at shared vertex → arriving means head→tail = backward
-                // if Forward=false: head is at shared vertex → arriving means tail→head = forward
-                var canComeFrom = costFunction.GetIslandBuilderCost(edgeEnumerator, !edgeEnumerator.Forward);
+                // canComeFrom (neighbor → edgeId at the shared vertex):
+                //   from = neighbor in its "arriving at targetVertex" direction
+                //          (head = targetVertex, i.e. the opposite of iteration direction)
+                //   to   = edgeIdTo (tail = targetVertex)
+                neighborArriving.MoveTo(neighborId, !edgeEnumerator.Forward);
+                var canComeFrom = costFunction.GetIslandBuilderCost(neighborArriving, edgeIdTo);
                 if (canComeFrom)
                 {
                     dg.AddDirectedLink(neighborDgVertex, edgeId);
