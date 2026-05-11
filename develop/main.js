@@ -264,10 +264,10 @@ var assemblies = [
       { "name": "Itinero.Network.RoutingNetwork", "rp": "Itinero_RoutingNetwork.html", "cl": 109, "ucl": 16, "cal": 125, "tl": 315, "ct": "LineCoverage", "mc": "-", "cb": 19, "tb": 28, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.RoutingNetworkSnapshotExtensions", "rp": "Itinero_RoutingNetworkSnapshotExtensions.html", "cl": 42, "ucl": 6, "cal": 48, "tl": 124, "ct": "LineCoverage", "mc": "-", "cb": 19, "tb": 26, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Edges.EdgeSearch", "rp": "Itinero_EdgeSearch.html", "cl": 185, "ucl": 47, "cal": 232, "tl": 405, "ct": "LineCoverage", "mc": "-", "cb": 86, "tb": 118, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Search.Islands.ICostFunctionExtensions", "rp": "Itinero_ICostFunctionExtensions.html", "cl": 4, "ucl": 0, "cal": 4, "tl": 27, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Search.Islands.IslandBuilder", "rp": "Itinero_IslandBuilder.html", "cl": 216, "ucl": 37, "cal": 253, "tl": 383, "ct": "LineCoverage", "mc": "-", "cb": 143, "tb": 180, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Search.Islands.ICostFunctionExtensions", "rp": "Itinero_ICostFunctionExtensions.html", "cl": 14, "ucl": 0, "cal": 14, "tl": 58, "ct": "LineCoverage", "mc": "-", "cb": 8, "tb": 8, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Search.Islands.IslandBuilder", "rp": "Itinero_IslandBuilder.html", "cl": 225, "ucl": 32, "cal": 257, "tl": 397, "ct": "LineCoverage", "mc": "-", "cb": 143, "tb": 178, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandBuilderExtensions", "rp": "Itinero_IslandBuilderExtensions.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 22, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Search.Islands.IslandDirectedGraph", "rp": "Itinero_IslandDirectedGraph.html", "cl": 266, "ucl": 75, "cal": 341, "tl": 494, "ct": "LineCoverage", "mc": "-", "cb": 92, "tb": 140, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Search.Islands.IslandDirectedGraph", "rp": "Itinero_IslandDirectedGraph.html", "cl": 276, "ucl": 65, "cal": 341, "tl": 494, "ct": "LineCoverage", "mc": "-", "cb": 100, "tb": 140, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandLabelGraph", "rp": "Itinero_IslandLabelGraph.html", "cl": 0, "ucl": 221, "cal": 221, "tl": 337, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 96, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandLabels", "rp": "Itinero_IslandLabels.html", "cl": 0, "ucl": 178, "cal": 178, "tl": 327, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 98, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandLabelsExtensions", "rp": "Itinero_IslandLabelsExtensions.html", "cl": 0, "ucl": 85, "cal": 85, "tl": 128, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 30, "lch": [], "bch": [], "hc": [] },
@@ -297,7 +297,7 @@ var assemblies = [
       { "name": "Itinero.Network.TurnCosts.RoutingNetworkEdgeEnumeratorExtensions", "rp": "Itinero_RoutingNetworkEdgeEnumeratorExtensions.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 28, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.VertexId", "rp": "Itinero_VertexId.html", "cl": 39, "ucl": 6, "cal": 45, "tl": 126, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 8, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Writer.RoutingNetworkWriter", "rp": "Itinero_RoutingNetworkWriter.html", "cl": 66, "ucl": 9, "cal": 75, "tl": 188, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 36, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Profiles.DefaultProfile", "rp": "Itinero_DefaultProfile.html", "cl": 12, "ucl": 3, "cal": 15, "tl": 43, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 4, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Profiles.DefaultProfile", "rp": "Itinero_DefaultProfile.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 43, "ct": "LineCoverage", "mc": "-", "cb": 3, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.EdgeFactor", "rp": "Itinero_EdgeFactor.html", "cl": 14, "ucl": 14, "cal": 28, "tl": 89, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.Profile", "rp": "Itinero_Profile.html", "cl": 1, "ucl": 11, "cal": 12, "tl": 73, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Profiles.ProfileCached", "rp": "Itinero_ProfileCached.html", "cl": 26, "ucl": 3, "cal": 29, "tl": 60, "ct": "LineCoverage", "mc": "-", "cb": 5, "tb": 6, "lch": [], "bch": [], "hc": [] },
@@ -504,7 +504,7 @@ var riskHotspots = [
   {
     "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandBuilder", "reportPath": "Itinero_IslandBuilder.html", "methodName": "ProcessEdge(Itinero.Network.Search.Islands.IslandDirectedGraph,Itinero.Routing.Costs.ICostFunction,Itinero.Network.Enumerators.Edges.RoutingNetworkEdgeEnumerator,Itinero.Network.EdgeId,Itinero.Network.Search.Islands.Islands,System.Int32)", "methodShortName": "ProcessEdge(...)", "fileIndex": 0, "line": 165,
     "metrics": [
-      { "value": 56, "exceeded": true },
+      { "value": 54, "exceeded": true },
     ]},
   {
     "assembly": "Itinero.Instructions", "class": "Itinero.Instructions.ToText.SubstituteText", "reportPath": "Itinero.Instructions_SubstituteText.html", "methodName": "ToText(Itinero.Instructions.Types.BaseInstruction)", "methodShortName": "ToText(...)", "fileIndex": 0, "line": 46,
@@ -557,7 +557,7 @@ var riskHotspots = [
       { "value": 36, "exceeded": true },
     ]},
   {
-    "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandBuilder", "reportPath": "Itinero_IslandBuilder.html", "methodName": "TryResolve(Itinero.Network.Search.Islands.IslandDirectedGraph,Itinero.Network.Search.Islands.Islands,System.Collections.Generic.List`1<Itinero.Network.EdgeId>,System.Int32)", "methodShortName": "TryResolve(...)", "fileIndex": 0, "line": 268,
+    "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandBuilder", "reportPath": "Itinero_IslandBuilder.html", "methodName": "TryResolve(Itinero.Network.Search.Islands.IslandDirectedGraph,Itinero.Network.Search.Islands.Islands,System.Collections.Generic.List`1<Itinero.Network.EdgeId>,System.Int32)", "methodShortName": "TryResolve(...)", "fileIndex": 0, "line": 282,
     "metrics": [
       { "value": 34, "exceeded": true },
     ]},
