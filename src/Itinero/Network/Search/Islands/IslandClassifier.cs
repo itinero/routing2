@@ -62,7 +62,6 @@ public static class IslandClassifier
         RoutingNetwork network,
         Profile profile,
         EdgeId seed,
-        IIslandClassificationStore store,
         CancellationToken cancellationToken)
     {
         var trace = Trace;
@@ -73,19 +72,29 @@ public static class IslandClassifier
         var verticesVisited = 0;
         var edgesProcessed = 0;
 
-        // fast-path: store already has the answer.
-        var cached = store.Get(seed);
-        if (cached != IslandStatus.Unknown)
-        {
-            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → CACHED {cached}");
-            return cached;
-        }
-
-        var dg = new IslandDirectedGraph();
-        var localIslands = new HashSet<EdgeId>();
+        // SHARED state per (network, profile). Holds the union-find graph
+        // + island set from every previous ClassifyAsync call. Subsequent
+        // classifications reuse the partial merge state — graduated
+        // components stay graduated, islanded edges stay islanded — so the
+        // amortised cost per call falls dramatically as the dg fills out.
+        // Matches the legacy IslandBuilder design.
+        var islands = network.IslandManager.GetIslandsFor(profile);
+        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
         var maxIslandSize = network.IslandManager.MaxIslandSize;
         var costFunction = network.GetCostFunctionFor(profile);
         var edgeEnumerator = network.GetEdgeEnumerator();
+
+        // fast-path: shared state already has the answer.
+        if (islands.IsEdgeOnIsland(seed))
+        {
+            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → CACHED Island");
+            return IslandStatus.Island;
+        }
+        if (dg.IsNotIsland(seed))
+        {
+            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → CACHED NotIsland");
+            return IslandStatus.NotIsland;
+        }
 
         // Edge must exist in the network.
         if (!edgeEnumerator.MoveTo(seed, true))
@@ -132,23 +141,21 @@ public static class IslandClassifier
             if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
 
             // Early-exit when seed graduates to main-net via a direct merge
-            // OR is declared island locally. Cheap O(1) checks.
+            // OR was declared island. Cheap O(1) checks against shared state.
             if (dg.IsNotIsland(seed))
             {
-                store.Set(seed, IslandStatus.NotIsland);
                 trace?.Invoke($"[island-classify] END seed={seed} → NOTISLAND (merge during BFS) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
                 return IslandStatus.NotIsland;
             }
-            if (localIslands.Contains(seed))
+            if (islands.IsEdgeOnIsland(seed))
             {
-                store.Set(seed, IslandStatus.Island);
                 trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (declared during BFS) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
                 return IslandStatus.Island;
             }
 
             var e = frontier.Dequeue();
 
-            var linkedNeighbours = await ProcessEdgeAsync(network, dg, localIslands, store, costFunction,
+            var linkedNeighbours = await ProcessEdgeAsync(network, dg, islands, costFunction,
                 edgeEnumerator, e, maxIslandSize, counters, cancellationToken);
             edgesProcessed++;
             if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
@@ -175,7 +182,7 @@ public static class IslandClassifier
                     var (canFwd, canBwd) = dg.ReachMainNetworkDirections(seed);
                     var (outCount, inCount, outHasMain, inHasMain) = dg.EdgeLinkStats(seed);
                     trace($"[island-classify] END seed={seed} → UNKNOWN (LIMIT-HIT settled={edgesProcessed} cap={maxSettledEdges}) elapsed={sw!.ElapsedMilliseconds}ms");
-                    trace($"[island-classify] LIMIT-HIT-DG-STATS dg.edges={totalEdges} components={components} largestComponent={largest} mainNetHasMembers={sentinelHasMembers} seed.reachMain=(fwd:{canFwd},bwd:{canBwd}) seed.localIsland={localIslands.Contains(seed)} seed.links=(out:{outCount},in:{inCount}) seed.directMain=(out:{outHasMain},in:{inHasMain})");
+                    trace($"[island-classify] LIMIT-HIT-DG-STATS dg.edges={totalEdges} components={components} largestComponent={largest} mainNetHasMembers={sentinelHasMembers} seed.reachMain=(fwd:{canFwd},bwd:{canBwd}) seed.island={islands.IsEdgeOnIsland(seed)} seed.links=(out:{outCount},in:{inCount}) seed.directMain=(out:{outHasMain},in:{inHasMain})");
                     trace($"[island-classify] LIMIT-HIT-COUNTERS canGoTo(true={counters!.CanGoToTrue},false={counters.CanGoToFalse}) canComeFrom(true={counters.CanComeFromTrue},false={counters.CanComeFromFalse}) linksAdded={counters.LinksAdded} merges={counters.MergesPerformed} collapses={counters.CollapseCalls}");
                     trace($"[island-classify] LIMIT-HIT-GEOMETRY seed={seed} {EdgeGeoJson(network, seed)}");
                 }
@@ -185,48 +192,34 @@ public static class IslandClassifier
             // Mid-BFS resolution: only the monotonic steps (SCC merge +
             // main-network reachability). Cheap to run after every edge
             // process since the BFS is now bounded to seed's closure.
-            var candidates = CollectAllCandidates(dg, localIslands);
-            TryResolve(dg, localIslands, store, candidates, maxIslandSize);
+            var candidates = CollectAllCandidates(dg, islands);
+            TryResolve(dg, islands, candidates, maxIslandSize);
         }
 
         // frontier exhausted — final attempt to resolve over every known edge.
-        var finalCandidates = CollectAllCandidates(dg, localIslands);
-        TryResolve(dg, localIslands, store, finalCandidates, maxIslandSize);
+        var finalCandidates = CollectAllCandidates(dg, islands);
+        TryResolve(dg, islands, finalCandidates, maxIslandSize);
 
         if (dg.IsNotIsland(seed))
         {
-            store.Set(seed, IslandStatus.NotIsland);
-            trace?.Invoke($"[island-classify] END seed={seed} → NOTISLAND (final TryResolve) visited={verticesVisited} tiles={tilesLoaded!.Count} edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
+            trace?.Invoke($"[island-classify] END seed={seed} → NOTISLAND (final TryResolve) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
             return IslandStatus.NotIsland;
         }
-        if (localIslands.Contains(seed))
+        if (islands.IsEdgeOnIsland(seed))
         {
-            store.Set(seed, IslandStatus.Island);
-            trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (final TryResolve) visited={verticesVisited} tiles={tilesLoaded!.Count} edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
+            trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (final TryResolve) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
             return IslandStatus.Island;
         }
 
-        // bounded component, never graduated, never reached main → island.
-        // Notify every still-undeclared member of the seed's component.
-        if (dg.IsInGraph(seed))
-        {
-            var members = dg.GetMembers(dg.Find(seed));
-            if (members != null)
-            {
-                var snapshot = new List<EdgeId>(members);
-                foreach (var m in snapshot)
-                {
-                    if (localIslands.Add(m))
-                        store.Set(m, IslandStatus.Island);
-                }
-            }
-        }
-        if (!localIslands.Contains(seed))
-        {
-            localIslands.Add(seed);
-            store.Set(seed, IslandStatus.Island);
-        }
-        trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (bounded component) visited={verticesVisited} tiles={tilesLoaded!.Count} edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
+        // BFS exhausted, no graduation, no main-net reach for seed. We can
+        // commit Island for the SEED only — not for its component members.
+        // With a shared dg, seed's component may contain edges accumulated
+        // across many prior ClassifyAsync calls; some of them might still
+        // be classifiable as NotIsland with more BFS work that this call
+        // didn't perform. Writing Island for them would poison the cache.
+        // Each member gets its own classification when explicitly requested.
+        islands.SetEdgeOnIsland(seed);
+        trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (bounded component) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
         return IslandStatus.Island;
     }
 
@@ -273,8 +266,7 @@ public static class IslandClassifier
     private static async Task<List<EdgeId>> ProcessEdgeAsync(
         RoutingNetwork network,
         IslandDirectedGraph dg,
-        HashSet<EdgeId> localIslands,
-        IIslandClassificationStore store,
+        Islands islands,
         ICostFunction costFunction,
         RoutingNetworkEdgeEnumerator edgeEnumerator,
         EdgeId edgeId,
@@ -282,25 +274,18 @@ public static class IslandClassifier
         Counters? counters,
         CancellationToken cancellationToken)
     {
-        var linkedNeighbours = new List<EdgeId>();
-        if (dg.IsProcessed(edgeId)) return linkedNeighbours;
-        if (dg.IsNotIsland(edgeId)) return linkedNeighbours;
-        if (localIslands.Contains(edgeId)) return linkedNeighbours;
+        // If this edge was already processed in a previous ClassifyAsync call
+        // on this network/profile, all merge work for it has already been done
+        // and persisted in the shared dg. We don't redo it — but we DO return
+        // the dg's existing directional neighbours so the current BFS can
+        // continue exploring through them. Without this, an edge-frontier BFS
+        // that hits a processed edge would dead-end and miss potential paths
+        // to MainNet that the dg already knows about from prior calls.
+        if (dg.IsProcessed(edgeId)) return dg.GetLinkedNeighbourRoots(edgeId);
+        if (dg.IsNotIsland(edgeId)) return new List<EdgeId>();
+        if (islands.IsEdgeOnIsland(edgeId)) return new List<EdgeId>();
 
-        // seed from store for this edge directly.
-        var cached = store.Get(edgeId);
-        if (cached == IslandStatus.NotIsland)
-        {
-            dg.AddVertex(edgeId);
-            dg.CollapseToMainNetwork(edgeId);
-            dg.SetProcessed(edgeId);
-            return linkedNeighbours;
-        }
-        if (cached == IslandStatus.Island)
-        {
-            localIslands.Add(edgeId);
-            return linkedNeighbours;
-        }
+        var linkedNeighbours = new List<EdgeId>();
 
         if (!edgeEnumerator.MoveTo(edgeId, true)) return linkedNeighbours;
         var canForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
@@ -350,14 +335,8 @@ public static class IslandClassifier
 
                 var neighborId = edgeEnumerator.EdgeId;
 
-                // skip known islands (local + store).
-                if (localIslands.Contains(neighborId)) continue;
-                var neighborCached = store.Get(neighborId);
-                if (neighborCached == IslandStatus.Island)
-                {
-                    localIslands.Add(neighborId);
-                    continue;
-                }
+                // skip known islands.
+                if (islands.IsEdgeOnIsland(neighborId)) continue;
 
                 // Capture Forward BEFORE any cost-function call: GetIslandBuilderCost
                 // may MoveTo the enumerator internally, flipping Forward and breaking
@@ -387,19 +366,12 @@ public static class IslandClassifier
                     continue;
                 }
 
-                // determine dg vertex for the neighbor; if pre-classified as
-                // NotIsland the neighbor is treated as the main-network sentinel.
+                // determine dg vertex for the neighbor. The shared dg may
+                // already have classified this neighbour from a previous
+                // ClassifyAsync call — if so it'll already be in the
+                // MainNetworkSentinel component and we just use the sentinel.
                 EdgeId neighborDgVertex;
-                if (neighborCached == IslandStatus.NotIsland)
-                {
-                    if (!dg.IsInGraph(neighborId))
-                    {
-                        dg.AddVertex(neighborId);
-                        dg.CollapseToMainNetwork(neighborId);
-                    }
-                    neighborDgVertex = IslandDirectedGraph.MainNetworkSentinel;
-                }
-                else if (dg.IsNotIsland(neighborId))
+                if (dg.IsNotIsland(neighborId))
                 {
                     neighborDgVertex = IslandDirectedGraph.MainNetworkSentinel;
                 }
@@ -415,7 +387,7 @@ public static class IslandClassifier
                     if (counters != null) counters.LinksAdded++;
                     if (dg.HasDirectedLink(neighborDgVertex, edgeId))
                     {
-                        MergeAndMaybeCollapse(dg, store, edgeId, neighborDgVertex, maxIslandSize, counters);
+                        MergeAndMaybeCollapse(dg, edgeId, neighborDgVertex, maxIslandSize, counters);
                     }
                 }
 
@@ -425,7 +397,7 @@ public static class IslandClassifier
                     if (counters != null) counters.LinksAdded++;
                     if (dg.HasDirectedLink(edgeId, neighborDgVertex))
                     {
-                        MergeAndMaybeCollapse(dg, store, edgeId, neighborDgVertex, maxIslandSize, counters);
+                        MergeAndMaybeCollapse(dg, edgeId, neighborDgVertex, maxIslandSize, counters);
                     }
                 }
 
@@ -452,14 +424,14 @@ public static class IslandClassifier
     }
 
     private static void MergeAndMaybeCollapse(IslandDirectedGraph dg,
-        IIslandClassificationStore store, EdgeId a, EdgeId b, int maxIslandSize, Counters? counters = null)
+        EdgeId a, EdgeId b, int maxIslandSize, Counters? counters = null)
     {
         dg.Merge(a, b);
         if (counters != null) counters.MergesPerformed++;
         var newSize = dg.GetSize(dg.Find(a));
         if (newSize >= maxIslandSize)
         {
-            CollapseAndNotify(dg, store, a);
+            dg.CollapseToMainNetwork(a);
             if (counters != null) counters.CollapseCalls++;
         }
     }
@@ -468,27 +440,13 @@ public static class IslandClassifier
     /// Snapshots the members of the edge's component, collapses to main
     /// network, then notifies the store that each member is NotIsland.
     /// </summary>
-    private static void CollapseAndNotify(IslandDirectedGraph dg,
-        IIslandClassificationStore store, EdgeId edgeOrRoot)
-    {
-        var root = dg.Find(edgeOrRoot);
-        if (root == IslandDirectedGraph.MainNetworkSentinel) return;
-        var members = dg.GetMembers(root);
-        var snapshot = members != null ? new List<EdgeId>(members) : null;
-        dg.CollapseToMainNetwork(edgeOrRoot);
-        if (snapshot != null)
-        {
-            foreach (var m in snapshot) store.Set(m, IslandStatus.NotIsland);
-        }
-    }
-
     /// <summary>
-    /// Resolves seed-component candidates via dead-end pruning, Tarjan SCC
-    /// detection + merge, and bidirectional main-network reachability.
+    /// Resolves candidates via Tarjan SCC detection + merge and bidirectional
+    /// main-network reachability. Dead-end pruning is intentionally absent;
+    /// see ClassifyAsync's bounded-component fallback.
     /// </summary>
     private static void TryResolve(IslandDirectedGraph dg,
-        HashSet<EdgeId> localIslands,
-        IIslandClassificationStore store,
+        Islands islands,
         List<EdgeId> candidates,
         int maxIslandSize)
     {
@@ -497,18 +455,7 @@ public static class IslandClassifier
         {
             changed = false;
 
-            // NOTE: no dead-end pruning. A component looks like a dead-end
-            // (no incoming OR no outgoing) only because the walk hasn't yet
-            // discovered the edge or vertex on the other side of the missing
-            // direction. With persistent caching, bounded walks and a
-            // potentially-global routing graph, we never have proof the graph
-            // is fully explored, so dead-end pruning is unsafe. Components
-            // that are truly trapped get caught by the bounded-component
-            // fallback after the frontier exhausts — they have a Find()-root
-            // that never merged into MainNet, and we declare every member
-            // Island there.
-
-            // 2. Tarjan SCC merge among remaining candidates.
+            // Tarjan SCC merge among remaining candidates.
             if (candidates.Count >= 2)
             {
                 if (dg.DetectAndMergeCycles(candidates))
@@ -526,14 +473,14 @@ public static class IslandClassifier
                         var root = dg.Find(edgeId);
                         if (dg.GetSize(root) >= maxIslandSize)
                         {
-                            CollapseAndNotify(dg, store, root);
+                            dg.CollapseToMainNetwork(root);
                             candidates.RemoveAt(i);
                         }
                     }
                 }
             }
 
-            // 3. bidirectional main-network reachability.
+            // Bidirectional main-network reachability.
             for (var i = candidates.Count - 1; i >= 0; i--)
             {
                 var edgeId = candidates[i];
@@ -545,7 +492,7 @@ public static class IslandClassifier
 
                 if (dg.CanReachMainNetwork(edgeId))
                 {
-                    CollapseAndNotify(dg, store, edgeId);
+                    dg.CollapseToMainNetwork(edgeId);
                     candidates.RemoveAt(i);
                     changed = true;
                 }
@@ -553,21 +500,14 @@ public static class IslandClassifier
         } while (changed);
     }
 
-    /// <summary>
-    /// Returns every edge currently in <paramref name="dg"/> that hasn't been
-    /// resolved (neither graduated to main network nor declared island). Used
-    /// as the candidate set for the global resolution pass so that one-way
-    /// cycle members in separate components can all participate in Tarjan SCC.
-    /// </summary>
-    private static List<EdgeId> CollectAllCandidates(IslandDirectedGraph dg,
-        HashSet<EdgeId> localIslands)
+    private static List<EdgeId> CollectAllCandidates(IslandDirectedGraph dg, Islands islands)
     {
         var all = dg.GetAllEdges();
         var candidates = new List<EdgeId>(all.Count);
         foreach (var e in all)
         {
             if (dg.IsNotIsland(e)) continue;
-            if (localIslands.Contains(e)) continue;
+            if (islands.IsEdgeOnIsland(e)) continue;
             candidates.Add(e);
         }
         return candidates;

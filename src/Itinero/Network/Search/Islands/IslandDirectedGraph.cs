@@ -392,6 +392,43 @@ internal class IslandDirectedGraph
     }
 
     /// <summary>
+    /// Returns the union-find roots that this edge's component is directionally
+    /// linked to (outgoing ∪ incoming), excluding the sentinel. Used by the
+    /// edge-frontier BFS to keep expanding through already-processed edges:
+    /// the dg knows their links from prior calls' processing, so the BFS can
+    /// continue without re-doing the merge work.
+    /// </summary>
+    public List<EdgeId> GetLinkedNeighbourRoots(EdgeId edgeId)
+    {
+        var result = new List<EdgeId>();
+        _lock.EnterReadLock();
+        try
+        {
+            if (!_parent.ContainsKey(edgeId)) return result;
+            var root = this.FindNoLock(edgeId);
+            var sentinel = this.FindNoLock(MainNetworkSentinel);
+            if (_outgoing.TryGetValue(root, out var outs))
+            {
+                foreach (var o in outs)
+                {
+                    var r = this.FindNoLock(o);
+                    if (r != sentinel) result.Add(r);
+                }
+            }
+            if (_incoming.TryGetValue(root, out var ins))
+            {
+                foreach (var i in ins)
+                {
+                    var r = this.FindNoLock(i);
+                    if (r != sentinel && !result.Contains(r)) result.Add(r);
+                }
+            }
+        }
+        finally { _lock.ExitReadLock(); }
+        return result;
+    }
+
+    /// <summary>
     /// Diagnostic: for an edge, returns the count of its component's outgoing
     /// roots and incoming roots, and how many of those are the
     /// <see cref="MainNetworkSentinel"/>.
