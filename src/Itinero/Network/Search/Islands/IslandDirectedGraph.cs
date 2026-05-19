@@ -57,6 +57,28 @@ internal class IslandDirectedGraph
         finally { _lock.ExitReadLock(); }
     }
 
+    /// <summary>
+    /// Returns a snapshot of every edge currently in the graph, excluding the
+    /// <see cref="MainNetworkSentinel"/>. Intended for callers that need to
+    /// feed every known edge into a global resolution pass (e.g. Tarjan SCC
+    /// over the full set of one-way singletons forming a cycle).
+    /// </summary>
+    public List<EdgeId> GetAllEdges()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            var result = new List<EdgeId>(_parent.Count);
+            foreach (var k in _parent.Keys)
+            {
+                if (k == MainNetworkSentinel) continue;
+                result.Add(k);
+            }
+            return result;
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
     public bool IsProcessed(EdgeId edgeId)
     {
         _lock.EnterReadLock();
@@ -341,6 +363,86 @@ internal class IslandDirectedGraph
 
             visited.Clear();
             return this.DfsCanReach(root, sentinel, visited, false);
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
+    /// <summary>
+    /// Diagnostic: returns (canForward, canBackward) one-direction reachability
+    /// to <see cref="MainNetworkSentinel"/>. <c>(true,true)</c> matches
+    /// <see cref="CanReachMainNetwork"/>; the other combinations expose the
+    /// asymmetric cases.
+    /// </summary>
+    public (bool canForward, bool canBackward) ReachMainNetworkDirections(EdgeId edgeId)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            var root = this.FindNoLock(edgeId);
+            var sentinel = this.FindNoLock(MainNetworkSentinel);
+            if (root == sentinel) return (true, true);
+
+            var visited = new HashSet<EdgeId>();
+            var canForward = this.DfsCanReach(root, sentinel, visited, true);
+            visited.Clear();
+            var canBackward = this.DfsCanReach(root, sentinel, visited, false);
+            return (canForward, canBackward);
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
+    /// <summary>
+    /// Diagnostic: for an edge, returns the count of its component's outgoing
+    /// roots and incoming roots, and how many of those are the
+    /// <see cref="MainNetworkSentinel"/>.
+    /// </summary>
+    public (int outgoingCount, int incomingCount, bool outgoingHasMain, bool incomingHasMain) EdgeLinkStats(EdgeId edgeId)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            if (!_parent.ContainsKey(edgeId))
+                return (0, 0, false, false);
+            var root = this.FindNoLock(edgeId);
+            var sentinel = this.FindNoLock(MainNetworkSentinel);
+            var outgoing = _outgoing.TryGetValue(root, out var o) ? o : null;
+            var incoming = _incoming.TryGetValue(root, out var i) ? i : null;
+            var outHasMain = outgoing != null && outgoing.Contains(sentinel);
+            var inHasMain = incoming != null && incoming.Contains(sentinel);
+            return (outgoing?.Count ?? 0, incoming?.Count ?? 0, outHasMain, inHasMain);
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
+    /// <summary>
+    /// Diagnostic: total edges in the graph (excluding sentinel) and the size
+    /// of the largest non-sentinel component.
+    /// </summary>
+    public (int totalEdges, int largestComponent, int componentCount, bool sentinelHasMembers) Stats()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            var sentinel = this.FindNoLock(MainNetworkSentinel);
+            var componentSizes = new Dictionary<EdgeId, int>();
+            var totalEdges = 0;
+            var sentinelHasMembers = false;
+            foreach (var k in _parent.Keys)
+            {
+                if (k == MainNetworkSentinel) continue;
+                totalEdges++;
+                var root = this.FindNoLock(k);
+                if (root == sentinel)
+                {
+                    sentinelHasMembers = true;
+                    continue;
+                }
+                componentSizes.TryGetValue(root, out var s);
+                componentSizes[root] = s + 1;
+            }
+            var largest = 0;
+            foreach (var s in componentSizes.Values) if (s > largest) largest = s;
+            return (totalEdges, largest, componentSizes.Count, sentinelHasMembers);
         }
         finally { _lock.ExitReadLock(); }
     }

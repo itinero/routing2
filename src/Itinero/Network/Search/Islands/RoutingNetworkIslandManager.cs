@@ -59,6 +59,20 @@ internal class RoutingNetworkIslandManager
         }
     }
 
+    /// <summary>
+    /// Returns the per-profile <see cref="IIslandClassificationStore"/> that
+    /// <see cref="IslandClassifier"/> should use. Backs onto the same
+    /// <see cref="Islands"/> + <see cref="IslandDirectedGraph"/> pair the snap
+    /// fast-path already reads, so classifications persist across calls and
+    /// feed <c>Snapper.IsAcceptable</c> directly.
+    /// </summary>
+    internal IIslandClassificationStore GetClassificationStoreFor(Profile profile)
+    {
+        var islands = this.GetIslandsFor(profile);
+        var dg = this.GetOrCreateDirectedGraph(profile);
+        return new IslandManagerClassificationStore(islands, dg);
+    }
+
     internal IslandDirectedGraph GetOrCreateDirectedGraph(Profile profile)
     {
         try

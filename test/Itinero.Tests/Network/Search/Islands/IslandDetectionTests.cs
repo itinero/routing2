@@ -178,4 +178,88 @@ public class IslandDetectionTests
         Assert.False(snap.IsError,
             $"Snap on large connected network should work: {snap.ErrorMessage}");
     }
+
+    /// <summary>
+    /// Adds a 20×20 area like <see cref="BuildTwoAreaNetwork"/>'s area A/B but with the
+    /// rightmost vertical column tagged one-way (north-bound only). Cold snap targeting
+    /// a coordinate on that one-way column must still find a snap candidate: even though
+    /// the one-way edges never bidirectionally merge with their neighbours, the wider
+    /// connected component graduates to the main network and the one-way bridges to it
+    /// from both sides (incoming via the top junction, outgoing via the bottom).
+    /// </summary>
+    private static OsmGeo[] BuildAreaWithOneWayColumn(int gridSize)
+    {
+        var osm = new System.Collections.Generic.List<OsmGeo>();
+        long nodeId = 1;
+        long wayId = 1;
+
+        var nodes = new long[gridSize, gridSize];
+        for (var x = 0; x < gridSize; x++)
+            for (var y = 0; y < gridSize; y++)
+            {
+                nodes[x, y] = nodeId;
+                osm.Add(new Node
+                {
+                    Id = nodeId++,
+                    Longitude = 4.270 + x * 0.001,
+                    Latitude = 50.880 + y * 0.001
+                });
+            }
+
+        // Horizontal ways (bidirectional).
+        for (var y = 0; y < gridSize; y++)
+            for (var x = 0; x < gridSize - 1; x++)
+            {
+                osm.Add(new Way
+                {
+                    Id = wayId++,
+                    Nodes = new[] { nodes[x, y], nodes[x + 1, y] },
+                    Tags = new TagsCollection(new Tag("highway", "residential"))
+                });
+            }
+
+        // Vertical ways: rightmost column is one-way (motorway-like), rest bidirectional.
+        for (var x = 0; x < gridSize; x++)
+            for (var y = 0; y < gridSize - 1; y++)
+            {
+                var tags = new TagsCollection(new Tag("highway", x == gridSize - 1 ? "motorway" : "residential"));
+                if (x == gridSize - 1) tags.AddOrReplace(new Tag("oneway", "yes"));
+                osm.Add(new Way
+                {
+                    Id = wayId++,
+                    Nodes = new[] { nodes[x, y], nodes[x, y + 1] },
+                    Tags = tags
+                });
+            }
+
+        return osm.ToArray();
+    }
+
+    [Fact]
+    public async Task SnapOnOneWayInLargeNetwork_NoBuildForTile_ShouldWork()
+    {
+        // publish-api#61 minimal reproducer at unit-test scale:
+        //
+        //   - 20×20 grid (~760 edges, well above MaxIslandSize=256).
+        //   - Rightmost column is one-way (motorway, north-bound). 19 one-way edges.
+        //   - The rest is bidirectional residential.
+        //
+        // Snap on the middle of the rightmost (one-way) column. The snap drives
+        // ResolveEdgeAsync on a one-way seed against an un-classified network. Snap
+        // must succeed: the seed is part of the main network via its connecting
+        // bidirectional incoming/outgoing edges at the column's vertices.
+        var profile = OsmProfiles.Car;
+        var os = BuildAreaWithOneWayColumn(20);
+
+        var routerDb = BuildNetwork(os, profile, maxIslandSize: 256);
+        var network = routerDb.Latest;
+
+        // Coordinate on the rightmost (one-way) column, mid-height.
+        var lonOneWay = 4.270 + 19 * 0.001; // x=19
+        var latOneWay = 50.880 + 10 * 0.001; // y=10
+
+        var snap = await network.Snap(profile).ToAsync(lonOneWay, latOneWay);
+        Assert.False(snap.IsError,
+            $"Snap on a one-way edge in a large connected network should work cold: {snap.ErrorMessage}");
+    }
 }

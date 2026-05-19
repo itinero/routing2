@@ -309,12 +309,22 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
     {
         foreach (var profile in _profiles)
         {
-            var result = await IslandBuilder.ResolveEdgeAsync(_routingNetwork, profile, edgeEnumerator.EdgeId, cancellationToken);
+            // Persistent store on IslandManager: every classification's results
+            // (NotIsland members of graduated components, Island members of
+            // dead-end components) get written back to the per-profile Islands
+            // + IslandDirectedGraph the snap fast-path already reads, so
+            // subsequent snap/route candidates short-circuit on cached state.
+            var store = _routingNetwork.IslandManager.GetClassificationStoreFor(profile);
+            var result = await IslandClassifier.ClassifyAsync(_routingNetwork, profile, edgeEnumerator.EdgeId, store, cancellationToken);
             if (cancellationToken.IsCancellationRequested) return true;
 
-            if (result == true)
+            // Only NotIsland is acceptable. Island clearly is not; Unknown
+            // means the classifier could not determine (e.g. hit the bounded
+            // walk cap) — reject conservatively so we don't snap to a possible
+            // island.
+            if (result != IslandStatus.NotIsland)
             {
-                return false; // edge is on an island — not acceptable
+                return false;
             }
         }
 
