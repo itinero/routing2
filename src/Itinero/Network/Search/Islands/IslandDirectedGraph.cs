@@ -117,19 +117,50 @@ internal class IslandDirectedGraph
         try
         {
             var root = this.FindNoLock(edgeId);
-            return _members.TryGetValue(root, out var m) ? m : null;
+            // Snapshot — callers iterate outside the lock and concurrent
+            // merges / RemoveEdge would otherwise mutate the list out from
+            // under them.
+            return _members.TryGetValue(root, out var m) ? new List<EdgeId>(m) : null;
         }
         finally { _lock.ExitReadLock(); }
     }
 
-    public void AddDirectedLink(EdgeId from, EdgeId to)
+    /// <summary>
+    /// Adds a directed link <paramref name="from"/> → <paramref name="to"/> to the
+    /// graph, with **eager cycle detection**: if a path already exists in the dg
+    /// from <paramref name="to"/>'s component back to <paramref name="from"/>'s
+    /// component, the new link closes a strongly-connected component. All
+    /// components on every path back are merged into one node (F ∩ R: forward
+    /// reachable from <paramref name="to"/> ∩ backward reachable from
+    /// <paramref name="from"/>). Returns <c>true</c> when this happens, so the
+    /// caller can size-check the merged component for MainNet graduation.
+    /// Returns <c>false</c> when the link was a regular edge (no cycle closed).
+    /// </summary>
+    public bool AddDirectedLink(EdgeId from, EdgeId to)
     {
         _lock.EnterWriteLock();
         try
         {
             var fromRoot = this.FindNoLock(from);
             var toRoot = this.FindNoLock(to);
-            if (fromRoot == toRoot) return;
+            if (fromRoot == toRoot) return false;
+
+            // Eager cycle-merge: if there's already a path toRoot ↝ fromRoot
+            // in the existing graph, adding from→to closes an SCC. Collapse
+            // every component on a closing path into one node.
+            if (this.PathExistsNoLock(toRoot, fromRoot))
+            {
+                var sccRoots = this.IntersectReachableNoLock(toRoot, fromRoot);
+                sccRoots.Add(fromRoot);
+                sccRoots.Add(toRoot);
+                EdgeId target = fromRoot;
+                foreach (var r in sccRoots)
+                {
+                    if (this.FindNoLock(r) != this.FindNoLock(target))
+                        this.MergeNoLock(target, r);
+                }
+                return true;
+            }
 
             if (!_outgoing.TryGetValue(fromRoot, out var targets))
             {
@@ -147,8 +178,80 @@ internal class IslandDirectedGraph
                 }
                 sources.Add(fromRoot);
             }
+
+            return false;
         }
         finally { _lock.ExitWriteLock(); }
+    }
+
+    private bool PathExistsNoLock(EdgeId from, EdgeId to)
+    {
+        if (this.FindNoLock(from) == this.FindNoLock(to)) return true;
+        var visited = new HashSet<EdgeId>();
+        var stack = new Stack<EdgeId>();
+        stack.Push(this.FindNoLock(from));
+        while (stack.Count > 0)
+        {
+            var current = this.FindNoLock(stack.Pop());
+            if (current == this.FindNoLock(to)) return true;
+            if (!visited.Add(current)) continue;
+            if (_outgoing.TryGetValue(current, out var outs))
+            {
+                foreach (var o in outs)
+                {
+                    var r = this.FindNoLock(o);
+                    if (!visited.Contains(r)) stack.Push(r);
+                }
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns components that are both forward-reachable from <paramref name="forwardStart"/>
+    /// AND backward-reachable from <paramref name="backwardStart"/>. Used to find the
+    /// SCC that closes when a new link <c>backwardStart → forwardStart</c> is about
+    /// to be added.
+    /// </summary>
+    private HashSet<EdgeId> IntersectReachableNoLock(EdgeId forwardStart, EdgeId backwardStart)
+    {
+        var forward = new HashSet<EdgeId>();
+        {
+            var stack = new Stack<EdgeId>();
+            stack.Push(this.FindNoLock(forwardStart));
+            while (stack.Count > 0)
+            {
+                var current = this.FindNoLock(stack.Pop());
+                if (!forward.Add(current)) continue;
+                if (_outgoing.TryGetValue(current, out var outs))
+                {
+                    foreach (var o in outs)
+                    {
+                        var r = this.FindNoLock(o);
+                        if (!forward.Contains(r)) stack.Push(r);
+                    }
+                }
+            }
+        }
+        var result = new HashSet<EdgeId>();
+        var bStack = new Stack<EdgeId>();
+        var bVisited = new HashSet<EdgeId>();
+        bStack.Push(this.FindNoLock(backwardStart));
+        while (bStack.Count > 0)
+        {
+            var current = this.FindNoLock(bStack.Pop());
+            if (!bVisited.Add(current)) continue;
+            if (forward.Contains(current)) result.Add(current);
+            if (_incoming.TryGetValue(current, out var ins))
+            {
+                foreach (var i in ins)
+                {
+                    var r = this.FindNoLock(i);
+                    if (!bVisited.Contains(r)) bStack.Push(r);
+                }
+            }
+        }
+        return result;
     }
 
     public bool HasDirectedLink(EdgeId from, EdgeId to)
@@ -392,6 +495,62 @@ internal class IslandDirectedGraph
     }
 
     /// <summary>
+    /// Returns the union-find roots this edge's component has outgoing dg links
+    /// to (after <see cref="Find"/> canonicalisation). Includes the sentinel if
+    /// the component links to it.
+    /// </summary>
+    public List<EdgeId> GetOutgoingRoots(EdgeId edgeId)
+    {
+        var result = new List<EdgeId>();
+        _lock.EnterReadLock();
+        try
+        {
+            if (!_parent.ContainsKey(edgeId)) return result;
+            var root = this.FindNoLock(edgeId);
+            if (_outgoing.TryGetValue(root, out var outs))
+            {
+                var seen = new HashSet<EdgeId>();
+                foreach (var o in outs)
+                {
+                    var r = this.FindNoLock(o);
+                    if (r == root) continue;
+                    if (seen.Add(r)) result.Add(r);
+                }
+            }
+        }
+        finally { _lock.ExitReadLock(); }
+        return result;
+    }
+
+    /// <summary>
+    /// Returns the union-find roots this edge's component has incoming dg links
+    /// from (after <see cref="Find"/> canonicalisation). Includes the sentinel
+    /// if the sentinel links to the component.
+    /// </summary>
+    public List<EdgeId> GetIncomingRoots(EdgeId edgeId)
+    {
+        var result = new List<EdgeId>();
+        _lock.EnterReadLock();
+        try
+        {
+            if (!_parent.ContainsKey(edgeId)) return result;
+            var root = this.FindNoLock(edgeId);
+            if (_incoming.TryGetValue(root, out var ins))
+            {
+                var seen = new HashSet<EdgeId>();
+                foreach (var i in ins)
+                {
+                    var r = this.FindNoLock(i);
+                    if (r == root) continue;
+                    if (seen.Add(r)) result.Add(r);
+                }
+            }
+        }
+        finally { _lock.ExitReadLock(); }
+        return result;
+    }
+
+    /// <summary>
     /// Returns the union-find roots that this edge's component is directionally
     /// linked to (outgoing ∪ incoming), excluding the sentinel. Used by the
     /// edge-frontier BFS to keep expanding through already-processed edges:
@@ -426,62 +585,6 @@ internal class IslandDirectedGraph
         }
         finally { _lock.ExitReadLock(); }
         return result;
-    }
-
-    /// <summary>
-    /// Diagnostic: for an edge, returns the count of its component's outgoing
-    /// roots and incoming roots, and how many of those are the
-    /// <see cref="MainNetworkSentinel"/>.
-    /// </summary>
-    public (int outgoingCount, int incomingCount, bool outgoingHasMain, bool incomingHasMain) EdgeLinkStats(EdgeId edgeId)
-    {
-        _lock.EnterReadLock();
-        try
-        {
-            if (!_parent.ContainsKey(edgeId))
-                return (0, 0, false, false);
-            var root = this.FindNoLock(edgeId);
-            var sentinel = this.FindNoLock(MainNetworkSentinel);
-            var outgoing = _outgoing.TryGetValue(root, out var o) ? o : null;
-            var incoming = _incoming.TryGetValue(root, out var i) ? i : null;
-            var outHasMain = outgoing != null && outgoing.Contains(sentinel);
-            var inHasMain = incoming != null && incoming.Contains(sentinel);
-            return (outgoing?.Count ?? 0, incoming?.Count ?? 0, outHasMain, inHasMain);
-        }
-        finally { _lock.ExitReadLock(); }
-    }
-
-    /// <summary>
-    /// Diagnostic: total edges in the graph (excluding sentinel) and the size
-    /// of the largest non-sentinel component.
-    /// </summary>
-    public (int totalEdges, int largestComponent, int componentCount, bool sentinelHasMembers) Stats()
-    {
-        _lock.EnterReadLock();
-        try
-        {
-            var sentinel = this.FindNoLock(MainNetworkSentinel);
-            var componentSizes = new Dictionary<EdgeId, int>();
-            var totalEdges = 0;
-            var sentinelHasMembers = false;
-            foreach (var k in _parent.Keys)
-            {
-                if (k == MainNetworkSentinel) continue;
-                totalEdges++;
-                var root = this.FindNoLock(k);
-                if (root == sentinel)
-                {
-                    sentinelHasMembers = true;
-                    continue;
-                }
-                componentSizes.TryGetValue(root, out var s);
-                componentSizes[root] = s + 1;
-            }
-            var largest = 0;
-            foreach (var s in componentSizes.Values) if (s > largest) largest = s;
-            return (totalEdges, largest, componentSizes.Count, sentinelHasMembers);
-        }
-        finally { _lock.ExitReadLock(); }
     }
 
     private bool DfsCanReach(EdgeId current, EdgeId target, HashSet<EdgeId> visited, bool forward)

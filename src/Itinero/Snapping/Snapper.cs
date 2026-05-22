@@ -307,24 +307,20 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
 
     async Task<bool> IEdgeChecker.RunCheckAsync(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, CancellationToken cancellationToken)
     {
+        // Build the edge's tile first so every traversable edge in the tile
+        // gets a definitive Island / NotIsland verdict via ClassifyAsync.
+        // Subsequent snap candidates in the same tile then short-circuit on
+        // the per-profile Islands set / dg fast-paths. The IslandManager
+        // deduplicates concurrent builds for the same (profile, tile).
+        var tailTileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
         foreach (var profile in _profiles)
         {
-            // The classifier writes results to the shared per-profile Islands
-            // + IslandDirectedGraph on IslandManager (which the snap fast-path
-            // already reads), so subsequent snap/route candidates short-circuit
-            // on cached state AND benefit from partial union-find state from
-            // prior calls.
-            var result = await IslandClassifier.ClassifyAsync(_routingNetwork, profile, edgeEnumerator.EdgeId, cancellationToken);
+            await _routingNetwork.IslandManager.BuildForTileAsync(_routingNetwork, profile, tailTileId, cancellationToken);
             if (cancellationToken.IsCancellationRequested) return true;
 
-            // Only NotIsland is acceptable. Island clearly is not; Unknown
-            // means the classifier could not determine (e.g. hit the bounded
-            // walk cap) — reject conservatively so we don't snap to a possible
-            // island.
-            if (result != IslandStatus.NotIsland)
-            {
-                return false;
-            }
+            var islands = _routingNetwork.IslandManager.GetIslandsFor(profile);
+            if (islands.IsEdgeOnIsland(edgeEnumerator.EdgeId)) return false;
+            // tile DONE + not in Islands set → NotIsland → acceptable for this profile.
         }
 
         return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? true;

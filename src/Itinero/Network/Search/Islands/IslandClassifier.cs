@@ -2,514 +2,441 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network.Enumerators.Edges;
+using Itinero.Network.Tiles;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 
 namespace Itinero.Network.Search.Islands;
 
 /// <summary>
-/// Pure graph-only island classification for a single seed edge.
+/// Per-edge island classifier. See <c>docs/island-detection-algorithm.md</c>
+/// in publish-api for the spec. Short version:
 ///
-/// Unlike the legacy <see cref="IslandBuilder"/>, this entry point has no
-/// awareness of tiles, no DONE-tile fast-path and no shared per-network state.
-/// It walks the routing network outward from the seed via vertex-BFS using its
-/// <see cref="RoutingNetworkEdgeEnumerator"/>, consults / updates the caller via
-/// <see cref="IIslandClassificationStore"/>, and returns the final classification
-/// for the seed.
+/// We answer two reachability questions for the seed in the dg:
+///   - Forward:  is there a path  seed ↝ sentinel  (seed reaches MainNet)?
+///   - Backward: is there a path  sentinel ↝ seed  (MainNet reaches seed)?
 ///
-/// The tile-aware preprocessor that batches whole tiles and exploits the
-/// "all edges in a tile are not-island" shortcut is layered on top of this in a
-/// separate orchestration layer.
+/// NotIsland iff both are yes; Island iff either is no. Two BFS searches
+/// (forward + backward) run concurrently. After every <see cref="IslandDirectedGraph.AddDirectedLink"/>
+/// we propagate two per-component sticky sets:
+///   - <c>inForward</c>  — components reachable from seed via <c>_outgoing</c>.
+///   - <c>inBackward</c> — components reachable from seed via <c>_incoming</c>.
+/// Each component enters each set at most once, so total propagation across
+/// the classification is O(closure-size).
+///
+/// Termination:
+///   - sentinel ∈ inForward ∩ inBackward  →  NotIsland.
+///   - forwardQueue empty ∧ sentinel ∉ inForward  →  Island.
+///   - backwardQueue empty ∧ sentinel ∉ inBackward →  Island.
 /// </summary>
 public static class IslandClassifier
 {
-    /// <summary>
-    /// Classifies a single edge against the routable main network.
-    /// </summary>
-    /// <summary>
-    /// When non-null, every <see cref="ClassifyAsync"/> invocation emits a
-    /// trace of what it walked: seed edge, tiles it loaded (with order), and
-    /// final outcome. Set to <c>Console.Error.WriteLine</c> from tests / hosts
-    /// that want to see classifier activity.
-    /// </summary>
-    public static System.Action<string>? Trace { get; set; }
-
-    /// <summary>
-    /// Hard cap on settled edges (edges ProcessEdge'd into the local dg)
-    /// before <see cref="ClassifyAsync"/> bails out and treats the seed as
-    /// island. Default 4096. Set to <see cref="int.MaxValue"/> to disable.
-    /// This is a temporary stopgap for cases where a single classification
-    /// would otherwise walk a huge component (e.g. a one-way edge with no
-    /// nearby bidir cluster ≥ MaxIslandSize); the limit will go away once a
-    /// principled bound is in place.
-    /// </summary>
-    public static int MaxSettledEdges { get; set; } = 4096;
-
-    /// <summary>
-    /// Per-run counters populated when <see cref="Trace"/> is non-null.
-    /// Diagnostic only; instance per <see cref="ClassifyAsync"/> call.
-    /// </summary>
-    private sealed class Counters
-    {
-        public int CanGoToTrue, CanGoToFalse;
-        public int CanComeFromTrue, CanComeFromFalse;
-        public int LinksAdded;
-        public int MergesPerformed;
-        public int CollapseCalls;
-    }
-
     public static async Task<IslandStatus> ClassifyAsync(
         RoutingNetwork network,
         Profile profile,
         EdgeId seed,
         CancellationToken cancellationToken)
     {
-        var trace = Trace;
-        var maxSettledEdges = MaxSettledEdges;
-        var sw = trace == null ? null : System.Diagnostics.Stopwatch.StartNew();
-        var tilesLoaded = trace == null ? null : new List<uint>();
-        var counters = trace == null ? null : new Counters();
-        var verticesVisited = 0;
-        var edgesProcessed = 0;
-
-        // SHARED state per (network, profile). Holds the union-find graph
-        // + island set from every previous ClassifyAsync call. Subsequent
-        // classifications reuse the partial merge state — graduated
-        // components stay graduated, islanded edges stay islanded — so the
-        // amortised cost per call falls dramatically as the dg fills out.
-        // Matches the legacy IslandBuilder design.
         var islands = network.IslandManager.GetIslandsFor(profile);
         var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
         var maxIslandSize = network.IslandManager.MaxIslandSize;
         var costFunction = network.GetCostFunctionFor(profile);
-        var edgeEnumerator = network.GetEdgeEnumerator();
+        var probe = network.GetEdgeEnumerator();
+        var sentinel = IslandDirectedGraph.MainNetworkSentinel;
 
-        // fast-path: shared state already has the answer.
-        if (islands.IsEdgeOnIsland(seed))
+        // Oracle / cached-state short-circuits.
+        if (islands.IsEdgeOnIsland(seed)) return IslandStatus.Island;
+        if (dg.IsNotIsland(seed)) return IslandStatus.NotIsland;
+
+        // Edge must exist and be traversable in at least one direction.
+        if (!probe.MoveTo(seed, true)) return IslandStatus.Unknown;
+        var seedHead = probe.Head;
+        var seedTail = probe.Tail;
+        var canFwd = costFunction.GetIslandBuilderCost(probe);
+        if (!probe.MoveTo(seed, false)) return IslandStatus.Unknown;
+        var canBwd = costFunction.GetIslandBuilderCost(probe);
+        if (!canFwd && !canBwd) return IslandStatus.Unknown;
+
+        // Set up. Seed starts in both F and B (it is trivially reachable from itself in either direction).
+        dg.AddVertex(seed);
+        var ctx = new Ctx(network, dg, islands, costFunction, maxIslandSize);
+        ctx.InForward.Add(dg.Find(seed));
+        ctx.InBackward.Add(dg.Find(seed));
+
+        // Process seed at both endpoints. Each AddDirectedLink inside
+        // ProcessAtEndpointAsync updates inForward/inBackward and enqueues
+        // newly-marked edges into the right queue.
+        await ProcessAtEndpointAsync(seed, seedHead, ctx, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
+        await ProcessAtEndpointAsync(seed, seedTail, ctx, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
+        dg.SetProcessed(seed);
+
+        // Main loop: termination checks are O(1) lookups on the sentinel.
+        while (true)
         {
-            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → CACHED Island");
-            return IslandStatus.Island;
-        }
-        if (dg.IsNotIsland(seed))
-        {
-            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → CACHED NotIsland");
-            return IslandStatus.NotIsland;
-        }
+            // Graduation: if seed was absorbed into the sentinel by an eager
+            // cycle-merge or size-threshold collapse, return immediately.
+            if (dg.IsNotIsland(seed)) return IslandStatus.NotIsland;
 
-        // Edge must exist in the network.
-        if (!edgeEnumerator.MoveTo(seed, true))
-        {
-            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → UNKNOWN (edge not found in network)");
-            return IslandStatus.Unknown;
-        }
-
-        // Edge must be traversable by this profile in at least one direction.
-        // Otherwise it's not an "island" — it's just outside the profile's
-        // network entirely (e.g. a pedestrian path classified under car.fast).
-        // Returning Island and caching that would poison the store for any
-        // future classification that touches this edge as a neighbour.
-        var canForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-        if (!edgeEnumerator.MoveTo(seed, false))
-        {
-            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → UNKNOWN (edge not found backward)");
-            return IslandStatus.Unknown;
-        }
-        var canBackward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-        if (!canForward && !canBackward)
-        {
-            trace?.Invoke($"[island-classify] seed={seed} profile={profile.Name} → UNKNOWN (not traversable by profile in either direction)");
-            return IslandStatus.Unknown;
-        }
-
-        // Position back on forward for the tail/head capture below.
-        edgeEnumerator.MoveTo(seed, true);
-        var seedTail = edgeEnumerator.Tail;
-        var seedHead = edgeEnumerator.Head;
-        trace?.Invoke($"[island-classify] BEGIN seed={seed} tile={seed.TileId} profile={profile.Name} maxIslandSize={maxIslandSize} tail={seedTail} head={seedHead} canForward={canForward} canBackward={canBackward}");
-
-        // Edge-frontier BFS: starting from seed, ProcessEdge returns the set
-        // of neighbours that got a directional link added. Only those get
-        // enqueued. The walk stays inside seed's directional reachable
-        // closure — it does NOT expand through vertex-shared edges that have
-        // no canGoTo / canComeFrom relationship to seed's component.
-        var enqueued = new HashSet<EdgeId> { seed };
-        var frontier = new Queue<EdgeId>();
-        frontier.Enqueue(seed);
-
-        while (frontier.Count > 0)
-        {
-            if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
-
-            // Early-exit when seed graduates to main-net via a direct merge
-            // OR was declared island. Cheap O(1) checks against shared state.
-            if (dg.IsNotIsland(seed))
+            var sentinelInF = ctx.InForward.Contains(sentinel);
+            var sentinelInB = ctx.InBackward.Contains(sentinel);
+            if (sentinelInF && sentinelInB)
             {
-                trace?.Invoke($"[island-classify] END seed={seed} → NOTISLAND (merge during BFS) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
+                dg.CollapseToMainNetwork(seed);
                 return IslandStatus.NotIsland;
             }
-            if (islands.IsEdgeOnIsland(seed))
+            if (ctx.ForwardQueue.Count == 0 && !sentinelInF)
             {
-                trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (declared during BFS) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
+                islands.SetEdgeOnIsland(seed);
+                return IslandStatus.Island;
+            }
+            if (ctx.BackwardQueue.Count == 0 && !sentinelInB)
+            {
+                islands.SetEdgeOnIsland(seed);
                 return IslandStatus.Island;
             }
 
-            var e = frontier.Dequeue();
-
-            var linkedNeighbours = await ProcessEdgeAsync(network, dg, islands, costFunction,
-                edgeEnumerator, e, maxIslandSize, counters, cancellationToken);
-            edgesProcessed++;
-            if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
-
-            if (trace != null && edgesProcessed % 2000 == 0)
+            if (ctx.ForwardQueue.Count > 0)
             {
-                var (totalE, largestE, compsE, sentinelE) = dg.Stats();
-                var (cFwd, cBwd) = dg.ReachMainNetworkDirections(seed);
-                var (oC, iC, oM, iM) = dg.EdgeLinkStats(seed);
-                trace($"[island-classify] PROGRESS edges={edgesProcessed} frontier={frontier.Count} dg.edges={totalE} largest={largestE} mainNet={sentinelE} seed.reach=(fwd:{cFwd},bwd:{cBwd}) seed.links=(out:{oC},in:{iC}) seed.directMain=(out:{oM},in:{iM}) elapsed={sw!.ElapsedMilliseconds}ms");
+                var e = ctx.ForwardQueue.Dequeue();
+                await ProcessEdgeAsync(e, ctx, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
             }
-
-            // Enqueue newly-discovered directional neighbours.
-            foreach (var n in linkedNeighbours)
+            if (ctx.BackwardQueue.Count > 0)
             {
-                if (enqueued.Add(n)) frontier.Enqueue(n);
+                var e = ctx.BackwardQueue.Dequeue();
+                await ProcessEdgeAsync(e, ctx, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return IslandStatus.Unknown;
             }
-
-            if (edgesProcessed >= maxSettledEdges)
-            {
-                if (trace != null)
-                {
-                    var (totalEdges, largest, components, sentinelHasMembers) = dg.Stats();
-                    var (canFwd, canBwd) = dg.ReachMainNetworkDirections(seed);
-                    var (outCount, inCount, outHasMain, inHasMain) = dg.EdgeLinkStats(seed);
-                    trace($"[island-classify] END seed={seed} → UNKNOWN (LIMIT-HIT settled={edgesProcessed} cap={maxSettledEdges}) elapsed={sw!.ElapsedMilliseconds}ms");
-                    trace($"[island-classify] LIMIT-HIT-DG-STATS dg.edges={totalEdges} components={components} largestComponent={largest} mainNetHasMembers={sentinelHasMembers} seed.reachMain=(fwd:{canFwd},bwd:{canBwd}) seed.island={islands.IsEdgeOnIsland(seed)} seed.links=(out:{outCount},in:{inCount}) seed.directMain=(out:{outHasMain},in:{inHasMain})");
-                    trace($"[island-classify] LIMIT-HIT-COUNTERS canGoTo(true={counters!.CanGoToTrue},false={counters.CanGoToFalse}) canComeFrom(true={counters.CanComeFromTrue},false={counters.CanComeFromFalse}) linksAdded={counters.LinksAdded} merges={counters.MergesPerformed} collapses={counters.CollapseCalls}");
-                    trace($"[island-classify] LIMIT-HIT-GEOMETRY seed={seed} {EdgeGeoJson(network, seed)}");
-                }
-                return IslandStatus.Unknown;
-            }
-
-            // Mid-BFS resolution: only the monotonic steps (SCC merge +
-            // main-network reachability). Cheap to run after every edge
-            // process since the BFS is now bounded to seed's closure.
-            var candidates = CollectAllCandidates(dg, islands);
-            TryResolve(dg, islands, candidates, maxIslandSize);
         }
-
-        // frontier exhausted — final attempt to resolve over every known edge.
-        var finalCandidates = CollectAllCandidates(dg, islands);
-        TryResolve(dg, islands, finalCandidates, maxIslandSize);
-
-        if (dg.IsNotIsland(seed))
-        {
-            trace?.Invoke($"[island-classify] END seed={seed} → NOTISLAND (final TryResolve) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
-            return IslandStatus.NotIsland;
-        }
-        if (islands.IsEdgeOnIsland(seed))
-        {
-            trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (final TryResolve) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
-            return IslandStatus.Island;
-        }
-
-        // BFS exhausted, no graduation, no main-net reach for seed. We can
-        // commit Island for the SEED only — not for its component members.
-        // With a shared dg, seed's component may contain edges accumulated
-        // across many prior ClassifyAsync calls; some of them might still
-        // be classifiable as NotIsland with more BFS work that this call
-        // didn't perform. Writing Island for them would poison the cache.
-        // Each member gets its own classification when explicitly requested.
-        islands.SetEdgeOnIsland(seed);
-        trace?.Invoke($"[island-classify] END seed={seed} → ISLAND (bounded component) edges={edgesProcessed} elapsed={sw!.ElapsedMilliseconds}ms");
-        return IslandStatus.Island;
     }
 
-    /// <summary>
-    /// Returns a GeoJSON Feature for the edge's geometry. Trace helper only;
-    /// caller must guard with <c>trace != null</c>.
-    /// </summary>
-    private static string EdgeGeoJson(RoutingNetwork network, EdgeId edgeId)
-    {
-        var en = network.GetEdgeEnumerator();
-        if (!en.MoveTo(edgeId, true)) return "{}";
-        var sb = new System.Text.StringBuilder();
-        sb.Append("{\"type\":\"Feature\",\"properties\":{\"edgeId\":\"");
-        sb.Append(edgeId);
-        sb.Append("\",\"tileId\":");
-        sb.Append(edgeId.TileId);
-        sb.Append("},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[");
-        var first = true;
-        foreach (var c in en.GetCompleteShape())
-        {
-            if (!first) sb.Append(',');
-            first = false;
-            sb.Append('[');
-            sb.Append(c.longitude.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            sb.Append(',');
-            sb.Append(c.latitude.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            sb.Append(']');
-        }
-        sb.Append("]}}");
-        return sb.ToString();
-    }
-
-    /// <summary>
-    /// Processes a single edge into the dg: builds directed links at both
-    /// endpoints, merges into bidirectionally-connected neighbours, escalates
-    /// to MainNetworkSentinel when the merged component reaches MaxIslandSize.
-    ///
-    /// Returns the set of neighbour <see cref="EdgeId"/>s that got a directional
-    /// link added (canGoTo or canComeFrom passed). Caller uses this set as the
-    /// edge-frontier — only edges in seed's directional reach get enqueued, so
-    /// the BFS doesn't expand through vertex-shared edges that have no
-    /// directional bearing on seed.
-    /// </summary>
-    private static async Task<List<EdgeId>> ProcessEdgeAsync(
+    public static async Task BuildForTileAsync(
         RoutingNetwork network,
-        IslandDirectedGraph dg,
-        Islands islands,
-        ICostFunction costFunction,
-        RoutingNetworkEdgeEnumerator edgeEnumerator,
-        EdgeId edgeId,
-        int maxIslandSize,
-        Counters? counters,
+        Profile profile,
+        uint tileId,
         CancellationToken cancellationToken)
     {
-        // If this edge was already processed in a previous ClassifyAsync call
-        // on this network/profile, all merge work for it has already been done
-        // and persisted in the shared dg. We don't redo it — but we DO return
-        // the dg's existing directional neighbours so the current BFS can
-        // continue exploring through them. Without this, an edge-frontier BFS
-        // that hits a processed edge would dead-end and miss potential paths
-        // to MainNet that the dg already knows about from prior calls.
-        if (dg.IsProcessed(edgeId)) return dg.GetLinkedNeighbourRoots(edgeId);
-        if (dg.IsNotIsland(edgeId)) return new List<EdgeId>();
-        if (islands.IsEdgeOnIsland(edgeId)) return new List<EdgeId>();
+        if (cancellationToken.IsCancellationRequested) return;
 
-        var linkedNeighbours = new List<EdgeId>();
+        var islands = network.IslandManager.GetIslandsFor(profile);
+        if (islands.GetTileDone(tileId)) return;
 
-        if (!edgeEnumerator.MoveTo(edgeId, true)) return linkedNeighbours;
-        var canForward = costFunction.GetIslandBuilderCost(edgeEnumerator);
-        if (!edgeEnumerator.MoveTo(edgeId, false)) return linkedNeighbours;
-        var canBackward = costFunction.GetIslandBuilderCost(edgeEnumerator);
+        var costFunction = network.GetCostFunctionFor(profile);
+        await network.UsageNotifier.NotifyVertex(network, new VertexId(tileId, 0), cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return;
+        var tile = network.GetTileForRead(tileId);
+        if (tile == null) return;
 
-        if (!canForward && !canBackward) return linkedNeighbours;
-
-        dg.AddVertex(edgeId);
-
-        for (var pass = 0; pass < 2; pass++)
+        var probe = network.GetEdgeEnumerator();
+        var tileEnum = new NetworkTileEnumerator();
+        tileEnum.MoveTo(tile);
+        var v = new VertexId(tileId, 0);
+        var edges = new List<EdgeId>();
+        while (tileEnum.MoveTo(v))
         {
-            var forward = pass == 0;
-            // Run BOTH passes regardless of canForward/canBackward. For a one-
-            // way edge the "non-traversable" pass still needs to enumerate at
-            // the other endpoint to discover INCOMING neighbours: canGoTo will
-            // fail (edge can't leave that vertex), but canComeFrom can pass
-            // (neighbour leads INTO this edge in its allowed direction). That
-            // captures the in-link side of the directional closure, which the
-            // edge-frontier BFS needs to find seeds reachable FROM the main
-            // network.
-
-            edgeEnumerator.MoveTo(edgeId, forward);
-            var targetVertex = edgeEnumerator.Head;
-
-            // Pre-positioned helper enumerators for the two-enumerator
-            // GetIslandBuilderCost primitive at the shared vertex.
-            var edgeIdFrom = edgeEnumerator.Network.GetEdgeEnumerator();
-            edgeIdFrom.MoveTo(edgeId, forward);
-            var edgeIdTo = edgeEnumerator.Network.GetEdgeEnumerator();
-            edgeIdTo.MoveTo(edgeId, !forward);
-
-            var neighborArriving = edgeEnumerator.Network.GetEdgeEnumerator();
-
-            // targetVertex may live in a tile we haven't loaded yet (boundary
-            // edge head). Enumerating without notifying silently misses every
-            // neighbor in that tile — leaving directed links incomplete and
-            // making CanReachMainNetwork false-negative. Notify first.
-            await network.UsageNotifier.NotifyVertex(network, targetVertex, cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return linkedNeighbours;
-
-            if (!edgeEnumerator.MoveTo(targetVertex)) continue;
-
-            while (edgeEnumerator.MoveNext())
+            while (tileEnum.MoveNext())
             {
-                if (edgeEnumerator.EdgeId == edgeId) continue;
-
-                var neighborId = edgeEnumerator.EdgeId;
-
-                // skip known islands.
-                if (islands.IsEdgeOnIsland(neighborId)) continue;
-
-                // Capture Forward BEFORE any cost-function call: GetIslandBuilderCost
-                // may MoveTo the enumerator internally, flipping Forward and breaking
-                // the next MoveTo(neighborId, !Forward) for canComeFrom.
-                var iterationForward = edgeEnumerator.Forward;
-
-                var canGoTo = costFunction.GetIslandBuilderCost(edgeIdFrom, edgeEnumerator);
-                if (counters != null) { if (canGoTo) counters.CanGoToTrue++; else counters.CanGoToFalse++; }
-
-                neighborArriving.MoveTo(neighborId, !iterationForward);
-                var canComeFrom = costFunction.GetIslandBuilderCost(neighborArriving, edgeIdTo);
-                if (counters != null) { if (canComeFrom) counters.CanComeFromTrue++; else counters.CanComeFromFalse++; }
-
-                // No directional connection from edgeId to this neighbour — it
-                // does NOT belong to edgeId's directional closure. Skip
-                // entirely: don't AddVertex, don't enqueue. This is the core
-                // edge-frontier discipline that keeps the BFS bounded by
-                // seed's reachable subgraph instead of the whole vertex
-                // component.
-                if (!canGoTo && !canComeFrom)
-                {
-                    edgeEnumerator.MoveTo(targetVertex);
-                    while (edgeEnumerator.MoveNext())
-                    {
-                        if (edgeEnumerator.EdgeId == neighborId) break;
-                    }
-                    continue;
-                }
-
-                // determine dg vertex for the neighbor. The shared dg may
-                // already have classified this neighbour from a previous
-                // ClassifyAsync call — if so it'll already be in the
-                // MainNetworkSentinel component and we just use the sentinel.
-                EdgeId neighborDgVertex;
-                if (dg.IsNotIsland(neighborId))
-                {
-                    neighborDgVertex = IslandDirectedGraph.MainNetworkSentinel;
-                }
-                else
-                {
-                    dg.AddVertex(neighborId);
-                    neighborDgVertex = neighborId;
-                }
-
-                if (canGoTo)
-                {
-                    dg.AddDirectedLink(edgeId, neighborDgVertex);
-                    if (counters != null) counters.LinksAdded++;
-                    if (dg.HasDirectedLink(neighborDgVertex, edgeId))
-                    {
-                        MergeAndMaybeCollapse(dg, edgeId, neighborDgVertex, maxIslandSize, counters);
-                    }
-                }
-
-                if (canComeFrom)
-                {
-                    dg.AddDirectedLink(neighborDgVertex, edgeId);
-                    if (counters != null) counters.LinksAdded++;
-                    if (dg.HasDirectedLink(edgeId, neighborDgVertex))
-                    {
-                        MergeAndMaybeCollapse(dg, edgeId, neighborDgVertex, maxIslandSize, counters);
-                    }
-                }
-
-                // Track this neighbour as part of the directional frontier so
-                // the caller can enqueue it for ProcessEdge. Skip the sentinel —
-                // it's already terminal, no further exploration needed.
-                if (neighborDgVertex != IslandDirectedGraph.MainNetworkSentinel)
-                    linkedNeighbours.Add(neighborId);
-
-                if (dg.IsNotIsland(edgeId)) break;
-
-                edgeEnumerator.MoveTo(targetVertex);
-                while (edgeEnumerator.MoveNext())
-                {
-                    if (edgeEnumerator.EdgeId == neighborId) break;
-                }
+                if (!tileEnum.Forward) continue;
+                var edgeId = tileEnum.EdgeId;
+                if (!probe.MoveTo(edgeId, true)) continue;
+                var canFwd = costFunction.GetIslandBuilderCost(probe);
+                if (!probe.MoveTo(edgeId, false)) continue;
+                var canBwd = costFunction.GetIslandBuilderCost(probe);
+                if (canFwd || canBwd) edges.Add(edgeId);
             }
-
-            if (dg.IsNotIsland(edgeId)) break;
+            v = new VertexId(tileId, v.LocalId + 1);
         }
 
-        dg.SetProcessed(edgeId);
-        return linkedNeighbours;
+        foreach (var edge in edges)
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+            await ClassifyAsync(network, profile, edge, cancellationToken);
+        }
+
+        islands.SetTileDone(tileId);
     }
 
-    private static void MergeAndMaybeCollapse(IslandDirectedGraph dg,
-        EdgeId a, EdgeId b, int maxIslandSize, Counters? counters = null)
+    /// <summary>
+    /// Per-classification working state. Owns the two queues, the per-queue
+    /// dedup sets, and the F/B sticky sets used to track per-component
+    /// reachability to/from the seed in the dg.
+    /// </summary>
+    private sealed class Ctx
     {
-        dg.Merge(a, b);
-        if (counters != null) counters.MergesPerformed++;
-        var newSize = dg.GetSize(dg.Find(a));
-        if (newSize >= maxIslandSize)
+        public readonly RoutingNetwork Network;
+        public readonly IslandDirectedGraph Dg;
+        public readonly Islands Islands;
+        public readonly ICostFunction CostFunction;
+        public readonly int MaxIslandSize;
+        public readonly Queue<EdgeId> ForwardQueue = new();
+        public readonly Queue<EdgeId> BackwardQueue = new();
+        public readonly HashSet<EdgeId> QueuedForward = new();
+        public readonly HashSet<EdgeId> QueuedBackward = new();
+        public readonly HashSet<EdgeId> InForward = new();
+        public readonly HashSet<EdgeId> InBackward = new();
+
+        public Ctx(RoutingNetwork network, IslandDirectedGraph dg, Islands islands,
+            ICostFunction costFunction, int maxIslandSize)
         {
-            dg.CollapseToMainNetwork(a);
-            if (counters != null) counters.CollapseCalls++;
+            Network = network;
+            Dg = dg;
+            Islands = islands;
+            CostFunction = costFunction;
+            MaxIslandSize = maxIslandSize;
+        }
+    }
+
+    private static async Task ProcessEdgeAsync(EdgeId edgeId, Ctx ctx, CancellationToken cancellationToken)
+    {
+        if (ctx.Dg.IsProcessed(edgeId)) return;
+        var probe = ctx.Network.GetEdgeEnumerator();
+        if (!probe.MoveTo(edgeId, true)) { ctx.Dg.SetProcessed(edgeId); return; }
+        var head = probe.Head;
+        var tail = probe.Tail;
+        await ProcessAtEndpointAsync(edgeId, head, ctx, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return;
+        await ProcessAtEndpointAsync(edgeId, tail, ctx, cancellationToken);
+        ctx.Dg.SetProcessed(edgeId);
+    }
+
+    private static async Task ProcessAtEndpointAsync(
+        EdgeId edgeId, VertexId vertex, Ctx ctx, CancellationToken cancellationToken)
+    {
+        await ctx.Network.UsageNotifier.NotifyVertex(ctx.Network, vertex, cancellationToken);
+        if (cancellationToken.IsCancellationRequested) return;
+
+        var edgeIdFrom = ctx.Network.GetEdgeEnumerator();
+        if (!edgeIdFrom.MoveTo(edgeId, true)) return;
+        var arrivalForward = edgeIdFrom.Head == vertex;
+        if (!arrivalForward)
+        {
+            if (!edgeIdFrom.MoveTo(edgeId, false)) return;
+        }
+        var edgeIdTo = ctx.Network.GetEdgeEnumerator();
+        if (!edgeIdTo.MoveTo(edgeId, !arrivalForward)) return;
+        var neighborArriving = ctx.Network.GetEdgeEnumerator();
+
+        var enumerator = ctx.Network.GetEdgeEnumerator();
+        if (!enumerator.MoveTo(vertex)) return;
+        while (enumerator.MoveNext())
+        {
+            if (enumerator.EdgeId == edgeId) continue;
+            var neighborId = enumerator.EdgeId;
+            var iterationForward = enumerator.Forward;
+
+            var canGoTo = ctx.CostFunction.GetIslandBuilderCost(edgeIdFrom, enumerator);
+            neighborArriving.MoveTo(neighborId, !iterationForward);
+            var canComeFrom = ctx.CostFunction.GetIslandBuilderCost(neighborArriving, edgeIdTo);
+
+            enumerator.MoveTo(vertex);
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.EdgeId == neighborId) break;
+            }
+
+            if (!canGoTo && !canComeFrom) continue;
+
+            // Oracle.
+            EdgeId neighborDgVertex;
+            bool isKnown;
+            if (ctx.Islands.IsEdgeOnIsland(neighborId))
+            {
+                ctx.Dg.AddVertex(neighborId);
+                neighborDgVertex = neighborId;
+                isKnown = true;
+            }
+            else if (ctx.Dg.IsNotIsland(neighborId) ||
+                     ctx.Islands.GetTileDone(neighborId.TileId))
+            {
+                neighborDgVertex = IslandDirectedGraph.MainNetworkSentinel;
+                isKnown = true;
+            }
+            else
+            {
+                ctx.Dg.AddVertex(neighborId);
+                neighborDgVertex = neighborId;
+                isKnown = false;
+            }
+
+            if (canGoTo) AddLinkAndPropagate(edgeId, neighborDgVertex, ctx);
+            if (canComeFrom) AddLinkAndPropagate(neighborDgVertex, edgeId, ctx);
+
+            // The neighbour's queue assignment is handled by the propagation
+            // (newly inForward → forwardQueue; newly inBackward → backwardQueue).
+            // For known-island neighbours nothing needs to be queued; the dg
+            // link still got added so cycle detection sees it.
+            _ = isKnown;
         }
     }
 
     /// <summary>
-    /// Snapshots the members of the edge's component, collapses to main
-    /// network, then notifies the store that each member is NotIsland.
+    /// Adds a directed link <c>a → b</c> to the dg and incrementally maintains
+    /// the per-classification <see cref="Ctx.InForward"/> and
+    /// <see cref="Ctx.InBackward"/> sets through any propagation the new link
+    /// causes. Newly-marked components are enqueued to the appropriate queue.
     /// </summary>
-    /// <summary>
-    /// Resolves candidates via Tarjan SCC detection + merge and bidirectional
-    /// main-network reachability. Dead-end pruning is intentionally absent;
-    /// see ClassifyAsync's bounded-component fallback.
-    /// </summary>
-    private static void TryResolve(IslandDirectedGraph dg,
-        Islands islands,
-        List<EdgeId> candidates,
-        int maxIslandSize)
+    private static void AddLinkAndPropagate(EdgeId a, EdgeId b, Ctx ctx)
     {
-        bool changed;
-        do
+        var aRootBefore = ctx.Dg.Find(a);
+        var bRootBefore = ctx.Dg.Find(b);
+        if (aRootBefore == bRootBefore) return;
+
+        // Capture F/B membership of both endpoints BEFORE the link is added.
+        // If the call causes a cycle-merge, the original roots disappear and
+        // we'll need to consolidate.
+        var aInF = ctx.InForward.Contains(aRootBefore);
+        var bInF = ctx.InForward.Contains(bRootBefore);
+        var aInB = ctx.InBackward.Contains(aRootBefore);
+        var bInB = ctx.InBackward.Contains(bRootBefore);
+
+        var merged = ctx.Dg.AddDirectedLink(a, b);
+        if (merged) MaybeCollapse(ctx.Dg, a, ctx.MaxIslandSize);
+
+        if (merged)
         {
-            changed = false;
+            // Cycle close: a and b (and possibly others) are now one component.
+            // Combine F/B membership into the new root and propagate.
+            RekeyAfterMerge(ctx);
+            var newRoot = ctx.Dg.Find(a);
+            var nowInF = aInF || bInF;
+            var nowInB = aInB || bInB;
 
-            // Tarjan SCC merge among remaining candidates.
-            if (candidates.Count >= 2)
+            if (nowInF)
             {
-                if (dg.DetectAndMergeCycles(candidates))
+                ctx.InForward.Add(newRoot);
+                // The merge can absorb previously-isolated components whose
+                // members were never queued (because they weren't in F yet).
+                // Re-enqueue idempotently — `queuedForward` dedups.
+                EnqueueMembers(newRoot, ctx.ForwardQueue, ctx.QueuedForward, ctx);
+                // Outgoing chains from the new root may lead to components
+                // that weren't in F before; propagate into each.
+                foreach (var t in ctx.Dg.GetOutgoingRoots(newRoot))
                 {
-                    changed = true;
-                    for (var i = candidates.Count - 1; i >= 0; i--)
-                    {
-                        var edgeId = candidates[i];
-                        if (!dg.IsInGraph(edgeId) || dg.IsNotIsland(edgeId))
-                        {
-                            candidates.RemoveAt(i);
-                            continue;
-                        }
-
-                        var root = dg.Find(edgeId);
-                        if (dg.GetSize(root) >= maxIslandSize)
-                        {
-                            dg.CollapseToMainNetwork(root);
-                            candidates.RemoveAt(i);
-                        }
-                    }
+                    if (!ctx.InForward.Contains(ctx.Dg.Find(t))) PropagateForward(t, ctx);
                 }
             }
-
-            // Bidirectional main-network reachability.
-            for (var i = candidates.Count - 1; i >= 0; i--)
+            if (nowInB)
             {
-                var edgeId = candidates[i];
-                if (!dg.IsInGraph(edgeId) || dg.IsNotIsland(edgeId))
+                ctx.InBackward.Add(newRoot);
+                EnqueueMembers(newRoot, ctx.BackwardQueue, ctx.QueuedBackward, ctx);
+                foreach (var s in ctx.Dg.GetIncomingRoots(newRoot))
                 {
-                    candidates.RemoveAt(i);
-                    continue;
-                }
-
-                if (dg.CanReachMainNetwork(edgeId))
-                {
-                    dg.CollapseToMainNetwork(edgeId);
-                    candidates.RemoveAt(i);
-                    changed = true;
+                    if (!ctx.InBackward.Contains(ctx.Dg.Find(s))) PropagateBackward(s, ctx);
                 }
             }
-        } while (changed);
+        }
+        else
+        {
+            // Plain link added (no merge). Propagate F/B across it if applicable.
+            //   - If a was in F, b's outgoing closure joins F.
+            //   - If b was in B, a's incoming closure joins B.
+            if (aInF && !bInF) PropagateForward(bRootBefore, ctx);
+            if (bInB && !aInB) PropagateBackward(aRootBefore, ctx);
+        }
     }
 
-    private static List<EdgeId> CollectAllCandidates(IslandDirectedGraph dg, Islands islands)
+    /// <summary>
+    /// BFS from <paramref name="fromRoot"/> through <c>_outgoing</c> chains,
+    /// marking newly-reached components as <c>inForward</c> and enqueueing
+    /// their unprocessed members to the forward queue. Each component enters
+    /// <c>inForward</c> at most once.
+    /// </summary>
+    private static void PropagateForward(EdgeId fromRoot, Ctx ctx)
     {
-        var all = dg.GetAllEdges();
-        var candidates = new List<EdgeId>(all.Count);
-        foreach (var e in all)
+        var sentinel = IslandDirectedGraph.MainNetworkSentinel;
+        var stack = new Stack<EdgeId>();
+        stack.Push(fromRoot);
+        while (stack.Count > 0)
         {
-            if (dg.IsNotIsland(e)) continue;
-            if (islands.IsEdgeOnIsland(e)) continue;
-            candidates.Add(e);
+            var current = ctx.Dg.Find(stack.Pop());
+            if (!ctx.InForward.Add(current)) continue;
+
+            if (current != sentinel)
+            {
+                EnqueueMembers(current, ctx.ForwardQueue, ctx.QueuedForward, ctx);
+            }
+
+            foreach (var t in ctx.Dg.GetOutgoingRoots(current))
+            {
+                if (!ctx.InForward.Contains(ctx.Dg.Find(t))) stack.Push(t);
+            }
         }
-        return candidates;
+    }
+
+    /// <summary>
+    /// Mirror of <see cref="PropagateForward"/> walking <c>_incoming</c>.
+    /// </summary>
+    private static void PropagateBackward(EdgeId fromRoot, Ctx ctx)
+    {
+        var sentinel = IslandDirectedGraph.MainNetworkSentinel;
+        var stack = new Stack<EdgeId>();
+        stack.Push(fromRoot);
+        while (stack.Count > 0)
+        {
+            var current = ctx.Dg.Find(stack.Pop());
+            if (!ctx.InBackward.Add(current)) continue;
+
+            if (current != sentinel)
+            {
+                EnqueueMembers(current, ctx.BackwardQueue, ctx.QueuedBackward, ctx);
+            }
+
+            foreach (var s in ctx.Dg.GetIncomingRoots(current))
+            {
+                if (!ctx.InBackward.Contains(ctx.Dg.Find(s))) stack.Push(s);
+            }
+        }
+    }
+
+    private static void EnqueueMembers(EdgeId root, Queue<EdgeId> queue, HashSet<EdgeId> queued, Ctx ctx)
+    {
+        var members = ctx.Dg.GetMembers(root);
+        if (members == null) return;
+        foreach (var m in members)
+        {
+            if (ctx.Dg.IsProcessed(m)) continue;
+            // Don't queue known-island members. They were added to the dg only
+            // so cycle detection sees them; we never expand through them.
+            if (ctx.Islands.IsEdgeOnIsland(m)) continue;
+            if (!queued.Add(m)) continue;
+            queue.Enqueue(m);
+        }
+    }
+
+    /// <summary>
+    /// Re-canonicalise the F and B sets after a merge. Each set's entries are
+    /// component roots; a merge can collapse multiple of them into one. We
+    /// replace stale entries with their current <see cref="Find"/> result and
+    /// dedup.
+    /// </summary>
+    private static void RekeyAfterMerge(Ctx ctx)
+    {
+        Rekey(ctx.InForward, ctx.Dg);
+        Rekey(ctx.InBackward, ctx.Dg);
+    }
+
+    private static void Rekey(HashSet<EdgeId> set, IslandDirectedGraph dg)
+    {
+        if (set.Count == 0) return;
+        var fresh = new HashSet<EdgeId>(set.Count);
+        foreach (var r in set) fresh.Add(dg.Find(r));
+        if (fresh.Count == set.Count && SetEquals(fresh, set)) return;
+        set.Clear();
+        foreach (var r in fresh) set.Add(r);
+    }
+
+    private static bool SetEquals(HashSet<EdgeId> a, HashSet<EdgeId> b)
+    {
+        if (a.Count != b.Count) return false;
+        foreach (var x in a) if (!b.Contains(x)) return false;
+        return true;
+    }
+
+    private static void MaybeCollapse(IslandDirectedGraph dg, EdgeId a, int maxIslandSize)
+    {
+        var size = dg.GetSize(dg.Find(a));
+        if (size >= maxIslandSize) dg.CollapseToMainNetwork(a);
     }
 }

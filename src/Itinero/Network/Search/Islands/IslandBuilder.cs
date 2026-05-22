@@ -228,11 +228,8 @@ internal class IslandBuilder
                 var canGoTo = costFunction.GetIslandBuilderCost(edgeIdFrom, edgeEnumerator);
                 if (canGoTo)
                 {
-                    dg.AddDirectedLink(edgeId, neighborDgVertex);
-                    // bidirectional merge check: O(1).
-                    if (dg.HasDirectedLink(neighborDgVertex, edgeId))
+                    if (dg.AddDirectedLink(edgeId, neighborDgVertex))
                     {
-                        dg.Merge(edgeId, neighborDgVertex);
                         var newSize = dg.GetSize(dg.Find(edgeId));
                         if (newSize >= maxIslandSize)
                             dg.CollapseToMainNetwork(edgeId);
@@ -247,11 +244,8 @@ internal class IslandBuilder
                 var canComeFrom = costFunction.GetIslandBuilderCost(neighborArriving, edgeIdTo);
                 if (canComeFrom)
                 {
-                    dg.AddDirectedLink(neighborDgVertex, edgeId);
-                    // bidirectional merge check: O(1).
-                    if (dg.HasDirectedLink(edgeId, neighborDgVertex))
+                    if (dg.AddDirectedLink(neighborDgVertex, edgeId))
                     {
-                        dg.Merge(edgeId, neighborDgVertex);
                         var newSize = dg.GetSize(dg.Find(edgeId));
                         if (newSize >= maxIslandSize)
                             dg.CollapseToMainNetwork(edgeId);

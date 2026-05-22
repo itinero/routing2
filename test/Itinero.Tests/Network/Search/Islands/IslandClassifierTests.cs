@@ -542,4 +542,365 @@ public class IslandClassifierTests
         }
         return (routerDb, first);
     }
+
+    // ────────────────────────────────────────────────────────────────────
+    // Real-world OSM-shaped topologies. These exercise the full algorithm
+    // (oracle + dg eager cycle-merge + per-side termination) on shapes that
+    // mirror what we encounter in production data.
+    // ────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DividedMotorway_BothCarriageways_NotIsland()
+    {
+        // Divided motorway shape: two opposite one-ways m1→m2 and m2→m1
+        // (eastbound/westbound carriageways), connected at each end to bidir
+        // main networks via bidir on/off ramps. The cycle through both
+        // carriageways and the ramps is what gives each one-way edge its
+        // bidirectional reach to MainNet.
+        //
+        //   a1↔a2↔a3↔m1 ==(east oneway m1→m2)==> m2 ↔b1↔b2↔b3
+        //                <==(west oneway m2→m1)==
+        //
+        // MaxIslandSize=8. The full cycle component (4 bidir A + 2 oneways
+        // + 4 bidir B = 10) graduates via size-threshold once SCC merges
+        // bring everything together.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 8 });
+        EdgeId eastbound;
+        EdgeId westbound;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var a1 = writer.AddVertex(4.250, 51.000);
+            var a2 = writer.AddVertex(4.252, 51.000);
+            var a3 = writer.AddVertex(4.254, 51.000);
+            var m1 = writer.AddVertex(4.256, 51.000);
+            var m2 = writer.AddVertex(4.270, 51.000);
+            var b1 = writer.AddVertex(4.272, 51.000);
+            var b2 = writer.AddVertex(4.274, 51.000);
+            var b3 = writer.AddVertex(4.276, 51.000);
+
+            writer.AddEdge(a1, a2);
+            writer.AddEdge(a2, a3);
+            writer.AddEdge(a3, m1);
+            eastbound = writer.AddEdge(m1, m2, attributes: new[] { ("oneway", "yes") });
+            westbound = writer.AddEdge(m2, m1, attributes: new[] { ("oneway", "yes") });
+            writer.AddEdge(m2, b1);
+            writer.AddEdge(b1, b2);
+            writer.AddEdge(b2, b3);
+        }
+
+        var profile = new DefaultProfile(getEdgeFactor: a => a.Any(x => x.key == "oneway")
+            ? new EdgeFactor(1, 0, 1, 0)
+            : new EdgeFactor(1, 1, 1, 1));
+
+        Assert.Equal(IslandStatus.NotIsland, await ClassifyCold(routerDb, profile, eastbound));
+        Assert.Equal(IslandStatus.NotIsland, await ClassifyCold(routerDb, profile, westbound));
+    }
+
+    [Fact]
+    public async Task Roundabout_OneWayCycleWithBidirSpoke_NotIsland()
+    {
+        // Roundabout shape: 4-edge directed cycle (a→b→c→d→a) with one
+        // bidir spoke connecting to a bidir main network. MaxIslandSize=8.
+        // The roundabout alone is size 4 — below threshold. The spoke +
+        // its attached main network must merge in for the merged
+        // component to graduate via size-threshold.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 8 });
+        EdgeId roundaboutEdge;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var a = writer.AddVertex(4.250, 51.000);
+            var b = writer.AddVertex(4.252, 51.000);
+            var c = writer.AddVertex(4.254, 51.001);
+            var d = writer.AddVertex(4.252, 51.002);
+            // Bidir main network attached at vertex a via a 4-edge chain.
+            var ext1 = writer.AddVertex(4.245, 51.000);
+            var ext2 = writer.AddVertex(4.243, 51.000);
+            var ext3 = writer.AddVertex(4.241, 51.000);
+            var ext4 = writer.AddVertex(4.239, 51.000);
+
+            var oneway = new[] { ("oneway", "yes") };
+            roundaboutEdge = writer.AddEdge(a, b, attributes: oneway);
+            writer.AddEdge(b, c, attributes: oneway);
+            writer.AddEdge(c, d, attributes: oneway);
+            writer.AddEdge(d, a, attributes: oneway);
+
+            writer.AddEdge(a, ext1);
+            writer.AddEdge(ext1, ext2);
+            writer.AddEdge(ext2, ext3);
+            writer.AddEdge(ext3, ext4);
+        }
+
+        var profile = new DefaultProfile(getEdgeFactor: a => a.Any(x => x.key == "oneway")
+            ? new EdgeFactor(1, 0, 1, 0)
+            : new EdgeFactor(1, 1, 1, 1));
+
+        Assert.Equal(IslandStatus.NotIsland, await ClassifyCold(routerDb, profile, roundaboutEdge));
+    }
+
+    [Fact]
+    public async Task BidirSeedConnectedByOneWayOut_ShouldBeIsland()
+    {
+        // Mirror of OneWayLeadingIntoCulDeSac's cul-de-sac case. A bidir
+        // seed v_h↔v_t with v_h dead-end. v_t has a single one-way going
+        // OUT (v_t→v_x) into a bidir main network. From the seed you can
+        // route OUT to MainNet, but MainNet cannot route back IN — the
+        // one-way is OUT only. So Island.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
+        EdgeId seed;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var v_h = writer.AddVertex(4.250, 51.000); // dead-end
+            var v_t = writer.AddVertex(4.252, 51.000);
+            var v_x = writer.AddVertex(4.254, 51.000);
+            var v_y = writer.AddVertex(4.256, 51.000);
+            var v_z = writer.AddVertex(4.258, 51.000);
+
+            seed = writer.AddEdge(v_h, v_t);
+            writer.AddEdge(v_t, v_x, attributes: new[] { ("oneway", "yes") });
+            writer.AddEdge(v_x, v_y);
+            writer.AddEdge(v_y, v_z);
+        }
+
+        var profile = new DefaultProfile(getEdgeFactor: a => a.Any(x => x.key == "oneway")
+            ? new EdgeFactor(1, 0, 1, 0)
+            : new EdgeFactor(1, 1, 1, 1));
+
+        Assert.Equal(IslandStatus.Island, await ClassifyCold(routerDb, profile, seed));
+    }
+
+    [Fact]
+    public async Task OneWayBridgeBetweenTwoLargeMainNets_NotIsland()
+    {
+        // publish-api#61 production shape: two distinct bidir main networks,
+        // each large enough to graduate on its own, connected by a single
+        // one-way bridge. The bridge must classify NotIsland — its incoming
+        // chain reaches MainNet A and its outgoing chain reaches MainNet B,
+        // and the cycle through bridge + bridging-edges closes.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 4 });
+        EdgeId bridge;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            // Main A: 5 bidir edges (≥ 4 = MaxIslandSize)
+            var a = new VertexId[6];
+            for (var i = 0; i < a.Length; i++) a[i] = writer.AddVertex(4.250 + i * 0.001, 51.000);
+            for (var i = 0; i < a.Length - 1; i++) writer.AddEdge(a[i], a[i + 1]);
+
+            // Bridge: oneway A's last → B's first
+            var bStart = writer.AddVertex(4.270, 51.000);
+            bridge = writer.AddEdge(a[^1], bStart, attributes: new[] { ("oneway", "yes") });
+
+            // Main B: 5 bidir edges chained from bStart
+            var prev = bStart;
+            for (var i = 1; i < 6; i++)
+            {
+                var v = writer.AddVertex(4.270 + i * 0.001, 51.000);
+                writer.AddEdge(prev, v);
+                prev = v;
+            }
+        }
+
+        var profile = new DefaultProfile(getEdgeFactor: a => a.Any(x => x.key == "oneway")
+            ? new EdgeFactor(1, 0, 1, 0)
+            : new EdgeFactor(1, 1, 1, 1));
+
+        Assert.Equal(IslandStatus.NotIsland, await ClassifyCold(routerDb, profile, bridge));
+    }
+
+    [Fact]
+    public async Task OneWayTrapAcrossTiles_TailDeadEnd_ShouldBeIsland()
+    {
+        // One-way trap shape spanning two tiles: seed = oneway a1→a2 in
+        // tile A. Tail at a1 is a dead-end. Head side leads into tile B
+        // via a bidir chain to a small main net in tile B. Per-side
+        // fast-path should fire Island (tail empty + no backward reach)
+        // without draining the cross-tile head closure.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 4 });
+        EdgeId seed;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var a1 = writer.AddVertex(4.255, 51.000);
+            var a2 = writer.AddVertex(4.260, 51.000);
+            var b1 = writer.AddVertex(4.270, 51.000);
+            var b2 = writer.AddVertex(4.275, 51.000);
+            var b3 = writer.AddVertex(4.280, 51.000);
+            var b4 = writer.AddVertex(4.285, 51.000);
+
+            Assert.NotEqual(a1.TileId, b1.TileId);
+
+            seed = writer.AddEdge(a1, a2, attributes: new[] { ("oneway", "yes") });
+            writer.AddEdge(a2, b1);
+            writer.AddEdge(b1, b2);
+            writer.AddEdge(b2, b3);
+            writer.AddEdge(b3, b4);
+        }
+
+        var profile = new DefaultProfile(getEdgeFactor: a => a.Any(x => x.key == "oneway")
+            ? new EdgeFactor(1, 0, 1, 0)
+            : new EdgeFactor(1, 1, 1, 1));
+
+        Assert.Equal(IslandStatus.Island, await ClassifyCold(routerDb, profile, seed));
+    }
+
+    // ────────────────────────────────────────────────────────────────────
+    // Oracle tests. These verify that the classifier respects pre-populated
+    // per-tile state: the Islands set (known-island edges) and the
+    // tile-done flag (a tile in which every traversable edge that is not
+    // in the Islands set is by definition NotIsland).
+    // ────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Oracle_KnownIslandNeighbour_DoesNotExpandThrough()
+    {
+        // 3-edge bidir chain v1↔v2↔v3↔v4 with MaxIslandSize=4. The full
+        // chain — if explored — would NOT graduate (size 3 < 4) but at
+        // least it would be one merged component. Pre-mark edges[1] as
+        // Island. When classifying edges[0], the algorithm sees edges[1]
+        // via the oracle and does NOT expand through it: edges[2] is
+        // never visited. Seed stays in its own component → Island.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 4 });
+        var edges = new List<EdgeId>();
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var v1 = writer.AddVertex(4.250, 51.000);
+            var v2 = writer.AddVertex(4.252, 51.000);
+            var v3 = writer.AddVertex(4.254, 51.000);
+            var v4 = writer.AddVertex(4.256, 51.000);
+            edges.Add(writer.AddEdge(v1, v2));
+            edges.Add(writer.AddEdge(v2, v3));
+            edges.Add(writer.AddEdge(v3, v4));
+        }
+
+        var profile = new DefaultProfile();
+        var network = routerDb.Latest;
+        var islands = network.IslandManager.GetIslandsFor(profile);
+        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
+
+        islands.SetEdgeOnIsland(edges[1]);
+
+        var result = await IslandClassifier.ClassifyAsync(
+            network, profile, edges[0], CancellationToken.None);
+        Assert.Equal(IslandStatus.Island, result);
+
+        // edges[2] was NEVER touched — it shouldn't be in the dg.
+        Assert.False(dg.IsInGraph(edges[2]),
+            "edges[2] should not be in the dg — the oracle's island short-circuit on edges[1] prevented expansion through it");
+    }
+
+    [Fact]
+    public async Task Oracle_TileDone_NeighbourTreatedAsNotIsland()
+    {
+        // 2-edge bidir chain with MaxIslandSize=10. The chain alone is too
+        // small to graduate (size 2 < 10), so without the oracle this would
+        // classify as Island. Pre-mark the tile as done — the oracle now
+        // treats the neighbour as NotIsland, links it into the sentinel,
+        // and the seed's bidir cycle through it absorbs the seed too.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 10 });
+        EdgeId seed;
+        EdgeId neighbour;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var v1 = writer.AddVertex(4.250, 51.000);
+            var v2 = writer.AddVertex(4.252, 51.000);
+            var v3 = writer.AddVertex(4.254, 51.000);
+            seed = writer.AddEdge(v1, v2);
+            neighbour = writer.AddEdge(v2, v3);
+        }
+
+        var profile = new DefaultProfile();
+        var network = routerDb.Latest;
+        var islands = network.IslandManager.GetIslandsFor(profile);
+
+        // Sanity: without the oracle, the chain is Island.
+        Assert.Equal(IslandStatus.Island,
+            await IslandClassifier.ClassifyAsync(network, profile, seed, CancellationToken.None));
+
+        // Now mark the neighbour's tile as done. Re-classify a fresh seed
+        // edge (we make a second RouterDb so dg state isn't reused).
+        var (rdb2, seed2, neighbour2) = BuildSimpleBidirChain(maxIslandSize: 10);
+        var islands2 = rdb2.Latest.IslandManager.GetIslandsFor(profile);
+        islands2.SetTileDone(neighbour2.TileId);
+
+        var result = await IslandClassifier.ClassifyAsync(
+            rdb2.Latest, profile, seed2, CancellationToken.None);
+        Assert.Equal(IslandStatus.NotIsland, result);
+    }
+
+    [Fact]
+    public async Task Oracle_TileDone_IslandEdgeStaysIsland()
+    {
+        // Even when a tile is marked done, the Islands set takes
+        // precedence: an edge that's in the Islands set is treated as
+        // Island regardless of tile-done state. This is the layering
+        // contract — the Islands set is "the islands inside a done tile",
+        // and the tile-done flag means "everything else here is NotIsland".
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 2 });
+        EdgeId edge;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var v1 = writer.AddVertex(4.250, 51.000);
+            var v2 = writer.AddVertex(4.252, 51.000);
+            edge = writer.AddEdge(v1, v2);
+        }
+
+        var profile = new DefaultProfile();
+        var network = routerDb.Latest;
+        var islands = network.IslandManager.GetIslandsFor(profile);
+
+        islands.SetTileDone(edge.TileId);
+        islands.SetEdgeOnIsland(edge);
+
+        var result = await IslandClassifier.ClassifyAsync(
+            network, profile, edge, CancellationToken.None);
+        Assert.Equal(IslandStatus.Island, result);
+    }
+
+    private static (RouterDb routerDb, EdgeId seed, EdgeId neighbour) BuildSimpleBidirChain(int maxIslandSize)
+    {
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = maxIslandSize });
+        EdgeId seed;
+        EdgeId neighbour;
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var v1 = writer.AddVertex(4.250, 51.000);
+            var v2 = writer.AddVertex(4.252, 51.000);
+            var v3 = writer.AddVertex(4.254, 51.000);
+            seed = writer.AddEdge(v1, v2);
+            neighbour = writer.AddEdge(v2, v3);
+        }
+        return (routerDb, seed, neighbour);
+    }
+
+    [Fact]
+    public async Task LongOneWayChainNoCycle_ShouldBeIsland()
+    {
+        // 10-edge one-way chain v0→v1→…→v10 with MaxIslandSize=8 and NO
+        // bidirectional reach to MainNet. Pins two things at once:
+        // (1) size alone does not graduate a non-bidir chain — without a
+        //     closing cycle through the sentinel, the chain stays in its
+        //     own non-sentinel component however long it gets.
+        // (2) The one-way per-side fast-path kicks in: tail queue empty
+        //     with no backward reach in dg → Island, without having to
+        //     drain the long forward chain on the head side.
+        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 8 });
+        var edges = new List<EdgeId>();
+        using (var writer = routerDb.GetMutableNetwork())
+        {
+            var verts = new VertexId[11];
+            for (var i = 0; i < verts.Length; i++)
+                verts[i] = writer.AddVertex(4.250 + i * 0.001, 51.000);
+            var oneway = new[] { ("oneway", "yes") };
+            for (var i = 0; i < verts.Length - 1; i++)
+                edges.Add(writer.AddEdge(verts[i], verts[i + 1], attributes: oneway));
+        }
+
+        var profile = new DefaultProfile(getEdgeFactor: a => a.Any(x => x.key == "oneway")
+            ? new EdgeFactor(1, 0, 1, 0)
+            : new EdgeFactor(1, 1, 1, 1));
+
+        // The first edge has no backward reach (v0 is a dead-end). All
+        // edges on this chain are Island.
+        Assert.Equal(IslandStatus.Island, await ClassifyCold(routerDb, profile, edges[0]));
+        // The last edge has no forward reach (v10 is a dead-end). Also Island.
+        Assert.Equal(IslandStatus.Island, await ClassifyCold(routerDb, profile, edges[^1]));
+    }
 }

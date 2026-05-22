@@ -144,7 +144,7 @@ internal class RoutingNetworkIslandManager
                 {
                     _tilesInProgressLock.EnterWriteLock();
 
-                    task = IslandBuilder.BuildForTileAsync(network, profile, tileId, cancellationToken);
+                    task = IslandClassifier.BuildForTileAsync(network, profile, tileId, cancellationToken);
                     _tilesInProgress[(profile.Name, tileId)] = task;
                 }
                 finally
