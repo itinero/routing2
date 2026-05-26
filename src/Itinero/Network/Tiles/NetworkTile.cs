@@ -187,6 +187,9 @@ internal partial class NetworkTile
         IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeTypeId = null,
         uint? length = null, GlobalEdgeId? globalEdgeId = null)
     {
+        // Edge set changed → cached MaxLonDiff/MaxLatDiff are now stale.
+        this.InvalidateDiffs();
+
         if (vertex2.TileId != _tileId)
         {
             // this edge crosses tiles boundaries, it need special treatment and a stable id.
@@ -299,6 +302,7 @@ internal partial class NetworkTile
     {
         _deletedEdges ??= [];
         _deletedEdges.Add(edge);
+        this.InvalidateDiffs();
     }
 
     /// <summary>
@@ -325,6 +329,7 @@ internal partial class NetworkTile
     internal void RemoveDeletedEdges()
     {
         if (_deletedEdges == null) return;
+        this.InvalidateDiffs();
 
         // reset vertex pointers.
         for (var i = 0; i < _pointers.Length; i++)

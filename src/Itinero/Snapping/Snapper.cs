@@ -130,39 +130,75 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
     {
         (double longitude, double latitude, float? e) location = (longitude, latitude, null);
 
-        // calculate one box for all locations.
+        // First load region.
         var box = location.BoxAround(_offsetInMeter);
-
-        // make sure data is loaded.
         await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
-        // snap to closest edge.
-        var snapPoint = await _routingNetwork.SnapInBoxAsync(box, this, maxDistance: _maxDistance, cancellationToken);
-        if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
+        // Iterate over the MaxDistance schedule (50, 200, 800, …, MaxDistance).
+        // Most snaps land on the first small-D pass; sparse-area / no-snap
+        // cases escalate through the schedule. PR2's tile + vertex predicates
+        // make small-D passes nearly free because almost every tile in the
+        // load box is excluded.
+        foreach (var d in ExpandSchedule(_maxDistance))
+        {
+            var snapPoint = await _routingNetwork.SnapInBoxAsync(box, this, maxDistance: d, cancellationToken);
+            if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
+            if (cancellationToken.IsCancellationRequested) break;
+        }
 
-        // retry only if requested.
+        // Retry once with a larger load region — same role as today.
         if (!(_offsetInMeter < _offsetInMeterMax))
         {
             return new Result<SnapPoint>(
                 FormattableString.Invariant($"Could not snap to location: {location.longitude},{location.latitude}"));
         }
 
-        // use bigger box.
         box = location.BoxAround(_offsetInMeterMax);
+        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box, cancellationToken);
 
-        // make sure data is loaded.
-        await _routingNetwork.UsageNotifier.NotifyBox(_routingNetwork, box,
-            cancellationToken);
-
-        // snap to closest edge.
-        snapPoint = await _routingNetwork.SnapInBoxAsync(box, this, maxDistance: _maxDistance, cancellationToken);
-        if (snapPoint.EdgeId != EdgeId.Empty)
+        foreach (var d in ExpandSchedule(_maxDistance))
         {
-            return snapPoint;
+            var snapPoint = await _routingNetwork.SnapInBoxAsync(box, this, maxDistance: d, cancellationToken);
+            if (snapPoint.EdgeId != EdgeId.Empty) return snapPoint;
+            if (cancellationToken.IsCancellationRequested) break;
         }
 
         return new Result<SnapPoint>(
              FormattableString.Invariant($"Could not snap to location: {location.longitude},{location.latitude}"));
+    }
+
+    /// <summary>
+    /// Iterative MaxDistance schedule: start at 50 m, ×4 per step, cap the
+    /// growth at 10 km (so an unbounded MaxDistance doesn't produce an
+    /// unbounded schedule), and always end with <paramref name="maxDistance"/>
+    /// as the final entry. See snap-iterative-cutoff.md for the design.
+    ///
+    /// Examples:
+    ///   maxDistance = ∞      → 50, 200, 800, 3200, 12800, ∞
+    ///   maxDistance = 1 000  → 50, 200, 800, 1000
+    ///   maxDistance = 100    → 50, 100
+    ///   maxDistance = 30     → 30  (single iteration, no growth)
+    /// </summary>
+    private static IEnumerable<double> ExpandSchedule(double maxDistance)
+    {
+        const double start = 50.0;
+        const double growthFactor = 4.0;
+        const double growthCap = 10_000.0;
+
+        if (maxDistance <= start)
+        {
+            yield return maxDistance;
+            yield break;
+        }
+
+        var d = start;
+        yield return d;
+        while (d < maxDistance && d < growthCap)
+        {
+            d *= growthFactor;
+            if (d < maxDistance) yield return d;
+        }
+        yield return maxDistance;
     }
 
     /// <inheritdoc/>

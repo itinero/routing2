@@ -77,6 +77,26 @@ internal static class TileStatic
         return (int)Math.Floor(Math.Pow(2, zoom)); // replace by bit shifting?
     }
 
+    /// <summary>
+    /// Returns the geographic bounding box of the tile with the given id at the given zoom level.
+    /// </summary>
+    public static (double minLon, double minLat, double maxLon, double maxLat)
+        GetTileBoundingBox(int zoom, uint tileId)
+    {
+        var (x, y) = ToTile(zoom, tileId);
+        var pow = Math.Pow(2.0, zoom);
+
+        var nTop = Math.PI - 2.0 * Math.PI * y / pow;
+        var nBottom = Math.PI - 2.0 * Math.PI * (y + 1) / pow;
+
+        var minLon = (x / pow * 360.0) - 180.0;
+        var maxLon = ((x + 1) / pow * 360.0) - 180.0;
+        var maxLat = 180.0 / Math.PI * Math.Atan(Math.Sinh(nTop));
+        var minLat = 180.0 / Math.PI * Math.Atan(Math.Sinh(nBottom));
+
+        return (minLon, minLat, maxLon, maxLat);
+    }
+
     public static (uint x, uint y) WorldToTile(double longitude, double latitude, int zoom)
     {
         var n = N(zoom);
