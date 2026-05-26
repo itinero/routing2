@@ -217,84 +217,57 @@ public static class GeoExtensions
     private const double E = 0.0000000001;
 
     /// <summary>
-    /// Projects for coordinate on this line.
+    /// Projects <paramref name="coordinate"/> perpendicularly onto the segment
+    /// <paramref name="line"/>. Returns the foot of the perpendicular if it
+    /// falls on the segment; null otherwise (or if the segment is degenerate).
+    ///
+    /// <para>
+    /// The result is direction-independent — calling with the line endpoints
+    /// swapped produces the same projected coordinate (to within FP).
+    /// </para>
+    ///
+    /// <para>
+    /// We work in a local Cartesian frame in meters around the segment:
+    /// latitude is scaled by a constant <c>~111320 m/°</c>, longitude by
+    /// <c>cos(midpointLat) × 111320</c>. Using the segment midpoint as the
+    /// reference latitude (rather than coordinate1) keeps the scaling
+    /// symmetric under endpoint swap. The projection itself is the standard
+    /// dot-product clamp:
+    /// </para>
+    /// <code>
+    /// t = ((Q − A) · (B − A)) / ((B − A) · (B − A))
+    /// foot = A + t × (B − A)   when 0 ≤ t ≤ 1, else null
+    /// </code>
     /// </summary>
-    /// <param name="line">The line.</param>
-    /// <param name="coordinate">The coordinate.</param>
-    /// <returns>The project coordinate.</returns>
+    /// <param name="line">The segment.</param>
+    /// <param name="coordinate">The point to project.</param>
+    /// <returns>The foot of the perpendicular on the segment, or null if
+    /// it falls outside the segment endpoints.</returns>
     public static (double longitude, double latitude, float? e)? ProjectOn(
         this ((double longitude, double latitude, float? e) coordinate1,
             (double longitude, double latitude, float? e) coordinate2) line,
         (double longitude, double latitude, float? e) coordinate)
     {
-        var coordinate1 = line.coordinate1;
-        var coordinate2 = line.coordinate2;
+        var a = line.coordinate1;
+        var b = line.coordinate2;
 
-        // TODO: do we need to calculate the expensive length in meter, this can be done more easily.
-        var lengthInMeters = line.coordinate1.DistanceEstimateInMeter(line.coordinate2);
-        if (lengthInMeters < E)
-        {
-            return null;
-        }
+        const double metersPerDegLat = 111320.0;
+        var refLatRad = (a.latitude + b.latitude) * 0.5 * Math.PI / 180.0;
+        var metersPerDegLon = metersPerDegLat * Math.Cos(refLatRad);
 
-        // get direction vector.
-        var diffLat = coordinate2.latitude - coordinate1.latitude;
-        var diffLon = coordinate2.longitude - coordinate1.longitude;
+        var abDx = (b.longitude - a.longitude) * metersPerDegLon;
+        var abDy = (b.latitude - a.latitude) * metersPerDegLat;
+        var ab2 = abDx * abDx + abDy * abDy;
+        if (ab2 < E) return null;
 
-        // increase this line in length if needed.
-        var longerLine = line;
-        if (lengthInMeters < 50)
-        {
-            longerLine = (coordinate1, (diffLon + coordinate.longitude, diffLat + coordinate.latitude, null));
-        }
+        var aqDx = (coordinate.longitude - a.longitude) * metersPerDegLon;
+        var aqDy = (coordinate.latitude - a.latitude) * metersPerDegLat;
+        var t = (abDx * aqDx + abDy * aqDy) / ab2;
+        if (t < 0.0 || t > 1.0) return null;
 
-        // rotate 90°, offset y with x, and x with y.
-        var xLength = longerLine.coordinate1.DistanceEstimateInMeter((longerLine.coordinate2.longitude,
-            longerLine.coordinate1.latitude, null));
-        if (longerLine.coordinate1.longitude > longerLine.coordinate2.longitude)
-        {
-            xLength = -xLength;
-        }
-
-        var yLength = longerLine.coordinate1.DistanceEstimateInMeter((longerLine.coordinate1.longitude,
-            longerLine.coordinate2.latitude, null));
-        if (longerLine.coordinate1.latitude > longerLine.coordinate2.latitude)
-        {
-            yLength = -yLength;
-        }
-
-        var second = coordinate.OffsetWithDistanceY(xLength)
-            .OffsetWithDistanceX(-yLength);
-
-        // create a second line.
-        var other = (coordinate, second);
-
-        // calculate intersection.
-        var projected = longerLine.Intersect(other, false);
-
-        // check if coordinate is on this line.
-        if (!projected.HasValue)
-        {
-            return null;
-        }
-
-        // check if the coordinate is on this line.
-        var dist = (line.A() * line.A()) + (line.B() * line.B());
-        var line1 = (projected.Value, coordinate1);
-        var distTo1 = (line1.A() * line1.A()) + (line1.B() * line1.B());
-        if (distTo1 > dist)
-        {
-            return null;
-        }
-
-        var line2 = (projected.Value, coordinate2);
-        var distTo2 = (line2.A() * line2.A()) + (line2.B() * line2.B());
-        if (distTo2 > dist)
-        {
-            return null;
-        }
-
-        return projected;
+        return (a.longitude + t * (b.longitude - a.longitude),
+                a.latitude + t * (b.latitude - a.latitude),
+                (float?)null);
     }
 
     /// <summary>

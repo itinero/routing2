@@ -91,7 +91,9 @@ public class MapMatchingFunctionalTests
 
         var routeLineString = new MultiLineString(
             routes.Select(Itinero.Geo.RouteExtensions.ToLineString).ToArray());
+
         var expectedBuffered = BufferOp.Buffer(testData.Expected, 0.00005);
+
         Assert.True(expectedBuffered.Covers(routeLineString),
             $"Route outside of expected buffer for {testJsonPath}");
     }
