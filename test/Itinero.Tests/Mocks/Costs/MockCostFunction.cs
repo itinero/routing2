@@ -40,7 +40,7 @@ public class MockCostFunction : ICostFunction
         return new MockCostFunction((_) => backwardCost, (_) => forwardCost, barriers);
     }
 
-    public (bool canAccess, bool canStop, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
+    public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
         var turnCost = 0.0;
@@ -59,6 +59,6 @@ public class MockCostFunction : ICostFunction
             c = edgeEnumerator.Forward ? _backward(edgeEnumerator.EdgeId) : _forward(edgeEnumerator.EdgeId);
         }
 
-        return (c > 0, true, c, turnCost);
+        return (c > 0, true, false, c, turnCost);
     }
 }

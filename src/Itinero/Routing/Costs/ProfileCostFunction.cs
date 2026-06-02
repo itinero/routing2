@@ -16,7 +16,7 @@ internal class ProfileCostFunction : ICostFunction
         _profile = profile;
     }
 
-    public (bool canAccess, bool canStop, double cost, double turnCost) Get(
+    public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
@@ -28,11 +28,12 @@ internal class ProfileCostFunction : ICostFunction
         var directedFactor = tailToHead ? factor.ForwardFactor : factor.BackwardFactor;
         var cost = directedFactor * length;
         var canAccess = directedFactor > 0;
+        var localAccess = factor.IsLocalAccess;
 
         // check for turn costs.
         var totalTurnCost = 0.0;
         var (_, turn) = previousEdges.FirstOrDefault();
-        if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
+        if (turn == null) return (canAccess, factor.CanStop, localAccess, cost, totalTurnCost);
 
         // there are turn costs.
         var turnCosts = tailToHead
@@ -52,6 +53,6 @@ internal class ProfileCostFunction : ICostFunction
             totalTurnCost += turnCostFactor.CostFactor * turnCost;
         }
 
-        return (canAccess, factor.CanStop, cost, totalTurnCost);
+        return (canAccess, factor.CanStop, localAccess, cost, totalTurnCost);
     }
 }

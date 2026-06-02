@@ -88,4 +88,46 @@ public class ProfileCostFunctionTests
         Assert.True(costs.canStop);
         Assert.True(costs.canAccess);
     }
+
+    [Fact]
+    public void ProfileCostFunction_NonLocalAccessEdge_ShouldReportLocalAccessFalse()
+    {
+        var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1, isLocalAccess: false));
+        var costFunction = new ProfileCostFunction(profile);
+        var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
+        edgeEnumerator.MoveNext();
+
+        var costs = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+
+        Assert.False(costs.localAccess);
+    }
+
+    [Fact]
+    public void ProfileCostFunction_LocalAccessEdge_ShouldReportLocalAccessTrue()
+    {
+        var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1, isLocalAccess: true));
+        var costFunction = new ProfileCostFunction(profile);
+        var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
+        edgeEnumerator.MoveNext();
+
+        var costs = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+
+        Assert.True(costs.localAccess);
+    }
+
+    [Fact]
+    public void ProfileCostFunction_LocalAccessEdge_BackwardDirection_ShouldStillReportLocalAccessTrue()
+    {
+        // localAccess is a property of the way, not direction — should match in both directions.
+        var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1, isLocalAccess: true));
+        var costFunction = new ProfileCostFunction(profile);
+        var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
+        edgeEnumerator.MoveNext();
+
+        var costsForward = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costsBackward = costFunction.Get(edgeEnumerator, false, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+
+        Assert.True(costsForward.localAccess);
+        Assert.True(costsBackward.localAccess);
+    }
 }

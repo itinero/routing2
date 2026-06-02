@@ -21,7 +21,7 @@ internal class ProfileCostFunctionCached : ICostFunction
         _turnCostFactorCache = turnCostFactorCache;
     }
 
-    public (bool canAccess, bool canStop, double cost, double turnCost) Get(
+    public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
         IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
     {
@@ -60,10 +60,11 @@ internal class ProfileCostFunctionCached : ICostFunction
                      (uint)(edgeEnumerator.EdgeLength() * 100);
         var cost = tailToHead ? factor.ForwardFactor * length : factor.BackwardFactor * length;
         var canAccess = tailToHead ? factor.ForwardFactor > 0 : factor.BackwardFactor > 0;
+        var localAccess = factor.IsLocalAccess;
 
         var totalTurnCost = 0.0;
         var (_, turn) = previousEdges.FirstOrDefault();
-        if (turn == null) return (canAccess, factor.CanStop, cost, totalTurnCost);
+        if (turn == null) return (canAccess, factor.CanStop, localAccess, cost, totalTurnCost);
 
         if (tailToHead)
         {
@@ -114,6 +115,6 @@ internal class ProfileCostFunctionCached : ICostFunction
             }
         }
 
-        return (canAccess, factor.CanStop, cost, totalTurnCost);
+        return (canAccess, factor.CanStop, localAccess, cost, totalTurnCost);
     }
 }

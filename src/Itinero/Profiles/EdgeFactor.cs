@@ -13,14 +13,16 @@ public readonly struct EdgeFactor
     /// <param name="forwardSpeed">The forward speed in ms/s multiplied by 100.</param>
     /// <param name="backwardSpeed">The backward speed in ms/s multiplied by 100.</param>
     /// <param name="canStop">The can stop.</param>
+    /// <param name="isLocalAccess">True if the edge is local-access only (e.g. <c>access=destination</c> for the profile's mode). Such edges may legitimately be used only when origin or destination is on or beyond them; the routing engine forbids them as through-traffic.</param>
     public EdgeFactor(uint forwardFactor, uint backwardFactor,
-        ushort forwardSpeed, ushort backwardSpeed, bool canStop = true)
+        ushort forwardSpeed, ushort backwardSpeed, bool canStop = true, bool isLocalAccess = false)
     {
         this.ForwardFactor = forwardFactor;
         this.BackwardFactor = backwardFactor;
         this.ForwardSpeed = forwardSpeed;
         this.BackwardSpeed = backwardSpeed;
         this.CanStop = canStop;
+        this.IsLocalAccess = isLocalAccess;
     }
 
     /// <summary>
@@ -59,6 +61,11 @@ public readonly struct EdgeFactor
     public bool CanStop { get; }
 
     /// <summary>
+    /// True iff the edge is local-access only for the profile's mode. See <see cref="EdgeFactor(uint, uint, ushort, ushort, bool, bool)"/>.
+    /// </summary>
+    public bool IsLocalAccess { get; }
+
+    /// <summary>
     /// Gets a static no-factor.
     /// </summary>
     public static EdgeFactor NoFactor => new(0, 0, 0, 0);
@@ -66,7 +73,7 @@ public readonly struct EdgeFactor
     /// <summary>
     /// Gets the exact reverse, switches backward and forward.
     /// </summary>
-    public EdgeFactor Reverse => new(this.BackwardFactor, this.ForwardFactor, this.BackwardSpeed, this.ForwardSpeed, this.CanStop);
+    public EdgeFactor Reverse => new(this.BackwardFactor, this.ForwardFactor, this.BackwardSpeed, this.ForwardSpeed, this.CanStop, this.IsLocalAccess);
 
     /// <inheritdoc/>
     public override string ToString()
