@@ -35,18 +35,34 @@ public static class IslandClassifier
         RoutingNetwork network,
         Profile profile,
         EdgeId seed,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IslandKind kind = IslandKind.Full)
     {
         var islands = network.IslandManager.GetIslandsFor(profile);
-        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
+        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile, kind);
         var maxIslandSize = network.IslandManager.MaxIslandSize;
-        var costFunction = network.GetCostFunctionFor(profile);
+        var costFunction = IslandKindCostFunctions.GetFor(network, profile, kind);
         var probe = network.GetEdgeEnumerator();
         var sentinel = IslandDirectedGraph.MainNetworkSentinel;
 
+        // Pre-population secondary oracle for Full: any edge in the NonLocal
+        // MainNet sentinel is guaranteed to be in Full MainNet too, since
+        // N-only paths are valid Full paths.
+        IslandDirectedGraph? nonLocalDg = null;
+        if (kind == IslandKind.Full)
+        {
+            nonLocalDg = network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.NonLocal);
+        }
+
         // Oracle / cached-state short-circuits.
-        if (islands.IsEdgeOnIsland(seed)) return IslandStatus.Island;
+        if (IsKnownIsland(seed, kind, islands)) return IslandStatus.Island;
         if (dg.IsNotIsland(seed)) return IslandStatus.NotIsland;
+        if (nonLocalDg != null && nonLocalDg.IsNotIsland(seed))
+        {
+            dg.AddVertex(seed);
+            dg.CollapseToMainNetwork(seed);
+            return IslandStatus.NotIsland;
+        }
 
         // Edge must exist and be traversable in at least one direction.
         if (!probe.MoveTo(seed, true)) return IslandStatus.Unknown;
@@ -59,7 +75,7 @@ public static class IslandClassifier
 
         // Set up. Seed starts in both F and B (it is trivially reachable from itself in either direction).
         dg.AddVertex(seed);
-        var ctx = new Ctx(network, dg, islands, costFunction, maxIslandSize);
+        var ctx = new Ctx(network, dg, nonLocalDg, kind, islands, costFunction, maxIslandSize);
         ctx.InForward.Add(dg.Find(seed));
         ctx.InBackward.Add(dg.Find(seed));
 
@@ -88,12 +104,12 @@ public static class IslandClassifier
             }
             if (ctx.ForwardQueue.Count == 0 && !sentinelInF)
             {
-                islands.SetEdgeOnIsland(seed);
+                islands.SetEdgeOnIsland(seed, kind);
                 return IslandStatus.Island;
             }
             if (ctx.BackwardQueue.Count == 0 && !sentinelInB)
             {
-                islands.SetEdgeOnIsland(seed);
+                islands.SetEdgeOnIsland(seed, kind);
                 return IslandStatus.Island;
             }
 
@@ -123,7 +139,10 @@ public static class IslandClassifier
         var islands = network.IslandManager.GetIslandsFor(profile);
         if (islands.GetTileDone(tileId)) return;
 
-        var costFunction = network.GetCostFunctionFor(profile);
+        // Use the Full cost function to enumerate traversable edges and to
+        // detect L-tagged ones (NonLocalCostFunction masks L away — we need
+        // the raw tag here for both edge-gathering and L-set computation).
+        var fullCostFunction = IslandKindCostFunctions.GetFor(network, profile, IslandKind.Full);
         await network.UsageNotifier.NotifyVertex(network, new VertexId(tileId, 0), cancellationToken);
         if (cancellationToken.IsCancellationRequested) return;
         var tile = network.GetTileForRead(tileId);
@@ -134,6 +153,7 @@ public static class IslandClassifier
         tileEnum.MoveTo(tile);
         var v = new VertexId(tileId, 0);
         var edges = new List<EdgeId>();
+        var lEdges = new HashSet<EdgeId>();
         while (tileEnum.MoveTo(v))
         {
             while (tileEnum.MoveNext())
@@ -141,21 +161,65 @@ public static class IslandClassifier
                 if (!tileEnum.Forward) continue;
                 var edgeId = tileEnum.EdgeId;
                 if (!probe.MoveTo(edgeId, true)) continue;
-                var canFwd = costFunction.GetIslandBuilderCost(probe);
+                var fwd = fullCostFunction.Get(probe, true);
+                var canFwd = fwd is { canAccess: true, turnCost: < double.MaxValue };
                 if (!probe.MoveTo(edgeId, false)) continue;
-                var canBwd = costFunction.GetIslandBuilderCost(probe);
+                var bwd = fullCostFunction.Get(probe, true);
+                var canBwd = bwd is { canAccess: true, turnCost: < double.MaxValue };
                 if (canFwd || canBwd) edges.Add(edgeId);
+                if (fwd.localAccess || bwd.localAccess) lEdges.Add(edgeId);
             }
             v = new VertexId(tileId, v.LocalId + 1);
         }
 
+        // NonLocal pass first — classifies the N-only subgraph. L-tagged
+        // seeds are masked out by NonLocalCostFunction and return Unknown.
         foreach (var edge in edges)
         {
             if (cancellationToken.IsCancellationRequested) return;
-            await ClassifyAsync(network, profile, edge, cancellationToken);
+            await ClassifyAsync(network, profile, edge, cancellationToken, IslandKind.NonLocal);
         }
 
+        // Full pass — reuses NonLocal MainNet as a positive oracle to short-
+        // circuit edges already known to be in N-mainland.
+        foreach (var edge in edges)
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+            await ClassifyAsync(network, profile, edge, cancellationToken, IslandKind.Full);
+        }
+
+        // Locals = NonLocal-Island ∩ Full-NotIsland ∩ non-L. These are the
+        // non-L edges only reachable from main-N through an L-edge first.
+        // L-tagged edges and Full-Island edges are excluded.
+        foreach (var edge in edges)
+        {
+            if (lEdges.Contains(edge)) continue;
+            if (islands.IsEdgeOnIsland(edge)) continue;
+            if (!islands.IsEdgeOnIsland(edge, IslandKind.NonLocal)) continue;
+            islands.SetEdgeLocal(edge);
+        }
+
+        islands.ClearNonLocalIslandEdges();
         islands.SetTileDone(tileId);
+    }
+
+    /// <summary>
+    /// Kind-aware "known island" oracle. For Full this is the persistent
+    /// Full-Islands set. For NonLocal an edge is known to be a NonLocal-Island
+    /// if it is in Full-Islands (Full-Island ⟹ NonLocal-Island), in
+    /// <c>_localEdges</c> (Local edges are unreachable via N-only paths), or
+    /// in the transient <c>_nonLocalIslandEdges</c> set written during the
+    /// current NonLocal pass.
+    /// </summary>
+    private static bool IsKnownIsland(EdgeId edgeId, IslandKind kind, Islands islands)
+    {
+        if (kind == IslandKind.NonLocal)
+        {
+            if (islands.IsEdgeOnIsland(edgeId)) return true;
+            if (islands.IsEdgeLocal(edgeId)) return true;
+            return islands.IsEdgeOnIsland(edgeId, IslandKind.NonLocal);
+        }
+        return islands.IsEdgeOnIsland(edgeId);
     }
 
     /// <summary>
@@ -167,6 +231,8 @@ public static class IslandClassifier
     {
         public readonly RoutingNetwork Network;
         public readonly IslandDirectedGraph Dg;
+        public readonly IslandDirectedGraph? NonLocalDg;
+        public readonly IslandKind Kind;
         public readonly Islands Islands;
         public readonly ICostFunction CostFunction;
         public readonly int MaxIslandSize;
@@ -177,11 +243,14 @@ public static class IslandClassifier
         public readonly HashSet<EdgeId> InForward = new();
         public readonly HashSet<EdgeId> InBackward = new();
 
-        public Ctx(RoutingNetwork network, IslandDirectedGraph dg, Islands islands,
+        public Ctx(RoutingNetwork network, IslandDirectedGraph dg,
+            IslandDirectedGraph? nonLocalDg, IslandKind kind, Islands islands,
             ICostFunction costFunction, int maxIslandSize)
         {
             Network = network;
             Dg = dg;
+            NonLocalDg = nonLocalDg;
+            Kind = kind;
             Islands = islands;
             CostFunction = costFunction;
             MaxIslandSize = maxIslandSize;
@@ -241,13 +310,14 @@ public static class IslandClassifier
             // Oracle.
             EdgeId neighborDgVertex;
             bool isKnown;
-            if (ctx.Islands.IsEdgeOnIsland(neighborId))
+            if (IsKnownIsland(neighborId, ctx.Kind, ctx.Islands))
             {
                 ctx.Dg.AddVertex(neighborId);
                 neighborDgVertex = neighborId;
                 isKnown = true;
             }
             else if (ctx.Dg.IsNotIsland(neighborId) ||
+                     (ctx.NonLocalDg != null && ctx.NonLocalDg.IsNotIsland(neighborId)) ||
                      ctx.Islands.GetTileDone(neighborId.TileId))
             {
                 neighborDgVertex = IslandDirectedGraph.MainNetworkSentinel;
@@ -399,7 +469,7 @@ public static class IslandClassifier
             if (ctx.Dg.IsProcessed(m)) continue;
             // Don't queue known-island members. They were added to the dg only
             // so cycle detection sees them; we never expand through them.
-            if (ctx.Islands.IsEdgeOnIsland(m)) continue;
+            if (IsKnownIsland(m, ctx.Kind, ctx.Islands)) continue;
             if (!queued.Add(m)) continue;
             queue.Enqueue(m);
         }

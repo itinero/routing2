@@ -12,7 +12,7 @@ internal class RoutingNetworkIslandManager
     private readonly Dictionary<(string profile, uint tile), Task> _tilesInProgress = new();
     private readonly ReaderWriterLockSlim _tilesInProgressLock = new();
     private readonly Dictionary<string, Islands> _islands;
-    private readonly Dictionary<string, IslandDirectedGraph> _directedGraphs = new();
+    private readonly Dictionary<(string profile, IslandKind kind), IslandDirectedGraph> _directedGraphs = new();
     private readonly ReaderWriterLockSlim _islandsLock = new();
 
     internal RoutingNetworkIslandManager(int maxIslandSize)
@@ -40,7 +40,9 @@ internal class RoutingNetworkIslandManager
         {
             _islandsLock.EnterReadLock();
 
-            if (!_directedGraphs.TryGetValue(profileName, out var dg))
+            // Snapping is a Full-classification concern, so the existing
+            // single-DG semantics route through the Full DG.
+            if (!_directedGraphs.TryGetValue((profileName, IslandKind.Full), out var dg))
                 return null;
 
             if (!_islands.TryGetValue(profileName, out var profileIslands))
@@ -59,20 +61,21 @@ internal class RoutingNetworkIslandManager
         }
     }
 
-    internal IslandDirectedGraph GetOrCreateDirectedGraph(Profile profile)
+    internal IslandDirectedGraph GetOrCreateDirectedGraph(Profile profile, IslandKind kind = IslandKind.Full)
     {
+        var key = (profile.Name, kind);
         try
         {
             _islandsLock.EnterUpgradeableReadLock();
 
-            if (_directedGraphs.TryGetValue(profile.Name, out var dg)) return dg;
+            if (_directedGraphs.TryGetValue(key, out var dg)) return dg;
 
             try
             {
                 _islandsLock.EnterWriteLock();
 
                 dg = new IslandDirectedGraph();
-                _directedGraphs[profile.Name] = dg;
+                _directedGraphs[key] = dg;
                 return dg;
             }
             finally
@@ -126,6 +129,52 @@ internal class RoutingNetworkIslandManager
         finally
         {
             _islandsLock.ExitUpgradeableReadLock();
+        }
+    }
+
+    /// <summary>
+    /// Returns whether the edge is in the profile's main-N component — the
+    /// dominant SCC of the N-only subgraph, i.e. the "mainland" without
+    /// L-edges.
+    ///
+    /// <list type="bullet">
+    /// <item><c>true</c>: edge is in main-N. Default for any edge in a done tile
+    /// that is neither L-tagged, on an island, nor a non-main-N pocket member.</item>
+    /// <item><c>false</c>: edge is not in main-N. Either L-tagged (passed in via
+    /// <paramref name="isLocalAccess"/>), on an island (unreachable in Full), or
+    /// recorded as a local edge (non-main-N pocket).</item>
+    /// <item><c>null</c>: classification has not yet produced a verdict for this
+    /// tile.</item>
+    /// </list>
+    ///
+    /// The L-tag check is tag-driven and resolved by the caller (typically via
+    /// the cost function's <c>localAccess</c> field on the result of <c>Get</c>),
+    /// then passed in. The manager itself does not consult any tag storage.
+    /// </summary>
+    internal bool? IsMainN(Profile profile, EdgeId edgeId, bool isLocalAccess)
+    {
+        // L-tagged edge — never main-N, no storage lookup needed.
+        if (isLocalAccess) return false;
+
+        try
+        {
+            _islandsLock.EnterReadLock();
+
+            if (!_islands.TryGetValue(profile.Name, out var islands)) return null;
+
+            // Unreachable in the Full classification → not in main-N.
+            if (islands.IsEdgeOnIsland(edgeId)) return false;
+
+            // Non-main-N pocket → not in main-N.
+            if (islands.IsEdgeLocal(edgeId)) return false;
+
+            // Tile finished classifying and the edge is in neither set → main-N.
+            // Otherwise we don't yet know.
+            return islands.GetTileDone(edgeId.TileId) ? true : null;
+        }
+        finally
+        {
+            _islandsLock.ExitReadLock();
         }
     }
 
