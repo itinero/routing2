@@ -26,7 +26,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex2).FirstAsync(), null),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
         Assert.Equal(ushort.MaxValue, path.Offset2);
@@ -55,7 +55,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), true),
             (await latest.Snap().ToAsync(vertex2).FirstAsync(), true),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
         Assert.Equal(ushort.MaxValue, path.Offset2);
@@ -84,7 +84,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), true),
             (await latest.Snap().ToAsync(vertex2).FirstAsync(), false),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.Null(path);
     }
 
@@ -106,7 +106,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), true),
             (await latest.Snap().ToAsync(vertex2).FirstAsync(), false),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.Null(path);
     }
 
@@ -130,7 +130,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex3).FirstAsync(), null),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
         Assert.Equal(ushort.MaxValue, path.Offset2);
@@ -166,7 +166,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex4).FirstAsync(), null),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(path);
         Assert.Equal(0, path.Offset1);
         Assert.Equal(ushort.MaxValue, path.Offset2);
@@ -213,7 +213,7 @@ public class DijkstraTests
                     (snap4, null),
                     (snap5, null)
             },
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(paths);
         Assert.Equal(4, paths.Length);
 
@@ -294,7 +294,7 @@ public class DijkstraTests
                     (snap4, null),
                     (snap5, null)
             },
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(paths);
         Assert.Equal(4, paths.Length);
 
@@ -358,7 +358,7 @@ public class DijkstraTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToExactAsync(vertex2, edge1), true),
             (await latest.Snap().ToExactAsync(vertex1, edge1), true),
-            (e, ep) => (1, 0));
+            (e, ep) => (1, 0, false));
         Assert.NotNull(path);
         Assert.Equal(ushort.MaxValue, path.Offset1);
         Assert.Equal(0, path.Offset2);
@@ -403,7 +403,7 @@ public class DijkstraTests
         var latest = routerDb.Latest;
         var snapPoint = new SnapPoint(edge1, ushort.MaxValue / 2);
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(latest,
-            (snapPoint, true), (snapPoint, false), (e, ep) => (1, 0));
+            (snapPoint, true), (snapPoint, false), (e, ep) => (1, 0, false));
         Assert.NotNull(path);
         using var enumerator = path.GetEnumerator();
         Assert.True(enumerator.MoveNext());

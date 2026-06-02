@@ -17,22 +17,35 @@ namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased;
 
 /// <summary>
 /// An edge-based dijkstra implementation.
+///
+/// When <c>isMainN</c> is supplied to <see cref="RunAsync"/>, the search is access-aware:
+/// each label carries a sticky <c>leftMain</c> bit that flips true on the first
+/// main → non-main transition, after which the search refuses to relax onto any
+/// edge classified as main-N. This enforces the "L-edge is fine iff it is the
+/// only route to destination/origin" rule structurally — main-N may only host
+/// a contiguous middle segment of the path. See the design note for the five
+/// valid path shapes this admits.
+///
+/// When <c>isMainN</c> is null the search reduces to the classic edge-based
+/// Dijkstra: <c>leftMain</c> stays false everywhere and no relaxations are
+/// rejected on access grounds.
 /// </summary>
 internal class Dijkstra
 {
     private readonly PathTree _tree = new();
-    private readonly HashSet<(EdgeId edgeId, VertexId vertexId)> _visits = new();
-    private readonly BinaryHeap<(uint pointer, EdgeId edgeId, VertexId vertexId)> _heap = new();
+    private readonly HashSet<(EdgeId edgeId, VertexId vertexId, bool leftMain)> _visits = new();
+    private readonly BinaryHeap<(uint pointer, EdgeId edgeId, VertexId vertexId, bool leftMain)> _heap = new();
 
     public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source,
         SnapPoint target,
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IsMainNFunc? isMainN = null)
     {
         var paths = await this.RunAsync(network, (source, null), new[] { (target, (bool?)null) }, getDijkstraWeight,
-            settled, queued, cancellationToken);
+            settled, queued, cancellationToken, isMainN);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
@@ -43,9 +56,10 @@ internal class Dijkstra
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IsMainNFunc? isMainN = null)
     {
-        var paths = await this.RunAsync(network, source, new[] { target }, getDijkstraWeight, settled, queued, cancellationToken);
+        var paths = await this.RunAsync(network, source, new[] { target }, getDijkstraWeight, settled, queued, cancellationToken, isMainN);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
@@ -55,7 +69,8 @@ internal class Dijkstra
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IsMainNFunc? isMainN = null)
     {
         var directedTargets = new (SnapPoint sp, bool? direction)[targets.Count];
         for (var i = 0; i < targets.Count; i++)
@@ -64,11 +79,11 @@ internal class Dijkstra
         }
 
         return await this.RunAsync(network, (source, null), directedTargets,
-            getDijkstraWeight, settled, queued, cancellationToken);
+            getDijkstraWeight, settled, queued, cancellationToken, isMainN);
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="network"></param>
     /// <param name="source"></param>
@@ -76,6 +91,9 @@ internal class Dijkstra
     /// <param name="getDijkstraWeight"></param>
     /// <param name="settled">This Callback is called for every edge for which the minimal cost is known. If this callback returns false, the edge will not be considered further. (Example usage: building an isochrone, and/or limiting the search to a max cost)</param>
     /// <param name="queued">This callback is called before an edge is loaded. Should not be used to influence route planning (but e.g. to load data when needed)</param>
+    /// <param name="isMainN">Optional access-aware predicate. When supplied the search tracks a
+    /// sticky <c>leftMain</c> bit and rejects any relaxation back onto a main-N edge after the
+    /// first main → non-main transition.</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
     public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network,
@@ -84,7 +102,8 @@ internal class Dijkstra
         DijkstraWeightFunc getDijkstraWeight,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IsMainNFunc? isMainN = null)
     {
         static double GetWorst((uint pointer, double cost)[] targets)
         {
@@ -112,7 +131,8 @@ internal class Dijkstra
         _visits.Clear();
         _heap.Clear();
 
-        // add sources.
+        // add sources. leftMain starts false on every source: the search has not yet
+        // transitioned out of main-N (or has not yet entered, when source is non-main).
         var sourceForwardVisit = uint.MaxValue;
         if (source.Forward())
         {
@@ -122,15 +142,14 @@ internal class Dijkstra
                 throw new Exception($"Edge in source {source} not found!");
             }
 
-            var sourceCostForward =
-                getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
-            if (sourceCostForward > 0)
+            var sourceFwd = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable));
+            if (sourceFwd.cost > 0)
             {
                 // can traverse edge in the forward direction.
-                var sourceOffsetCostForward = sourceCostForward * (1 - source.sp.OffsetFactor());
+                var sourceOffsetCostForward = sourceFwd.cost * (1 - source.sp.OffsetFactor());
                 sourceForwardVisit =
-                    _tree.AddVisit(enumerator, uint.MaxValue);
-                _heap.Push((sourceForwardVisit, enumerator.EdgeId, enumerator.Head), sourceOffsetCostForward);
+                    _tree.AddVisit(enumerator, leftMain: false, localAccess: sourceFwd.localAccess, uint.MaxValue);
+                _heap.Push((sourceForwardVisit, enumerator.EdgeId, enumerator.Head, false), sourceOffsetCostForward);
             }
         }
 
@@ -143,15 +162,14 @@ internal class Dijkstra
                 throw new Exception($"Edge in source {source} not found!");
             }
 
-            var sourceCostBackward =
-                getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable)).cost;
-            if (sourceCostBackward > 0)
+            var sourceBwd = getDijkstraWeight(enumerator, default(PreviousEdgeEnumerable));
+            if (sourceBwd.cost > 0)
             {
                 // can traverse edge in the backward direction.
-                var sourceOffsetCostBackward = sourceCostBackward * source.sp.OffsetFactor();
+                var sourceOffsetCostBackward = sourceBwd.cost * source.sp.OffsetFactor();
                 sourceBackwardVisit =
-                    _tree.AddVisit(enumerator, uint.MaxValue);
-                _heap.Push((sourceBackwardVisit, enumerator.EdgeId, enumerator.Head), sourceOffsetCostBackward);
+                    _tree.AddVisit(enumerator, leftMain: false, localAccess: sourceBwd.localAccess, uint.MaxValue);
+                _heap.Push((sourceBackwardVisit, enumerator.EdgeId, enumerator.Head, false), sourceOffsetCostBackward);
             }
         }
 
@@ -265,14 +283,16 @@ internal class Dijkstra
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // dequeue new visit.
+            // dequeue new visit. Dedup includes leftMain because the same (edge,vertex)
+            // is reachable both with leftMain=false and leftMain=true; the former is
+            // strictly more permissive but both can occur in the search.
             var currentEntry = _heap.Pop(out var currentCost);
-            while (_visits.Contains((currentEntry.edgeId, currentEntry.vertexId)))
+            while (_visits.Contains((currentEntry.edgeId, currentEntry.vertexId, currentEntry.leftMain)))
             {
                 // visited before, skip.
                 if (_heap.Count == 0)
                 {
-                    currentEntry = (uint.MaxValue, default, default);
+                    currentEntry = (uint.MaxValue, default, default, false);
                     break;
                 }
 
@@ -285,13 +305,13 @@ internal class Dijkstra
                 break;
             }
 
-            // only call GetVisit after the visited check passes.
-            var currentVisit = _tree.GetVisit(currentPointer);
+            // only call GetVisitWithState after the visited check passes.
+            var currentVisit = _tree.GetVisitWithState(currentPointer);
 
             // log visit.
             if (currentVisit.previousPointer != uint.MaxValue)
             {
-                _visits.Add((currentEntry.edgeId, currentEntry.vertexId));
+                _visits.Add((currentEntry.edgeId, currentEntry.vertexId, currentEntry.leftMain));
             }
 
             if (settled != null && await settled((currentEntry.edgeId, currentEntry.vertexId)))
@@ -330,7 +350,7 @@ internal class Dijkstra
                 }
 
                 // gets the cost of the current edge.
-                var (neighbourCost, turnCost) =
+                var (neighbourCost, turnCost, neighbourLocalAccess) =
                     getDijkstraWeight(enumerator, new PreviousEdgeEnumerable(_tree, currentPointer));
                 if (neighbourCost is >= double.MaxValue or <= 0)
                 {
@@ -340,6 +360,23 @@ internal class Dijkstra
                 if (turnCost is >= double.MaxValue or < 0)
                 {
                     continue;
+                }
+
+                // Access-aware state-bit logic. When isMainN is null this block is a no-op:
+                // newLeftMain stays false and no relaxation is rejected.
+                var newLeftMain = false;
+                if (isMainN != null)
+                {
+                    var prevMain = IsMain(currentVisit.edge, currentVisit.localAccess, currentVisit.leftMain, isMainN);
+                    var neighbourMain = IsMain(neighbourEdge, neighbourLocalAccess, currentVisit.leftMain, isMainN);
+
+                    // Rule: once leftMain is true we may not relax onto a main-N edge again.
+                    // That would mean re-entering main-N after having departed, i.e. an L-edge
+                    // (or non-main-N pocket) used as through-traffic between two main-N segments.
+                    if (currentVisit.leftMain && neighbourMain) continue;
+
+                    // newLeftMain is sticky and flips on the first main-N → non-main-N transition.
+                    newLeftMain = currentVisit.leftMain || (prevMain && !neighbourMain);
                 }
 
                 // if the vertex has targets, check if this edge is a match.
@@ -372,7 +409,7 @@ internal class Dijkstra
                         var targetCost = enumerator.Forward
                             ? neighbourCost * target.sp.OffsetFactor()
                             : neighbourCost * (1 - target.sp.OffsetFactor());
-                        // this is the case where the target is on this edge 
+                        // this is the case where the target is on this edge
                         // and there is a path to 'from' before.
                         targetCost += currentCost;
 
@@ -386,7 +423,7 @@ internal class Dijkstra
                         }
 
                         // this is an improvement.
-                        neighbourPointer = _tree.AddVisit(enumerator, currentPointer);
+                        neighbourPointer = _tree.AddVisit(enumerator, newLeftMain, neighbourLocalAccess, currentPointer);
                         bestTargets[t] = (neighbourPointer, targetCost);
 
                         // update worst.
@@ -405,11 +442,11 @@ internal class Dijkstra
                 if (neighbourPointer == uint.MaxValue)
                 {
                     neighbourPointer =
-                        _tree.AddVisit(enumerator, currentPointer);
+                        _tree.AddVisit(enumerator, newLeftMain, neighbourLocalAccess, currentPointer);
                 }
 
                 // add visit to heap.
-                _heap.Push((neighbourPointer, enumerator.EdgeId, enumerator.Head), neighbourCost + currentCost + turnCost);
+                _heap.Push((neighbourPointer, enumerator.EdgeId, enumerator.Head, newLeftMain), neighbourCost + currentCost + turnCost);
             }
         }
 
@@ -452,6 +489,20 @@ internal class Dijkstra
         }
 
         return paths;
+    }
+
+    /// <summary>
+    /// Hybrid "is main-N?" predicate. Consults <paramref name="isMainN"/> first; when that
+    /// returns null (the tile isn't classified yet) falls back to <c>!leftMain</c>. The fallback
+    /// is path-dependent: while we still believe we are in main (<c>leftMain == false</c>) an
+    /// unclassified edge is treated as main, so no spurious leftMain transition fires; once we
+    /// have left main, an unclassified edge is treated as non-main, so no spurious re-entry
+    /// rejection fires.
+    /// </summary>
+    private static bool IsMain(EdgeId edgeId, bool localAccess, bool leftMain, IsMainNFunc isMainN)
+    {
+        var verdict = isMainN(edgeId, localAccess);
+        return verdict ?? !leftMain;
     }
 
     /// <summary>

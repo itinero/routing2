@@ -38,7 +38,7 @@ public class DijkstraTurnCostTests
 
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
-                return (w, tcs);
+                return (w, tcs, false);
             });
         Assert.NotNull(result.path);
         result.path.Trim();
@@ -85,7 +85,7 @@ public class DijkstraTurnCostTests
 
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
-                return (w, tcs);
+                return (w, tcs, false);
             });
         Assert.Equal(3, result.cost);
         result.path.Trim();
@@ -128,7 +128,7 @@ public class DijkstraTurnCostTests
 
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
-                return (w, tcs);
+                return (w, tcs, false);
             });
         Assert.Equal(12, result.cost);
         result.path.Trim();
@@ -171,7 +171,7 @@ public class DijkstraTurnCostTests
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
                 if (tcs > 0) tcs = -1;
-                return (1, tcs);
+                return (1, tcs, false);
             });
         Assert.Null(result.path);
     }

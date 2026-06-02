@@ -249,7 +249,7 @@ internal class Dijkstra
                 }
 
                 // gets the cost of the current edge.
-                var (neighbourCost, turnCost) =
+                var (neighbourCost, turnCost, _) =
                     getDijkstraWeight(enumerator, new PreviousEdgeEnumerable(_tree, currentPointer));
                 if (neighbourCost is >= double.MaxValue or <= 0)
                 {
