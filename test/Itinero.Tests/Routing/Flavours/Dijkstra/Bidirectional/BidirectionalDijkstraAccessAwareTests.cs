@@ -1,30 +1,24 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Itinero.Network;
+using Itinero.Network.Enumerators.Edges;
+using Itinero.Routing.Costs;
 using Itinero.Routing.Flavours.Dijkstra;
-using Itinero.Routing.Flavours.Dijkstra.EdgeBased;
+using Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 using Itinero.Snapping;
 using Xunit;
-using EdgeBasedDijkstra = Itinero.Routing.Flavours.Dijkstra.EdgeBased.Dijkstra;
 
-namespace Itinero.Tests.Routing.Flavours.Dijkstra.EdgeBased;
+namespace Itinero.Tests.Routing.Flavours.Dijkstra.Bidirectional;
 
 /// <summary>
-/// Covers the five valid access-aware path shapes the state-bit edge-based Dijkstra must admit,
-/// plus the structurally invalid shape it must reject. Each test stubs <see cref="IsMainNFunc"/>
-/// directly (no classifier pass needed): main-N is the set of edges declared "main" in the test,
-/// L-tagged edges are declared via the weight func's <c>localAccess</c> field. This keeps the
-/// focus on the leftMain/IsMain state-machine and away from classifier bring-up.
-///
-/// Path shapes (N = main-N, L = non-main):
-///   A: N (all main)
-///   B: L → N (start non-main, enter main)
-///   C: N → L (end non-main)
-///   D: L → N → L (start non-main, traverse main, end non-main)
-///   E: L (all non-main)
-///   F: N → L → N (re-enters main after leaving — must be rejected)
+/// Mirror of <c>DijkstraAccessAwareTests</c> for the edge-based bidirectional Dijkstra.
+/// Verifies the asymmetric per-half rule admits exactly the five valid path shapes
+/// (A: all-main, B: L→N, C: N→L, D: L→N→L, E: all non-main) and rejects shape F
+/// (N→L→N — the L-as-through-traffic case). Stubs <see cref="ICostFunction"/> and
+/// <see cref="IsMainNFunc"/> directly so the focus stays on the search rules.
 /// </summary>
-public class DijkstraAccessAwareTests
+public class BidirectionalDijkstraAccessAwareTests
 {
     private const ushort EdgeEnd = ushort.MaxValue;
 
@@ -47,22 +41,36 @@ public class DijkstraAccessAwareTests
         return (routerDb, edges);
     }
 
-    private static (DijkstraWeightFunc weight, IsMainNFunc isMainN) MakeStubs(
+    private sealed class StubCostFunction : ICostFunction
+    {
+        private readonly HashSet<EdgeId> _localAccessEdges;
+        public StubCostFunction(HashSet<EdgeId> localAccessEdges) { _localAccessEdges = localAccessEdges; }
+
+        public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
+            IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
+            IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+        {
+            var la = _localAccessEdges.Contains(edgeEnumerator.EdgeId);
+            return (true, true, la, 1.0, 0.0);
+        }
+    }
+
+    private static (ICostFunction cost, IsMainNFunc isMainN) MakeStubs(
         HashSet<EdgeId> mainEdges, HashSet<EdgeId> localAccessEdges)
     {
-        DijkstraWeightFunc weight = (e, _) => (1.0, 0.0, localAccessEdges.Contains(e.EdgeId));
+        var cost = new StubCostFunction(localAccessEdges);
         IsMainNFunc isMainN = (edge, isLA) => isLA ? false : mainEdges.Contains(edge);
-        return (weight, isMainN);
+        return (cost, isMainN);
     }
 
     private static async Task<List<EdgeId>?> RunAsync(RouterDb db, EdgeId fromEdge, EdgeId toEdge,
-        DijkstraWeightFunc weight, IsMainNFunc isMainN)
+        ICostFunction cost, IsMainNFunc isMainN)
     {
         var network = db.Latest;
         var source = new SnapPoint(fromEdge, 0);
         var target = new SnapPoint(toEdge, EdgeEnd);
-        var (path, _) = await EdgeBasedDijkstra.Default.RunAsync(network,
-            (source, null), (target, null), weight, isMainN: isMainN);
+        var (path, _) = await BidirectionalDijkstra.Default.RunAsync(network, source, target, cost,
+            isMainN: isMainN);
         if (path == null) return null;
         var result = new List<EdgeId>();
         using var en = path.GetEnumerator();
@@ -74,9 +82,9 @@ public class DijkstraAccessAwareTests
     public async Task ShapeA_AllMain_FindsPath()
     {
         var (db, e) = BuildChain(3);
-        var (w, m) = MakeStubs(new HashSet<EdgeId> { e[0], e[1], e[2] }, new HashSet<EdgeId>());
+        var (cost, m) = MakeStubs(new HashSet<EdgeId> { e[0], e[1], e[2] }, new HashSet<EdgeId>());
 
-        var edges = await RunAsync(db, e[0], e[2], w, m);
+        var edges = await RunAsync(db, e[0], e[2], cost, m);
 
         Assert.NotNull(edges);
         Assert.Equal(new[] { e[0], e[1], e[2] }, edges);
@@ -85,13 +93,12 @@ public class DijkstraAccessAwareTests
     [Fact]
     public async Task ShapeB_LtoN_FindsPath()
     {
-        // Origin on a non-main (L) edge, then enters main and stays main.
         var (db, e) = BuildChain(3);
-        var (w, m) = MakeStubs(
+        var (cost, m) = MakeStubs(
             mainEdges: new HashSet<EdgeId> { e[1], e[2] },
             localAccessEdges: new HashSet<EdgeId> { e[0] });
 
-        var edges = await RunAsync(db, e[0], e[2], w, m);
+        var edges = await RunAsync(db, e[0], e[2], cost, m);
 
         Assert.NotNull(edges);
         Assert.Equal(new[] { e[0], e[1], e[2] }, edges);
@@ -100,13 +107,12 @@ public class DijkstraAccessAwareTests
     [Fact]
     public async Task ShapeC_NtoL_FindsPath()
     {
-        // Source in main, then leaves main onto the destination's L edge.
         var (db, e) = BuildChain(3);
-        var (w, m) = MakeStubs(
+        var (cost, m) = MakeStubs(
             mainEdges: new HashSet<EdgeId> { e[0], e[1] },
             localAccessEdges: new HashSet<EdgeId> { e[2] });
 
-        var edges = await RunAsync(db, e[0], e[2], w, m);
+        var edges = await RunAsync(db, e[0], e[2], cost, m);
 
         Assert.NotNull(edges);
         Assert.Equal(new[] { e[0], e[1], e[2] }, edges);
@@ -115,13 +121,12 @@ public class DijkstraAccessAwareTests
     [Fact]
     public async Task ShapeD_LtoNtoL_FindsPath()
     {
-        // L → N → L: origin pocket, traverse mainland, end in destination pocket.
         var (db, e) = BuildChain(4);
-        var (w, m) = MakeStubs(
+        var (cost, m) = MakeStubs(
             mainEdges: new HashSet<EdgeId> { e[1], e[2] },
             localAccessEdges: new HashSet<EdgeId> { e[0], e[3] });
 
-        var edges = await RunAsync(db, e[0], e[3], w, m);
+        var edges = await RunAsync(db, e[0], e[3], cost, m);
 
         Assert.NotNull(edges);
         Assert.Equal(new[] { e[0], e[1], e[2], e[3] }, edges);
@@ -130,13 +135,12 @@ public class DijkstraAccessAwareTests
     [Fact]
     public async Task ShapeE_AllNonMain_FindsPath()
     {
-        // Origin and destination in the same pocket — search never enters main.
         var (db, e) = BuildChain(3);
-        var (w, m) = MakeStubs(
+        var (cost, m) = MakeStubs(
             mainEdges: new HashSet<EdgeId>(),
             localAccessEdges: new HashSet<EdgeId> { e[0], e[1], e[2] });
 
-        var edges = await RunAsync(db, e[0], e[2], w, m);
+        var edges = await RunAsync(db, e[0], e[2], cost, m);
 
         Assert.NotNull(edges);
         Assert.Equal(new[] { e[0], e[1], e[2] }, edges);
@@ -145,16 +149,16 @@ public class DijkstraAccessAwareTests
     [Fact]
     public async Task ShapeF_NtoLtoN_PathBlocked()
     {
-        // N → L → N is the structurally invalid shape: the L hop is used as through-traffic
-        // between two main-N segments. Once the search transitions main → non-main at the L edge
-        // leftMain flips true; relaxing back onto a main-N edge is then rejected, so the only
-        // path is unreachable.
+        // The structurally invalid shape — must be rejected by the per-half rule:
+        // forward search starts on N, can't cross into L (would be prev_main && !curr_main).
+        // Backward search starts on N, mirror-rejects from its side. Neither half reaches
+        // the L portion, so no meeting → no path.
         var (db, e) = BuildChain(3);
-        var (w, m) = MakeStubs(
+        var (cost, m) = MakeStubs(
             mainEdges: new HashSet<EdgeId> { e[0], e[2] },
             localAccessEdges: new HashSet<EdgeId> { e[1] });
 
-        var edges = await RunAsync(db, e[0], e[2], w, m);
+        var edges = await RunAsync(db, e[0], e[2], cost, m);
 
         Assert.Null(edges);
     }
@@ -162,16 +166,16 @@ public class DijkstraAccessAwareTests
     [Fact]
     public async Task NoIsMainN_NoRejection_FindsPath()
     {
-        // Sanity: without an IsMainNFunc supplied the search reduces to the classic edge-based
-        // Dijkstra. The N → L → N shape that ShapeF rejects is accepted here.
+        // Sanity: without IsMainNFunc the bidirectional reduces to classic. The N→L→N
+        // shape that ShapeF rejects is accepted here.
         var (db, e) = BuildChain(3);
-        DijkstraWeightFunc weight = (en, _) => (1.0, 0.0, en.EdgeId == e[1]);
-
+        var cost = new StubCostFunction(new HashSet<EdgeId> { e[1] });
         var network = db.Latest;
-        var (path, _) = await EdgeBasedDijkstra.Default.RunAsync(network,
-            (new SnapPoint(e[0], 0), null),
-            (new SnapPoint(e[2], EdgeEnd), null),
-            weight);
+
+        var (path, _) = await BidirectionalDijkstra.Default.RunAsync(network,
+            new SnapPoint(e[0], 0),
+            new SnapPoint(e[2], EdgeEnd),
+            cost);
 
         Assert.NotNull(path);
     }

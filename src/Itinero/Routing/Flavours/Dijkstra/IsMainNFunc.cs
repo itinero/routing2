@@ -1,6 +1,6 @@
 using Itinero.Network;
 
-namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased;
+namespace Itinero.Routing.Flavours.Dijkstra;
 
 /// <summary>
 /// Profile-bound lookup of the main-N classification for an edge.

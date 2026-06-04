@@ -6,6 +6,7 @@ using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Routes;
 using Itinero.Routes.Paths;
+using Itinero.Routing.Flavours.Dijkstra;
 using Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 using Itinero.Snapping;
 
@@ -79,17 +80,17 @@ public static class IRouterOneToOneExtensions
 
         var maxBox = settings.MaxBoxFor(routingNetwork, [source, target]);
 
-        var bidirectionalDijkstra = BidirectionalDijkstra.ForNetwork(routingNetwork);
-
-        var (result, _) = await bidirectionalDijkstra.RunAsync(source, target, costFunction, async v =>
-        {
-            if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v))
+        var isMainN = routingNetwork.GetIsMainNFunc(profile);
+        var (result, _) = await BidirectionalDijkstra.Default.RunAsync(routingNetwork, source, target, costFunction,
+            async v =>
             {
-                await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
-            }
-            if (cancellationToken.IsCancellationRequested) return false;
-            return CheckMaxDistance(v);
-        }, cancellationToken: cancellationToken);
+                if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v))
+                {
+                    await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+                }
+                if (cancellationToken.IsCancellationRequested) return false;
+                return CheckMaxDistance(v);
+            }, cancellationToken: cancellationToken, isMainN: isMainN);
 
         if (result == null) return new Result<Path>("Path not found");
 

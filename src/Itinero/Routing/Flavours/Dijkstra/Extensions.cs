@@ -1,6 +1,6 @@
 ﻿using Itinero.Snapping;
 
-namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased;
+namespace Itinero.Routing.Flavours.Dijkstra;
 
 internal static class Extensions
 {

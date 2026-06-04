@@ -1,7 +1,7 @@
 using Itinero.Network;
 using Itinero.Profiles;
 
-namespace Itinero.Routing.Flavours.Dijkstra.EdgeBased;
+namespace Itinero.Routing.Flavours.Dijkstra;
 
 internal static class IsMainNFuncExtensions
 {

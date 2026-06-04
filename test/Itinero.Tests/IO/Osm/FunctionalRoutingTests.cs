@@ -663,11 +663,11 @@ public class FunctionalRoutingTests
     public async Task OnlyRightTurn_TurnCostFactorEnabledProfile_ShouldBlockStraightOn()
     {
         // Mirrors the publish-api scenario: profiles in publish-api set
-        // TurnCostFactorEnabled=true, which makes the router dispatch to
-        // EdgeBased.Dijkstra. The existing OnlyRightTurn tests use
-        // OsmProfiles.Car (Lua, TurnCostFactorEnabled=false → BidirectionalDijkstra).
+        // TurnCostFactorEnabled=true, which makes the router dispatch to the
+        // unidirectional Dijkstra. The existing OnlyRightTurn tests use
+        // OsmProfiles.Car (Lua, TurnCostFactorEnabled=false → bidirectional).
         // This test confirms the engine + resolver pair handle only_right_turn
-        // when going through the EdgeBased path.
+        // when going through the unidirectional path.
         //
         // Setup: from way1, via node 2, only_right_turn to way2 (right).
         // way3 is the "straight on" alternative — must be blocked.
@@ -721,8 +721,8 @@ public class FunctionalRoutingTests
 
     /// <summary>
     /// Same as <see cref="Itinero.Profiles.Lua.Osm.OsmProfiles.Car"/> but with
-    /// TurnCostFactorEnabled=true to dispatch to EdgeBased.Dijkstra (matches
-    /// publish-api's profile mode).
+    /// TurnCostFactorEnabled=true to dispatch to the unidirectional Dijkstra
+    /// (matches publish-api's profile mode).
     /// </summary>
     private sealed class TurnCostFactorEnabledCarProfile : Profile
     {

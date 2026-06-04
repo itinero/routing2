@@ -55,6 +55,8 @@ public static class IRouterOneToOneWithAlternativesExtensions
             return false;
         }
 
+        var isMainN = routingNetwork.GetIsMainNFunc(profile);
+
         async Task<(Path? path, double cost)> RunDijkstraAsync(ICostFunction costFunction, CancellationToken cancellationToken)
         {
             var source = alternativeRouter.Source;
@@ -63,18 +65,18 @@ public static class IRouterOneToOneWithAlternativesExtensions
             if (source.direction == null && target.direction == null)
             {
                 // Run the undirected dijkstra
-                return await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
+                return await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
                     costFunction.GetDijkstraWeightFunc(),
                     async v =>
                     {
                         await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                         if (cancellationToken.IsCancellationRequested) return false;
                         return CheckMaxDistance(v.vertexId);
-                    }, cancellationToken: cancellationToken);
+                    }, cancellationToken: cancellationToken, isMainN: isMainN);
             }
 
             // Run directed dijkstra
-            return await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, target,
+            return await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routingNetwork, source, target,
                 costFunction.GetDijkstraWeightFunc(),
                 async v =>
                 {
@@ -84,7 +86,7 @@ public static class IRouterOneToOneWithAlternativesExtensions
                     }
                     if (cancellationToken.IsCancellationRequested) return false;
                     return CheckMaxDistance(v.vertexId);
-                }, cancellationToken: cancellationToken);
+                }, cancellationToken: cancellationToken, isMainN: isMainN);
         }
 
         var (initialPath, initialCost) = await RunDijkstraAsync(costFunction, cancellationToken);

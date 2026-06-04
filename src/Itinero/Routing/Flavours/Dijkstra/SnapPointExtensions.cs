@@ -2,7 +2,6 @@
 using Itinero.Network;
 using Itinero.Routes.Paths;
 using Itinero.Routing.Costs;
-using Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 using Itinero.Snapping;
 
 namespace Itinero.Routing.Flavours.Dijkstra;

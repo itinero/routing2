@@ -320,7 +320,7 @@ public class TurnCostBlockingTests
     {
         // Covers the dispatch path used when a profile sets TurnCostFactorEnabled=true:
         //   - Single origin/destination via network.Route(...).From(f).To(t).PathAsync().
-        //   - PathAsync dispatches to EdgeBased.Dijkstra (one-to-one variant via
+        //   - PathAsync dispatches to the unidirectional Dijkstra (one-to-one variant via
         //     many-to-many CalculateAsync with single-element lists) when
         //     TurnCostFactorEnabled is true — see IRouterOneToOneExtensions.PathAsync.
         //

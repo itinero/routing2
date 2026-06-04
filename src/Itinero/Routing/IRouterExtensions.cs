@@ -125,11 +125,12 @@ public static class IRouterExtensions
             return false;
         }
 
+        var isMainN = routingNetwork.GetIsMainNFunc(profile);
         var results = new IReadOnlyList<Result<Path>>[sources.Count];
         for (var s = 0; s < sources.Count; s++)
         {
             var source = sources[s];
-            var pathsAndCosts = await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routingNetwork, source, targets,
+            var pathsAndCosts = await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routingNetwork, source, targets,
                 costFunction.GetDijkstraWeightFunc(),
                 async v =>
                 {
@@ -138,7 +139,7 @@ public static class IRouterExtensions
                         await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                     }
                     return CheckMaxDistance(v.vertexId);
-                });
+                }, isMainN: isMainN);
 
             var sourceResults = new Result<Path>[pathsAndCosts.Length];
             for (var r = 0; r < sourceResults.Length; r++)
@@ -193,11 +194,12 @@ public static class IRouterExtensions
             return false;
         }
 
+        var isMainN = routerDb.GetIsMainNFunc(profile);
         var results = new IReadOnlyList<Result<Path>>[sources.Count];
         for (var s = 0; s < sources.Count; s++)
         {
             var source = sources[s];
-            var paths = await Flavours.Dijkstra.EdgeBased.Dijkstra.Default.RunAsync(routerDb, source, targets,
+            var paths = await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routerDb, source, targets,
                 costFunction.GetDijkstraWeightFunc(),
                 async e =>
                 {
@@ -206,7 +208,7 @@ public static class IRouterExtensions
                         await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                     }
                     return CheckMaxDistance(e.vertexId);
-                });
+                }, isMainN: isMainN);
 
             var sourceResults = new Result<Path>[paths.Length];
             for (var r = 0; r < sourceResults.Length; r++)
