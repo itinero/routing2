@@ -77,6 +77,7 @@ public static class IRouterOneToOneExtensions
 
         var profile = settings.Profile;
         var costFunction = routingNetwork.GetCostFunctionFor(profile);
+        if (settings.CostFunctionWrapper != null) costFunction = settings.CostFunctionWrapper(costFunction);
 
         var maxBox = settings.MaxBoxFor(routingNetwork, [source, target]);
 

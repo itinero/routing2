@@ -101,6 +101,7 @@ public static class IRouterExtensions
 
         var profile = settings.Profile;
         var costFunction = routingNetwork.GetCostFunctionFor(profile);
+        if (settings.CostFunctionWrapper != null) costFunction = settings.CostFunctionWrapper(costFunction);
 
         var maxBox = settings.MaxBoxFor(routingNetwork, sources);
 
@@ -170,6 +171,7 @@ public static class IRouterExtensions
 
         var profile = settings.Profile;
         var costFunction = routerDb.GetCostFunctionFor(profile);
+        if (settings.CostFunctionWrapper != null) costFunction = settings.CostFunctionWrapper(costFunction);
 
         var maxBox = settings.MaxBoxFor(routerDb, sources);
 
