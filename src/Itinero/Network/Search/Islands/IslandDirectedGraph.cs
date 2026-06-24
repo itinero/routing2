@@ -431,6 +431,36 @@ internal class IslandDirectedGraph
     /// <summary>
     /// O(1) dead-end check using incoming index.
     /// </summary>
+    /// <summary>
+    /// Resets the graph to the state of a freshly-constructed instance: the
+    /// MainNet sentinel as its own (id-self) component, everything else gone.
+    /// The classifier calls this at the end of each <see cref="IslandClassifier.BuildForTileAsync"/>
+    /// so the dg never accumulates per-tile edge ids across tiles, per the
+    /// "Tile-based batching and persistence" section of the island-detection
+    /// spec. Cross-tile MainNet membership is recovered via
+    /// <see cref="Islands.GetTileDone"/> on subsequent classifications, so
+    /// dropping the in-dg MainNet membership loses no information.
+    /// </summary>
+    public void DiscardAllExceptSentinel()
+    {
+        _lock.EnterWriteLock();
+        try
+        {
+            _parent.Clear();
+            _rank.Clear();
+            _size.Clear();
+            _members.Clear();
+            _outgoing.Clear();
+            _incoming.Clear();
+            _processed.Clear();
+
+            _parent[MainNetworkSentinel] = MainNetworkSentinel;
+            _rank[MainNetworkSentinel] = int.MaxValue;
+            _size[MainNetworkSentinel] = int.MaxValue;
+        }
+        finally { _lock.ExitWriteLock(); }
+    }
+
     public bool IsDeadEnd(EdgeId edgeId)
     {
         _lock.EnterReadLock();

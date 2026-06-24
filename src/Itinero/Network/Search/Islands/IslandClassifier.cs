@@ -139,6 +139,33 @@ public static class IslandClassifier
         var islands = network.IslandManager.GetIslandsFor(profile);
         if (islands.GetTileDone(tileId)) return;
 
+        // Serialise the entire classification+discard for this profile. The
+        // dg-discard at the end of this method would otherwise be unsafe
+        // against a concurrent BuildForTileAsync running for the same profile
+        // on a different tile (it would wipe that other call's mid-flight
+        // working state). Different profiles still classify in parallel.
+        var serialiser = network.IslandManager.GetBuildSerialiser(profile.Name);
+        await serialiser.WaitAsync(cancellationToken);
+        try
+        {
+            // Recheck the done flag now that we hold the serialiser — a
+            // previous holder may have classified this tile while we waited.
+            if (islands.GetTileDone(tileId)) return;
+            await BuildForTileInsideSerialiserAsync(network, profile, tileId, islands, cancellationToken);
+        }
+        finally
+        {
+            serialiser.Release();
+        }
+    }
+
+    private static async Task BuildForTileInsideSerialiserAsync(
+        RoutingNetwork network,
+        Profile profile,
+        uint tileId,
+        Islands islands,
+        CancellationToken cancellationToken)
+    {
         // Use the Full cost function to enumerate traversable edges and to
         // detect L-tagged ones (NonLocalCostFunction masks L away — we need
         // the raw tag here for both edge-gathering and L-set computation).
@@ -201,6 +228,16 @@ public static class IslandClassifier
 
         islands.ClearNonLocalIslandEdges();
         islands.SetTileDone(tileId);
+
+        // Per the island-detection spec ("Tile-based batching and persistence",
+        // step 3): once a tile is committed, discard the tile-local dg
+        // vertices so the dg never accumulates per-tile edge ids. Without
+        // this the dg grew unboundedly in long-lived processes, eventually
+        // making AddDirectedLink's O(V+E) BFS over the dg run for minutes.
+        network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.Full)
+            .DiscardAllExceptSentinel();
+        network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.NonLocal)
+            .DiscardAllExceptSentinel();
     }
 
     /// <summary>

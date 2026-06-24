@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -14,6 +15,17 @@ internal class RoutingNetworkIslandManager
     private readonly Dictionary<string, Islands> _islands;
     private readonly Dictionary<(string profile, IslandKind kind), IslandDirectedGraph> _directedGraphs = new();
     private readonly ReaderWriterLockSlim _islandsLock = new();
+
+    // Per-profile semaphore that serialises IslandClassifier.BuildForTileAsync
+    // calls against each other for the same profile. The shared Full+NonLocal
+    // dgs are reset to their initial state at the end of each call (per spec);
+    // running two classifications for the same profile concurrently would let
+    // one wipe the other's working state mid-flight. Different profiles still
+    // run in parallel — each has its own dg pair and its own semaphore.
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _buildSerialisers = new();
+
+    internal SemaphoreSlim GetBuildSerialiser(string profileName) =>
+        _buildSerialisers.GetOrAdd(profileName, _ => new SemaphoreSlim(1, 1));
 
     internal RoutingNetworkIslandManager(int maxIslandSize)
     {
