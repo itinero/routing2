@@ -108,10 +108,10 @@ public static class IEdgeEnumeratorExtensions
                 if (segmentLength + length >= offset1Length &&
                     offset1 > 0)
                 {
-                    // we are before, but not we have move to after.
+                    // we are before, but now we have moved to after.
                     var segmentOffset = offset1Length - length;
                     var location = (previous, next).PositionAlongLine(segmentOffset / segmentLength);
-                    previous = next;
+                    // *don't* advance `previous` here, offset2 could also fall inside the same (previous → next) segment 
                     before = false;
                     yield return location;
                 }
