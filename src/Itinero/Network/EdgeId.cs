@@ -15,7 +15,7 @@ public readonly struct EdgeId : IEquatable<EdgeId>
     /// <summary>
     /// The maximum number of internal edges in one tile.
     /// </summary>
-    internal const uint MaxLocalId = (uint.MaxValue / 2) - 1;
+    internal const uint MaxLocalId = (int.MaxValue / 2) - 1;
 
     /// <summary>
     /// Creates a new edge id.
