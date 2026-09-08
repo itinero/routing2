@@ -195,6 +195,7 @@ internal class RoutingNetworkIslandManager
     {
         // queue task, if not done yet.
         Task task;
+        var started = false;
         try
         {
             _tilesInProgressLock.EnterUpgradeableReadLock();
@@ -205,8 +206,19 @@ internal class RoutingNetworkIslandManager
                 {
                     _tilesInProgressLock.EnterWriteLock();
 
-                    task = IslandClassifier.BuildForTileAsync(network, profile, tileId, cancellationToken);
+                    // CancellationToken.None, deliberately: this task is shared with every later
+                    // caller for the same tile, so it must not carry the token of whoever happened
+                    // to ask first. Passing that token let one caller going away cancel the work
+                    // everyone else was waiting on — and, because the entry below was only removed
+                    // after a successful await, the cancelled task stayed in the dictionary and was
+                    // handed to every subsequent caller, each of which got an
+                    // OperationCanceledException for a request it never cancelled. That poisoned
+                    // the tile for the lifetime of the network. Callers stay cancellable through
+                    // their own WaitAsync below.
+                    task = IslandClassifier.BuildForTileAsync(network, profile, tileId,
+                        CancellationToken.None);
                     _tilesInProgress[(profile.Name, tileId)] = task;
+                    started = true;
                 }
                 finally
                 {
@@ -219,31 +231,32 @@ internal class RoutingNetworkIslandManager
             _tilesInProgressLock.ExitUpgradeableReadLock();
         }
 
-        // await the task.
-        await task;
+        // Remove on completion whatever the outcome, so a task that failed is retried by the next
+        // caller rather than replayed at it forever. Attached outside the locks above: the
+        // continuation runs inline when the task is already complete, and re-entering the write
+        // lock on this thread would throw.
+        if (started)
+        {
+            _ = task.ContinueWith(_ => this.RemoveTileInProgress(profile.Name, tileId),
+                TaskContinuationOptions.ExecuteSynchronously);
+        }
 
-        // remove from the queue.
+        // Await the shared task, but only for as long as this caller is still interested. Giving up
+        // here does not stop the classification for anyone else.
+        await task.WaitAsync(cancellationToken);
+    }
+
+    private void RemoveTileInProgress(string profileName, uint tileId)
+    {
         try
         {
-            _tilesInProgressLock.EnterUpgradeableReadLock();
+            _tilesInProgressLock.EnterWriteLock();
 
-            if (_tilesInProgress.ContainsKey((profile.Name, tileId)))
-            {
-                try
-                {
-                    _tilesInProgressLock.EnterWriteLock();
-
-                    _tilesInProgress.Remove((profile.Name, tileId));
-                }
-                finally
-                {
-                    _tilesInProgressLock.ExitWriteLock();
-                }
-            }
+            _tilesInProgress.Remove((profileName, tileId));
         }
         finally
         {
-            _tilesInProgressLock.ExitUpgradeableReadLock();
+            _tilesInProgressLock.ExitWriteLock();
         }
     }
 
