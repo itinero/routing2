@@ -10,8 +10,11 @@ namespace Itinero.Network.Search.Islands;
 
 internal class RoutingNetworkIslandManager
 {
-    private readonly Dictionary<(string profile, uint tile), Task> _tilesInProgress = new();
-    private readonly ReaderWriterLockSlim _tilesInProgressLock = new();
+    // Concurrent: every snap enters BuildForTileAsync, and a ReaderWriterLockSlim
+    // admits only one upgradeable reader at a time, so guarding this dictionary
+    // with one serialised every snapping thread against every other — including
+    // threads asking about entirely different tiles.
+    private readonly ConcurrentDictionary<(string profile, uint tile), Lazy<Task>> _tilesInProgress = new();
 
     // Looked up once per edge relaxation (IsMainN); concurrent so that lookup
     // takes no lock.
@@ -169,71 +172,55 @@ internal class RoutingNetworkIslandManager
     internal async Task BuildForTileAsync(RoutingNetwork network, Profile profile, uint tileId,
         CancellationToken cancellationToken)
     {
-        // queue task, if not done yet.
-        Task task;
-        var started = false;
-        try
-        {
-            _tilesInProgressLock.EnterUpgradeableReadLock();
+        // Already classified: nothing to queue and nothing to await. Checked
+        // before touching the queue because a classified tile is the common case
+        // once a region is warm, and everything below costs more than this does.
+        // IslandClassifier.BuildForTileAsync makes the same check first, so this
+        // only moves it earlier. GetTileDone is a concurrent-set lookup.
+        if (this.GetIslandsFor(profile).GetTileDone(tileId)) return;
 
-            if (!_tilesInProgress.TryGetValue((profile.Name, tileId), out task))
+        var key = (profile.Name, tileId);
+
+        if (!_tilesInProgress.TryGetValue(key, out var pending))
+        {
+            // Lazy, not a bare Task: GetOrAdd may invoke a factory more than
+            // once under a race, and starting a tile's classification twice
+            // would put a second run behind the per-profile serialiser for work
+            // already being done. Only the Lazy that wins publication ever has
+            // Value read, so the classification starts exactly once.
+            Lazy<Task>? mine = null;
+            mine = new Lazy<Task>(() =>
             {
-                try
-                {
-                    _tilesInProgressLock.EnterWriteLock();
+                // CancellationToken.None, deliberately: this task is shared with every later
+                // caller for the same tile, so it must not carry the token of whoever happened
+                // to ask first. Passing that token let one caller going away cancel the work
+                // everyone else was waiting on — and, because the entry was only removed
+                // after a successful await, the cancelled task stayed in the dictionary and was
+                // handed to every subsequent caller, each of which got an
+                // OperationCanceledException for a request it never cancelled. That poisoned
+                // the tile for the lifetime of the network. Callers stay cancellable through
+                // their own WaitAsync below.
+                var started = IslandClassifier.BuildForTileAsync(network, profile, tileId,
+                    CancellationToken.None);
 
-                    // CancellationToken.None, deliberately: this task is shared with every later
-                    // caller for the same tile, so it must not carry the token of whoever happened
-                    // to ask first. Passing that token let one caller going away cancel the work
-                    // everyone else was waiting on — and, because the entry below was only removed
-                    // after a successful await, the cancelled task stayed in the dictionary and was
-                    // handed to every subsequent caller, each of which got an
-                    // OperationCanceledException for a request it never cancelled. That poisoned
-                    // the tile for the lifetime of the network. Callers stay cancellable through
-                    // their own WaitAsync below.
-                    task = IslandClassifier.BuildForTileAsync(network, profile, tileId,
-                        CancellationToken.None);
-                    _tilesInProgress[(profile.Name, tileId)] = task;
-                    started = true;
-                }
-                finally
-                {
-                    _tilesInProgressLock.ExitWriteLock();
-                }
-            }
-        }
-        finally
-        {
-            _tilesInProgressLock.ExitUpgradeableReadLock();
-        }
+                // Remove on completion whatever the outcome, so a task that failed is retried by
+                // the next caller rather than replayed at it forever. Removal is matched on this
+                // exact Lazy: if a later caller has already published a replacement, a stale
+                // continuation must not evict it and let a third caller start a duplicate run.
+                _ = started.ContinueWith(
+                    _ => _tilesInProgress.TryRemove(
+                        new KeyValuePair<(string profile, uint tile), Lazy<Task>>(key, mine!)),
+                    TaskContinuationOptions.ExecuteSynchronously);
 
-        // Remove on completion whatever the outcome, so a task that failed is retried by the next
-        // caller rather than replayed at it forever. Attached outside the locks above: the
-        // continuation runs inline when the task is already complete, and re-entering the write
-        // lock on this thread would throw.
-        if (started)
-        {
-            _ = task.ContinueWith(_ => this.RemoveTileInProgress(profile.Name, tileId),
-                TaskContinuationOptions.ExecuteSynchronously);
+                return started;
+            });
+
+            pending = _tilesInProgress.GetOrAdd(key, mine);
         }
 
         // Await the shared task, but only for as long as this caller is still interested. Giving up
         // here does not stop the classification for anyone else.
-        await task.WaitAsync(cancellationToken);
-    }
-
-    private void RemoveTileInProgress(string profileName, uint tileId)
-    {
-        try
-        {
-            _tilesInProgressLock.EnterWriteLock();
-
-            _tilesInProgress.Remove((profileName, tileId));
-        }
-        finally
-        {
-            _tilesInProgressLock.ExitWriteLock();
-        }
+        await pending.Value.WaitAsync(cancellationToken);
     }
 
     internal RoutingNetworkIslandManager Clone()
