@@ -1,16 +1,18 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 
 namespace Itinero.Network.Search.Islands;
 
 internal class Islands
 {
-    private readonly HashSet<uint> _tiles; // holds the tiles that have been processed.
-    private readonly ReaderWriterLockSlim _tilesLock = new();
-    private readonly HashSet<EdgeId> _islandEdges;
-    private readonly ReaderWriterLockSlim _islandEdgesLock = new();
-    private readonly HashSet<EdgeId> _localEdges;
-    private readonly ReaderWriterLockSlim _localEdgesLock = new();
+    // Read once per edge relaxation from every routing thread, written only
+    // during classification. ContainsKey takes no lock, so readers never
+    // contend. The byte value is unused — ConcurrentDictionary is the only
+    // lock-free set in the framework.
+    private readonly ConcurrentDictionary<uint, byte> _tiles; // tiles that have been processed.
+    private readonly ConcurrentDictionary<EdgeId, byte> _islandEdges;
+    private readonly ConcurrentDictionary<EdgeId, byte> _localEdges;
 
     // Transient state used during the NonLocal classification pass: each
     // edge the classifier identifies as Island in the N-only subgraph is
@@ -18,23 +20,22 @@ internal class Islands
     // computed _localEdges from the gap (NonLocal-Island ∩ NotIsland-Full
     // ∩ non-L), this set can be cleared. Not part of the persistent
     // storage contract.
-    private readonly HashSet<EdgeId> _nonLocalIslandEdges;
-    private readonly ReaderWriterLockSlim _nonLocalIslandEdgesLock = new();
+    private readonly ConcurrentDictionary<EdgeId, byte> _nonLocalIslandEdges;
 
     internal Islands()
     {
-        _tiles = [];
-        _islandEdges = [];
-        _localEdges = [];
-        _nonLocalIslandEdges = [];
+        _tiles = new ConcurrentDictionary<uint, byte>();
+        _islandEdges = new ConcurrentDictionary<EdgeId, byte>();
+        _localEdges = new ConcurrentDictionary<EdgeId, byte>();
+        _nonLocalIslandEdges = new ConcurrentDictionary<EdgeId, byte>();
     }
 
-    private Islands(HashSet<uint> tiles, HashSet<EdgeId> islandEdges, HashSet<EdgeId> localEdges)
+    private Islands(IEnumerable<uint> tiles, IEnumerable<EdgeId> islandEdges, IEnumerable<EdgeId> localEdges)
     {
-        _tiles = tiles;
-        _islandEdges = islandEdges;
-        _localEdges = localEdges;
-        _nonLocalIslandEdges = [];
+        _tiles = new ConcurrentDictionary<uint, byte>(tiles.Select(t => new KeyValuePair<uint, byte>(t, 0)));
+        _islandEdges = new ConcurrentDictionary<EdgeId, byte>(islandEdges.Select(e => new KeyValuePair<EdgeId, byte>(e, 0)));
+        _localEdges = new ConcurrentDictionary<EdgeId, byte>(localEdges.Select(e => new KeyValuePair<EdgeId, byte>(e, 0)));
+        _nonLocalIslandEdges = new ConcurrentDictionary<EdgeId, byte>();
     }
 
     /// <summary>
@@ -42,18 +43,14 @@ internal class Islands
     /// </summary>
     /// <param name="tileId">Sets the tile as done.</param>
     /// <returns>True if the tile is done.</returns>
+    /// <remarks>
+    /// Called last, after every SetEdgeOnIsland and SetEdgeLocal for the tile.
+    /// Readers depend on that: a tile seen as done means its edge writes are
+    /// already visible.
+    /// </remarks>
     public bool SetTileDone(uint tileId)
     {
-        try
-        {
-            _tilesLock.EnterWriteLock();
-
-            return _tiles.Add(tileId);
-        }
-        finally
-        {
-            _tilesLock.ExitWriteLock();
-        }
+        return _tiles.TryAdd(tileId, 0);
     }
 
     /// <summary>
@@ -63,16 +60,7 @@ internal class Islands
     /// <returns></returns>
     public bool GetTileDone(uint tileId)
     {
-        try
-        {
-            _tilesLock.EnterReadLock();
-
-            return _tiles.Contains(tileId);
-        }
-        finally
-        {
-            _tilesLock.ExitReadLock();
-        }
+        return _tiles.ContainsKey(tileId);
     }
 
     /// <summary>
@@ -82,16 +70,7 @@ internal class Islands
     /// <returns></returns>
     public bool IsEdgeOnIsland(EdgeId edge)
     {
-        try
-        {
-            _islandEdgesLock.EnterReadLock();
-
-            return _islandEdges.Contains(edge);
-        }
-        finally
-        {
-            _islandEdgesLock.ExitReadLock();
-        }
+        return _islandEdges.ContainsKey(edge);
     }
 
     /// <summary>
@@ -101,16 +80,7 @@ internal class Islands
     /// <returns></returns>
     public bool SetEdgeOnIsland(EdgeId edge)
     {
-        try
-        {
-            _islandEdgesLock.EnterWriteLock();
-
-            return _islandEdges.Add(edge);
-        }
-        finally
-        {
-            _islandEdgesLock.ExitWriteLock();
-        }
+        return _islandEdges.TryAdd(edge, 0);
     }
 
     /// <summary>
@@ -123,16 +93,7 @@ internal class Islands
     {
         if (kind == IslandKind.NonLocal)
         {
-            try
-            {
-                _nonLocalIslandEdgesLock.EnterReadLock();
-
-                return _nonLocalIslandEdges.Contains(edge);
-            }
-            finally
-            {
-                _nonLocalIslandEdgesLock.ExitReadLock();
-            }
+            return _nonLocalIslandEdges.ContainsKey(edge);
         }
 
         return this.IsEdgeOnIsland(edge);
@@ -146,16 +107,7 @@ internal class Islands
     {
         if (kind == IslandKind.NonLocal)
         {
-            try
-            {
-                _nonLocalIslandEdgesLock.EnterWriteLock();
-
-                return _nonLocalIslandEdges.Add(edge);
-            }
-            finally
-            {
-                _nonLocalIslandEdgesLock.ExitWriteLock();
-            }
+            return _nonLocalIslandEdges.TryAdd(edge, 0);
         }
 
         return this.SetEdgeOnIsland(edge);
@@ -169,16 +121,7 @@ internal class Islands
     /// </summary>
     internal void ClearNonLocalIslandEdges()
     {
-        try
-        {
-            _nonLocalIslandEdgesLock.EnterWriteLock();
-
-            _nonLocalIslandEdges.Clear();
-        }
-        finally
-        {
-            _nonLocalIslandEdgesLock.ExitWriteLock();
-        }
+        _nonLocalIslandEdges.Clear();
     }
 
     /// <summary>
@@ -194,16 +137,7 @@ internal class Islands
     /// </summary>
     public bool IsEdgeLocal(EdgeId edge)
     {
-        try
-        {
-            _localEdgesLock.EnterReadLock();
-
-            return _localEdges.Contains(edge);
-        }
-        finally
-        {
-            _localEdgesLock.ExitReadLock();
-        }
+        return _localEdges.ContainsKey(edge);
     }
 
     /// <summary>
@@ -212,45 +146,15 @@ internal class Islands
     /// </summary>
     public bool SetEdgeLocal(EdgeId edge)
     {
-        try
-        {
-            _localEdgesLock.EnterWriteLock();
-
-            return _localEdges.Add(edge);
-        }
-        finally
-        {
-            _localEdgesLock.ExitWriteLock();
-        }
+        return _localEdges.TryAdd(edge, 0);
     }
 
     internal Islands Clone()
     {
-        try
-        {
-            _tilesLock.EnterWriteLock();
-            try
-            {
-                _islandEdgesLock.EnterWriteLock();
-                try
-                {
-                    _localEdgesLock.EnterWriteLock();
-
-                    return new Islands([.. _tiles], [.. _islandEdges], [.. _localEdges]);
-                }
-                finally
-                {
-                    _localEdgesLock.ExitWriteLock();
-                }
-            }
-            finally
-            {
-                _islandEdgesLock.ExitWriteLock();
-            }
-        }
-        finally
-        {
-            _tilesLock.ExitWriteLock();
-        }
+        // Snapshot _tiles before the edge sets, so a tile seen as done always
+        // comes with its edges. Reversed, the clone could hold a done tile whose
+        // island edges are missing, which IsMainN reads as main-N.
+        var tiles = _tiles.Keys;
+        return new Islands(tiles, _islandEdges.Keys, _localEdges.Keys);
     }
 }

@@ -12,9 +12,13 @@ internal class RoutingNetworkIslandManager
 {
     private readonly Dictionary<(string profile, uint tile), Task> _tilesInProgress = new();
     private readonly ReaderWriterLockSlim _tilesInProgressLock = new();
-    private readonly Dictionary<string, Islands> _islands;
+
+    // Looked up once per edge relaxation (IsMainN); concurrent so that lookup
+    // takes no lock.
+    private readonly ConcurrentDictionary<string, Islands> _islands;
+
     private readonly Dictionary<(string profile, IslandKind kind), IslandDirectedGraph> _directedGraphs = new();
-    private readonly ReaderWriterLockSlim _islandsLock = new();
+    private readonly ReaderWriterLockSlim _directedGraphsLock = new();
 
     // Per-profile semaphore that serialises IslandClassifier.BuildForTileAsync
     // calls against each other for the same profile. The shared Full+NonLocal
@@ -30,10 +34,10 @@ internal class RoutingNetworkIslandManager
     internal RoutingNetworkIslandManager(int maxIslandSize)
     {
         this.MaxIslandSize = maxIslandSize;
-        _islands = new();
+        _islands = new ConcurrentDictionary<string, Islands>();
     }
 
-    private RoutingNetworkIslandManager(int maxIslandSize, Dictionary<string, Islands> islands)
+    private RoutingNetworkIslandManager(int maxIslandSize, ConcurrentDictionary<string, Islands> islands)
     {
         this.MaxIslandSize = maxIslandSize;
         _islands = islands;
@@ -48,29 +52,32 @@ internal class RoutingNetworkIslandManager
 
     internal bool? IsEdgeOnIsland(string profileName, EdgeId edgeId)
     {
+        // Snapping is a Full-classification concern, so the existing
+        // single-DG semantics route through the Full DG.
+        IslandDirectedGraph? dg;
         try
         {
-            _islandsLock.EnterReadLock();
+            _directedGraphsLock.EnterReadLock();
 
-            // Snapping is a Full-classification concern, so the existing
-            // single-DG semantics route through the Full DG.
-            if (!_directedGraphs.TryGetValue((profileName, IslandKind.Full), out var dg))
+            if (!_directedGraphs.TryGetValue((profileName, IslandKind.Full), out dg))
                 return null;
-
-            if (!_islands.TryGetValue(profileName, out var profileIslands))
-                return null;
-            if (profileIslands.IsEdgeOnIsland(edgeId))
-                return true;
-
-            if (dg.IsNotIsland(edgeId))
-                return false;
-
-            return null;
         }
         finally
         {
-            _islandsLock.ExitReadLock();
+            _directedGraphsLock.ExitReadLock();
         }
+
+        // The lock covers the dictionary lookup only; dg's own reads and
+        // _islands need no lock.
+        if (!_islands.TryGetValue(profileName, out var profileIslands))
+            return null;
+        if (profileIslands.IsEdgeOnIsland(edgeId))
+            return true;
+
+        if (dg.IsNotIsland(edgeId))
+            return false;
+
+        return null;
     }
 
     internal IslandDirectedGraph GetOrCreateDirectedGraph(Profile profile, IslandKind kind = IslandKind.Full)
@@ -78,13 +85,13 @@ internal class RoutingNetworkIslandManager
         var key = (profile.Name, kind);
         try
         {
-            _islandsLock.EnterUpgradeableReadLock();
+            _directedGraphsLock.EnterUpgradeableReadLock();
 
             if (_directedGraphs.TryGetValue(key, out var dg)) return dg;
 
             try
             {
-                _islandsLock.EnterWriteLock();
+                _directedGraphsLock.EnterWriteLock();
 
                 dg = new IslandDirectedGraph();
                 _directedGraphs[key] = dg;
@@ -92,12 +99,12 @@ internal class RoutingNetworkIslandManager
             }
             finally
             {
-                _islandsLock.ExitWriteLock();
+                _directedGraphsLock.ExitWriteLock();
             }
         }
         finally
         {
-            _islandsLock.ExitUpgradeableReadLock();
+            _directedGraphsLock.ExitUpgradeableReadLock();
         }
     }
 
@@ -105,43 +112,14 @@ internal class RoutingNetworkIslandManager
 
     internal bool TryGetIslandsFor(string profileName, out Islands islands)
     {
-        try
-        {
-            _islandsLock.EnterReadLock();
-
-            return _islands.TryGetValue(profileName, out islands);
-        }
-        finally
-        {
-            _islandsLock.ExitReadLock();
-        }
+        return _islands.TryGetValue(profileName, out islands);
     }
 
     internal Islands GetIslandsFor(Profile profile)
     {
-        try
-        {
-            _islandsLock.EnterUpgradeableReadLock();
-
-            if (_islands.TryGetValue(profile.Name, out var islands)) return islands;
-
-            try
-            {
-                _islandsLock.EnterWriteLock();
-
-                islands = new Islands();
-                _islands[profile.Name] = islands;
-                return islands;
-            }
-            finally
-            {
-                _islandsLock.ExitWriteLock();
-            }
-        }
-        finally
-        {
-            _islandsLock.ExitUpgradeableReadLock();
-        }
+        // The factory can run more than once under a race, but only one instance
+        // is published and every caller gets that one.
+        return _islands.GetOrAdd(profile.Name, _ => new Islands());
     }
 
     /// <summary>
@@ -168,26 +146,24 @@ internal class RoutingNetworkIslandManager
         // L-tagged edge — never main-N, no storage lookup needed.
         if (isLocalAccess) return false;
 
-        try
-        {
-            _islandsLock.EnterReadLock();
+        if (!_islands.TryGetValue(profile.Name, out var islands)) return null;
 
-            if (!_islands.TryGetValue(profile.Name, out var islands)) return null;
+        // Read the tile flag before the edge sets: the classifier marks a tile
+        // done only after writing its island and local edges, so a tile seen as
+        // done guarantees the edge reads below see those writes. Sampling the
+        // edge sets first would let a not-yet-written island edge pair with a
+        // tile marked done since, reporting main-N for an edge on an island.
+        var tileDone = islands.GetTileDone(edgeId.TileId);
 
-            // Unreachable in the Full classification → not in main-N.
-            if (islands.IsEdgeOnIsland(edgeId)) return false;
+        // Unreachable in the Full classification → not in main-N.
+        if (islands.IsEdgeOnIsland(edgeId)) return false;
 
-            // Non-main-N pocket → not in main-N.
-            if (islands.IsEdgeLocal(edgeId)) return false;
+        // Non-main-N pocket → not in main-N.
+        if (islands.IsEdgeLocal(edgeId)) return false;
 
-            // Tile finished classifying and the edge is in neither set → main-N.
-            // Otherwise we don't yet know.
-            return islands.GetTileDone(edgeId.TileId) ? true : null;
-        }
-        finally
-        {
-            _islandsLock.ExitReadLock();
-        }
+        // Tile finished classifying and the edge is in neither set → main-N.
+        // Otherwise we don't yet know.
+        return tileDone ? true : null;
     }
 
     internal async Task BuildForTileAsync(RoutingNetwork network, Profile profile, uint tileId,
@@ -262,21 +238,14 @@ internal class RoutingNetworkIslandManager
 
     internal RoutingNetworkIslandManager Clone()
     {
-        try
+        // A profile added while iterating may or may not make it into the clone;
+        // either is correct, it was not part of the network being cloned.
+        var islands = new ConcurrentDictionary<string, Islands>();
+        foreach (var (profileName, profileIslands) in _islands)
         {
-            _islandsLock.EnterReadLock();
-
-            var islands = new Dictionary<string, Islands>();
-            foreach (var (profileName, profileIslands) in _islands)
-            {
-                islands[profileName] = profileIslands.Clone();
-            }
-
-            return new RoutingNetworkIslandManager(this.MaxIslandSize, islands);
+            islands[profileName] = profileIslands.Clone();
         }
-        finally
-        {
-            _islandsLock.ExitReadLock();
-        }
+
+        return new RoutingNetworkIslandManager(this.MaxIslandSize, islands);
     }
 }
