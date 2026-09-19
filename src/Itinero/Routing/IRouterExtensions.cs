@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
 using Itinero.Network;
+using Itinero.Profiles;
 using Itinero.Routes.Paths;
 using Itinero.Routing.Alternatives;
 using Itinero.Routing.Costs;
@@ -126,6 +127,7 @@ public static class IRouterExtensions
             return false;
         }
 
+        var heuristic = BuildHeuristic(routingNetwork, profile, targets);
         var isMainN = routingNetwork.GetIsMainNFunc(profile);
         var results = new IReadOnlyList<Result<Path>>[sources.Count];
         for (var s = 0; s < sources.Count; s++)
@@ -140,7 +142,7 @@ public static class IRouterExtensions
                         await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                     }
                     return CheckMaxDistance(v.vertexId);
-                }, isMainN: isMainN);
+                }, isMainN: isMainN, heuristic: heuristic);
 
             var sourceResults = new Result<Path>[pathsAndCosts.Length];
             for (var r = 0; r < sourceResults.Length; r++)
@@ -196,6 +198,7 @@ public static class IRouterExtensions
             return false;
         }
 
+        var heuristic = BuildHeuristic(routerDb, profile, targets);
         var isMainN = routerDb.GetIsMainNFunc(profile);
         var results = new IReadOnlyList<Result<Path>>[sources.Count];
         for (var s = 0; s < sources.Count; s++)
@@ -210,7 +213,7 @@ public static class IRouterExtensions
                         await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                     }
                     return CheckMaxDistance(e.vertexId);
-                }, isMainN: isMainN);
+                }, isMainN: isMainN, heuristic: heuristic);
 
             var sourceResults = new Result<Path>[paths.Length];
             for (var r = 0; r < sourceResults.Length; r++)
@@ -231,4 +234,49 @@ public static class IRouterExtensions
 
         return results;
     }
+
+    /// <summary>
+    /// Builds the A* estimate — straight-line distance to the nearest target ×
+    /// <see cref="Profile.MinFactor"/>, in centimetres — or null when the profile
+    /// declares no bound and the search should stay plain Dijkstra.
+    /// </summary>
+    private static HeuristicFunc? BuildHeuristic(RoutingNetwork network, Profile profile,
+        IReadOnlyList<(SnapPoint snapPoint, bool? direction)> targets)
+    {
+        var points = new SnapPoint[targets.Count];
+        for (var i = 0; i < targets.Count; i++) points[i] = targets[i].snapPoint;
+
+        return BuildHeuristic(network, profile, points);
+    }
+
+    private static HeuristicFunc? BuildHeuristic(RoutingNetwork network, Profile profile,
+        IReadOnlyList<SnapPoint> targets)
+    {
+        var minFactor = profile.MinFactor;
+        if (minFactor == 0) return null;
+        if (targets.Count == 0) return null;
+
+        var targetLocations = new (double longitude, double latitude, float? e)[targets.Count];
+        for (var t = 0; t < targets.Count; t++)
+        {
+            targetLocations[t] = targets[t].LocationOnNetwork(network);
+        }
+
+        return (longitude, latitude) =>
+        {
+            var from = (longitude, latitude, (float?)null);
+
+            var nearest = double.MaxValue;
+            foreach (var target in targetLocations)
+            {
+                var distance = from.DistanceEstimateInMeter(target);
+                if (distance < nearest) nearest = distance;
+            }
+
+            // 1% margin: DistanceEstimateInMeter is equirectangular and can slightly
+            // overestimate east-west, which would make the bound inadmissible.
+            return nearest * 0.99 * 100.0 * minFactor;
+        };
+    }
+
 }

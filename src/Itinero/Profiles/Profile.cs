@@ -38,6 +38,14 @@ public abstract class Profile
     public virtual bool TurnCostFactorEnabled => false;
 
     /// <summary>
+    /// A lower bound on the factor returned for any traversable edge, used by
+    /// goal-directed search: bound × straight-line distance is a cost no route can
+    /// undercut. Too high a value silently returns worse routes, so 0 (the default)
+    /// means no bound declared and no goal-direction.
+    /// </summary>
+    public virtual uint MinFactor => 0;
+
+    /// <summary>
     /// Gets a stable hashcode, this hashcode doesn't change between runs.
     /// </summary>
     /// <remarks>

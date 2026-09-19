@@ -34,7 +34,9 @@ internal class Dijkstra
 {
     private readonly PathTree _tree = new();
     private readonly HashSet<(EdgeId edgeId, VertexId vertexId, bool leftMain)> _visits = new();
-    private readonly BinaryHeap<(uint pointer, EdgeId edgeId, VertexId vertexId, bool leftMain)> _heap = new();
+    // Carries g (cost so far) because the heap is ordered by f = g + h; relaxation
+    // and target costs need g, and recovering it at pop time would cost a tile lookup.
+    private readonly BinaryHeap<(uint pointer, EdgeId edgeId, VertexId vertexId, bool leftMain, double g)> _heap = new();
 
     public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source,
         SnapPoint target,
@@ -42,10 +44,11 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null)
+        IsMainNFunc? isMainN = null,
+        HeuristicFunc? heuristic = null)
     {
         var paths = await this.RunAsync(network, (source, null), new[] { (target, (bool?)null) }, getDijkstraWeight,
-            settled, queued, cancellationToken, isMainN);
+            settled, queued, cancellationToken, isMainN, heuristic);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
@@ -57,9 +60,10 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null)
+        IsMainNFunc? isMainN = null,
+        HeuristicFunc? heuristic = null)
     {
-        var paths = await this.RunAsync(network, source, new[] { target }, getDijkstraWeight, settled, queued, cancellationToken, isMainN);
+        var paths = await this.RunAsync(network, source, new[] { target }, getDijkstraWeight, settled, queued, cancellationToken, isMainN, heuristic);
 
         return paths.Length < 1 ? (null, double.MaxValue) : paths[0];
     }
@@ -70,7 +74,8 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null)
+        IsMainNFunc? isMainN = null,
+        HeuristicFunc? heuristic = null)
     {
         var directedTargets = new (SnapPoint sp, bool? direction)[targets.Count];
         for (var i = 0; i < targets.Count; i++)
@@ -79,7 +84,7 @@ internal class Dijkstra
         }
 
         return await this.RunAsync(network, (source, null), directedTargets,
-            getDijkstraWeight, settled, queued, cancellationToken, isMainN);
+            getDijkstraWeight, settled, queued, cancellationToken, isMainN, heuristic);
     }
 
     /// <summary>
@@ -103,7 +108,8 @@ internal class Dijkstra
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null)
+        IsMainNFunc? isMainN = null,
+        HeuristicFunc? heuristic = null)
     {
         static double GetWorst((uint pointer, double cost)[] targets)
         {
@@ -123,6 +129,16 @@ internal class Dijkstra
             }
 
             return worst;
+        }
+
+        // Cost still to pay from the edge's head; 0 without a heuristic, making the
+        // search plain Dijkstra. HeadLocation is memoised, so this adds no tile lookup.
+        double Estimate(Itinero.Network.Enumerators.Edges.RoutingNetworkEdgeEnumerator e)
+        {
+            if (heuristic == null) return 0d;
+
+            var (longitude, latitude, _) = e.HeadLocation;
+            return heuristic(longitude, latitude);
         }
 
         var enumerator = network.GetEdgeEnumerator();
@@ -149,7 +165,8 @@ internal class Dijkstra
                 var sourceOffsetCostForward = sourceFwd.cost * (1 - source.sp.OffsetFactor());
                 sourceForwardVisit =
                     _tree.AddVisit(enumerator, leftMain: false, localAccess: sourceFwd.localAccess, uint.MaxValue);
-                _heap.Push((sourceForwardVisit, enumerator.EdgeId, enumerator.Head, false), sourceOffsetCostForward);
+                _heap.Push((sourceForwardVisit, enumerator.EdgeId, enumerator.Head, false, sourceOffsetCostForward),
+                    sourceOffsetCostForward + Estimate(enumerator));
             }
         }
 
@@ -169,7 +186,8 @@ internal class Dijkstra
                 var sourceOffsetCostBackward = sourceBwd.cost * source.sp.OffsetFactor();
                 sourceBackwardVisit =
                     _tree.AddVisit(enumerator, leftMain: false, localAccess: sourceBwd.localAccess, uint.MaxValue);
-                _heap.Push((sourceBackwardVisit, enumerator.EdgeId, enumerator.Head, false), sourceOffsetCostBackward);
+                _heap.Push((sourceBackwardVisit, enumerator.EdgeId, enumerator.Head, false, sourceOffsetCostBackward),
+                    sourceOffsetCostBackward + Estimate(enumerator));
             }
         }
 
@@ -292,7 +310,7 @@ internal class Dijkstra
                 // visited before, skip.
                 if (_heap.Count == 0)
                 {
-                    currentEntry = (uint.MaxValue, default, default, false);
+                    currentEntry = (uint.MaxValue, default, default, false, 0d);
                     break;
                 }
 
@@ -411,7 +429,7 @@ internal class Dijkstra
                             : neighbourCost * (1 - target.sp.OffsetFactor());
                         // this is the case where the target is on this edge
                         // and there is a path to 'from' before.
-                        targetCost += currentCost;
+                        targetCost += currentEntry.g;
 
                         targetCost += turnCost;
 
@@ -446,7 +464,9 @@ internal class Dijkstra
                 }
 
                 // add visit to heap.
-                _heap.Push((neighbourPointer, enumerator.EdgeId, enumerator.Head, newLeftMain), neighbourCost + currentCost + turnCost);
+                var neighbourG = neighbourCost + currentEntry.g + turnCost;
+                _heap.Push((neighbourPointer, enumerator.EdgeId, enumerator.Head, newLeftMain, neighbourG),
+                    neighbourG + Estimate(enumerator));
             }
         }
 
@@ -487,6 +507,7 @@ internal class Dijkstra
 
             paths[p] = (path, bestTarget.cost);
         }
+
 
         return paths;
     }
