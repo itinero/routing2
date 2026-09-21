@@ -6,6 +6,7 @@ using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Routes;
 using Itinero.Routes.Paths;
+using Itinero.Profiles;
 using Itinero.Routing.Flavours.Dijkstra;
 using Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 using Itinero.Snapping;
@@ -27,7 +28,8 @@ public static class IRouterOneToOneExtensions
         CancellationToken cancellationToken = default)
     {
         if (oneToOneRouter.Source.direction == null && oneToOneRouter.Target.direction == null &&
-            !oneToOneRouter.Settings.Profile.TurnCostFactorEnabled)
+            (!oneToOneRouter.Settings.Profile.TurnCostFactorEnabled ||
+             oneToOneRouter.Settings.BidirectionalWithTurnCosts))
         {
             return await oneToOneRouter.CalculateAsync(oneToOneRouter.Source.sp, oneToOneRouter.Target.sp,
                 cancellationToken);
@@ -82,16 +84,27 @@ public static class IRouterOneToOneExtensions
         var maxBox = settings.MaxBoxFor(routingNetwork, [source, target]);
 
         var isMainN = routingNetwork.GetIsMainNFunc(profile);
-        var (result, _) = await BidirectionalDijkstra.Default.RunAsync(routingNetwork, source, target, costFunction,
-            async v =>
-            {
-                if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v))
+        var potential = BuildBalancedPotential(routingNetwork, profile, source, target);
+        // Rented for this call, returned in the finally.
+        var search = SearchPool<BidirectionalDijkstra>.Rent();
+        Path? result;
+        try
+        {
+            (result, _) = await search.RunAsync(routingNetwork, source, target, costFunction,
+                async v =>
                 {
-                    await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
-                }
-                if (cancellationToken.IsCancellationRequested) return false;
-                return CheckMaxDistance(v);
-            }, cancellationToken: cancellationToken, isMainN: isMainN);
+                    if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v))
+                    {
+                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+                    }
+                    if (cancellationToken.IsCancellationRequested) return false;
+                    return CheckMaxDistance(v);
+                }, cancellationToken: cancellationToken, isMainN: isMainN, potential: potential);
+        }
+        finally
+        {
+            SearchPool<BidirectionalDijkstra>.Return(search);
+        }
 
         if (result == null) return new Result<Path>("Path not found");
 
@@ -111,4 +124,29 @@ public static class IRouterOneToOneExtensions
             return false;
         }
     }
+    /// <summary>
+    /// p(v) = (h_target(v) - h_source(v)) / 2, in centimetres; the backward half negates
+    /// it so the two sum to zero. Null when the profile declares no bound. Halving is what
+    /// makes them consistent, and why each half gets half the goal-direction of a one-way A*.
+    /// </summary>
+    private static HeuristicFunc? BuildBalancedPotential(RoutingNetwork network, Profile profile,
+        SnapPoint source, SnapPoint target)
+    {
+        var minFactor = profile.MinFactor;
+        if (minFactor == 0) return null;
+
+        var sourceLocation = source.LocationOnNetwork(network);
+        var targetLocation = target.LocationOnNetwork(network);
+
+        return (longitude, latitude) =>
+        {
+            var from = (longitude, latitude, (float?)null);
+
+            // 1% margin: DistanceEstimateInMeter can slightly overestimate east-west.
+            var toTarget = from.DistanceEstimateInMeter(targetLocation) * 0.99 * 100.0 * minFactor;
+            var toSource = from.DistanceEstimateInMeter(sourceLocation) * 0.99 * 100.0 * minFactor;
+            return (toTarget - toSource) / 2.0;
+        };
+    }
+
 }

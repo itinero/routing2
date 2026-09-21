@@ -133,16 +133,25 @@ public static class IRouterExtensions
         for (var s = 0; s < sources.Count; s++)
         {
             var source = sources[s];
-            var pathsAndCosts = await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routingNetwork, source, targets,
-                costFunction.GetDijkstraWeightFunc(),
-                async v =>
-                {
-                    if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v.vertexId))
+            var search = Flavours.Dijkstra.SearchPool<Flavours.Dijkstra.Dijkstra>.Rent();
+            (Path? path, double cost)[] pathsAndCosts;
+            try
+            {
+                pathsAndCosts = await search.RunAsync(routingNetwork, source, targets,
+                    costFunction.GetDijkstraWeightFunc(),
+                    async v =>
                     {
-                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
-                    }
-                    return CheckMaxDistance(v.vertexId);
-                }, isMainN: isMainN, heuristic: heuristic);
+                        if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v.vertexId))
+                        {
+                            await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
+                        }
+                        return CheckMaxDistance(v.vertexId);
+                    }, isMainN: isMainN, heuristic: heuristic);
+            }
+            finally
+            {
+                Flavours.Dijkstra.SearchPool<Flavours.Dijkstra.Dijkstra>.Return(search);
+            }
 
             var sourceResults = new Result<Path>[pathsAndCosts.Length];
             for (var r = 0; r < sourceResults.Length; r++)
@@ -204,16 +213,25 @@ public static class IRouterExtensions
         for (var s = 0; s < sources.Count; s++)
         {
             var source = sources[s];
-            var paths = await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routerDb, source, targets,
-                costFunction.GetDijkstraWeightFunc(),
-                async e =>
-                {
-                    if (!routerDb.UsageNotifier.IsVertexDataReady(routerDb, e.vertexId))
+            var search = Flavours.Dijkstra.SearchPool<Flavours.Dijkstra.Dijkstra>.Rent();
+            (Path? path, double cost)[] paths;
+            try
+            {
+                paths = await search.RunAsync(routerDb, source, targets,
+                    costFunction.GetDijkstraWeightFunc(),
+                    async e =>
                     {
-                        await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
-                    }
-                    return CheckMaxDistance(e.vertexId);
-                }, isMainN: isMainN, heuristic: heuristic);
+                        if (!routerDb.UsageNotifier.IsVertexDataReady(routerDb, e.vertexId))
+                        {
+                            await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
+                        }
+                        return CheckMaxDistance(e.vertexId);
+                    }, isMainN: isMainN, heuristic: heuristic);
+            }
+            finally
+            {
+                Flavours.Dijkstra.SearchPool<Flavours.Dijkstra.Dijkstra>.Return(search);
+            }
 
             var sourceResults = new Result<Path>[paths.Length];
             for (var r = 0; r < sourceResults.Length; r++)

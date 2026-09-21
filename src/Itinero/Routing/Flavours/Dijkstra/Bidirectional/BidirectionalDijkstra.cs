@@ -40,7 +40,9 @@ internal class BidirectionalDijkstra
     private sealed class Half
     {
         public readonly PathTree Tree = new();
-        public readonly BinaryHeap<(uint pointer, EdgeId edge, VertexId vertex)> Heap = new();
+
+        // Carries g because the heap is ordered by g + p; only the stopping rule uses the key.
+        public readonly BinaryHeap<(uint pointer, EdgeId edge, VertexId vertex, double g)> Heap = new();
         public readonly HashSet<(EdgeId edge, VertexId vertex)> Settled = new();
         // Per-vertex list of settled arrivals. Each entry records the incoming edge plus
         // the head order at this vertex for that edge — both are needed to query turn
@@ -68,7 +70,8 @@ internal class BidirectionalDijkstra
         ICostFunction costFunction,
         Func<VertexId, Task<bool>>? settledCb = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null)
+        IsMainNFunc? isMainN = null,
+        HeuristicFunc? potential = null)
     {
         _forward.Clear();
         _backward.Clear();
@@ -88,8 +91,18 @@ internal class BidirectionalDijkstra
 
         var enumerator = network.GetEdgeEnumerator();
 
-        PushTerminal(enumerator, source, costFunction, _forward, asOrigin: true);
-        PushTerminal(enumerator, target, costFunction, _backward, asOrigin: false);
+        // Balanced potentials sum to zero at every vertex, which keeps the stopping rule
+        // below valid: at any meeting vertex the two keys still add up to the true cost.
+        HeuristicFunc? forwardPotential = null;
+        HeuristicFunc? backwardPotential = null;
+        if (potential != null)
+        {
+            forwardPotential = potential;
+            backwardPotential = (longitude, latitude) => -potential(longitude, latitude);
+        }
+
+        PushTerminal(enumerator, source, costFunction, _forward, asOrigin: true, forwardPotential);
+        PushTerminal(enumerator, target, costFunction, _backward, asOrigin: false, backwardPotential);
 
         var forwardCost = 0.0;
         var backwardCost = 0.0;
@@ -103,12 +116,12 @@ internal class BidirectionalDijkstra
 
             if (_forward.Heap.Count > 0)
             {
-                var popped = await this.Step(network, _forward, _backward, isForwardHalf: true, costFunction, isMainN, settledCb, cancellationToken);
+                var popped = await this.Step(network, _forward, _backward, isForwardHalf: true, costFunction, isMainN, settledCb, forwardPotential, cancellationToken);
                 if (popped.HasValue) forwardCost = popped.Value;
             }
             if (_backward.Heap.Count > 0)
             {
-                var popped = await this.Step(network, _backward, _forward, isForwardHalf: false, costFunction, isMainN, settledCb, cancellationToken);
+                var popped = await this.Step(network, _backward, _forward, isForwardHalf: false, costFunction, isMainN, settledCb, backwardPotential, cancellationToken);
                 if (popped.HasValue) backwardCost = popped.Value;
             }
         }
@@ -133,7 +146,8 @@ internal class BidirectionalDijkstra
         SnapPoint snap,
         ICostFunction costFunction,
         Half half,
-        bool asOrigin)
+        bool asOrigin,
+        HeuristicFunc? potential)
     {
         // Mirror of the vertex-based DijkstraAlgorithmExtensions.Push contract:
         //   asOrigin=true  → cost computed in the edge's natural direction (tailToHead = true);
@@ -148,7 +162,8 @@ internal class BidirectionalDijkstra
                 ? cost * (1 - snap.OffsetFactor())
                 : cost * snap.OffsetFactor();
             var p = half.Tree.AddVisit(enumerator, leftMain: false, localAccess: localAccess, uint.MaxValue);
-            half.Heap.Push((p, enumerator.EdgeId, enumerator.Head), offsetCost);
+            half.Heap.Push((p, enumerator.EdgeId, enumerator.Head, offsetCost),
+                offsetCost + Potential(potential, enumerator));
         }
     }
 
@@ -160,16 +175,19 @@ internal class BidirectionalDijkstra
         ICostFunction costFunction,
         IsMainNFunc? isMainN,
         Func<VertexId, Task<bool>>? settledCb,
+        HeuristicFunc? potential,
         CancellationToken cancellationToken)
     {
-        // Dequeue, skipping already-settled (edge, vertex) labels.
-        var entry = active.Heap.Pop(out var cost);
+        // Dequeue, skipping already-settled labels. `key` is g + p, `cost` is g.
+        var entry = active.Heap.Pop(out var key);
         while (active.Settled.Contains((entry.edge, entry.vertex)))
         {
-            if (active.Heap.Count == 0) return cost;
-            entry = active.Heap.Pop(out cost);
+            if (active.Heap.Count == 0) return key;
+            entry = active.Heap.Pop(out key);
         }
-        if (!active.Settled.Add((entry.edge, entry.vertex))) return cost;
+        if (!active.Settled.Add((entry.edge, entry.vertex))) return key;
+
+        var cost = entry.g;
 
         var (vertex, edge, forward, _, localAccess, headOrder, _) = active.Tree.GetVisitWithState(entry.pointer);
 
@@ -183,15 +201,15 @@ internal class BidirectionalDijkstra
 
         // Settled callback semantics match the unidirectional edge-based: returning true
         // means "stop expanding from this vertex" (e.g. outside the max-distance box).
-        if (settledCb != null && await settledCb(vertex)) return cost;
-        if (cancellationToken.IsCancellationRequested) return cost;
+        if (settledCb != null && await settledCb(vertex)) return key;
+        if (cancellationToken.IsCancellationRequested) return key;
 
         // Meeting check against already-settled labels at this vertex in the other half.
         this.TryMeet(network, costFunction, isForwardHalf, edge, forward, headOrder, entry.pointer, cost, vertex, other);
 
         // Expand neighbours.
         var probe = network.GetEdgeEnumerator();
-        if (!probe.MoveTo(vertex)) return cost;
+        if (!probe.MoveTo(vertex)) return key;
         while (probe.MoveNext())
         {
             var neighbourEdge = probe.EdgeId;
@@ -223,10 +241,20 @@ internal class BidirectionalDijkstra
             this.TryMeet(network, costFunction, isForwardHalf, neighbourEdge, probe.Forward, probe.HeadOrder,
                 neighbourPointer, totalCost, probe.Head, other);
 
-            active.Heap.Push((neighbourPointer, neighbourEdge, probe.Head), totalCost);
+            active.Heap.Push((neighbourPointer, neighbourEdge, probe.Head, totalCost),
+                totalCost + Potential(potential, probe));
         }
 
-        return cost;
+        return key;
+    }
+
+    /// The half's potential at the edge's head; 0 without one. HeadLocation is memoised.
+    private static double Potential(HeuristicFunc? potential, RoutingNetworkEdgeEnumerator enumerator)
+    {
+        if (potential == null) return 0d;
+
+        var (longitude, latitude, _) = enumerator.HeadLocation;
+        return potential(longitude, latitude);
     }
 
     private void TryMeet(

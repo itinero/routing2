@@ -32,4 +32,11 @@ public class RoutingSettings
     /// (e.g. congestion) without mutating the RouterDb.
     /// </summary>
     public Func<ICostFunction, ICostFunction>? CostFunctionWrapper { get; set; }
+
+    /// <summary>
+    /// Use the bidirectional search for profiles that enable turn costs. Off by default:
+    /// it has no stopping condition for an unroutable pair, where both halves must
+    /// exhaust their reachable sets rather than failing at the search-space cap.
+    /// </summary>
+    public bool BidirectionalWithTurnCosts { get; set; }
 }
