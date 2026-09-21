@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Itinero.Network.Enumerators.Edges;
@@ -19,7 +20,7 @@ internal class IslandDirectedGraph
     private readonly Dictionary<EdgeId, HashSet<EdgeId>> _outgoing = new();
     private readonly Dictionary<EdgeId, HashSet<EdgeId>> _incoming = new();
     private readonly Dictionary<EdgeId, List<EdgeId>> _members = new();
-    private readonly HashSet<EdgeId> _processed = new();
+    private readonly ConcurrentDictionary<EdgeId, byte> _processed = new();
 
     // The graph is built incrementally (mutations) and queried concurrently from
     // many snap operations. The underlying Dictionaries / HashSets are not safe
@@ -81,16 +82,12 @@ internal class IslandDirectedGraph
 
     public bool IsProcessed(EdgeId edgeId)
     {
-        _lock.EnterReadLock();
-        try { return _processed.Contains(edgeId); }
-        finally { _lock.ExitReadLock(); }
+        return _processed.ContainsKey(edgeId);
     }
 
     public void SetProcessed(EdgeId edgeId)
     {
-        _lock.EnterWriteLock();
-        try { _processed.Add(edgeId); }
-        finally { _lock.ExitWriteLock(); }
+        _processed[edgeId] = 0;
     }
 
     public bool IsNotIsland(EdgeId edgeId)
@@ -423,7 +420,7 @@ internal class IslandDirectedGraph
             }
 
             _parent.Remove(edgeId);
-            _processed.Remove(edgeId);
+            _processed.TryRemove(edgeId, out _);
         }
         finally { _lock.ExitWriteLock(); }
     }
