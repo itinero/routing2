@@ -17,14 +17,14 @@
 <tr><th>Class:</th><td>Itinero.Routing.RoutingSettings</td></tr>
 <tr><th>Assembly:</th><td>Itinero</td></tr>
 <tr><th>File(s):</th><td><a href="#homerunnerworkrouting2routing2srcItineroRoutingRoutingSettingscs" class="navigatetohash">/home/runner/work/routing2/routing2/src/Itinero/Routing/RoutingSettings.cs</a></td></tr>
-<tr><th>Covered lines:</th><td>4</td></tr>
+<tr><th>Covered lines:</th><td>5</td></tr>
 <tr><th>Uncovered lines:</th><td>0</td></tr>
-<tr><th>Coverable lines:</th><td>4</td></tr>
-<tr><th>Total lines:</th><td>35</td></tr>
-<tr><th>Line coverage:</th><td>100% (4 of 4)</td></tr>
+<tr><th>Coverable lines:</th><td>5</td></tr>
+<tr><th>Total lines:</th><td>42</td></tr>
+<tr><th>Line coverage:</th><td>100% (5 of 5)</td></tr>
 <tr><th>Covered branches:</th><td>0</td></tr>
 <tr><th>Total branches:</th><td>0</td></tr>
-<tr><th>Tag:</th><td>269_35424993801</td></tr>
+<tr><th>Tag:</th><td>271_35634033180</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -35,6 +35,7 @@
 <tr><td title="get_RouteBuilder()"><a href="#file0_line21" class="navigatetohash">get_RouteBuilder()</a></td><td>100%</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_MaxDistance()"><a href="#file0_line26" class="navigatetohash">get_MaxDistance()</a></td><td>100%</td><td>1</td><td>100%</td></tr>
 <tr><td title="get_CostFunctionWrapper()"><a href="#file0_line34" class="navigatetohash">get_CostFunctionWrapper()</a></td><td>100%</td><td>1</td><td>100%</td></tr>
+<tr><td title="get_BidirectionalWithTurnCosts()"><a href="#file0_line41" class="navigatetohash">get_BidirectionalWithTurnCosts()</a></td><td>100%</td><td>1</td><td>100%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -76,10 +77,17 @@
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line32"></a><code>32</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;(e.g.&nbsp;congestion)&nbsp;without&nbsp;mutating&nbsp;the&nbsp;RouterDb.</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
 <tr class="coverableline" title="Covered (11611 visits)" data-coverage="{'AllTestMethods': {'VC': '11611', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">11611</td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;Func&lt;ICostFunction,&nbsp;ICostFunction&gt;?&nbsp;CostFunctionWrapper&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgray"><code></code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;summary&gt;</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;Use&nbsp;the&nbsp;bidirectional&nbsp;search&nbsp;for&nbsp;profiles&nbsp;that&nbsp;enable&nbsp;turn&nbsp;costs.&nbsp;Off&nbsp;by&nbsp;default:</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;it&nbsp;has&nbsp;no&nbsp;stopping&nbsp;condition&nbsp;for&nbsp;an&nbsp;unroutable&nbsp;pair,&nbsp;where&nbsp;both&nbsp;halves&nbsp;must</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line39"></a><code>39</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;exhaust&nbsp;their&nbsp;reachable&nbsp;sets&nbsp;rather&nbsp;than&nbsp;failing&nbsp;at&nbsp;the&nbsp;search-space&nbsp;cap.</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line40"></a><code>40</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;///&nbsp;&lt;/summary&gt;</code></td></tr>
+<tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line41"></a><code>41</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;public&nbsp;bool&nbsp;BidirectionalWithTurnCosts&nbsp;{&nbsp;get;&nbsp;set;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line42"></a><code>42</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />09/19/2026 - 05:52:09<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.2.0<br />09/21/2026 - 17:47:44<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -87,6 +95,7 @@
 <a href="#file0_line21" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_RouteBuilder()"><i class="icon-cube"></i>get_RouteBuilder()</a><br />
 <a href="#file0_line26" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_MaxDistance()"><i class="icon-cube"></i>get_MaxDistance()</a><br />
 <a href="#file0_line34" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_CostFunctionWrapper()"><i class="icon-cube"></i>get_CostFunctionWrapper()</a><br />
+<a href="#file0_line41" class="navigatetohash percentagebar percentagebar100" title="Line coverage: 100% - get_BidirectionalWithTurnCosts()"><i class="icon-cube"></i>get_BidirectionalWithTurnCosts()</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
