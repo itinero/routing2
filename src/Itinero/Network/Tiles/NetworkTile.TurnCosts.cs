@@ -14,17 +14,12 @@ internal partial class NetworkTile
     private uint[] _turnCostPointers = new uint[0];
     private byte[] _turnCosts = new byte[0];
 
-    internal void AddTurnCosts(VertexId vertex, uint turnCostType,
+    /// Returns false when the vertex has no order budget left, see OrderCoder.
+    internal bool AddTurnCosts(VertexId vertex, uint turnCostType,
         EdgeId[] edges, uint[,] costs, IEnumerable<(string key, string value)> attributes,
         IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
-
-        if (edges.Length > OrderCoder.MaxOrderHeadTail)
-        {
-            throw new ArgumentException(
-                $"Cannot add turn costs for vertices with more than {OrderCoder.MaxOrderHeadTail} edges.");
-        }
 
         // enumerate the edges associated with the vertex.
         var enumerator = new NetworkTileEnumerator();
@@ -45,6 +40,20 @@ internal partial class NetworkTile
 
             max = enumerator.TailOrder.Value;
         }
+
+        // orders are assigned from max + 1 up and packed into 4 bits, so check the budget
+        // before writing any of them - a partial assignment would corrupt the tile.
+        enumerator.Reset();
+        var needed = 0;
+        while (enumerator.MoveNext())
+        {
+            if (Array.IndexOf(edges, enumerator.EdgeId) == -1) continue;
+            if (enumerator.TailOrder.HasValue) continue;
+
+            needed++;
+        }
+
+        if (max + needed > OrderCoder.MaxOrderHeadTail) return false;
 
         // assign missing orders if any.
         enumerator.Reset();
@@ -164,6 +173,8 @@ internal partial class NetworkTile
         // write previous turn cost pointer at the end.
         _turnCostPointer +=
             (uint)_turnCosts.SetDynamicUInt32(_turnCostPointer, previousPointer.EncodeAsNullableData());
+
+        return true;
     }
 
     internal IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost,

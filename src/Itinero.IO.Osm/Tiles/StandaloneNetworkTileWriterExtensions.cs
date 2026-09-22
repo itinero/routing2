@@ -363,9 +363,12 @@ public static class StandaloneNetworkTileWriterExtensions
             {
                 // easy, we only add a single cost.
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-                writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                    [secondToLast.edge, last.edge], costs,
-                    networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                if (!writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                        [secondToLast.edge, last.edge], costs,
+                        networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
+                {
+                    LogTurnCostBudgetExceeded(writer, turnCostVertex);
+                }
 
                 // best case, the restriction was converted and can be removed.
                 globalRestrictions.RemoveAt(r);
@@ -392,9 +395,12 @@ public static class StandaloneNetworkTileWriterExtensions
 
                     // easy, we only add a single cost.
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-                    writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                        [secondToLast.edge, tileEnumerator.EdgeId], costs,
-                        networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                    if (!writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                            [secondToLast.edge, tileEnumerator.EdgeId], costs,
+                            networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
+                    {
+                        LogTurnCostBudgetExceeded(writer, turnCostVertex);
+                    }
                 }
 
                 globalRestrictions.RemoveAt(r);
@@ -450,5 +456,19 @@ public static class StandaloneNetworkTileWriterExtensions
     internal static IStandaloneNetworkTileEnumerator GetEnumerator(this StandaloneNetworkTileWriter writer)
     {
         return writer.GetResultingTile().GetEnumerator();
+    }
+
+    /// The turn cost order is packed into 4 bits, so a vertex with more edges than that can
+    /// hold cannot carry a restriction. Dropping it keeps the tile buildable; the turn stays
+    /// allowed. Seen on toll plazas where every booth lane ends on one node.
+    private static void LogTurnCostBudgetExceeded(StandaloneNetworkTileWriter writer,
+        VertexId turnCostVertex)
+    {
+        // Passed as format args, not interpolated: Logger.Log runs the message through
+        // string.Format, which throws on any stray brace in an already-built string.
+        Itinero.Logging.Logger.Log(nameof(StandaloneNetworkTileWriterExtensions),
+            Itinero.Logging.TraceEventType.Warning,
+            "Turn cost order budget exceeded at vertex {0} in tile {1}: restriction dropped, " +
+            "the turn is not restricted.", turnCostVertex, writer.TileId);
     }
 }

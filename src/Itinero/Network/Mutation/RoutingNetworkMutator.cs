@@ -304,7 +304,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// <param name="costs">The costs as a matrix, [fromEdge, toEdge].</param>
     /// <param name="prefix">A path prefix, if any.</param>
     /// <exception cref="ArgumentException"></exception>
-    public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
         EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
@@ -321,7 +321,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         var turnCostTypeId = turnCostFunc.func(attributes);
 
         // add the turn cost table using the type id.
-        tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
+        return tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
     }
 
     /// <summary>

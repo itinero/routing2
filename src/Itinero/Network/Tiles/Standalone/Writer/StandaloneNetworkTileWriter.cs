@@ -145,7 +145,7 @@ public class StandaloneNetworkTileWriter
     /// <param name="edges">The edges involved in the costs.</param>
     /// <param name="costs">The costs.</param>
     /// <param name="prefix">When the costs are only valid after first traversing a sequence of edges.</param>
-    public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
         EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
@@ -154,7 +154,7 @@ public class StandaloneNetworkTileWriter
         var turnCostTypeId = _turnCostTypeMap.func(attributes);
 
         // add the turn cost table using the type id.
-        _tile.NetworkTile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
+        return _tile.NetworkTile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
     }
 
     /// <summary>

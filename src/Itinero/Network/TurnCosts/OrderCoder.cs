@@ -4,6 +4,11 @@ namespace Itinero.Network.TurnCosts;
 
 internal static class OrderCoder
 {
+    // TODO: widen the tile format so a vertex can carry more than 4 bits of turn cost order.
+    // Tail and head orders are packed into one byte here, capping a vertex at 15 turn cost
+    // edges. Real data exceeds that - the AP-6 toll plaza (OSM node 2151903449) ends 26 ways
+    // on one node - and callers currently drop the restriction, so the turn is left allowed.
+    // Fixing it properly means a wider encoding and a tile format version bump.
     internal const int MaxOrderHeadTail = 14;
 
     public static void SetTailHeadOrder(this byte[] data, long i, byte? tail, byte? head)

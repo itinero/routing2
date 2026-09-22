@@ -112,7 +112,8 @@ public class RoutingNetworkWriter : IDisposable
         return edge1;
     }
 
-    public void AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    /// Returns false when the vertex has no order budget left, see OrderCoder.
+    public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
         EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix, uint? turnCostType = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
@@ -129,7 +130,10 @@ public class RoutingNetworkWriter : IDisposable
         turnCostType ??= turnCostMap.func(attributes);
 
         // add the turn cost table using the type id.
-        tile.AddTurnCosts(vertex, turnCostType.Value, edges, costs, attributes, prefix);
+        if (!tile.AddTurnCosts(vertex, turnCostType.Value, edges, costs, attributes, prefix))
+        {
+            return false;
+        }
 
         // for cross-tile edges, the order was set on this tile's copy.
         // sync the order to the other tile's copy so routing from either side sees it.
@@ -168,6 +172,8 @@ public class RoutingNetworkWriter : IDisposable
                 }
             }
         }
+
+        return true;
     }
 
     internal void AddTile(NetworkTile tile)

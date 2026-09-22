@@ -220,6 +220,19 @@ public class RouterDbStreamTarget : OsmStreamTarget
         this.ResolveAndAddTurnCosts(restriction.ToGlobalNetworkRestrictions());
     }
 
+    /// The turn cost order is packed into 4 bits, so a vertex with more edges than that can
+    /// hold cannot carry a restriction. Dropping it keeps the import going; the turn stays
+    /// allowed. Seen on toll plazas where every booth lane ends on one node.
+    private static void LogTurnCostBudgetExceeded(VertexId turnCostVertex)
+    {
+        // Passed as format args, not interpolated: Logger.Log runs the message through
+        // string.Format, which throws on any stray brace in an already-built string.
+        Itinero.Logging.Logger.Log(nameof(RouterDbStreamTarget),
+            Itinero.Logging.TraceEventType.Warning,
+            "Turn cost order budget exceeded at vertex {0}: restriction dropped, " +
+            "the turn is not restricted.", turnCostVertex);
+    }
+
     private void ResolveAndAddTurnCosts(IEnumerable<GlobalRestriction> globalRestrictions)
     {
         var enumerator = _mutableRouterDb.GetEdgeEnumerator();
@@ -239,9 +252,12 @@ public class RouterDbStreamTarget : OsmStreamTarget
             if (networkRestriction.IsProhibitory)
             {
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-                _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                    new[] { secondToLast.edge, last.edge }, costs,
-                    networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                if (!_mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                        new[] { secondToLast.edge, last.edge }, costs,
+                        networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
+                {
+                    LogTurnCostBudgetExceeded(turnCostVertex);
+                }
             }
             else
             {
@@ -255,9 +271,12 @@ public class RouterDbStreamTarget : OsmStreamTarget
                         enumerator.EdgeId == last.edge) continue;
 
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-                    _mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                        new[] { secondToLast.edge, enumerator.EdgeId }, costs,
-                        networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                    if (!_mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                            new[] { secondToLast.edge, enumerator.EdgeId }, costs,
+                            networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
+                    {
+                        LogTurnCostBudgetExceeded(turnCostVertex);
+                    }
                 }
             }
         }
