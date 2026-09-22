@@ -170,6 +170,7 @@ internal class RoutingNetworkIslandManager
     }
 
     internal async Task BuildForTileAsync(RoutingNetwork network, Profile profile, uint tileId,
+        IslandDirectedGraph dgFull, IslandDirectedGraph dgNonLocal,
         CancellationToken cancellationToken)
     {
         // Already classified: nothing to queue and nothing to await. Checked
@@ -200,8 +201,11 @@ internal class RoutingNetworkIslandManager
                 // OperationCanceledException for a request it never cancelled. That poisoned
                 // the tile for the lifetime of the network. Callers stay cancellable through
                 // their own WaitAsync below.
+                // The graphs belong to whichever request wins publication. A caller that
+                // merely awaits this task does not get them populated — but the tile is
+                // done by then, so its durable Islands entry answers instead.
                 var started = IslandClassifier.BuildForTileAsync(network, profile, tileId,
-                    CancellationToken.None);
+                    dgFull, dgNonLocal, CancellationToken.None);
 
                 // Remove on completion whatever the outcome, so a task that failed is retried by
                 // the next caller rather than replayed at it forever. Removal is matched on this

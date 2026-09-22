@@ -398,15 +398,18 @@ public class IslandClassifierTests
         var profile = new DefaultProfile();
         var network = routerDb.Latest;
 
-        var first = await IslandClassifier.ClassifyAsync(network, profile, edge, CancellationToken.None);
+        // The graph is owned by the caller now — a snapping request in production,
+        // this test here. Reusing one across both calls is what caches.
+        var dg = new IslandDirectedGraph();
+        var first = await IslandClassifier.ClassifyAsync(
+            network, profile, edge, dg, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.NotIsland, first);
 
-        // The shared dg should now know this edge is on the main network.
-        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
         Assert.True(dg.IsNotIsland(edge),
-            "after first ClassifyAsync, the shared dg must mark the edge as on the main network");
+            "after first ClassifyAsync, the caller's dg must mark the edge as on the main network");
 
-        var second = await IslandClassifier.ClassifyAsync(network, profile, edge, CancellationToken.None);
+        var second = await IslandClassifier.ClassifyAsync(
+            network, profile, edge, dg, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.NotIsland, second);
     }
 
@@ -439,7 +442,7 @@ public class IslandClassifierTests
         }
         var profile = new DefaultProfile();
         var network = routerDb.Latest;
-        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
+        var dg = new IslandDirectedGraph();
 
         // Before any classification: none of the edges are in dg.
         Assert.False(dg.IsNotIsland(edges[0]));
@@ -448,22 +451,24 @@ public class IslandClassifierTests
 
         // Classify edges[0]. The (edges[0], edges[1]) merge reaches MaxIslandSize=2
         // and graduates; the BFS exits early.
-        var result = await IslandClassifier.ClassifyAsync(network, profile, edges[0], CancellationToken.None);
+        var result = await IslandClassifier.ClassifyAsync(
+            network, profile, edges[0], dg, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.NotIsland, result);
 
         // edges[0] and its merged partner edges[1] are both in MainNet in the
-        // SHARED dg — even though only edges[0] was explicitly classified.
+        // caller's dg — even though only edges[0] was explicitly classified.
         Assert.True(dg.IsNotIsland(edges[0]), "seed in MainNet after classify");
         Assert.True(dg.IsNotIsland(edges[1]), "seed's merged bidir partner also in MainNet");
 
         // edges[2] hasn't been visited at all — not in dg yet.
         Assert.False(dg.IsNotIsland(edges[2]),
-            "edges[2] was never visited so it's not in MainNet — shared state only covers what the BFS touched");
+            "edges[2] was never visited so it's not in MainNet — the dg only covers what the BFS touched");
 
         // Classifying edges[2] now should immediately discover edges[1] (which
         // it shares vertex v3 with) is already in MainNet → merge into MainNet
         // on the very first ProcessEdge call.
-        var second = await IslandClassifier.ClassifyAsync(network, profile, edges[2], CancellationToken.None);
+        var second = await IslandClassifier.ClassifyAsync(
+            network, profile, edges[2], dg, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.NotIsland, second);
         Assert.True(dg.IsNotIsland(edges[2]), "edges[2] now also in MainNet");
     }
@@ -514,17 +519,19 @@ public class IslandClassifierTests
 
         var profile = new DefaultProfile();
 
-        var result1 = await IslandClassifier.ClassifyAsync(rdb1.Latest, profile, e1, CancellationToken.None);
+        // A graph each — passing one to both would be the very sharing this rules out.
+        var dg1 = new IslandDirectedGraph();
+        var dg2 = new IslandDirectedGraph();
+        var result1 = await IslandClassifier.ClassifyAsync(
+            rdb1.Latest, profile, e1, dg1, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.NotIsland, result1);
-
-        var dg1 = rdb1.Latest.IslandManager.GetOrCreateDirectedGraph(profile);
-        var dg2 = rdb2.Latest.IslandManager.GetOrCreateDirectedGraph(profile);
         Assert.True(dg1.IsNotIsland(e1), "rdb1's classification was persisted");
         Assert.False(dg2.IsNotIsland(e2),
             "rdb2's dg must be unaffected by classifications on rdb1 — separate RouterDbs are isolated");
 
         // Sanity: rdb2 can still classify independently.
-        var result2 = await IslandClassifier.ClassifyAsync(rdb2.Latest, profile, e2, CancellationToken.None);
+        var result2 = await IslandClassifier.ClassifyAsync(
+            rdb2.Latest, profile, e2, dg2, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.NotIsland, result2);
     }
 
@@ -773,12 +780,12 @@ public class IslandClassifierTests
         var profile = new DefaultProfile();
         var network = routerDb.Latest;
         var islands = network.IslandManager.GetIslandsFor(profile);
-        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile);
+        var dg = new IslandDirectedGraph();
 
         islands.SetEdgeOnIsland(edges[1]);
 
         var result = await IslandClassifier.ClassifyAsync(
-            network, profile, edges[0], CancellationToken.None);
+            network, profile, edges[0], dg, new IslandDirectedGraph(), new HashSet<EdgeId>(), CancellationToken.None);
         Assert.Equal(IslandStatus.Island, result);
 
         // edges[2] was NEVER touched — it shouldn't be in the dg.

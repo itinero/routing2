@@ -31,15 +31,31 @@ namespace Itinero.Network.Search.Islands;
 /// </summary>
 public static class IslandClassifier
 {
-    public static async Task<IslandStatus> ClassifyAsync(
+    /// <summary>
+    /// Classifies a single seed with its own graphs. For callers with no snapping
+    /// request to borrow from — tests and diagnostics.
+    /// </summary>
+    public static Task<IslandStatus> ClassifyAsync(
         RoutingNetwork network,
         Profile profile,
         EdgeId seed,
         CancellationToken cancellationToken,
+        IslandKind kind = IslandKind.Full) =>
+        ClassifyAsync(network, profile, seed, new IslandDirectedGraph(),
+            kind == IslandKind.Full ? new IslandDirectedGraph() : null,
+            new HashSet<EdgeId>(), cancellationToken, kind);
+
+    internal static async Task<IslandStatus> ClassifyAsync(
+        RoutingNetwork network,
+        Profile profile,
+        EdgeId seed,
+        IslandDirectedGraph dg,
+        IslandDirectedGraph? nonLocalDg,
+        ISet<EdgeId> nonLocalIslandEdges,
+        CancellationToken cancellationToken,
         IslandKind kind = IslandKind.Full)
     {
         var islands = network.IslandManager.GetIslandsFor(profile);
-        var dg = network.IslandManager.GetOrCreateDirectedGraph(profile, kind);
         var maxIslandSize = network.IslandManager.MaxIslandSize;
         var costFunction = IslandKindCostFunctions.GetFor(network, profile, kind);
         var probe = network.GetEdgeEnumerator();
@@ -48,14 +64,10 @@ public static class IslandClassifier
         // Pre-population secondary oracle for Full: any edge in the NonLocal
         // MainNet sentinel is guaranteed to be in Full MainNet too, since
         // N-only paths are valid Full paths.
-        IslandDirectedGraph? nonLocalDg = null;
-        if (kind == IslandKind.Full)
-        {
-            nonLocalDg = network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.NonLocal);
-        }
+        if (kind != IslandKind.Full) nonLocalDg = null;
 
         // Oracle / cached-state short-circuits.
-        if (IsKnownIsland(seed, kind, islands)) return IslandStatus.Island;
+        if (IsKnownIsland(seed, kind, islands, nonLocalIslandEdges)) return IslandStatus.Island;
         if (dg.IsNotIsland(seed)) return IslandStatus.NotIsland;
         if (nonLocalDg != null && nonLocalDg.IsNotIsland(seed))
         {
@@ -75,7 +87,8 @@ public static class IslandClassifier
 
         // Set up. Seed starts in both F and B (it is trivially reachable from itself in either direction).
         dg.AddVertex(seed);
-        var ctx = new Ctx(network, dg, nonLocalDg, kind, islands, costFunction, maxIslandSize);
+        var ctx = new Ctx(network, dg, nonLocalDg, kind, islands, costFunction, maxIslandSize,
+            nonLocalIslandEdges);
         ctx.InForward.Add(dg.Find(seed));
         ctx.InBackward.Add(dg.Find(seed));
 
@@ -104,12 +117,12 @@ public static class IslandClassifier
             }
             if (ctx.ForwardQueue.Count == 0 && !sentinelInF)
             {
-                islands.SetEdgeOnIsland(seed, kind);
+                SetIsland(seed, kind, islands, nonLocalIslandEdges);
                 return IslandStatus.Island;
             }
             if (ctx.BackwardQueue.Count == 0 && !sentinelInB)
             {
-                islands.SetEdgeOnIsland(seed, kind);
+                SetIsland(seed, kind, islands, nonLocalIslandEdges);
                 return IslandStatus.Island;
             }
 
@@ -128,10 +141,25 @@ public static class IslandClassifier
         }
     }
 
-    public static async Task BuildForTileAsync(
+    /// <summary>
+    /// Classifies a tile with its own graphs. For callers with no snapping request to
+    /// borrow from — tests and diagnostics. The snapping path passes its own pair so
+    /// one request's tiles share resolved state.
+    /// </summary>
+    public static Task BuildForTileAsync(
         RoutingNetwork network,
         Profile profile,
         uint tileId,
+        CancellationToken cancellationToken) =>
+        BuildForTileAsync(network, profile, tileId,
+            new IslandDirectedGraph(), new IslandDirectedGraph(), cancellationToken);
+
+    internal static async Task BuildForTileAsync(
+        RoutingNetwork network,
+        Profile profile,
+        uint tileId,
+        IslandDirectedGraph dgFull,
+        IslandDirectedGraph dgNonLocal,
         CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return;
@@ -139,24 +167,11 @@ public static class IslandClassifier
         var islands = network.IslandManager.GetIslandsFor(profile);
         if (islands.GetTileDone(tileId)) return;
 
-        // Serialise the entire classification+discard for this profile. The
-        // dg-discard at the end of this method would otherwise be unsafe
-        // against a concurrent BuildForTileAsync running for the same profile
-        // on a different tile (it would wipe that other call's mid-flight
-        // working state). Different profiles still classify in parallel.
-        var serialiser = network.IslandManager.GetBuildSerialiser(profile.Name);
-        await serialiser.WaitAsync(cancellationToken);
-        try
-        {
-            // Recheck the done flag now that we hold the serialiser — a
-            // previous holder may have classified this tile while we waited.
-            if (islands.GetTileDone(tileId)) return;
-            await BuildForTileInsideSerialiserAsync(network, profile, tileId, islands, cancellationToken);
-        }
-        finally
-        {
-            serialiser.Release();
-        }
+        // No serialiser. The graphs are owned by the calling request, so two
+        // requests classifying different tiles have nothing to clobber, and two
+        // asking for the SAME tile are already deduped upstream by the Lazy<Task>.
+        await BuildForTileInsideSerialiserAsync(network, profile, tileId, islands,
+            dgFull, dgNonLocal, cancellationToken);
     }
 
     private static async Task BuildForTileInsideSerialiserAsync(
@@ -164,6 +179,8 @@ public static class IslandClassifier
         Profile profile,
         uint tileId,
         Islands islands,
+        IslandDirectedGraph dgFull,
+        IslandDirectedGraph dgNonLocal,
         CancellationToken cancellationToken)
     {
         // Use the Full cost function to enumerate traversable edges and to
@@ -199,12 +216,18 @@ public static class IslandClassifier
             v = new VertexId(tileId, v.LocalId + 1);
         }
 
+        // The NonLocal island set belongs to this tile's classification. It used to live on
+        // the shared Islands and be cleared at the end of each tile, which only worked while
+        // a semaphore guaranteed one classification at a time.
+        var nonLocalIslandEdges = new HashSet<EdgeId>();
+
         // NonLocal pass first — classifies the N-only subgraph. L-tagged
         // seeds are masked out by NonLocalCostFunction and return Unknown.
         foreach (var edge in edges)
         {
             if (cancellationToken.IsCancellationRequested) return;
-            await ClassifyAsync(network, profile, edge, cancellationToken, IslandKind.NonLocal);
+            await ClassifyAsync(network, profile, edge, dgNonLocal, null, nonLocalIslandEdges,
+                cancellationToken, IslandKind.NonLocal);
         }
 
         // Full pass — reuses NonLocal MainNet as a positive oracle to short-
@@ -212,7 +235,8 @@ public static class IslandClassifier
         foreach (var edge in edges)
         {
             if (cancellationToken.IsCancellationRequested) return;
-            await ClassifyAsync(network, profile, edge, cancellationToken, IslandKind.Full);
+            await ClassifyAsync(network, profile, edge, dgFull, dgNonLocal, nonLocalIslandEdges,
+                cancellationToken, IslandKind.Full);
         }
 
         // Locals = NonLocal-Island ∩ Full-NotIsland ∩ non-L. These are the
@@ -222,22 +246,19 @@ public static class IslandClassifier
         {
             if (lEdges.Contains(edge)) continue;
             if (islands.IsEdgeOnIsland(edge)) continue;
-            if (!islands.IsEdgeOnIsland(edge, IslandKind.NonLocal)) continue;
+            if (!nonLocalIslandEdges.Contains(edge)) continue;
             islands.SetEdgeLocal(edge);
         }
 
-        islands.ClearNonLocalIslandEdges();
+        // Nothing shared to clear: the NonLocal set goes out of scope with this call.
         islands.SetTileDone(tileId);
 
-        // Per the island-detection spec ("Tile-based batching and persistence",
-        // step 3): once a tile is committed, discard the tile-local dg
-        // vertices so the dg never accumulates per-tile edge ids. Without
-        // this the dg grew unboundedly in long-lived processes, eventually
-        // making AddDirectedLink's O(V+E) BFS over the dg run for minutes.
-        network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.Full)
-            .DiscardAllExceptSentinel();
-        network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.NonLocal)
-            .DiscardAllExceptSentinel();
+        // No discard: the graphs belong to the request, not the process, so they
+        // are bounded by the tiles one snap touches and are released with it. That
+        // bound is what the per-tile wipe was standing in for — it existed because
+        // a process-lifetime graph grew until AddDirectedLink's O(V+E) BFS took
+        // minutes. Keeping them across the request's tiles is the point: an edge
+        // resolved for one tile still answers for the next.
     }
 
     /// <summary>
@@ -248,15 +269,34 @@ public static class IslandClassifier
     /// in the transient <c>_nonLocalIslandEdges</c> set written during the
     /// current NonLocal pass.
     /// </summary>
-    private static bool IsKnownIsland(EdgeId edgeId, IslandKind kind, Islands islands)
+    private static bool IsKnownIsland(EdgeId edgeId, IslandKind kind, Islands islands,
+        ISet<EdgeId> nonLocalIslandEdges)
     {
         if (kind == IslandKind.NonLocal)
         {
             if (islands.IsEdgeOnIsland(edgeId)) return true;
             if (islands.IsEdgeLocal(edgeId)) return true;
-            return islands.IsEdgeOnIsland(edgeId, IslandKind.NonLocal);
+            return nonLocalIslandEdges.Contains(edgeId);
         }
         return islands.IsEdgeOnIsland(edgeId);
+    }
+
+    /// <summary>
+    /// Full verdicts are durable and shared; NonLocal ones are the intermediate used to
+    /// compute locals for this tile and belong to this classification alone. They used to
+    /// live in Islands and be cleared at the end of each tile, which is safe only while
+    /// one classification runs at a time — a concurrent tile's clear wiped them mid-pass.
+    /// </summary>
+    private static void SetIsland(EdgeId edge, IslandKind kind, Islands islands,
+        ISet<EdgeId> nonLocalIslandEdges)
+    {
+        if (kind == IslandKind.NonLocal)
+        {
+            nonLocalIslandEdges.Add(edge);
+            return;
+        }
+
+        islands.SetEdgeOnIsland(edge);
     }
 
     /// <summary>
@@ -280,10 +320,14 @@ public static class IslandClassifier
         public readonly HashSet<EdgeId> InForward = new();
         public readonly HashSet<EdgeId> InBackward = new();
 
+        // Scoped to one tile classification, not shared on Islands.
+        public readonly ISet<EdgeId> NonLocalIslandEdges;
+
         public Ctx(RoutingNetwork network, IslandDirectedGraph dg,
             IslandDirectedGraph? nonLocalDg, IslandKind kind, Islands islands,
-            ICostFunction costFunction, int maxIslandSize)
+            ICostFunction costFunction, int maxIslandSize, ISet<EdgeId> nonLocalIslandEdges)
         {
+            NonLocalIslandEdges = nonLocalIslandEdges;
             Network = network;
             Dg = dg;
             NonLocalDg = nonLocalDg;
@@ -347,7 +391,7 @@ public static class IslandClassifier
             // Oracle.
             EdgeId neighborDgVertex;
             bool isKnown;
-            if (IsKnownIsland(neighborId, ctx.Kind, ctx.Islands))
+            if (IsKnownIsland(neighborId, ctx.Kind, ctx.Islands, ctx.NonLocalIslandEdges))
             {
                 ctx.Dg.AddVertex(neighborId);
                 neighborDgVertex = neighborId;
@@ -506,7 +550,7 @@ public static class IslandClassifier
             if (ctx.Dg.IsProcessed(m)) continue;
             // Don't queue known-island members. They were added to the dg only
             // so cycle detection sees them; we never expand through them.
-            if (IsKnownIsland(m, ctx.Kind, ctx.Islands)) continue;
+            if (IsKnownIsland(m, ctx.Kind, ctx.Islands, ctx.NonLocalIslandEdges)) continue;
             if (!queued.Add(m)) continue;
             queue.Enqueue(m);
         }

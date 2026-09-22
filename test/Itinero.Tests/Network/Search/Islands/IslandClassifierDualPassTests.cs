@@ -82,17 +82,23 @@ public class IslandClassifierDualPassTests
         var profile = LocalAccessProfile();
         var network = routerDb.Latest;
 
+        // NonLocal verdicts are the intermediate for computing locals and belong to one
+        // classification, so the caller holds the set rather than Islands. Reusing it
+        // across the loop is what one tile's classification does.
+        var nonLocalIslandEdges = new HashSet<EdgeId>();
+        var dg = new IslandDirectedGraph();
         foreach (var e in pocketEdges)
         {
             var status = await IslandClassifier.ClassifyAsync(
-                network, profile, e, CancellationToken.None, IslandKind.NonLocal);
+                network, profile, e, dg, null, nonLocalIslandEdges,
+                CancellationToken.None, IslandKind.NonLocal);
             Assert.Equal(IslandStatus.Island, status);
         }
 
         var islands = network.IslandManager.GetIslandsFor(profile);
         foreach (var e in pocketEdges)
         {
-            Assert.True(islands.IsEdgeOnIsland(e, IslandKind.NonLocal));
+            Assert.Contains(e, nonLocalIslandEdges);
             Assert.False(islands.IsEdgeOnIsland(e, IslandKind.Full));
         }
     }
@@ -121,16 +127,18 @@ public class IslandClassifierDualPassTests
         // be Island (size 1 < MaxIslandSize=10, no graduation).
         // Pre-seed NonLocal DG: pretend NonLocal classification already placed
         // seed in main-N (the sentinel).
-        var nonLocalDg = network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.NonLocal);
+        var nonLocalDg = new IslandDirectedGraph();
         nonLocalDg.AddVertex(seed);
         nonLocalDg.CollapseToMainNetwork(seed);
 
+        // The NonLocal oracle is an argument now, so the pre-seeding above is
+        // visibly the thing under test.
+        var fullDg = new IslandDirectedGraph();
         var result = await IslandClassifier.ClassifyAsync(
-            network, profile, seed, CancellationToken.None, IslandKind.Full);
+            network, profile, seed, fullDg, nonLocalDg, new HashSet<EdgeId>(), CancellationToken.None, IslandKind.Full);
         Assert.Equal(IslandStatus.NotIsland, result);
 
         // The Full DG should also have seed collapsed into its own sentinel.
-        var fullDg = network.IslandManager.GetOrCreateDirectedGraph(profile, IslandKind.Full);
         Assert.True(fullDg.IsNotIsland(seed));
     }
 

@@ -9,7 +9,6 @@ using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search.Edges;
 using Itinero.Network.Search.Islands;
-using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 
@@ -31,6 +30,10 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
     private readonly ICostFunction[] _costFunctions;
     private readonly Profile[] _profiles;
 
+    // One directed-graph pair per profile, for the lifetime of this snapper
+    private readonly IslandDirectedGraph?[] _islandDgFull;
+    private readonly IslandDirectedGraph?[] _islandDgNonLocal;
+
     public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance)
     {
         _routingNetwork = routingNetwork;
@@ -43,6 +46,8 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
 
         _costFunctions = _profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
         _islands = routingNetwork.IslandManager.MaxIslandSize == 0 ? [] : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
+        _islandDgFull = new IslandDirectedGraph?[_profiles.Length];
+        _islandDgNonLocal = new IslandDirectedGraph?[_profiles.Length];
     }
 
     /// <inheritdoc/>
@@ -309,8 +314,9 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
                 }
                 else
                 {
-                    // tile not done — check DG for already resolved edges.
-                    var onIsland = _routingNetwork.IslandManager.IsEdgeOnIsland(_profiles[p], edgeEnumerator.EdgeId);
+                    // Tile not done — ask this request's own graph, which is the only
+                    // thing that can answer "not an island" for an unfinished tile.
+                    var onIsland = this.IsEdgeOnIslandInRequest(p, edgeEnumerator.EdgeId);
                     if (onIsland == true)
                     {
                         allOk = false;
@@ -341,6 +347,22 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         return this.IsAcceptable(edgeEnumerator);
     }
 
+    /// <summary>
+    /// Island verdict from state this request owns: the durable set says island, this
+    /// request's graph says not-island, otherwise unknown and the caller resolves.
+    /// </summary>
+    private bool? IsEdgeOnIslandInRequest(int profileIndex, EdgeId edgeId)
+    {
+        if (_islands[profileIndex].IsEdgeOnIsland(edgeId)) return true;
+
+        // No graph yet means nothing has been classified in this request,
+        // do not create one just to ask.
+        var dg = _islandDgFull[profileIndex];
+        if (dg != null && dg.IsNotIsland(edgeId)) return false;
+
+        return null;
+    }
+
     async Task<bool> IEdgeChecker.RunCheckAsync(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, CancellationToken cancellationToken)
     {
         // Build the edge's tile first so every traversable edge in the tile
@@ -349,9 +371,12 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         // the per-profile Islands set / dg fast-paths. The IslandManager
         // deduplicates concurrent builds for the same (profile, tile).
         var tailTileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
-        foreach (var profile in _profiles)
+        for (var p = 0; p < _profiles.Length; p++)
         {
-            await _routingNetwork.IslandManager.BuildForTileAsync(_routingNetwork, profile, tailTileId, cancellationToken);
+            var profile = _profiles[p];
+            await _routingNetwork.IslandManager.BuildForTileAsync(_routingNetwork, profile, tailTileId,
+                _islandDgFull[p] ??= new IslandDirectedGraph(),
+                _islandDgNonLocal[p] ??= new IslandDirectedGraph(), cancellationToken);
             if (cancellationToken.IsCancellationRequested) return true;
 
             var islands = _routingNetwork.IslandManager.GetIslandsFor(profile);
