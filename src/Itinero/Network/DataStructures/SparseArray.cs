@@ -101,10 +101,17 @@ internal sealed class SparseArray<T> : IEnumerable<(long i, T value)>
                     return;
                 }
 
+                // A new array arrives filled with default(T), so only a _default that
+                // differs from it needs writing. Skipping that loop matters: this runs
+                // under the network write lock on the tile-loading path, and _blockSize
+                // is 65536.
                 block = new T[_blockSize];
-                for (var i = 0; i < _blockSize; i++)
+                if (!EqualityComparer<T>.Default.Equals(_default, default!))
                 {
-                    block[i] = _default;
+                    for (var i = 0; i < _blockSize; i++)
+                    {
+                        block[i] = _default;
+                    }
                 }
 
                 _blocks[blockId] = block;
@@ -128,10 +135,17 @@ internal sealed class SparseArray<T> : IEnumerable<(long i, T value)>
                 "Cannot resize an array to a size of zero or smaller.");
         }
 
+        // Grow-only, and geometrically. EnsureMinimumSize resizes to exactly i + 1, so
+        // tile loading walked this with an Array.Resize per new block while holding the
+        // network write lock. Never shrinking keeps that amortised: shrinking back to
+        // blockCount would undo the headroom on the very next call.
+        //
+        // Blocks past _size stay unreachable - the indexer bounds-checks against Length
+        // and the enumerator stops at _size - so the extra entries are inert.
         var blockCount = (long)Math.Ceiling((double)size / _blockSize);
-        if (blockCount != _blocks.Length)
+        if (blockCount > _blocks.Length)
         {
-            Array.Resize(ref _blocks, (int)blockCount);
+            Array.Resize(ref _blocks, (int)Math.Max(blockCount, Math.Min(_blocks.Length * 2L, int.MaxValue)));
         }
 
         _size = size;
