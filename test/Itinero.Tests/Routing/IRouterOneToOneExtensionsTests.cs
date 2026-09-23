@@ -246,4 +246,29 @@ public class IRouterOneToOneExtensionsTests
         Assert.True((4.802438914775848, 51.268097745847650, (float?)null).DistanceEstimateInMeter(route.Shape[6]) <
                     1);
     }
+
+    [Fact]
+    public async Task IRouterOneToOneExtensions_Two_Vertices_Close_Together()
+    {
+        var (routerDb, _, _) = RouterDbScaffolding.BuildRouterDb([
+                    (5.5253315, 50.6592083,  null),
+                    (5.5245052, 50.6595263,  null),
+                    (5.5245005, 50.6595282,  null),
+                    (5.5241723, 50.6596545,  null)
+                ],
+            [(0, 1, null),
+             (1, 2, null),
+             (2, 3, null)]);
+
+        var network = routerDb.Latest;
+
+        var snap1 = await network.Snap().ToAsync((5.5253315, 50.6592083, null));
+        var snap2 = await network.Snap().ToAsync((5.5241723, 50.6596545, null));
+
+        var result = await routerDb.Latest.Route(new DefaultProfile())
+            .From(snap1).To(snap2).CalculateAsync();
+        Assert.False(result.IsError);
+        var route = result.Value;
+        Assert.NotNull(route.Shape);
+    }
 }
