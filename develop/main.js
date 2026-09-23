@@ -248,8 +248,8 @@ var assemblies = [
       { "name": "Itinero.IO.StreamExtensions", "rp": "Itinero_StreamExtensions.html", "cl": 15, "ucl": 0, "cal": 15, "tl": 29, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Logging.Logger", "rp": "Itinero_Logger.html", "cl": 11, "ucl": 17, "cal": 28, "tl": 92, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Attributes.AttributeExtensions", "rp": "Itinero_AttributeExtensions.html", "cl": 42, "ucl": 68, "cal": 110, "tl": 217, "ct": "LineCoverage", "mc": "-", "cb": 8, "tb": 34, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.DataStructures.SparseArray`1", "rp": "Itinero_SparseArray_1.html", "cl": 89, "ucl": 19, "cal": 108, "tl": 198, "ct": "LineCoverage", "mc": "-", "cb": 27, "tb": 34, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.DataStructures.SparseArrayExtensions", "rp": "Itinero_SparseArrayExtensions.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 198, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.DataStructures.SparseArray`1", "rp": "Itinero_SparseArray_1.html", "cl": 96, "ucl": 15, "cal": 111, "tl": 212, "ct": "LineCoverage", "mc": "-", "cb": 31, "tb": 36, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.DataStructures.SparseArrayExtensions", "rp": "Itinero_SparseArrayExtensions.html", "cl": 6, "ucl": 0, "cal": 6, "tl": 212, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.EdgeId", "rp": "Itinero_EdgeId.html", "cl": 33, "ucl": 11, "cal": 44, "tl": 145, "ct": "LineCoverage", "mc": "-", "cb": 7, "tb": 8, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Enumerators.Edges.EdgeEnumerator`1", "rp": "Itinero_EdgeEnumerator_1.html", "cl": 69, "ucl": 18, "cal": 87, "tl": 245, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Enumerators.Edges.IEdgeEnumeratorExtensions", "rp": "Itinero_IEdgeEnumeratorExtensions.html", "cl": 90, "ucl": 8, "cal": 98, "tl": 185, "ct": "LineCoverage", "mc": "-", "cb": 37, "tb": 42, "lch": [], "bch": [], "hc": [] },
@@ -265,8 +265,8 @@ var assemblies = [
       { "name": "Itinero.Network.RoutingNetworkSnapshotExtensions", "rp": "Itinero_RoutingNetworkSnapshotExtensions.html", "cl": 42, "ucl": 6, "cal": 48, "tl": 124, "ct": "LineCoverage", "mc": "-", "cb": 19, "tb": 26, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Edges.EdgeSearch", "rp": "Itinero_EdgeSearch.html", "cl": 339, "ucl": 36, "cal": 375, "tl": 710, "ct": "LineCoverage", "mc": "-", "cb": 232, "tb": 266, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.ICostFunctionExtensions", "rp": "Itinero_ICostFunctionExtensions.html", "cl": 14, "ucl": 0, "cal": 14, "tl": 58, "ct": "LineCoverage", "mc": "-", "cb": 8, "tb": 8, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Search.Islands.IslandClassifier", "rp": "Itinero_IslandClassifier.html", "cl": 330, "ucl": 0, "cal": 330, "tl": 593, "ct": "LineCoverage", "mc": "-", "cb": 190, "tb": 214, "lch": [], "bch": [], "hc": [] },
-      { "name": "Itinero.Network.Search.Islands.IslandDirectedGraph", "rp": "Itinero_IslandDirectedGraph.html", "cl": 300, "ucl": 217, "cal": 517, "tl": 763, "ct": "LineCoverage", "mc": "-", "cb": 122, "tb": 224, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Search.Islands.IslandClassifier", "rp": "Itinero_IslandClassifier.html", "cl": 330, "ucl": 0, "cal": 330, "tl": 596, "ct": "LineCoverage", "mc": "-", "cb": 190, "tb": 214, "lch": [], "bch": [], "hc": [] },
+      { "name": "Itinero.Network.Search.Islands.IslandDirectedGraph", "rp": "Itinero_IslandDirectedGraph.html", "cl": 392, "ucl": 237, "cal": 629, "tl": 986, "ct": "LineCoverage", "mc": "-", "cb": 175, "tb": 290, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandKindCostFunctions", "rp": "Itinero_IslandKindCostFunctions.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 23, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.Islands", "rp": "Itinero_Islands.html", "cl": 31, "ucl": 20, "cal": 51, "tl": 160, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Itinero.Network.Search.Islands.IslandsExtensions", "rp": "Itinero_IslandsExtensions.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 21, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 8, "lch": [], "bch": [], "hc": [] },
@@ -523,7 +523,7 @@ var riskHotspots = [
       { "value": 42, "exceeded": true },
     ]},
   {
-    "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandDirectedGraph", "reportPath": "Itinero_IslandDirectedGraph.html", "methodName": "MergeNoLock(Itinero.Network.EdgeId,Itinero.Network.EdgeId)", "methodShortName": "MergeNoLock(...)", "fileIndex": 0, "line": 274,
+    "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandDirectedGraph", "reportPath": "Itinero_IslandDirectedGraph.html", "methodName": "MergeNoLock(Itinero.Network.EdgeId,Itinero.Network.EdgeId)", "methodShortName": "MergeNoLock(...)", "fileIndex": 0, "line": 493,
     "metrics": [
       { "value": 42, "exceeded": true },
     ]},
@@ -543,7 +543,7 @@ var riskHotspots = [
       { "value": 40, "exceeded": true },
     ]},
   {
-    "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandClassifier", "reportPath": "Itinero_IslandClassifier.html", "methodName": "ProcessAtEndpointAsync()", "methodShortName": "ProcessAtEndpointAsync()", "fileIndex": 0, "line": 356,
+    "assembly": "Itinero", "class": "Itinero.Network.Search.Islands.IslandClassifier", "reportPath": "Itinero_IslandClassifier.html", "methodName": "ProcessAtEndpointAsync()", "methodShortName": "ProcessAtEndpointAsync()", "fileIndex": 0, "line": 359,
     "metrics": [
       { "value": 38, "exceeded": true },
     ]},
