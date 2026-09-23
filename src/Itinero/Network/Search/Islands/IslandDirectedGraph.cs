@@ -30,6 +30,19 @@ internal class IslandDirectedGraph
     // and exclusive against any mutation.
     private readonly ReaderWriterLockSlim _lock = new(LockRecursionPolicy.SupportsRecursion);
 
+    // Scratch for the cycle-merge walks. PathExistsNoLock and IntersectReachableNoLock are
+    // called only from AddDirectedLink, which holds the write lock, so one set per graph
+    // is enough. A walk visits 11.5 nodes on average - allocating the collections cost
+    // more than traversing them.
+    private readonly HashSet<EdgeId> _pathVisited = new();
+    private readonly Stack<EdgeId> _pathStack = new();
+    private readonly HashSet<EdgeId> _sccForward = new();
+    private readonly HashSet<EdgeId> _sccBackward = new();
+    private readonly Stack<EdgeId> _sccStack = new();
+
+    /// Clearing costs capacity, not count, so one freak walk would tax every later one.
+    private const int ScratchKeepCapacity = 1024;
+
     public IslandDirectedGraph()
     {
         _parent[MainNetworkSentinel] = MainNetworkSentinel;
@@ -80,6 +93,157 @@ internal class IslandDirectedGraph
         finally { _lock.ExitReadLock(); }
     }
 
+    /// <summary>
+    /// Test-only: are _outgoing and _incoming exact mirrors of each other?
+    /// </summary>
+    /// <remarks>
+    /// They encode the same edge set from both ends, and MergeNoLock relies on that: to
+    /// repair everyone pointing at an absorbed root it walks _incoming[rootB], so a link
+    /// recorded in only one direction is a link the repair cannot see. Note that the
+    /// mirror updates during a merge sit behind TryGetValue guards, and aOut.Add(tRoot)
+    /// is unconditional while recording the reverse is not.
+    /// </remarks>
+    /// <summary>
+    /// Test-only: every entry in every adjacency set is its own root.
+    /// </summary>
+    internal bool OutgoingIsCanonical(out string failure)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            foreach (var (root, targets) in _outgoing)
+            {
+                foreach (var t in targets)
+                {
+                    if (this.FindNoLock(t) == t) continue;
+                    failure = $"_outgoing[{root}] holds stale {t}, root is {this.FindNoLock(t)}";
+                    return false;
+                }
+            }
+
+            failure = "";
+            return true;
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
+    /// <summary>
+    /// Test-only, and deliberately NOT asserted: _incoming is expected to hold stale
+    /// roots.
+    /// </summary>
+    /// <remarks>
+    /// Removing the absorbed root from _incoming[rootA] as well as _outgoing[rootA] makes
+    /// both indexes exactly canonical and repairs the mirror - and hangs
+    /// Car/generated/case_gen_car_classifications_016. Removing it from _outgoing alone
+    /// does not. Something in the backward direction depends on those entries surviving,
+    /// and until that is understood _incoming must be read through Find.
+    /// </remarks>
+    internal bool IncomingIsCanonical(out string failure)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            foreach (var (root, sources) in _incoming)
+            {
+                foreach (var f in sources)
+                {
+                    if (this.FindNoLock(f) == f) continue;
+                    failure = $"_incoming[{root}] holds stale {f}, root is {this.FindNoLock(f)}";
+                    return false;
+                }
+            }
+
+            failure = "";
+            return true;
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
+    /// <summary>
+    /// Test-only: does the component graph contain a cycle? Contracting a complete SCC
+    /// cannot create one; CollapseToMainNetwork force-merges without checking and can.
+    /// </summary>
+    internal bool HasComponentCycle(out string cycle)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            var state = new Dictionary<EdgeId, int>();
+            foreach (var start in _outgoing.Keys)
+            {
+                if (state.TryGetValue(start, out var st) && st == 2) continue;
+
+                var stack = new Stack<(EdgeId node, IEnumerator<EdgeId>? iter)>();
+                stack.Push((start, null));
+                state[start] = 1;
+                while (stack.Count > 0)
+                {
+                    var (node, iter) = stack.Pop();
+                    iter ??= _outgoing.TryGetValue(node, out var outs) ? outs.GetEnumerator() : null;
+                    var advanced = false;
+                    while (iter != null && iter.MoveNext())
+                    {
+                        var next = iter.Current;
+                        if (next == node) continue;
+                        state.TryGetValue(next, out var ns);
+                        if (ns == 1)
+                        {
+                            cycle = $"{node} -> {next} closes a cycle";
+                            return true;
+                        }
+
+                        if (ns == 2) continue;
+
+                        stack.Push((node, iter));
+                        stack.Push((next, null));
+                        state[next] = 1;
+                        advanced = true;
+                        break;
+                    }
+
+                    if (!advanced) state[node] = 2;
+                }
+            }
+
+            cycle = "";
+            return false;
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
+    internal bool AdjacencyIsMirrored(out string failure)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            foreach (var (from, targets) in _outgoing)
+            {
+                foreach (var to in targets)
+                {
+                    if (_incoming.TryGetValue(to, out var sources) && sources.Contains(from)) continue;
+
+                    failure = $"_outgoing[{from}] has {to}, but _incoming[{to}] does not have {from}";
+                    return false;
+                }
+            }
+
+            foreach (var (to, sources) in _incoming)
+            {
+                foreach (var from in sources)
+                {
+                    if (_outgoing.TryGetValue(from, out var targets) && targets.Contains(to)) continue;
+
+                    failure = $"_incoming[{to}] has {from}, but _outgoing[{from}] does not have {to}";
+                    return false;
+                }
+            }
+
+            failure = "";
+            return true;
+        }
+        finally { _lock.ExitReadLock(); }
+    }
+
     public bool IsProcessed(EdgeId edgeId)
     {
         return _processed.ContainsKey(edgeId);
@@ -108,18 +272,44 @@ internal class IslandDirectedGraph
         finally { _lock.ExitReadLock(); }
     }
 
-    public List<EdgeId>? GetMembers(EdgeId edgeId)
+    /// <summary>
+    /// Copies the unprocessed members of <paramref name="edgeId"/>'s component into
+    /// <paramref name="into"/>. False when the component has no member list, which is the
+    /// case for the main network sentinel.
+    /// </summary>
+    /// <remarks>
+    /// Still a snapshot - callers iterate outside the lock - but the buffer belongs to the
+    /// caller instead of being allocated per call, and processed members are dropped as
+    /// they are passed. IsProcessed is monotone, so a member dropped here can never be
+    /// needed again and each is dropped at most once; without it the caller re-walked the
+    /// whole component on every propagation step, and member lists only grow because
+    /// merges concatenate them. Measured: EnqueueMembers 13.1% -> 2.3% of CPU.
+    ///
+    /// Write lock, not read, because this prunes. NOTE: RemoveEdge reads
+    /// members.Count == 0 as "component is empty" and tears down its adjacency - it has
+    /// no callers today, but if revived it must not treat a fully-pruned component as an
+    /// empty one.
+    /// </remarks>
+    public bool GetMembersInto(EdgeId edgeId, List<EdgeId> into)
     {
-        _lock.EnterReadLock();
+        _lock.EnterWriteLock();
         try
         {
             var root = this.FindNoLock(edgeId);
-            // Snapshot — callers iterate outside the lock and concurrent
-            // merges / RemoveEdge would otherwise mutate the list out from
-            // under them.
-            return _members.TryGetValue(root, out var m) ? new List<EdgeId>(m) : null;
+            if (!_members.TryGetValue(root, out var m)) return false;
+
+            for (var i = m.Count - 1; i >= 0; i--)
+            {
+                if (!_processed.ContainsKey(m[i])) continue;
+                m[i] = m[^1];
+                m.RemoveAt(m.Count - 1);
+            }
+
+            into.Clear();
+            into.AddRange(m);
+            return true;
         }
-        finally { _lock.ExitReadLock(); }
+        finally { _lock.ExitWriteLock(); }
     }
 
     /// <summary>
@@ -183,25 +373,45 @@ internal class IslandDirectedGraph
 
     private bool PathExistsNoLock(EdgeId from, EdgeId to)
     {
-        if (this.FindNoLock(from) == this.FindNoLock(to)) return true;
-        var visited = new HashSet<EdgeId>();
-        var stack = new Stack<EdgeId>();
-        stack.Push(this.FindNoLock(from));
-        while (stack.Count > 0)
+        var fromRoot = this.FindNoLock(from);
+        var toRoot = this.FindNoLock(to);
+        if (fromRoot == toRoot) return true;
+
+        // A path needs a first step out of from and a last step into to. Both O(1), both
+        // usually absent, and the expensive case here is proving there is NO path.
+        if (!_outgoing.ContainsKey(fromRoot)) return false;
+        if (!_incoming.ContainsKey(toRoot)) return false;
+
+        var visited = _pathVisited;
+        var stack = _pathStack;
+        visited.Clear();
+        stack.Clear();
+        stack.Push(fromRoot);
+        try
         {
-            var current = this.FindNoLock(stack.Pop());
-            if (current == this.FindNoLock(to)) return true;
-            if (!visited.Add(current)) continue;
-            if (_outgoing.TryGetValue(current, out var outs))
+            while (stack.Count > 0)
             {
+                // No Find on the popped value: everything pushed came from _outgoing,
+                // which MergeNoLock keeps canonical (OutgoingIsCanonical). _incoming is
+                // NOT canonical and must still be read through Find - see
+                // IslandDirectedGraphMirrorTests.
+                var current = stack.Pop();
+                if (current == toRoot) return true;
+                if (!visited.Add(current)) continue;
+                if (!_outgoing.TryGetValue(current, out var outs)) continue;
+
                 foreach (var o in outs)
                 {
-                    var r = this.FindNoLock(o);
-                    if (!visited.Contains(r)) stack.Push(r);
+                    if (!visited.Contains(o)) stack.Push(o);
                 }
             }
+
+            return false;
         }
-        return false;
+        finally
+        {
+            if (visited.Count > ScratchKeepCapacity) _pathVisited.TrimExcess();
+        }
     }
 
     /// <summary>
@@ -212,42 +422,51 @@ internal class IslandDirectedGraph
     /// </summary>
     private HashSet<EdgeId> IntersectReachableNoLock(EdgeId forwardStart, EdgeId backwardStart)
     {
-        var forward = new HashSet<EdgeId>();
+        // Scratch is reused for the two traversals; the result is not, because the caller
+        // adds to it and iterates it after this returns.
+        var forward = _sccForward;
+        var stack = _sccStack;
+        forward.Clear();
+        stack.Clear();
+        stack.Push(this.FindNoLock(forwardStart));
+        while (stack.Count > 0)
         {
-            var stack = new Stack<EdgeId>();
-            stack.Push(this.FindNoLock(forwardStart));
-            while (stack.Count > 0)
+            // _outgoing is canonical, so no Find on the way out.
+            var current = stack.Pop();
+            if (!forward.Add(current)) continue;
+            if (!_outgoing.TryGetValue(current, out var outs)) continue;
+
+            foreach (var o in outs)
             {
-                var current = this.FindNoLock(stack.Pop());
-                if (!forward.Add(current)) continue;
-                if (_outgoing.TryGetValue(current, out var outs))
-                {
-                    foreach (var o in outs)
-                    {
-                        var r = this.FindNoLock(o);
-                        if (!forward.Contains(r)) stack.Push(r);
-                    }
-                }
+                if (!forward.Contains(o)) stack.Push(o);
             }
         }
+
         var result = new HashSet<EdgeId>();
-        var bStack = new Stack<EdgeId>();
-        var bVisited = new HashSet<EdgeId>();
-        bStack.Push(this.FindNoLock(backwardStart));
-        while (bStack.Count > 0)
+        var backward = _sccBackward;
+        backward.Clear();
+        stack.Clear();
+        stack.Push(this.FindNoLock(backwardStart));
+        while (stack.Count > 0)
         {
-            var current = this.FindNoLock(bStack.Pop());
-            if (!bVisited.Add(current)) continue;
+            // _incoming is NOT canonical - it deliberately keeps absorbed roots, and
+            // removing them hangs a real route. So the backward walk still resolves every
+            // entry through Find.
+            var current = this.FindNoLock(stack.Pop());
+            if (!backward.Add(current)) continue;
             if (forward.Contains(current)) result.Add(current);
-            if (_incoming.TryGetValue(current, out var ins))
+            if (!_incoming.TryGetValue(current, out var ins)) continue;
+
+            foreach (var i in ins)
             {
-                foreach (var i in ins)
-                {
-                    var r = this.FindNoLock(i);
-                    if (!bVisited.Contains(r)) bStack.Push(r);
-                }
+                var r = this.FindNoLock(i);
+                if (!backward.Contains(r)) stack.Push(r);
             }
         }
+
+        if (forward.Count > ScratchKeepCapacity) _sccForward.TrimExcess();
+        if (backward.Count > ScratchKeepCapacity) _sccBackward.TrimExcess();
+
         return result;
     }
 
@@ -344,11 +563,17 @@ internal class IslandDirectedGraph
             _incoming.Remove(rootB);
         }
 
-        // remove self-loops
+        // remove self-loops, including rootB which has just become part of rootA
         if (_outgoing.TryGetValue(rootA, out var aOutFinal))
+        {
             aOutFinal.Remove(rootA);
+            aOutFinal.Remove(rootB);
+        }
+
         if (_incoming.TryGetValue(rootA, out var aIncFinal))
+        {
             aIncFinal.Remove(rootA);
+        }
 
         // merge members
         if (_members.TryGetValue(rootB, out var bMembers))
@@ -539,9 +764,8 @@ internal class IslandDirectedGraph
                 var seen = new HashSet<EdgeId>();
                 foreach (var o in outs)
                 {
-                    var r = this.FindNoLock(o);
-                    if (r == root) continue;
-                    if (seen.Add(r)) result.Add(r);
+                    if (o == root) continue;
+                    if (seen.Add(o)) result.Add(o);
                 }
             }
         }
@@ -597,8 +821,7 @@ internal class IslandDirectedGraph
             {
                 foreach (var o in outs)
                 {
-                    var r = this.FindNoLock(o);
-                    if (r != sentinel) result.Add(r);
+                    if (o != sentinel) result.Add(o);
                 }
             }
             if (_incoming.TryGetValue(root, out var ins))

@@ -323,6 +323,9 @@ public static class IslandClassifier
         // Scoped to one tile classification, not shared on Islands.
         public readonly ISet<EdgeId> NonLocalIslandEdges;
 
+        // Scratch for EnqueueMembers, so reading a component's members does not allocate.
+        public readonly List<EdgeId> MemberBuffer = new();
+
         public Ctx(RoutingNetwork network, IslandDirectedGraph dg,
             IslandDirectedGraph? nonLocalDg, IslandKind kind, Islands islands,
             ICostFunction costFunction, int maxIslandSize, ISet<EdgeId> nonLocalIslandEdges)
@@ -543,9 +546,9 @@ public static class IslandClassifier
 
     private static void EnqueueMembers(EdgeId root, Queue<EdgeId> queue, HashSet<EdgeId> queued, Ctx ctx)
     {
-        var members = ctx.Dg.GetMembers(root);
-        if (members == null) return;
-        foreach (var m in members)
+        // Reused buffer owned by the classification; EnqueueMembers is never nested.
+        if (!ctx.Dg.GetMembersInto(root, ctx.MemberBuffer)) return;
+        foreach (var m in ctx.MemberBuffer)
         {
             if (ctx.Dg.IsProcessed(m)) continue;
             // Don't queue known-island members. They were added to the dg only
