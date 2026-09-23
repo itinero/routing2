@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Itinero.Network;
 using Itinero.Network.Tiles;
 using Xunit;
 
@@ -131,5 +132,34 @@ public class NetworkTile_TurnCostsTests
                 Assert.Equal(145454U, cost.cost);
             }
         }
+    }
+
+    [Fact]
+    public void NetworkTile_AddTurnCosts_EncodingRoundTrip()
+    {
+        var network = new RoutingNetwork(new RouterDb());
+        var mutable = network.GetAsMutable();
+        var vertex1 = mutable.AddVertex(4.4795, 50.3126);
+        var vertex2 = mutable.AddVertex(4.4782, 50.3188);
+        var vertex3 = mutable.AddVertex(4.4780, 50.3189);
+        var vertex4 = mutable.AddVertex(4.4794, 50.3124);
+
+        var edge1 = mutable.AddEdge(vertex1, vertex2);
+        var edge2 = mutable.AddEdge(vertex2, vertex3);
+        var edge3 = mutable.AddEdge(vertex3, vertex4);
+
+        mutable.AddTurnCosts(vertex3, [("restriction", "no_u_turn"), ("type", "restriction")], [edge2, edge3],
+            new uint[,] { { 0, 1 }, { 0, 0 } }, [edge1]);
+
+        if(mutable.GetTile(vertex3.TileId) is not NetworkTile tile)
+        {
+            throw new Exception("Tile not found.");
+        }
+        var turnCost = tile.GetTurnCosts(vertex3, 1, 0).Single();
+        Assert.Equal(0U, turnCost.turnCostType);
+        Assert.Equal(1U, turnCost.cost);
+        Assert.Equal(1, turnCost.prefixEdges.Count());
+        Assert.Equal(edge1, turnCost.prefixEdges.ElementAt(0));
+        Assert.Equal(2, turnCost.attributes.Count());
     }
 }
