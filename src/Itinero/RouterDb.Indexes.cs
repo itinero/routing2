@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Itinero.Indexes;
 using Itinero.Profiles;
 
@@ -37,15 +38,38 @@ public sealed partial class RouterDb
     /// Gets the turn attributes for the given type.
     /// </summary>
     /// <returns>The attributes.</returns>
+    // Built fresh on every call before, and GetTileForRead calls this per tile access.
+    private sealed class MapCache
+    {
+        public required Guid Id;
+        public required Func<IEnumerable<(string key, string value)>, uint> Func;
+        public required AttributeSetMap Map;
+    }
+
+    private MapCache? _edgeTypeMapCache;
+
+    /// <summary>
+    /// Gets the turn attributes for the given type.
+    /// </summary>
+    /// <returns>The attributes.</returns>
     internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetEdgeTypeMap()
     {
-        return (this.EdgeTypeMap.Id,
-            a =>
-            {
-                var m = this.EdgeTypeMap.Map(a);
-                return _edgeTypeIndex.Get(m);
-            }
-        );
+        var map = this.EdgeTypeMap;
+        var cached = Volatile.Read(ref _edgeTypeMapCache);
+
+        // On the instance, not the id: EdgeTypeMap is settable and a new instance with the same
+        // id would otherwise keep serving the old closure.
+        if (cached != null && ReferenceEquals(cached.Map, map)) return (cached.Id, cached.Func);
+
+        var built = new MapCache
+        {
+            Id = map.Id,
+            Map = map,
+            Func = a => _edgeTypeIndex.Get(map.Map(a)),
+        };
+        Volatile.Write(ref _edgeTypeMapCache, built);
+
+        return (built.Id, built.Func);
     }
 
     /// <summary>
@@ -63,13 +87,22 @@ public sealed partial class RouterDb
         return _turnCostTypeIndex.GetById(id);
     }
 
+    private MapCache? _turnCostTypeMapCache;
+
     internal (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) GetTurnCostTypeMap()
     {
-        return (_turnCostTypeMap.Id, a =>
+        var map = _turnCostTypeMap;
+        var cached = Volatile.Read(ref _turnCostTypeMapCache);
+        if (cached != null && ReferenceEquals(cached.Map, map)) return (cached.Id, cached.Func);
+
+        var built = new MapCache
         {
-            var m = _turnCostTypeMap.Map(a);
-            return _turnCostTypeIndex.Get(m);
-        }
-        );
+            Id = map.Id,
+            Map = map,
+            Func = a => _turnCostTypeIndex.Get(map.Map(a)),
+        };
+        Volatile.Write(ref _turnCostTypeMapCache, built);
+
+        return (built.Id, built.Func);
     }
 }
