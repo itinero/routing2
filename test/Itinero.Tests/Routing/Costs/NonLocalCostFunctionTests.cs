@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Routing.Costs;
+using Itinero.Routing.Flavours.Dijkstra;
 using Itinero.Tests.Network;
 using Xunit;
-using Itinero.Routing.Flavours.Dijkstra;
 
 namespace Itinero.Tests.Routing.Costs;
 
