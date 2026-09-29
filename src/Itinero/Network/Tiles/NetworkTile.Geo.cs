@@ -58,8 +58,7 @@ internal partial class NetworkTile
         }
 
         // write coordinates.
-        const int resolution = (1 << TileResolutionInBits) - 1;
-        var (x, y) = TileStatic.ToLocalTileCoordinates(_zoom, _tileId, longitude, latitude, resolution);
+        var (x, y) = this.ToLocalCoordinates(longitude, latitude);
         _coordinates.SetFixed(tileCoordinatePointer, CoordinateSizeInBytes, x);
         _coordinates.SetFixed(tileCoordinatePointer + CoordinateSizeInBytes, CoordinateSizeInBytes, y);
 
@@ -95,8 +94,38 @@ internal partial class NetworkTile
             elevation = (_elevation.Value + offset) / 10.0f;
         }
 
-        TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out longitude, out latitude);
+        this.FromLocalCoordinates(x, y, out longitude, out latitude);
     }
+
+    // Box and step size are the same for every vertex in the tile; computing them per
+    // coordinate read cost two Math.Sinh, two Math.Atan and four Math.Pow each time.
+    private readonly double _boxLeft;
+
+    private readonly double _boxTop;
+
+    private readonly double _boxLonStep;
+
+    private readonly double _boxLatStep;
+
+    private const int CoordinateResolution = (1 << TileResolutionInBits) - 1;
+
+    private (double left, double top, double lonStep, double latStep) ComputeBox()
+    {
+        var (minLon, minLat, maxLon, maxLat) = TileStatic.GetTileBoundingBox(_zoom, _tileId);
+
+        return (minLon, maxLat,
+            (maxLon - minLon) / CoordinateResolution,
+            (maxLat - minLat) / CoordinateResolution);
+    }
+
+    private void FromLocalCoordinates(int x, int y, out double longitude, out double latitude)
+    {
+        longitude = _boxLeft + (_boxLonStep * x);
+        latitude = _boxTop - (_boxLatStep * y);
+    }
+
+    private (int x, int y) ToLocalCoordinates(double longitude, double latitude) =>
+        ((int)((longitude - _boxLeft) / _boxLonStep), (int)((_boxTop - latitude) / _boxLatStep));
 
     private uint SetShape(IEnumerable<(double longitude, double latitude, float? e)> shape)
     {
@@ -121,7 +150,7 @@ internal partial class NetworkTile
         {
             var current = enumerator.Current;
             var (x, y) =
-                TileStatic.ToLocalTileCoordinates(_zoom, _tileId, current.longitude, current.latitude, resolution);
+                this.ToLocalCoordinates(current.longitude, current.latitude);
             int? eOffset = null;
             var e = current.e ?? 0;
             if (_elevation != null)
@@ -237,7 +266,7 @@ internal partial class NetworkTile
                     elevation = _elevation.Value + eOffset.Value;
                 }
 
-                TileStatic.FromLocalTileCoordinates(_zoom, _tileId, x, y, resolution, out var longitude,
+                this.FromLocalCoordinates(x, y, out var longitude,
                     out var latitude);
                 yield return (longitude, latitude, elevation / 10.0f);
 

@@ -41,6 +41,7 @@ internal partial class NetworkTile
     {
         _zoom = zoom;
         _tileId = tileId;
+        (_boxLeft, _boxTop, _boxLonStep, _boxLatStep) = this.ComputeBox();
         _edgeTypeMapId = edgeTypeMapId ?? Guid.Empty;
         _nextCrossTileId = 0;
 
@@ -64,6 +65,7 @@ internal partial class NetworkTile
     {
         _zoom = zoom;
         _tileId = tileId;
+        (_boxLeft, _boxTop, _boxLonStep, _boxLatStep) = this.ComputeBox();
         _edgeTypeMapId = edgeTypeMapId;
         _nextCrossTileId = nextCrossTileId;
         _pointers = pointers;
