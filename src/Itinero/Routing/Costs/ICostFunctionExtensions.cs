@@ -13,7 +13,7 @@ internal static class ICostFunctionExtensions
             // fast path: when there are no previous edges, pass null to avoid boxing.
             if (previousEdges.IsEmpty)
             {
-                var (_, _, localAccess, cost, _) = costFunction.Get(enumerator, true, null);
+                var (_, _, localAccess, cost, _) = costFunction.Get(enumerator, true);
                 return (cost, 0.0, localAccess);
             }
 

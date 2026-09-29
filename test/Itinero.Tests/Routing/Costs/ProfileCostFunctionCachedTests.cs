@@ -20,8 +20,7 @@ public class ProfileCostFunctionCachedTests
         edgeEnumerator.MoveNext();
 
         // run
-        var costs = costFunction.Get(edgeEnumerator, true,
-            Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, true);
 
         // test.
         Assert.Equal(100 * 10, costs.cost);
@@ -38,14 +37,12 @@ public class ProfileCostFunctionCachedTests
         var costFunction = new ProfileCostFunctionCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, false, 24));
         edgeEnumerator.MoveNext();
-        costFunction.Get(edgeEnumerator, true,
-            Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        costFunction.Get(edgeEnumerator, true);
         edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
         // run
-        var costs = costFunction.Get(edgeEnumerator, true,
-            Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, true);
 
         // test.
         Assert.Equal(100 * 10, costs.cost);
@@ -64,8 +61,7 @@ public class ProfileCostFunctionCachedTests
         edgeEnumerator.MoveNext();
 
         // run
-        var costs = costFunction.Get(edgeEnumerator, false,
-            Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, false);
 
         // test.
         Assert.Equal(100 * 1, costs.cost);
@@ -84,8 +80,7 @@ public class ProfileCostFunctionCachedTests
         edgeEnumerator.MoveNext();
 
         // run
-        var costs = costFunction.Get(edgeEnumerator, true,
-            Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, true);
 
         // test.
         Assert.Equal(100 * 1, costs.cost);
@@ -104,8 +99,7 @@ public class ProfileCostFunctionCachedTests
         edgeEnumerator.MoveNext();
 
         // run
-        var costs = costFunction.Get(edgeEnumerator, true,
-            Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, true);
 
         // test.
         Assert.Equal(100 * 10, costs.cost);
@@ -122,7 +116,7 @@ public class ProfileCostFunctionCachedTests
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
-        var costs = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, true);
 
         Assert.True(costs.localAccess);
     }
@@ -135,7 +129,7 @@ public class ProfileCostFunctionCachedTests
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
-        var costs = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var costs = costFunction.Get(edgeEnumerator, true);
 
         Assert.False(costs.localAccess);
     }
@@ -154,8 +148,8 @@ public class ProfileCostFunctionCachedTests
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
-        var first = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
-        var second = costFunction.Get(edgeEnumerator, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var first = costFunction.Get(edgeEnumerator, true);
+        var second = costFunction.Get(edgeEnumerator, true);
 
         Assert.True(first.localAccess);
         Assert.True(second.localAccess);

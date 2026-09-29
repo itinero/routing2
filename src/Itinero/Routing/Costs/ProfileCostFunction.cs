@@ -5,6 +5,8 @@ using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Profiles;
 
+using Itinero.Routing.Flavours.Dijkstra;
+
 namespace Itinero.Routing.Costs;
 
 internal class ProfileCostFunction : ICostFunction
@@ -18,9 +20,8 @@ internal class ProfileCostFunction : ICostFunction
 
     public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
-        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+        PreviousEdgeEnumerable previousEdges = default)
     {
-        previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
 
         var factor = _profile.FactorInEdgeDirection(edgeEnumerator);
         var length = edgeEnumerator.Length ??
@@ -32,7 +33,7 @@ internal class ProfileCostFunction : ICostFunction
 
         // check for turn costs.
         var totalTurnCost = 0.0;
-        var (_, turn) = previousEdges.FirstOrDefault();
+        var turn = previousEdges.First?.turn;
         if (turn == null) return (canAccess, factor.CanStop, localAccess, cost, totalTurnCost);
 
         // there are turn costs.

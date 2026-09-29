@@ -4,6 +4,7 @@ using Itinero.Network.Enumerators.Edges;
 using Itinero.Routing.Costs;
 using Itinero.Tests.Network;
 using Xunit;
+using Itinero.Routing.Flavours.Dijkstra;
 
 namespace Itinero.Tests.Routing.Costs;
 
@@ -18,7 +19,7 @@ public class NonLocalCostFunctionTests
         var edgeEnumerator = new EdgeEnumeratorMock(new EdgeId(42, 42));
         edgeEnumerator.MoveNext();
 
-        var costs = decorator.Get(edgeEnumerator, true, null);
+        var costs = decorator.Get(edgeEnumerator, true);
 
         Assert.True(costs.canAccess);
         Assert.True(costs.canStop);
@@ -36,7 +37,7 @@ public class NonLocalCostFunctionTests
         var edgeEnumerator = new EdgeEnumeratorMock(new EdgeId(42, 42));
         edgeEnumerator.MoveNext();
 
-        var costs = decorator.Get(edgeEnumerator, true, null);
+        var costs = decorator.Get(edgeEnumerator, true);
 
         Assert.False(costs.canAccess);
         Assert.True(costs.localAccess);
@@ -54,7 +55,7 @@ public class NonLocalCostFunctionTests
         var edgeEnumerator = new EdgeEnumeratorMock(new EdgeId(42, 42));
         edgeEnumerator.MoveNext();
 
-        var costs = decorator.Get(edgeEnumerator, true, null);
+        var costs = decorator.Get(edgeEnumerator, true);
 
         Assert.False(costs is { canAccess: true, turnCost: < double.MaxValue });
     }
@@ -79,7 +80,7 @@ public class NonLocalCostFunctionTests
         public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
             IEdgeEnumerator<RoutingNetwork> edgeEnumerator,
             bool tailToHead = true,
-            IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+            PreviousEdgeEnumerable previousEdges = default)
             => (_canAccess, _canStop, _localAccess, _cost, _turnCost);
     }
 }

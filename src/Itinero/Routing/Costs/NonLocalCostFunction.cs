@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
+using Itinero.Routing.Flavours.Dijkstra;
+
 namespace Itinero.Routing.Costs;
 
 /// <summary>
@@ -25,7 +27,7 @@ internal sealed class NonLocalCostFunction : ICostFunction
 
     public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
-        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+        PreviousEdgeEnumerable previousEdges = default)
     {
         var inner = _inner.Get(edgeEnumerator, tailToHead, previousEdges);
         if (inner.localAccess)

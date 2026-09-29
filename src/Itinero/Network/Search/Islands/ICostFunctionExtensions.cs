@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Routing.Costs;
+using Itinero.Routing.Flavours.Dijkstra;
 
 namespace Itinero.Network.Search.Islands;
 
@@ -18,7 +19,7 @@ internal static class ICostFunctionExtensions
     /// <param name="previousEdges">A sequence of previously traversed edge, if any.</param>
     /// <returns>True if the current edge is traversable and the turn cost allows the turn.</returns>
     public static bool GetIslandBuilderCost(this ICostFunction costFunction,
-        RoutingNetworkEdgeEnumerator enumerator, bool forward = true, IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+        RoutingNetworkEdgeEnumerator enumerator, bool forward = true, PreviousEdgeEnumerable previousEdges = default)
     {
         var cost = costFunction.Get(enumerator, forward, previousEdges);
 
@@ -44,13 +45,13 @@ internal static class ICostFunctionExtensions
         // without this check a one-way edge whose only allowed direction goes the
         // OPPOSITE way of the requested traversal would still appear to enable a
         // turn into the to-edge.
-        var fromCost = costFunction.Get(from, tailToHead: true, null);
+        var fromCost = costFunction.Get(from, tailToHead: true);
         if (!fromCost.canAccess) return false;
 
         var fromOrder = from.HeadOrder;
         var previousEdges = fromOrder.HasValue
-            ? new (EdgeId edgeId, byte? turn)[] { (from.EdgeId, fromOrder) }
-            : null;
+            ? PreviousEdgeEnumerable.ForEdge(from.EdgeId, fromOrder)
+            : default;
 
         var cost = costFunction.Get(to, tailToHead: true, previousEdges);
         return cost is { canAccess: true, turnCost: < double.MaxValue };

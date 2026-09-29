@@ -156,7 +156,7 @@ internal class BidirectionalDijkstra
         foreach (var forward in new[] { true, false })
         {
             if (!enumerator.MoveTo(snap.EdgeId, forward)) continue;
-            var (canAccess, _, localAccess, cost, _) = costFunction.Get(enumerator, tailToHead: asOrigin, null);
+            var (canAccess, _, localAccess, cost, _) = costFunction.Get(enumerator, tailToHead: asOrigin, default);
             if (!canAccess || cost <= 0) continue;
             var offsetCost = forward
                 ? cost * (1 - snap.OffsetFactor())
@@ -346,8 +346,8 @@ internal class BidirectionalDijkstra
         if (!probe.MoveTo(pathOutgoing, !pathOutgoingForwardFromOther)) return double.MaxValue;
 
         var previous = pathIncomingHeadOrder.HasValue
-            ? new (EdgeId edgeId, byte? turn)[] { (pathIncoming, pathIncomingHeadOrder) }
-            : null;
+            ? PreviousEdgeEnumerable.ForEdge(pathIncoming, pathIncomingHeadOrder)
+            : default;
         var (_, _, _, _, turnCost) = costFunction.Get(probe, tailToHead: true, previous);
         return turnCost;
     }

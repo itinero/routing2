@@ -48,7 +48,7 @@ public class BidirectionalDijkstraAccessAwareTests
 
         public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
             IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
-            IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+            PreviousEdgeEnumerable previousEdges = default)
         {
             var la = _localAccessEdges.Contains(edgeEnumerator.EdgeId);
             return (true, true, la, 1.0, 0.0);

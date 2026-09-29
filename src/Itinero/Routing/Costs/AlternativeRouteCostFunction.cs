@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
+using Itinero.Routing.Flavours.Dijkstra;
+
 namespace Itinero.Routing.Costs;
 
 internal class AlternativeRouteCostFunction : ICostFunction
@@ -26,9 +28,8 @@ internal class AlternativeRouteCostFunction : ICostFunction
     }
 
     public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
-        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+        PreviousEdgeEnumerable previousEdges = default)
     {
-        previousEdges ??= ArraySegment<(EdgeId edgeId, byte? turn)>.Empty;
 
         if (_moreCostlyEdges.TryGetValue(edgeEnumerator.EdgeId, out var count))
         {

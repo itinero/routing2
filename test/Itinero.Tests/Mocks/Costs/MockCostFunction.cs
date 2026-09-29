@@ -4,6 +4,7 @@ using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
+using Itinero.Routing.Flavours.Dijkstra;
 
 namespace Itinero.Tests.Mocks.Costs;
 
@@ -41,7 +42,7 @@ public class MockCostFunction : ICostFunction
     }
 
     public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, bool tailToHead = true,
-        IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+        PreviousEdgeEnumerable previousEdges = default)
     {
         var turnCost = 0.0;
         if (_barriers.Contains(edgeEnumerator.Tail))

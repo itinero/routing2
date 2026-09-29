@@ -168,7 +168,7 @@ internal static class AllocationProfiler
         vertEnum.MoveNext();
         edgeEnum.MoveTo(vertEnum.Current);
         edgeEnum.MoveNext();
-        costFunc.Get(edgeEnum, true, null);
+        costFunc.Get(edgeEnum, true);
 
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         var bCost = GC.GetTotalAllocatedBytes(true);
@@ -179,7 +179,7 @@ internal static class AllocationProfiler
             edgeEnum.MoveTo(vertEnum.Current);
             while (edgeEnum.MoveNext())
             {
-                costFunc.Get(edgeEnum, true, null);
+                costFunc.Get(edgeEnum, true);
                 costCount++;
             }
         }
@@ -220,21 +220,9 @@ internal static class AllocationProfiler
         var a2 = GC.GetTotalAllocatedBytes(true);
         Console.WriteLine($"  EdgeTypeId+Length+Forward reads:      {(a2 - b2) / 1024.0:F1} KB ({(a2 - b2) / costCount} bytes/call)");
 
-        // 3. costFunc.Get with empty ArraySegment (no null)
-        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        var emptyPrev = (IEnumerable<(Itinero.Network.EdgeId edgeId, byte? turn)>)ArraySegment<(Itinero.Network.EdgeId edgeId, byte? turn)>.Empty;
-        var b3 = GC.GetTotalAllocatedBytes(true);
-        vertEnum = network.GetVertexEnumerator();
-        while (vertEnum.MoveNext())
-        {
-            edgeEnum.MoveTo(vertEnum.Current);
-            while (edgeEnum.MoveNext())
-            {
-                costFunc.Get(edgeEnum, true, emptyPrev);
-            }
-        }
-        var a3 = GC.GetTotalAllocatedBytes(true);
-        Console.WriteLine($"  costFunc.Get(pre-boxed empty):       {(a3 - b3) / 1024.0:F1} KB ({(a3 - b3) / costCount} bytes/call)");
+        // Cases 3 and 6 measured passing an empty IEnumerable and an Array.Empty to Get, to
+        // separate the boxing from the call. previousEdges is a struct now, so neither is
+        // expressible and there is nothing left to compare.
 
         // 4. Inline what the cost function does - no interface, no LINQ.
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
@@ -263,22 +251,6 @@ internal static class AllocationProfiler
         }
         var a5 = GC.GetTotalAllocatedBytes(true);
         Console.WriteLine($"  FirstOrDefault on pre-boxed empty:   {(a5 - b5) / 1024.0:F1} KB ({(a5 - b5) / costCount} bytes/call)");
-
-        // 6. costFunc.Get passing Array.Empty (true empty, no elements)
-        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        var trueEmpty = Array.Empty<(Itinero.Network.EdgeId edgeId, byte? turn)>();
-        var b6 = GC.GetTotalAllocatedBytes(true);
-        vertEnum = network.GetVertexEnumerator();
-        while (vertEnum.MoveNext())
-        {
-            edgeEnum.MoveTo(vertEnum.Current);
-            while (edgeEnum.MoveNext())
-            {
-                costFunc.Get(edgeEnum, true, trueEmpty);
-            }
-        }
-        var a6 = GC.GetTotalAllocatedBytes(true);
-        Console.WriteLine($"  costFunc.Get(Array.Empty):           {(a6 - b6) / 1024.0:F1} KB ({(a6 - b6) / costCount} bytes/call)");
 
         // 7. Check if Length is null (triggers EdgeLength which allocates)
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();

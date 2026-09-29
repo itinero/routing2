@@ -126,8 +126,8 @@ internal static class SnapDiagnostic
             while (edgeEnum2.MoveNext())
             {
                 if (!edgeEnum2.Forward) continue;
-                var fwd = costFunc.Get(edgeEnum2, true, null);
-                var bwd = costFunc.Get(edgeEnum2, false, null);
+                var fwd = costFunc.Get(edgeEnum2, true);
+                var bwd = costFunc.Get(edgeEnum2, false);
                 if (shown < 5 || (!fwd.canAccess && !bwd.canAccess))
                 {
                     Console.WriteLine($"    Edge {edgeEnum2.EdgeId}: fwd(canAccess={fwd.canAccess}, canStop={fwd.canStop}, cost={fwd.cost:F1}) " +
@@ -177,8 +177,8 @@ internal static class SnapDiagnostic
                 if (!edgeEnum.Forward) continue; // avoid duplicates
                 total++;
 
-                var fwd = costFunction.Get(edgeEnum, true, null);
-                var bwd = costFunction.Get(edgeEnum, false, null);
+                var fwd = costFunction.Get(edgeEnum, true);
+                var bwd = costFunction.Get(edgeEnum, false);
 
                 var canAccess = fwd.canAccess || bwd.canAccess;
 

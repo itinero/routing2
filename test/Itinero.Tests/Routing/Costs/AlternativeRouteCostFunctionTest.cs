@@ -4,6 +4,7 @@ using Itinero.Network;
 using Itinero.Routing.Costs;
 using Itinero.Tests.Network;
 using Xunit;
+using Itinero.Routing.Flavours.Dijkstra;
 
 namespace Itinero.Tests.Routing.Costs;
 
@@ -34,7 +35,7 @@ public class AlternativeRouteCostFunctionTest
         var nonPenalizedEdge = new EdgeEnumeratorMock(new EdgeId(42, 41));
         nonPenalizedEdge.MoveNext();
         var (_, _, _, normalCost, _) =
-            altCostFunc.Get(nonPenalizedEdge, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+            altCostFunc.Get(nonPenalizedEdge, true);
         Assert.Equal(1, normalCost);
     }
 
@@ -53,8 +54,8 @@ public class AlternativeRouteCostFunctionTest
         var nonPenalized = new EdgeEnumeratorMock(new EdgeId(42, 41));
         nonPenalized.MoveNext();
 
-        var penalizedCosts = alt.Get(penalized, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
-        var passThroughCosts = alt.Get(nonPenalized, true, Enumerable.Empty<(EdgeId edgeId, byte? turn)>());
+        var penalizedCosts = alt.Get(penalized, true);
+        var passThroughCosts = alt.Get(nonPenalized, true);
 
         Assert.True(penalizedCosts.localAccess);
         Assert.True(passThroughCosts.localAccess);
@@ -72,7 +73,7 @@ public class AlternativeRouteCostFunctionTest
         public (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
             Itinero.Network.Enumerators.Edges.IEdgeEnumerator<RoutingNetwork> edgeEnumerator,
             bool tailToHead = true,
-            IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null)
+            PreviousEdgeEnumerable previousEdges = default)
             => (true, true, _localAccess, _cost, 0);
     }
 }

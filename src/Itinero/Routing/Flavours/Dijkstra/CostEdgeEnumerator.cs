@@ -27,7 +27,7 @@ internal class CostEdgeEnumerator
 
     public (double cost, double turnCost) GetCost(bool tailToHead)
     {
-        var (_, _, _, cost, turnCost) = _costFunction.Get(_edgeEnumerator, tailToHead, null);
+        var (_, _, _, cost, turnCost) = _costFunction.Get(_edgeEnumerator, tailToHead);
         return (cost, turnCost);
     }
 }

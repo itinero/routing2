@@ -3,7 +3,10 @@ using System.Runtime.CompilerServices;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 
+using Itinero.Routing.Flavours.Dijkstra;
+
 [assembly: InternalsVisibleTo("Itinero.Tests")]
+
 namespace Itinero.Routing.Costs;
 
 /// <summary>
@@ -27,5 +30,5 @@ public interface ICostFunction
     /// </returns>
     (bool canAccess, bool canStop, bool localAccess, double cost, double turnCost) Get(
         IEdgeEnumerator<RoutingNetwork> edgeEnumerator,
-        bool tailToHead = true, IEnumerable<(EdgeId edgeId, byte? turn)>? previousEdges = null);
+        bool tailToHead = true, PreviousEdgeEnumerable previousEdges = default);
 }
