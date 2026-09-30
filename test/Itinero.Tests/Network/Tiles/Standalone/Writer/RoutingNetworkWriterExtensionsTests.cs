@@ -17,7 +17,7 @@ namespace Itinero.Tests.Network.Tiles.Standalone.Writer;
 /// standalone tile from raw OSM, and
 /// <c>RoutingNetworkWriterExtensions.AddStandaloneTile</c> merges it into a
 /// routing network — resolving global restrictions in the process (in-tile
-/// or deferred via <see cref="GlobalNetworkManager.PendingRestrictions"/>).
+/// or deferred via <see cref="GlobalNetworkManager.AddPendingRestriction"/>).
 /// </summary>
 public class RoutingNetworkWriterExtensionsTests
 {
@@ -76,7 +76,7 @@ public class RoutingNetworkWriterExtensionsTests
 
         // restriction is fully resolvable in-tile so nothing should be
         // left waiting in the deferred queue.
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         // exactly three vertices were added: start, bollard (split point), end.
         // the bollard vertex is the only one with two incident edges.
@@ -147,7 +147,7 @@ public class RoutingNetworkWriterExtensionsTests
             writer.AddStandaloneTile(tile, globalIdSet);
         }
 
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexWithDegree(routerDb.Latest, 2);
         Assert.True(bollardVertex.HasValue,
@@ -220,15 +220,15 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
-        Assert.NotEmpty(globalIdSet.PendingRestrictions);
+        Assert.NotEqual(0, globalIdSet.PendingRestrictionCount);
 
         // tile A — boundary crossing matched, retry resolves.
         using (var writer = routerDb.Latest.GetWriter())
         {
             writer.AddStandaloneTile(tileAStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
-        Assert.Empty(globalIdSet.PendingBoundaryCrossings);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
+        Assert.Equal(0, globalIdSet.PendingBoundaryCrossingCount);
 
         var bollardVertex = FindVertexWithDegree(routerDb.Latest, 2);
         Assert.True(bollardVertex.HasValue,
@@ -247,7 +247,7 @@ public class RoutingNetworkWriterExtensionsTests
         //
         // sequence:
         //  - merge tile B (where the bollard vertex lives)  -> restriction
-        //    cannot resolve (missing edge), goes into PendingRestrictions
+        //    cannot resolve (missing edge), becomes a pending restriction
         //  - merge tile A (where the from-side of the way starts) -> boundary
         //    crossing edge is created, retry resolves the restriction, turn
         //    cost is added at the bollard vertex
@@ -301,7 +301,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
-        Assert.NotEmpty(globalIdSet.PendingRestrictions);
+        Assert.NotEqual(0, globalIdSet.PendingRestrictionCount);
 
         // step 2: add tile A. Matching boundary crossing edge is created;
         // the retry loop should resolve every pending bollard restriction.
@@ -309,7 +309,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileAStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         // bollard vertex (degree 2: one boundary-crossing edge from tile A,
         // one regular edge inside tile B) should now carry a turn cost.
@@ -392,8 +392,8 @@ public class RoutingNetworkWriterExtensionsTests
             writer.AddStandaloneTile(tileAStandalone, globalIdSet);
         }
 
-        Assert.Empty(globalIdSet.PendingRestrictions);
-        Assert.Empty(globalIdSet.PendingBoundaryCrossings);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
+        Assert.Equal(0, globalIdSet.PendingBoundaryCrossingCount);
 
         // the bollard vertex is at lons[5] — locate by coordinate (degree-2
         // alone is ambiguous: the boundary-entry vertex is also degree 2).
@@ -455,8 +455,8 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileAStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
-        Assert.NotEmpty(globalIdSet.PendingBoundaryCrossings);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
+        Assert.NotEqual(0, globalIdSet.PendingBoundaryCrossingCount);
 
         // tile B second — boundary crossing matched, bollard's cross-tile
         // restriction resolves on first try via the subsection lookup.
@@ -464,8 +464,8 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
-        Assert.Empty(globalIdSet.PendingBoundaryCrossings);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
+        Assert.Equal(0, globalIdSet.PendingBoundaryCrossingCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lons[5], lat);
         Assert.True(bollardVertex.HasValue, "expected to find the bollard vertex by location");
@@ -533,8 +533,8 @@ public class RoutingNetworkWriterExtensionsTests
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
 
-        Assert.Empty(globalIdSet.PendingRestrictions);
-        Assert.Empty(globalIdSet.PendingBoundaryCrossings);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
+        Assert.Equal(0, globalIdSet.PendingBoundaryCrossingCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lons[5], lat);
         Assert.True(bollardVertex.HasValue, "expected to find the bollard vertex by location");
@@ -593,14 +593,14 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileAStandalone, globalIdSet);
         }
-        Assert.NotEmpty(globalIdSet.PendingRestrictions);
+        Assert.NotEqual(0, globalIdSet.PendingRestrictionCount);
 
         // step 2: add tile B → boundary crossing matched, retry resolves.
         using (var writer = routerDb.Latest.GetWriter())
         {
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexWithDegree(routerDb.Latest, 2);
         Assert.True(bollardVertex.HasValue,
@@ -669,7 +669,7 @@ public class RoutingNetworkWriterExtensionsTests
             writer.AddStandaloneTile(tile, globalIdSet);
         }
 
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lonBollard, latBollard);
         var jVertex = FindVertexAtLocation(routerDb.Latest, lonJ, latJ);
@@ -747,13 +747,13 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
-        Assert.NotEmpty(globalIdSet.PendingRestrictions);
+        Assert.NotEqual(0, globalIdSet.PendingRestrictionCount);
 
         using (var writer = routerDb.Latest.GetWriter())
         {
             writer.AddStandaloneTile(tileAStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lonBollard, latBollard);
         var j2Vertex = FindVertexAtLocation(routerDb.Latest, lonJ2, latJ2);
@@ -829,7 +829,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tileBStandalone, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lonBollard, latBollard);
         var j2Vertex = FindVertexAtLocation(routerDb.Latest, lonJ2, latJ2);
@@ -898,7 +898,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tile, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lonBollard, latBollard);
         var j2Vertex = FindVertexAtLocation(routerDb.Latest, lonJ2, latJ2);
@@ -964,7 +964,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tile, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var bollardVertex = FindVertexAtLocation(routerDb.Latest, lonBollard, latBollard);
         var j1Vertex = FindVertexAtLocation(routerDb.Latest, lonJ1, latJ1);
@@ -1042,7 +1042,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tile, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var viaVertex = FindVertexAtLocation(routerDb.Latest, lonVia, latVia);
         var j2Vertex = FindVertexAtLocation(routerDb.Latest, lonJ2, latJ2);
@@ -1120,7 +1120,7 @@ public class RoutingNetworkWriterExtensionsTests
         {
             writer.AddStandaloneTile(tile, globalIdSet);
         }
-        Assert.Empty(globalIdSet.PendingRestrictions);
+        Assert.Equal(0, globalIdSet.PendingRestrictionCount);
 
         var viaVertex = FindVertexAtLocation(routerDb.Latest, lonVia, latVia);
         var jVertex = FindVertexAtLocation(routerDb.Latest, lonJ, latJ);

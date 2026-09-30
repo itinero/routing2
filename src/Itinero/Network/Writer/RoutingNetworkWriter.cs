@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Tiles;
@@ -21,9 +23,20 @@ public class RoutingNetworkWriter : IDisposable
 {
     private readonly IRoutingNetworkWritable _network;
 
-    internal RoutingNetworkWriter(IRoutingNetworkWritable network)
+    /// <summary>
+    /// Whether this writer holds the network's exclusive write slot.
+    /// </summary>
+    /// <remarks>
+    /// False for tile-insert writers, of which there can be many at once. They are excluded from
+    /// the exclusive slot rather than sharing it, so disposing one must not release a slot it
+    /// never took — that would let a mutator open while inserts are still running.
+    /// </remarks>
+    private readonly bool _exclusive;
+
+    internal RoutingNetworkWriter(IRoutingNetworkWritable network, bool exclusive = true)
     {
         _network = network;
+        _exclusive = exclusive;
     }
 
     /// <summary>
@@ -34,6 +47,88 @@ public class RoutingNetworkWriter : IDisposable
     {
         return _network.GetEdgeEnumerator();
     }
+
+    /// <summary>
+    /// Runs <paramref name="write"/> holding the lock of every tile it may write.
+    /// </summary>
+    /// <remarks>
+    /// Always ascending by tile id, and that is the single rule keeping concurrent insertion
+    /// deadlock-free. It only works if EVERY acquisition anywhere follows it: two writes that
+    /// each hold one of the same pair and wait for the other is the only cycle available here, and
+    /// a consistent global order makes it unconstructable.
+    ///
+    /// The set is passed in rather than discovered while locking, because a write that finds out
+    /// which tiles it needs as it goes cannot order them.
+    ///
+    /// Monitor is re-entrant, so nesting these (a caller that already holds one of the locks) is
+    /// free rather than a self-deadlock.
+    /// </remarks>
+    /// <summary>
+    /// Holds the write locks for a set of tiles until disposed.
+    /// </summary>
+    /// <remarks>
+    /// Taken ONCE around all of a tile's writes, not per write. An earlier version locked inside
+    /// every <c>AddEdge</c>/<c>AddVertex</c> call, which is the wrong granularity: the cost of
+    /// acquiring and releasing, plus a closure and an array per call, is paid on every edge while
+    /// the work it protects is a few array writes. That measured as roughly a third more CPU per
+    /// route than serialised insertion, for identical output.
+    ///
+    /// The whole set must be passed at once. Acquiring one stripe and then reaching for another is
+    /// what creates cycles — a caller holding its own tile's stripe and then asking for a
+    /// partner's can deadlock against the mirror-image insert — so every lock a write session
+    /// needs has to be known before the first one is taken.
+    /// </remarks>
+    internal readonly struct TileWriteScope : IDisposable
+    {
+        private readonly object[]? _taken;
+
+        internal TileWriteScope(IRoutingNetworkWritable network, ReadOnlySpan<uint> tileIds)
+        {
+            // Stripe indices, deduplicated and ascending. Ordering is over STRIPES, not tile ids:
+            // see IRoutingNetworkWritable.TileLockIndex.
+            Span<int> indices = stackalloc int[tileIds.Length];
+            var count = 0;
+            foreach (var tileId in tileIds)
+            {
+                var index = network.TileLockIndex(tileId);
+                var insertAt = count;
+                while (insertAt > 0 && indices[insertAt - 1] > index)
+                {
+                    indices[insertAt] = indices[insertAt - 1];
+                    insertAt--;
+                }
+
+                if (insertAt > 0 && indices[insertAt - 1] == index) continue;
+                if (insertAt < count && indices[insertAt] == index) continue;
+
+                indices[insertAt] = index;
+                count++;
+            }
+
+            _taken = count == 0 ? null : new object[count];
+            for (var i = 0; i < count; i++)
+            {
+                var stripe = network.GetTileLockByIndex(indices[i]);
+                Monitor.Enter(stripe);
+                _taken[i] = stripe;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_taken == null) return;
+
+            for (var i = _taken.Length - 1; i >= 0; i--)
+            {
+                Monitor.Exit(_taken[i]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Locks every tile a write session will touch, in a deadlock-free order.
+    /// </summary>
+    internal TileWriteScope LockTiles(ReadOnlySpan<uint> tileIds) => new(_network, tileIds);
 
     /// <summary>
     /// Adds a new vertex.
@@ -118,6 +213,44 @@ public class RoutingNetworkWriter : IDisposable
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
 
+        // Which tiles this will write, decided before any lock is taken. Beyond the vertex's own
+        // tile, the order bytes are synced into every neighbouring tile that shares a cross-tile
+        // edge at this vertex — so the set is not predictable from the vertex alone and has to be
+        // read off the network first. A write that discovered these while already holding locks
+        // could not order them, and ordering is the whole deadlock argument.
+        var tileIds = new List<uint> { vertex.TileId };
+        {
+            var (vertexTile, _) = _network.GetTileForWrite(vertex.TileId);
+            if (vertexTile == null)
+            {
+                throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
+            }
+
+            var scan = new NetworkTileEnumerator();
+            scan.MoveTo(vertexTile);
+            if (scan.MoveTo(vertex))
+            {
+                while (scan.MoveNext())
+                {
+                    if (scan.Tail.TileId == scan.Head.TileId) continue;
+                    tileIds.Add(scan.Head.TileId);
+                }
+            }
+        }
+
+        // Locks here rather than at the caller, because which tiles this touches is only
+        // discoverable by reading the network. Restrictions are rare compared to edges, so paying
+        // per call is acceptable where it would not be for AddEdge.
+        using var scope = this.LockTiles(System.Runtime.InteropServices.CollectionsMarshal
+            .AsSpan(tileIds));
+
+        return this.AddTurnCostsCore(vertex, attributes, edges, costs, prefix, turnCostType);
+    }
+
+    /// The turn-cost write itself. Caller holds every tile lock it touches.
+    private bool AddTurnCostsCore(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId> prefix, uint? turnCostType)
+    {
         // get the tile (or create it).
         var (tile, _) = _network.GetTileForWrite(vertex.TileId);
         if (tile == null)
@@ -176,6 +309,16 @@ public class RoutingNetworkWriter : IDisposable
         return true;
     }
 
+    /// <summary>
+    /// Shrinks a tile's buffers to what they hold, taking its lock.
+    /// </summary>
+    internal void TrimTile(uint localTileId)
+    {
+        using var scope = this.LockTiles(stackalloc[] { localTileId });
+        var (tile, _) = _network.GetTileForWrite(localTileId);
+        tile?.Trim();
+    }
+
     internal void AddTile(NetworkTile tile)
     {
         _network.SetTile(tile);
@@ -189,6 +332,13 @@ public class RoutingNetworkWriter : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        _network.ClearWriter();
+        if (_exclusive)
+        {
+            _network.ClearWriter();
+        }
+        else
+        {
+            _network.ReleaseTileWriter();
+        }
     }
 }

@@ -107,6 +107,7 @@ internal partial class NetworkTile
 
     private readonly double _boxLatStep;
 
+    /// The local-coordinate resolution every call site uses; a compile-time constant.
     private const int CoordinateResolution = (1 << TileResolutionInBits) - 1;
 
     private (double left, double top, double lonStep, double latStep) ComputeBox()
@@ -118,12 +119,14 @@ internal partial class NetworkTile
             (maxLat - minLat) / CoordinateResolution);
     }
 
+    /// Tile-local integer coordinates to lon/lat, using the cached box.
     private void FromLocalCoordinates(int x, int y, out double longitude, out double latitude)
     {
         longitude = _boxLeft + (_boxLonStep * x);
         latitude = _boxTop - (_boxLatStep * y);
     }
 
+    /// Lon/lat to tile-local integer coordinates, using the cached box.
     private (int x, int y) ToLocalCoordinates(double longitude, double latitude) =>
         ((int)((longitude - _boxLeft) / _boxLonStep), (int)((_boxTop - latitude) / _boxLatStep));
 
@@ -366,5 +369,11 @@ internal partial class NetworkTile
         BitCoderBuffer.SetVarUInt32(data, ref offset, _nextShapePointer);
         Buffer.BlockCopy(_shapes, 0, data, offset, (int)_nextShapePointer);
         offset += (int)_nextShapePointer;
+    }
+
+    /// Shrinks the shape buffer to what it holds. See NetworkTile.Trim.
+    private void TrimShapes()
+    {
+        if (_shapes.Length > _nextShapePointer) Array.Resize(ref _shapes, (int)_nextShapePointer);
     }
 }

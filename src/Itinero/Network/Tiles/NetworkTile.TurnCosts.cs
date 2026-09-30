@@ -112,10 +112,7 @@ internal partial class NetworkTile
         // make sure there is space in the turn cost array.
         // and initialize new slots with null.
         var maxLength = _turnCostPointer + 5 + 1 + (count * count * 5) + 5;
-        while (_turnCosts.Length <= maxLength)
-        {
-            Array.Resize(ref _turnCosts, _turnCosts.Length + DefaultSizeIncrease);
-        }
+        EnsureCapacity(ref _turnCosts, maxLength + 1, DefaultSizeIncrease);
 
         // update pointer to reflect new data.
         var previousPointer = _turnCostPointers[(int)vertex.LocalId].DecodeNullableData();
@@ -368,5 +365,11 @@ internal partial class NetworkTile
         BitCoderBuffer.SetVarUInt32(data, ref offset, _turnCostPointer);
         Buffer.BlockCopy(_turnCosts, 0, data, offset, (int)_turnCostPointer);
         offset += (int)_turnCostPointer;
+    }
+
+    /// Shrinks the turn cost buffer to what it holds. See NetworkTile.Trim.
+    private void TrimTurnCosts()
+    {
+        if (_turnCosts.Length > _turnCostPointer) Array.Resize(ref _turnCosts, (int)_turnCostPointer);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Itinero.Network;
 
@@ -9,7 +10,11 @@ namespace Itinero.Data;
 /// </summary>
 public sealed class GlobalVertexIdSet : IEnumerable<(long globalId, VertexId vertex)>
 {
-    private readonly Dictionary<long, VertexId> _set = new();
+    /// <remarks>
+    /// Concurrent for the same reason as <see cref="GlobalEdgeIdSet"/>: written from several
+    /// tile inserts at once.
+    /// </remarks>
+    private readonly ConcurrentDictionary<long, VertexId> _set = new();
 
     /// <summary>
     /// Sets a new mapping.
@@ -27,7 +32,7 @@ public sealed class GlobalVertexIdSet : IEnumerable<(long globalId, VertexId ver
     /// <param name="globalVertexId">The global vertex id.</param>
     public void Remove(long globalVertexId)
     {
-        _set.Remove(globalVertexId);
+        _set.TryRemove(globalVertexId, out _);
     }
 
     /// <summary>

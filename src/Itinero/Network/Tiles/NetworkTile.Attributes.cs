@@ -24,13 +24,21 @@ internal partial class NetworkTile
 
     private uint _nextStringId = 0;
 
+    /// Shrinks the attribute buffers to what they hold. See NetworkTile.Trim.
+    private void TrimAttributes()
+    {
+        if (_attributes.Length > _nextAttributePointer)
+        {
+            Array.Resize(ref _attributes, (int)_nextAttributePointer);
+        }
+
+        if (_strings.Length > _nextStringId) Array.Resize(ref _strings, (int)_nextStringId);
+    }
+
     private uint SetAttributes(IEnumerable<(string key, string value)> attributes, GlobalEdgeId? globalEdgeId)
     {
         // ensure enough space for the globalEdgeId header (up to 20 bytes).
-        if (_attributes.Length <= _nextAttributePointer + 20)
-        {
-            Array.Resize(ref _attributes, _attributes.Length + 256);
-        }
+        EnsureCapacity(ref _attributes, _nextAttributePointer + 21L, 256);
 
         // save position before globalEdgeId — GetAttributes/GetGlobalEdgeId read from here.
         var start = _nextAttributePointer;
@@ -51,10 +59,7 @@ internal partial class NetworkTile
         var c = 0;
         foreach (var (key, value) in attributes)
         {
-            if (_attributes.Length <= p + 16)
-            {
-                Array.Resize(ref _attributes, _attributes.Length + 256);
-            }
+            EnsureCapacity(ref _attributes, p + 17, 256);
 
             var id = this.AddOrGetString(key);
             p += _attributes.SetDynamicUInt32(p, id);
@@ -71,10 +76,7 @@ internal partial class NetworkTile
             }
         }
 
-        if (_attributes.Length <= cPos)
-        {
-            Array.Resize(ref _attributes, _attributes.Length + 256);
-        }
+        EnsureCapacity(ref _attributes, cPos + 1, 256);
 
         _attributes[(int)cPos] = (byte)c;
 
@@ -124,8 +126,22 @@ internal partial class NetworkTile
         } while (count == 255);
     }
 
+    /// <summary>
+    /// Calls into <see cref="AddOrGetString"/> and how many entries they compared.
+    /// </summary>
+    /// <remarks>
+    /// AddOrGetString is a linear scan over the tile's strings, run per key and value written, and a
+    /// cached tile starts with a full table. Counting comparisons says whether that matters.
+    /// </remarks>
+    internal static long StringLookups;
+
+    internal static long StringComparisons;
+
     private uint AddOrGetString(string s)
     {
+        System.Threading.Interlocked.Increment(ref StringLookups);
+        System.Threading.Interlocked.Add(ref StringComparisons, _nextStringId);
+
         for (uint i = 0; i < _nextStringId; i++)
         {
             var existing = _strings[(int)i];
@@ -135,10 +151,7 @@ internal partial class NetworkTile
             }
         }
 
-        if (_strings.Length <= _nextStringId)
-        {
-            Array.Resize(ref _strings, _strings.Length + 256);
-        }
+        EnsureCapacity(ref _strings, _nextStringId + 1L, 256);
 
         var id = _nextStringId;
         _nextStringId++;

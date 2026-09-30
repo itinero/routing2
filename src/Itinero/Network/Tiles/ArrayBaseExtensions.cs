@@ -11,8 +11,11 @@ internal static class ArrayBaseExtensions
     public static void EnsureMinimumSize(ref byte[] array, long position, long step = 16)
     {
         if (array.Length > position) return;
-        var newSize = array.Length + step;
-        while (newSize <= position) newSize += step;
+
+        // Geometric, floored at step. The fixed-step version here resized once per `step` bytes,
+        // which is a full Array.Resize each time — quadratic when appending to a tile loaded from
+        // the cache, because such a tile is sized to exactly its content and has no headroom.
+        var newSize = System.Math.Max(position + 1, array.Length + System.Math.Max(step, array.Length >> 3));
         System.Array.Resize(ref array, (int)newSize);
     }
 
@@ -25,8 +28,11 @@ internal static class ArrayBaseExtensions
     public static void EnsureMinimumSize(ref int[] array, long position, long step = 16)
     {
         if (array.Length > position) return;
-        var newSize = array.Length + step;
-        while (newSize <= position) newSize += step;
+
+        // Geometric, floored at step. The fixed-step version here resized once per `step` bytes,
+        // which is a full Array.Resize each time — quadratic when appending to a tile loaded from
+        // the cache, because such a tile is sized to exactly its content and has no headroom.
+        var newSize = System.Math.Max(position + 1, array.Length + System.Math.Max(step, array.Length >> 3));
         System.Array.Resize(ref array, (int)newSize);
     }
 
@@ -39,8 +45,11 @@ internal static class ArrayBaseExtensions
     public static void EnsureMinimumSize(ref uint[] array, long position, long step = 16)
     {
         if (array.Length > position) return;
-        var newSize = array.Length + step;
-        while (newSize <= position) newSize += step;
+
+        // Geometric, floored at step. The fixed-step version here resized once per `step` bytes,
+        // which is a full Array.Resize each time — quadratic when appending to a tile loaded from
+        // the cache, because such a tile is sized to exactly its content and has no headroom.
+        var newSize = System.Math.Max(position + 1, array.Length + System.Math.Max(step, array.Length >> 3));
         System.Array.Resize(ref array, (int)newSize);
     }
 
@@ -53,8 +62,11 @@ internal static class ArrayBaseExtensions
     public static void EnsureMinimumSize(ref string[] array, long position, long step = 16)
     {
         if (array.Length > position) return;
-        var newSize = array.Length + step;
-        while (newSize <= position) newSize += step;
+
+        // Geometric, floored at step. The fixed-step version here resized once per `step` bytes,
+        // which is a full Array.Resize each time — quadratic when appending to a tile loaded from
+        // the cache, because such a tile is sized to exactly its content and has no headroom.
+        var newSize = System.Math.Max(position + 1, array.Length + System.Math.Max(step, array.Length >> 3));
         System.Array.Resize(ref array, (int)newSize);
     }
 }

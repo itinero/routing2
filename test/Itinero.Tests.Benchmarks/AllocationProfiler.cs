@@ -220,9 +220,8 @@ internal static class AllocationProfiler
         var a2 = GC.GetTotalAllocatedBytes(true);
         Console.WriteLine($"  EdgeTypeId+Length+Forward reads:      {(a2 - b2) / 1024.0:F1} KB ({(a2 - b2) / costCount} bytes/call)");
 
-        // Cases 3 and 6 measured passing an empty IEnumerable and an Array.Empty to Get, to
-        // separate the boxing from the call. previousEdges is a struct now, so neither is
-        // expressible and there is nothing left to compare.
+        // Cases 3, 5 and 6 measured boxing an empty IEnumerable versus Array.Empty for Get.
+        // previousEdges is a struct now, so none of them is expressible.
 
         // 4. Inline what the cost function does - no interface, no LINQ.
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
@@ -241,16 +240,6 @@ internal static class AllocationProfiler
         }
         var a4 = GC.GetTotalAllocatedBytes(true);
         Console.WriteLine($"  Manual prop reads (no costFunc):     {(a4 - b4) / 1024.0:F1} KB ({(a4 - b4) / costCount} bytes/call)");
-
-        // 5. Just FirstOrDefault on pre-boxed empty per call
-        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
-        var b5 = GC.GetTotalAllocatedBytes(true);
-        for (var i = 0; i < costCount; i++)
-        {
-            var (_, turn5) = emptyPrev.FirstOrDefault();
-        }
-        var a5 = GC.GetTotalAllocatedBytes(true);
-        Console.WriteLine($"  FirstOrDefault on pre-boxed empty:   {(a5 - b5) / 1024.0:F1} KB ({(a5 - b5) / costCount} bytes/call)");
 
         // 7. Check if Length is null (triggers EdgeLength which allocates)
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
