@@ -200,7 +200,7 @@ public class ConcurrentTileInsertTests
     }
 
     [Fact]
-    public void ConcurrentInsert_TwoNeighboursFromOppositeSides_DoesNotDeadlock()
+    public async Task ConcurrentInsert_TwoNeighboursFromOppositeSides_DoesNotDeadlock()
     {
         // The specific shape that hangs if lock ordering is wrong: two tiles that share a
         // boundary, inserted at the same moment, each needing the other's lock to build the
@@ -239,14 +239,16 @@ public class ConcurrentTileInsertTests
             }
         });
 
-        Assert.True(task.Wait(TimeSpan.FromSeconds(60)),
+        var finished = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(60)));
+
+        Assert.True(finished == task,
             "two neighbours inserted from opposite sides did not finish - lock ordering is not a " +
             "total order, so each is holding the lock the other needs");
-        Assert.True(task.IsCompletedSuccessfully, task.Exception?.ToString() ?? "faulted");
+        await task;
     }
 
     [Fact]
-    public void ConcurrentInsert_SameTilesRepeatedly_DoesNotDeadlock()
+    public async Task ConcurrentInsert_SameTilesRepeatedly_DoesNotDeadlock()
     {
         // The shape a lock-ordering mistake fails on: two inserts that share a boundary, started
         // together, each holding one end. Ordering the two tile locks by id is what prevents it,
@@ -273,9 +275,11 @@ public class ConcurrentTileInsertTests
             }
         });
 
-        Assert.True(task.Wait(TimeSpan.FromSeconds(60)),
+        var finished = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(60)));
+
+        Assert.True(finished == task,
             "concurrent tile insertion did not finish - suspect a lock-ordering deadlock between " +
             "two tiles sharing a boundary");
-        Assert.True(task.IsCompletedSuccessfully, task.Exception?.ToString() ?? "faulted");
+        await task;
     }
 }
