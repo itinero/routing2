@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using System.Collections.Generic;
+using System.Threading;
 using Itinero.Network;
 using Itinero.Network.Tiles.Standalone.Global;
 
