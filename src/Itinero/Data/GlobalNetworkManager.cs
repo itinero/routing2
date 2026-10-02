@@ -317,7 +317,6 @@ public class GlobalNetworkManager
             Volatile.Write(ref _pendingRestrictionCount, _pendingRestrictions.Count);
         }
 
-        Network.Tiles.Standalone.Writer.TileInsertCounters.CountRetryPass(examined, resolved);
     }
 
     /// <summary>
@@ -370,7 +369,6 @@ public class GlobalNetworkManager
             }
 
             Volatile.Write(ref _pendingRestrictionCount, _pendingRestrictions.Count);
-            Network.Tiles.Standalone.Writer.TileInsertCounters.CountRetryPass(examined, resolved);
         }
     }
 

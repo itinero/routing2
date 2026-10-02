@@ -53,13 +53,10 @@ public static class RoutingNetworkWriterExtensions
         // on the other side, which will immediately want this tile's vertices to build the edge —
         // so the tile has to be in the network before its halves are published. Claiming first and
         // installing later fails with "vertex not found" on the other thread.
-        var insertFrom = TileInsertCounters.Now();
         using (writer.LockTiles(stackalloc[] { tile.TileId }))
         {
             writer.AddTile(tile.NetworkTile);
         }
-
-        var installed = TileInsertCounters.Now();
 
         // ---- phase 1: no tile writes, no locks ----
         // Reused per thread rather than allocated per insert: ~346 ids per tile is a 5KB list
@@ -78,11 +75,8 @@ public static class RoutingNetworkWriterExtensions
         // restriction resolution — routing never reads this map, since the global id a client sees
         // comes from the edge's own attributes. Skipping it entirely was measured (+7.1% cold) and
         // is NOT an option: it silently drops turn restrictions that name an interior edge.
-        var internalEdges = RegisterInternalEdges(tile, globalIdSet, arrived);
-        var registered = TileInsertCounters.Now();
+        RegisterInternalEdges(tile, globalIdSet, arrived);
         var crossings = ClaimBoundaryCrossings(tile, globalIdSet);
-        var claimed = TileInsertCounters.Now();
-
         // ---- phase 2: every tile this insert writes, locked once ----
         // Grouped by partner tile: one acquisition per NEIGHBOUR, not per crossing and not one
         // covering every partner at once.
@@ -116,8 +110,6 @@ public static class RoutingNetworkWriterExtensions
             start = end;
         }
 
-        var boundariesWritten = TileInsertCounters.Now();
-
         // ---- phase 3: restrictions ----
         ResolveRestrictions(writer, tile, globalIdSet, arrived);
 
@@ -125,9 +117,6 @@ public static class RoutingNetworkWriterExtensions
         // linear; the slack is what would otherwise stay resident for the life of the process, and
         // that reaches even the hot regime, which does no inserts at all.
         writer.TrimTile(tile.TileId);
-
-        TileInsertCounters.Count(insertFrom, installed, registered, claimed, boundariesWritten,
-            TileInsertCounters.Now(), internalEdges, crossings.Count);
     }
 
     /// <summary>
@@ -157,16 +146,7 @@ public static class RoutingNetworkWriterExtensions
                 var globalEdgeId = tileEnumerator.GlobalEdgeId;
                 if (globalEdgeId != null)
                 {
-                    if (TileInsertCounters.Enabled)
-                    {
-                        var setFrom = Stopwatch.GetTimestamp();
-                        globalIdSet.EdgeIdSet.Set(globalEdgeId.Value, tileEnumerator.EdgeId);
-                        TileInsertCounters.CountRegisterSet(Stopwatch.GetTimestamp() - setFrom);
-                    }
-                    else
-                    {
-                        globalIdSet.EdgeIdSet.Set(globalEdgeId.Value, tileEnumerator.EdgeId);
-                    }
+                    globalIdSet.EdgeIdSet.Set(globalEdgeId.Value, tileEnumerator.EdgeId);
 
                     arrived.Add(globalEdgeId.Value);
                     registered++;
@@ -259,8 +239,6 @@ public static class RoutingNetworkWriterExtensions
             }
         }
 
-        TileInsertCounters.CountRestrictions(seen, parked);
-
         // Retry only the restrictions waiting for an edge this insert added. A full pass here
         // re-examined every pending restriction on every insert - 535,147 examinations for 2,335
         // resolutions over one cold block.
@@ -269,21 +247,6 @@ public static class RoutingNetworkWriterExtensions
     }
 
     private static bool TryResolveRestriction(GlobalRestriction globalRestriction,
-        GlobalNetworkManager globalIdSet, RoutingNetworkWriter writer)
-    {
-        if (!TileInsertCounters.Enabled)
-        {
-            return TryResolveRestrictionCore(globalRestriction, globalIdSet, writer);
-        }
-
-        var from = Stopwatch.GetTimestamp();
-        var outcome = TryResolveRestrictionCore(globalRestriction, globalIdSet, writer);
-        TileInsertCounters.CountResolve(outcome, Stopwatch.GetTimestamp() - from);
-
-        return outcome;
-    }
-
-    private static bool TryResolveRestrictionCore(GlobalRestriction globalRestriction,
         GlobalNetworkManager globalIdSet, RoutingNetworkWriter writer)
     {
         // try to resolve all GlobalEdgeIds to EdgeIds.
