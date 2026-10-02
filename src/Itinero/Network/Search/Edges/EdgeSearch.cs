@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Geo;
@@ -13,33 +14,140 @@ namespace Itinero.Network.Search.Edges;
 internal static class EdgeSearch
 {
     /// <summary>
-    /// Returns the closest edge to the center of the given box that has at least one vertex inside the given box.
+    /// Returns the closest acceptable edge to the center of the given box that has at least one vertex inside the given box.
     /// </summary>
     /// <param name="network">The network.</param>
     /// <param name="searchBox">The box to search in.</param>
     /// <param name="maxDistance">The maximum distance of any snap point returned relative to the center of the search box.</param>
     /// <param name="edgeChecker">Used to determine if an edge is acceptable or not. If null any edge will be accepted.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The closest edge to the center of the box inside the given box.</returns>
+    /// <returns>The closest acceptable edge to the center of the box inside the given box.</returns>
+    /// <remarks>
+    /// Geometry first, acceptability second: the old single pass asked the checker on every
+    /// transient best, which is free for an island lookup and not for a bounded expansion.
+    /// </remarks>
     public static async Task<SnapPoint> SnapInBoxAsync(this RoutingNetwork network,
         ((double longitude, double, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)
             searchBox,
         IEdgeChecker? edgeChecker = null, double maxDistance = double.MaxValue, CancellationToken cancellationToken = default)
     {
+        if (edgeChecker == null)
+        {
+            // Nothing can be rejected, so the nearest edge is the answer and one is all we need.
+            var nearest = ScanNearestEdges(network, searchBox, maxDistance, null, 1);
+            return nearest.Count == 0
+                ? new SnapPoint(EdgeId.Empty, ushort.MaxValue)
+                : new SnapPoint(nearest[0].EdgeId, nearest[0].Offset);
+        }
+
+        var edgeEnumerator = network.GetEdgeEnumerator();
+        HashSet<EdgeId>? rejected = null;
+
+        // Paged, so a location ringed by unusable edges still finds the road behind them.
+        // Re-scanning is pure geometry and costs less than a page's worth of checks.
+        while (true)
+        {
+            var page = ScanNearestEdges(network, searchBox, maxDistance, rejected, CandidatePageSize);
+            if (page.Count == 0) break;
+
+            foreach (var candidate in page)
+            {
+                if (!edgeEnumerator.MoveTo(candidate.EdgeId, true)) continue;
+
+                var acceptable = edgeChecker.IsAcceptable(edgeEnumerator)
+                                 ?? await edgeChecker.RunCheckAsync(edgeEnumerator, cancellationToken);
+                if (acceptable) return new SnapPoint(candidate.EdgeId, candidate.Offset);
+
+                (rejected ??= new HashSet<EdgeId>()).Add(candidate.EdgeId);
+            }
+
+            // A short page means the scan ran out of edges, not that this page was unlucky.
+            if (page.Count < CandidatePageSize) break;
+        }
+
+        return new SnapPoint(EdgeId.Empty, ushort.MaxValue);
+    }
+
+    /// <summary>
+    /// The acceptable snap candidates, nearest first, until the search box runs out.
+    /// </summary>
+    /// <remarks>
+    /// Lazy and uncapped: a location ringed by footpaths a car cannot use needs however many it
+    /// takes to reach the road behind them, and a cap reads as "nothing connected near here".
+    /// </remarks>
+    /// <remarks>
+    /// The checker should answer about the edge itself, not where it leads — that is the
+    /// caller's job, and the reason it wanted candidates one at a time.
+    /// </remarks>
+    public static async IAsyncEnumerable<SnapPoint> NearestCandidatesAsync(this RoutingNetwork network,
+        ((double longitude, double, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)
+            searchBox,
+        IEdgeChecker? edgeChecker, double maxDistance,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var edgeEnumerator = network.GetEdgeEnumerator();
+        HashSet<EdgeId>? offered = null;
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var page = ScanNearestEdges(network, searchBox, maxDistance, offered, CandidatePageSize);
+            if (page.Count == 0) yield break;
+
+            foreach (var candidate in page)
+            {
+                (offered ??= []).Add(candidate.EdgeId);
+
+                if (!edgeEnumerator.MoveTo(candidate.EdgeId, true)) continue;
+
+                var acceptable = edgeChecker == null ||
+                                 (edgeChecker.IsAcceptable(edgeEnumerator) ??
+                                  await edgeChecker.RunCheckAsync(edgeEnumerator, cancellationToken));
+                if (acceptable) yield return new SnapPoint(candidate.EdgeId, candidate.Offset);
+            }
+
+            // A short page means the scan ran out of edges, not that this page was unlucky.
+            if (page.Count < CandidatePageSize) yield break;
+        }
+    }
+
+    /// <summary>
+    /// How many candidates one scan collects. Small because the first is almost always the
+    /// answer; more than one only so that a rejection does not cost a whole new scan.
+    /// </summary>
+    private const int CandidatePageSize = 16;
+
+    private readonly record struct EdgeCandidate(EdgeId EdgeId, ushort Offset, double Distance);
+
+    /// <summary>
+    /// The nearest <paramref name="take"/> edges to the centre of the box, nearest first,
+    /// skipping <paramref name="exclude"/>. Pure geometry — no acceptability, no async, no
+    /// network beyond the tiles the box covers.
+    /// </summary>
+    private static List<EdgeCandidate> ScanNearestEdges(RoutingNetwork network,
+        ((double longitude, double, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)
+            searchBox,
+        double maxDistance, HashSet<EdgeId>? exclude, int take)
+    {
         var center = ((double longitude, double latitude, float? e))searchBox.Center();
         var zoom = network.Zoom;
 
         const double exactTolerance = 1;
-        var bestDistance = maxDistance;
-        (EdgeId edgeId, ushort offset) bestSnapPoint = (EdgeId.Empty, ushort.MaxValue);
+        var found = new List<EdgeCandidate>(take);
+
+        // The pruning cutoff. With a single candidate this is the old shrinking best; with
+        // several it can only shrink once the list is full, so the scan prunes less early —
+        // the price of having a second choice at all.
+        var cutoff = maxDistance;
 
         // Spiral tile iteration: start at the tile containing Q, expand to
         // ring 1 (8 neighbours), ring 2, ..., until rings fall outside the
-        // search box. Closest-first ordering means the first snap lands fast
-        // and bestDistance shrinks early, so outer-ring tiles get rejected
+        // search box. Closest-first ordering means the list fills fast
+        // and the cutoff shrinks early, so outer-ring tiles get rejected
         // by the per-tile predicate before we ever read their edges. Diff
         // computation is lazy per-tile, so cold-path snaps avoid touching
-        // tiles the inner-ring snap already made irrelevant.
+        // tiles the inner-ring candidates already made irrelevant.
 
         // Search box tile-range bounds (clamped, can be a single tile). The
         // searchBox.topLeft's latitude field is unnamed in the parameter
@@ -62,11 +170,11 @@ internal static class EdgeSearch
 
         for (uint ring = 0; ring <= maxRing; ring++)
         {
-            if (bestDistance <= 0) break;
+            if (cutoff <= 0) break;
 
             foreach (var (x, y) in TilesInRing(cx, cy, ring))
             {
-                if (bestDistance <= 0) break;
+                if (cutoff <= 0) break;
                 if (x < minX || x > maxX || y < minY || y > maxY) continue;
 
                 var tileId = TileStatic.ToLocalId(x, y, zoom);
@@ -74,21 +182,21 @@ internal static class EdgeSearch
                 if (tile == null) continue;
                 tile.EnsureDiffs(network);  // lazy — only for tiles we actually visit
                 var bbox = TileStatic.GetTileBoundingBox(zoom, tileId);
-                if (!TileCanReach(bbox, tile.MaxLonDiff, tile.MaxLatDiff, center, bestDistance)) continue;
+                if (!TileCanReach(bbox, tile.MaxLonDiff, tile.MaxLatDiff, center, cutoff)) continue;
 
                 var tileMaxLonDiff = tile.MaxLonDiff;
                 var tileMaxLatDiff = tile.MaxLatDiff;
 
                 for (uint v = 0; v < tile.VertexCount; v++)
                 {
-                    if (bestDistance <= 0) break;
+                    if (cutoff <= 0) break;
                     var vertexId = new VertexId(tileId, v);
                     if (!network.TryGetVertex(vertexId, out var vLon, out var vLat, out var vE)) continue;
 
                     // Restore the PR1 candidate set: vertices inside the search
                     // box. Without this, we'd walk every vertex in every tile
                     // overlapping the box — including those geometrically outside
-                    // the box. Under bestDistance = ∞ (initial state with
+                    // the box. Under cutoff = ∞ (initial state with
                     // MaxDistance = ∞) the VertexCanReach predicate is a no-op,
                     // so without this check we visit ~40% more vertices than PR1
                     // did, paying the per-edge bbox iteration cost for each.
@@ -97,28 +205,30 @@ internal static class EdgeSearch
                     // Per-vertex predicate: an edge from this vertex extends at
                     // most (tileMaxLonDiff, tileMaxLatDiff) in each axis, so if
                     // the vertex itself is too far for even that envelope to
-                    // reach the current best, every edge from it is irrelevant.
-                    if (!VertexCanReach(vLon, vLat, tileMaxLonDiff, tileMaxLatDiff, center, bestDistance)) continue;
+                    // reach the current cutoff, every edge from it is irrelevant.
+                    if (!VertexCanReach(vLon, vLat, tileMaxLonDiff, tileMaxLatDiff, center, cutoff)) continue;
 
                     if (!edgeEnumerator.MoveTo(vertexId)) continue;
 
                     while (edgeEnumerator.MoveNext())
                     {
-                        if (bestDistance <= 0) break;
+                        if (cutoff <= 0) break;
+                        if (exclude != null && exclude.Contains(edgeEnumerator.EdgeId)) continue;
 
                         // PR1: per-edge MBR prefilter. After the tile and vertex
                         // predicates above, only edges that *might* beat the
-                        // current best reach this point — but the bbox prefilter
+                        // current cutoff reach this point — but the bbox prefilter
                         // is still useful to skip edges whose tight bbox can't
-                        // beat best even though their vertex passed the looser
+                        // beat it even though their vertex passed the looser
                         // (per-tile-extent) check.
-                        if (!EdgeBboxCanBeat(edgeEnumerator, center, bestDistance)) continue;
+                        if (!EdgeBboxCanBeat(edgeEnumerator, center, cutoff)) continue;
 
-                        // search for the local snap point that improves the current best snap point.
-                        (EdgeId edgeId, double offset) localSnapPoint = (EdgeId.Empty, 0);
-                        var isAcceptable = edgeChecker == null ? (bool?)true : null;
-                        var completeShape = edgeEnumerator.GetCompleteShape();
+                        // On the edge's own terms: the walk has to finish anyway to know the
+                        // edge's length, so the cutoff only decides whether to keep the result.
+                        var localDistance = double.MaxValue;
+                        var localOffsetLength = 0.0;
                         var length = 0.0;
+                        var completeShape = edgeEnumerator.GetCompleteShape();
                         using (var completeShapeEnumerator = completeShape.GetEnumerator())
                         {
                             completeShapeEnumerator.MoveNext();
@@ -126,22 +236,12 @@ internal static class EdgeSearch
 
                             // start with the first location.
                             var distance = previous.DistanceEstimateInMeter(center);
-                            if (distance < bestDistance)
+                            if (distance < localDistance)
                             {
-                                isAcceptable ??= edgeChecker!.IsAcceptable(edgeEnumerator) ??
-                                                                          await edgeChecker.RunCheckAsync(edgeEnumerator, cancellationToken);
-                                if (!isAcceptable.Value)
-                                {
-                                    continue;
-                                }
-
-                                if (distance < exactTolerance)
-                                {
-                                    distance = 0;
-                                }
-
-                                bestDistance = distance;
-                                localSnapPoint = (edgeEnumerator.EdgeId, 0);
+                                // Rounded here, not at the end: 1e-9 is an exact vertex hit but
+                                // still looks beatable, and the offset drifts off 0.
+                                localDistance = distance < exactTolerance ? 0 : distance;
+                                localOffsetLength = 0;
                             }
 
                             // loop over all pairs.
@@ -153,43 +253,21 @@ internal static class EdgeSearch
 
                                 // first check the actual current location, it may be an exact match.
                                 distance = current.DistanceEstimateInMeter(center);
-                                if (distance < bestDistance)
+                                if (distance < localDistance)
                                 {
-                                    isAcceptable ??= edgeChecker!.IsAcceptable(edgeEnumerator) ??
-                                                     await edgeChecker.RunCheckAsync(edgeEnumerator, cancellationToken);
-                                    if (!isAcceptable.Value)
-                                    {
-                                        break;
-                                    }
-
-                                    if (distance < exactTolerance)
-                                    {
-                                        distance = 0;
-                                    }
-
-                                    bestDistance = distance;
-                                    localSnapPoint = (edgeEnumerator.EdgeId, length + segmentLength);
+                                    localDistance = distance < exactTolerance ? 0 : distance;
+                                    localOffsetLength = length + segmentLength;
                                 }
 
                                 // update length.
                                 var startLength = length;
                                 length += segmentLength;
 
-                                // TODO: figure this out, there has to be a way to not project every segment.
-                                //                        // check if we even need to check.
-                                //                        var previousDistance = previous.DistanceEstimateInMeter(center);
-                                //                        var shapePointDistance = current.DistanceEstimateInMeter(center);
-                                //                        if (previousDistance + segmentLength > bestDistance &&
-                                //                            shapePointDistance + segmentLength > bestDistance)
-                                //                        {
-                                //                            continue;
-                                //                        }
-
                                 // project on line segment.
                                 var line = (previous, current);
                                 var originalPrevious = previous;
                                 previous = current;
-                                if (bestDistance <= 0)
+                                if (localDistance <= 0)
                                 {
                                     // we need to continue, we need the total length.
                                     continue;
@@ -202,46 +280,29 @@ internal static class EdgeSearch
                                 }
 
                                 distance = projected.Value.DistanceEstimateInMeter(center);
-                                if (!(distance < bestDistance))
+                                if (!(distance < localDistance))
                                 {
                                     continue;
                                 }
 
-                                isAcceptable ??= edgeChecker!.IsAcceptable(edgeEnumerator) ??
-                                                 await edgeChecker.RunCheckAsync(edgeEnumerator, cancellationToken);
-                                if (!isAcceptable.Value)
-                                {
-                                    break;
-                                }
-
-                                if (distance < exactTolerance)
-                                {
-                                    distance = 0;
-                                }
-
-                                bestDistance = distance;
-                                localSnapPoint = (edgeEnumerator.EdgeId,
-                                    startLength + originalPrevious.DistanceEstimateInMeter(projected.Value));
+                                localDistance = distance < exactTolerance ? 0 : distance;
+                                localOffsetLength = startLength + originalPrevious.DistanceEstimateInMeter(projected.Value);
                             }
                         }
 
-                        // move to the nex edge if no better point was found.
-                        if (localSnapPoint.edgeId == EdgeId.Empty)
-                        {
-                            continue;
-                        }
+                        if (localDistance >= cutoff) continue;
 
                         // calculate the actual offset.
                         var offset = ushort.MaxValue;
-                        if (localSnapPoint.offset < length)
+                        if (localOffsetLength < length)
                         {
-                            if (localSnapPoint.offset <= 0)
+                            if (localOffsetLength <= 0)
                             {
                                 offset = 0;
                             }
                             else
                             {
-                                offset = (ushort)(localSnapPoint.offset / length * ushort.MaxValue);
+                                offset = (ushort)(localOffsetLength / length * ushort.MaxValue);
                             }
                         }
 
@@ -251,13 +312,45 @@ internal static class EdgeSearch
                             offset = (ushort)(ushort.MaxValue - offset);
                         }
 
-                        bestSnapPoint = (localSnapPoint.edgeId, offset);
+                        Insert(found, new EdgeCandidate(edgeEnumerator.EdgeId, offset, localDistance), take);
+                        if (found.Count == take) cutoff = found[take - 1].Distance;
                     } // while (edgeEnumerator.MoveNext())
                 } // for (uint v = 0; v < tile.VertexCount; v++)
             } // foreach (var (x, y) in TilesInRing(...))
         } // for (uint ring = 0; ring <= maxRing; ring++)
 
-        return new SnapPoint(bestSnapPoint.edgeId, bestSnapPoint.offset);
+        return found;
+    }
+
+    /// <summary>
+    /// Inserts into a nearest-first list of at most <paramref name="take"/> entries, replacing
+    /// the entry for the same edge when it already has one — a vertex's edges are visited from
+    /// both endpoints, so the same edge can be measured twice.
+    /// </summary>
+    private static void Insert(List<EdgeCandidate> found, EdgeCandidate candidate, int take)
+    {
+        for (var i = 0; i < found.Count; i++)
+        {
+            if (found[i].EdgeId != candidate.EdgeId) continue;
+            if (found[i].Distance <= candidate.Distance) return;
+
+            found.RemoveAt(i);
+            break;
+        }
+
+        var at = found.Count;
+        for (var i = 0; i < found.Count; i++)
+        {
+            if (!(candidate.Distance < found[i].Distance)) continue;
+
+            at = i;
+            break;
+        }
+
+        if (at >= take) return;
+
+        found.Insert(at, candidate);
+        if (found.Count > take) found.RemoveAt(found.Count - 1);
     }
 
     /// <summary>

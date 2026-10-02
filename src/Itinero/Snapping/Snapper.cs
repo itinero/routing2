@@ -34,18 +34,26 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
     private readonly IslandDirectedGraph?[] _islandDgFull;
     private readonly IslandDirectedGraph?[] _islandDgNonLocal;
 
-    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, bool anyProfile, bool checkCanStopOn, double offsetInMeter, double offsetInMeterMax, double maxDistance)
+    // Whether a candidate has to be connected to the wider network, or only usable by the
+    // profile. Off means access and can-stop-on still apply but nothing asks where the edge
+    // leads — the caller has taken that question on itself.
+    private readonly bool _checkConnectivity;
+
+    public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, SnapperSettings settings)
     {
         _routingNetwork = routingNetwork;
-        _anyProfile = anyProfile;
-        _checkCanStopOn = checkCanStopOn;
-        _offsetInMeter = offsetInMeter;
-        _offsetInMeterMax = offsetInMeterMax;
-        _maxDistance = maxDistance;
+        _anyProfile = settings.AnyProfile;
+        _checkCanStopOn = settings.CheckCanStopOn;
+        _offsetInMeter = settings.OffsetInMeter;
+        _offsetInMeterMax = settings.OffsetInMeterMax;
+        _maxDistance = settings.MaxDistance;
+        _checkConnectivity = settings.CheckIslands;
         _profiles = profiles.ToArray();
 
         _costFunctions = _profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
-        _islands = routingNetwork.IslandManager.MaxIslandSize == 0 ? [] : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
+        _islands = !_checkConnectivity || routingNetwork.IslandManager.MaxIslandSize == 0
+            ? []
+            : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
         _islandDgFull = new IslandDirectedGraph?[_profiles.Length];
         _islandDgNonLocal = new IslandDirectedGraph?[_profiles.Length];
     }
@@ -297,7 +305,7 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
             }
 
             // check if the edge is on an island.
-            if (_islands.Length > 0)
+            if (_checkConnectivity && _islands.Length > 0)
             {
                 var tailTileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
                 var islands = _islands[p];
@@ -365,6 +373,10 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
 
     async Task<bool> IEdgeChecker.RunCheckAsync(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, CancellationToken cancellationToken)
     {
+        // Nothing to resolve: without a connectivity question IsAcceptable never returns null,
+        // so arriving here at all means the answer is already in.
+        if (!_checkConnectivity) return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? true;
+
         // Build the edge's tile first so every traversable edge in the tile
         // gets a definitive Island / NotIsland verdict via ClassifyAsync.
         // Subsequent snap candidates in the same tile then short-circuit on

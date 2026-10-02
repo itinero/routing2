@@ -1,4 +1,5 @@
-﻿namespace Itinero.Routing.DataStructures;
+using System.Threading;
+namespace Itinero.Routing.DataStructures;
 
 /// <summary>
 /// Represents a tree of paths by linking their segments together.

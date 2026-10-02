@@ -129,7 +129,12 @@ public static class IRouterOneToOneExtensions
     /// it so the two sum to zero. Null when the profile declares no bound. Halving is what
     /// makes them consistent, and why each half gets half the goal-direction of a one-way A*.
     /// </summary>
-    private static HeuristicFunc? BuildBalancedPotential(RoutingNetwork network, Profile profile,
+    /// <remarks>
+    /// Internal rather than private because <see cref="ReachabilityRouter"/> needs the same
+    /// potential. Two routers computing goal direction slightly differently would make their
+    /// search costs incomparable, and comparing them is the whole point of having both.
+    /// </remarks>
+    internal static HeuristicFunc? BuildBalancedPotential(RoutingNetwork network, Profile profile,
         SnapPoint source, SnapPoint target)
     {
         var minFactor = profile.MinFactor;

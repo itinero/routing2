@@ -27,8 +27,10 @@ namespace Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 /// </summary>
 internal class BidirectionalDijkstra
 {
-    private readonly Half _forward = new();
-    private readonly Half _backward = new();
+    // Not readonly: a search can be handed halves that someone else already expanded. See
+    // ContinueAsync.
+    private SearchHalf _forward = new(isForwardHalf: true);
+    private SearchHalf _backward = new(isForwardHalf: false);
 
     // Best meeting found so far.
     private double _bestCost;
@@ -36,29 +38,6 @@ internal class BidirectionalDijkstra
     private uint _bestBackward;
     // Path returned by the same-edge single-hop fast path; bypasses meeting.
     private Path? _singleHopPath;
-
-    private sealed class Half
-    {
-        public readonly PathTree Tree = new();
-
-        // Carries g because the heap is ordered by g + p; only the stopping rule uses the key.
-        public readonly BinaryHeap<(uint pointer, EdgeId edge, VertexId vertex, double g)> Heap = new();
-        public readonly HashSet<(EdgeId edge, VertexId vertex)> Settled = new();
-        // Per-vertex list of settled arrivals. Each entry records the incoming edge plus
-        // the head order at this vertex for that edge — both are needed to query turn
-        // costs against this label when the other half asks "can I meet you here?".
-        public readonly Dictionary<VertexId, List<SettledEntry>> SettledByVertex = new();
-
-        public void Clear()
-        {
-            Tree.Clear();
-            Heap.Clear();
-            Settled.Clear();
-            SettledByVertex.Clear();
-        }
-    }
-
-    private readonly record struct SettledEntry(EdgeId Edge, bool Forward, byte? HeadOrder, uint Pointer, double Cost);
 
     /// <summary>Fresh instance per call. See <see cref="Dijkstra.Default"/> for rationale.</summary>
     public static BidirectionalDijkstra Default => new();
@@ -71,10 +50,63 @@ internal class BidirectionalDijkstra
         Func<VertexId, Task<bool>>? settledCb = null,
         CancellationToken cancellationToken = default,
         IsMainNFunc? isMainN = null,
-        HeuristicFunc? potential = null)
+        HeuristicFunc? potential = null,
+        bool localAccessRule = false)
     {
-        _forward.Clear();
-        _backward.Clear();
+        _forward = new SearchHalf(isForwardHalf: true);
+        _backward = new SearchHalf(isForwardHalf: false);
+
+        return await this.RunCoreAsync(network, source, target, costFunction, seedTerminals: true,
+            settledCb, cancellationToken, isMainN, potential, localAccessRule);
+    }
+
+    /// <summary>
+    /// Runs to completion from two halves someone else has already expanded.
+    /// </summary>
+    /// <remarks>
+    /// The halves come from snapping, which had to expand outward anyway. The snap points are
+    /// still needed, not to seed but because the path's end offsets come from them.
+    /// </remarks>
+    public async Task<(Path? path, double cost)> ContinueAsync(
+        RoutingNetwork network,
+        SearchHalf forward,
+        SearchHalf backward,
+        SnapPoint source,
+        SnapPoint target,
+        ICostFunction costFunction,
+        Func<VertexId, Task<bool>>? settledCb = null,
+        CancellationToken cancellationToken = default,
+        IsMainNFunc? isMainN = null,
+        HeuristicFunc? potential = null,
+        bool localAccessRule = false,
+        ICostFunction? forwardCostFunction = null,
+        ICostFunction? backwardCostFunction = null)
+    {
+        _forward = forward;
+        _backward = backward;
+
+        return await this.RunCoreAsync(network, source, target, costFunction, seedTerminals: false,
+            settledCb, cancellationToken, isMainN, potential, localAccessRule,
+            forwardCostFunction, backwardCostFunction);
+    }
+
+    private async Task<(Path? path, double cost)> RunCoreAsync(
+        RoutingNetwork network,
+        SnapPoint source,
+        SnapPoint target,
+        ICostFunction costFunction,
+        bool seedTerminals,
+        Func<VertexId, Task<bool>>? settledCb,
+        CancellationToken cancellationToken,
+        IsMainNFunc? isMainN,
+        HeuristicFunc? potential,
+        bool localAccessRule,
+        ICostFunction? forwardCostFunction = null,
+        ICostFunction? backwardCostFunction = null)
+    {
+        // Each half can carry its own pocket relabelling, so the two endpoints are independent.
+        var forwardCostFn = forwardCostFunction ?? costFunction;
+        var backwardCostFn = backwardCostFunction ?? costFunction;
         _bestCost = double.MaxValue;
         _bestForward = uint.MaxValue;
         _bestBackward = uint.MaxValue;
@@ -101,8 +133,47 @@ internal class BidirectionalDijkstra
             backwardPotential = (longitude, latitude) => -potential(longitude, latitude);
         }
 
-        PushTerminal(enumerator, source, costFunction, _forward, asOrigin: true, forwardPotential);
-        PushTerminal(enumerator, target, costFunction, _backward, asOrigin: false, backwardPotential);
+        if (seedTerminals)
+        {
+            _forward.PushTerminal(enumerator, source, forwardCostFn, forwardPotential);
+            _backward.PushTerminal(enumerator, target, backwardCostFn, backwardPotential);
+        }
+        else if (potential != null)
+        {
+            // An adopted half was keyed with no potential; mixing orderings settles states out
+            // of order. Re-keying costs O(n log n) in a frontier bounded by the expansion.
+            _forward.ReKey(network, forwardPotential);
+            _backward.ReKey(network, backwardPotential);
+        }
+
+        // Built once, not per step: the search runs these millions of times and a fresh closure
+        // each time would be pure allocation.
+        var onForwardReached = new ReachedCallback((edge, fwd, headOrder, pointer, cost, vertex) =>
+            this.TryMeet(network, costFunction, isForwardHalf: true, edge, fwd, headOrder, pointer,
+                cost, vertex, _backward));
+        var onBackwardReached = new ReachedCallback((edge, fwd, headOrder, pointer, cost, vertex) =>
+            this.TryMeet(network, costFunction, isForwardHalf: false, edge, fwd, headOrder, pointer,
+                cost, vertex, _forward));
+
+        if (!seedTerminals)
+        {
+            // Adopted halves never asked whether they had already met. For two endpoints in one
+            // pocket that is the whole answer, and without this the search reports no route.
+            foreach (var (vertex, arrivals) in _forward.SettledByVertex)
+            {
+                if (!_backward.SettledByVertex.ContainsKey(vertex)) continue;
+
+                foreach (var arrival in arrivals)
+                {
+                    this.TryMeet(network, costFunction, isForwardHalf: true, arrival.Edge,
+                        arrival.Forward, arrival.HeadOrder, arrival.Pointer, arrival.Cost, vertex,
+                        _backward);
+                }
+            }
+        }
+
+        _forward.OtherEndpointEdge = target.EdgeId;
+        _backward.OtherEndpointEdge = source.EdgeId;
 
         var forwardCost = 0.0;
         var backwardCost = 0.0;
@@ -116,14 +187,22 @@ internal class BidirectionalDijkstra
 
             if (_forward.Heap.Count > 0)
             {
-                var popped = await this.Step(network, _forward, _backward, isForwardHalf: true, costFunction, isMainN, settledCb, forwardPotential, cancellationToken);
+                var popped = await _forward.StepAsync(network, forwardCostFn, isMainN, localAccessRule, _bestCost,
+                    settledCb, forwardPotential, onForwardReached, cancellationToken);
                 if (popped.HasValue) forwardCost = popped.Value;
             }
             if (_backward.Heap.Count > 0)
             {
-                var popped = await this.Step(network, _backward, _forward, isForwardHalf: false, costFunction, isMainN, settledCb, backwardPotential, cancellationToken);
+                var popped = await _backward.StepAsync(network, backwardCostFn, isMainN, localAccessRule, _bestCost,
+                    settledCb, backwardPotential, onBackwardReached, cancellationToken);
                 if (popped.HasValue) backwardCost = popped.Value;
             }
+
+            // One half has run out of anywhere to go and never got to the other endpoint, so
+            // it has settled everything reachable from its own and the other endpoint is not
+            // among it. The two cannot meet.
+            if (_forward.Heap.Count == 0 && !_forward.ReachedOtherEndpoint) break;
+            if (_backward.Heap.Count == 0 && !_backward.ReachedOtherEndpoint) break;
         }
 
         if (_bestCost >= double.MaxValue) return (null, double.MaxValue);
@@ -141,122 +220,6 @@ internal class BidirectionalDijkstra
         return (forwardPath, _bestCost);
     }
 
-    private static void PushTerminal(
-        RoutingNetworkEdgeEnumerator enumerator,
-        SnapPoint snap,
-        ICostFunction costFunction,
-        Half half,
-        bool asOrigin,
-        HeuristicFunc? potential)
-    {
-        // Mirror of the vertex-based DijkstraAlgorithmExtensions.Push contract:
-        //   asOrigin=true  → cost computed in the edge's natural direction (tailToHead = true);
-        //   asOrigin=false → cost computed against the edge (tailToHead = false), so the
-        //                    backward search reaches "back toward source" with the right weights.
-        foreach (var forward in new[] { true, false })
-        {
-            if (!enumerator.MoveTo(snap.EdgeId, forward)) continue;
-            var (canAccess, _, localAccess, cost, _) = costFunction.Get(enumerator, tailToHead: asOrigin, default);
-            if (!canAccess || cost <= 0) continue;
-            var offsetCost = forward
-                ? cost * (1 - snap.OffsetFactor())
-                : cost * snap.OffsetFactor();
-            var p = half.Tree.AddVisit(enumerator, leftMain: false, localAccess: localAccess, uint.MaxValue);
-            half.Heap.Push((p, enumerator.EdgeId, enumerator.Head, offsetCost),
-                offsetCost + Potential(potential, enumerator));
-        }
-    }
-
-    private async Task<double?> Step(
-        RoutingNetwork network,
-        Half active,
-        Half other,
-        bool isForwardHalf,
-        ICostFunction costFunction,
-        IsMainNFunc? isMainN,
-        Func<VertexId, Task<bool>>? settledCb,
-        HeuristicFunc? potential,
-        CancellationToken cancellationToken)
-    {
-        // Dequeue, skipping already-settled labels. `key` is g + p, `cost` is g.
-        var entry = active.Heap.Pop(out var key);
-        while (active.Settled.Contains((entry.edge, entry.vertex)))
-        {
-            if (active.Heap.Count == 0) return key;
-            entry = active.Heap.Pop(out key);
-        }
-        if (!active.Settled.Add((entry.edge, entry.vertex))) return key;
-
-        var cost = entry.g;
-
-        var (vertex, edge, forward, _, localAccess, headOrder, _) = active.Tree.GetVisitWithState(entry.pointer);
-
-        // Record in per-vertex settled multimap for meeting checks initiated by the other half.
-        if (!active.SettledByVertex.TryGetValue(vertex, out var list))
-        {
-            list = new List<SettledEntry>(2);
-            active.SettledByVertex[vertex] = list;
-        }
-        list.Add(new SettledEntry(edge, forward, headOrder, entry.pointer, cost));
-
-        // Settled callback semantics match the unidirectional edge-based: returning true
-        // means "stop expanding from this vertex" (e.g. outside the max-distance box).
-        if (settledCb != null && await settledCb(vertex)) return key;
-        if (cancellationToken.IsCancellationRequested) return key;
-
-        // Meeting check against already-settled labels at this vertex in the other half.
-        this.TryMeet(network, costFunction, isForwardHalf, edge, forward, headOrder, entry.pointer, cost, vertex, other);
-
-        // Expand neighbours.
-        var probe = network.GetEdgeEnumerator();
-        if (!probe.MoveTo(vertex)) return key;
-        while (probe.MoveNext())
-        {
-            var neighbourEdge = probe.EdgeId;
-            if (neighbourEdge == edge) continue; // no U-turn
-
-            // Cost in this half's direction. Forward uses tailToHead=true, backward uses false.
-            // PreviousEdgeEnumerable provides turn-cost context from the path so far.
-            var prev = new PreviousEdgeEnumerable(active.Tree, entry.pointer);
-            var (canAccess, _, neighbourLocalAccess, neighbourCost, turnCost) =
-                costFunction.Get(probe, tailToHead: isForwardHalf, prev);
-            if (!canAccess || neighbourCost is >= double.MaxValue or <= 0) continue;
-            if (turnCost is >= double.MaxValue or < 0) continue;
-
-            // Per-half access-aware rule: reject prev_main && !curr_main in this half's direction.
-            if (isMainN != null)
-            {
-                var prevMain = IsMain(edge, localAccess, isMainN);
-                var currMain = IsMain(neighbourEdge, neighbourLocalAccess, isMainN);
-                if (prevMain && !currMain) continue;
-            }
-
-            var totalCost = cost + neighbourCost + turnCost;
-            if (totalCost >= _bestCost) continue;
-
-            var neighbourPointer = active.Tree.AddVisit(probe, leftMain: false, localAccess: neighbourLocalAccess, entry.pointer);
-
-            // Meeting check against the other half's settled set BEFORE pushing — mirrors the
-            // existing vertex-based pattern's OnQueued hook.
-            this.TryMeet(network, costFunction, isForwardHalf, neighbourEdge, probe.Forward, probe.HeadOrder,
-                neighbourPointer, totalCost, probe.Head, other);
-
-            active.Heap.Push((neighbourPointer, neighbourEdge, probe.Head, totalCost),
-                totalCost + Potential(potential, probe));
-        }
-
-        return key;
-    }
-
-    /// The half's potential at the edge's head; 0 without one. HeadLocation is memoised.
-    private static double Potential(HeuristicFunc? potential, RoutingNetworkEdgeEnumerator enumerator)
-    {
-        if (potential == null) return 0d;
-
-        var (longitude, latitude, _) = enumerator.HeadLocation;
-        return potential(longitude, latitude);
-    }
-
     private void TryMeet(
         RoutingNetwork network,
         ICostFunction costFunction,
@@ -267,7 +230,7 @@ internal class BidirectionalDijkstra
         uint pointer,
         double cost,
         VertexId vertex,
-        Half other)
+        SearchHalf other)
     {
         if (!other.SettledByVertex.TryGetValue(vertex, out var settledList)) return;
 
@@ -350,14 +313,6 @@ internal class BidirectionalDijkstra
             : default;
         var (_, _, _, _, turnCost) = costFunction.Get(probe, tailToHead: true, previous);
         return turnCost;
-    }
-
-    private static bool IsMain(EdgeId edgeId, bool localAccess, IsMainNFunc isMainN)
-    {
-        var verdict = isMainN(edgeId, localAccess);
-        // Without a leftMain state-bit the bidirectional defaults unknown to "main": the per-half
-        // rule then doesn't spuriously reject across edges we know nothing about.
-        return verdict ?? true;
     }
 
     private static Path BuildPath(RoutingNetwork network, PathTree tree, uint pointer)
