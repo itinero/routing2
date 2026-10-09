@@ -306,7 +306,8 @@ internal sealed class SearchHalf
         Func<VertexId, Task<bool>>? settledCb,
         HeuristicFunc? potential,
         ReachedCallback? onReached,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        RelaxedCallback? onRelaxed = null)
     {
         // Dequeue, skipping already-settled labels. `key` is g + p, `cost` is g.
         // PopCounted keeps LocalOnHeap in step: every pushed state is popped exactly once,
@@ -386,6 +387,7 @@ internal sealed class SearchHalf
             // existing vertex-based pattern's OnQueued hook.
             onReached?.Invoke(neighbourEdge, probe.Forward, probe.HeadOrder, neighbourPointer,
                 totalCost, probe.Head);
+            onRelaxed?.Invoke(edge, vertex, neighbourEdge);
 
             this.PushCounted((neighbourPointer, neighbourEdge, probe.Head, totalCost),
                 totalCost + Potential(potential, probe), neighbourLocalAccess);
@@ -403,6 +405,29 @@ internal sealed class SearchHalf
         return potential(longitude, latitude);
     }
 
+    /// <summary>
+    /// The turn where one half's arrival continues into the other's. Neither half charged it: the
+    /// turn only exists once the two are composed, which also inverts pathOutgoing's direction.
+    /// </summary>
+    /// <returns><see cref="double.MaxValue"/> when the turn is forbidden or the edge is gone.</returns>
+    internal static double TurnCostBetween(
+        RoutingNetworkEdgeEnumerator enumerator,
+        ICostFunction costFunction,
+        EdgeId pathIncoming,
+        byte? pathIncomingHeadOrder,
+        EdgeId pathOutgoing,
+        bool pathOutgoingForwardFromOther)
+    {
+        // Position at the outgoing edge in path-outgoing direction (the shared vertex is tail).
+        if (!enumerator.MoveTo(pathOutgoing, !pathOutgoingForwardFromOther)) return double.MaxValue;
+
+        var previous = pathIncomingHeadOrder.HasValue
+            ? PreviousEdgeEnumerable.ForEdge(pathIncoming, pathIncomingHeadOrder)
+            : default;
+        var (_, _, _, _, turnCost) = costFunction.Get(enumerator, tailToHead: true, previous);
+        return turnCost;
+    }
+
     private static bool IsMain(EdgeId edgeId, bool localAccess, IsMainNFunc isMainN)
     {
         var verdict = isMainN(edgeId, localAccess);
@@ -417,6 +442,14 @@ internal sealed class SearchHalf
 /// </summary>
 internal delegate void ReachedCallback(
     EdgeId edge, bool forward, byte? headOrder, uint pointer, double cost, VertexId vertex);
+
+/// <summary>
+/// Invoked for every relaxation, improving or not: filtering to improvements would describe a
+/// tree rather than a graph. By value, since a path-tree pointer means nothing to an outside
+/// caller, and without costs, which the two halves measure in opposite directions.
+/// </summary>
+/// <param name="turnVertex">Where the two edges meet, in this half's direction of travel.</param>
+internal delegate void RelaxedCallback(EdgeId fromEdge, VertexId turnVertex, EdgeId toEdge);
 
 /// <summary>
 /// One arrival at a vertex, recorded so the other half can ask whether it may meet here.

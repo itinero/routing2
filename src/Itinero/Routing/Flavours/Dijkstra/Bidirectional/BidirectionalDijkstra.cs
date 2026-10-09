@@ -34,6 +34,16 @@ internal class BidirectionalDijkstra
 
     // Best meeting found so far.
     private double _bestCost;
+
+    /// <summary>
+    /// How far past the best meeting the search keeps relaxing, as a multiple of it. 1.0 is a
+    /// route; above that it keeps the transitions a caller mapping the region around it needs.
+    /// </summary>
+    private double _pruneFactor = 1.0;
+
+    /// The ceiling relaxations are pruned at, and the stopping threshold.
+    private double PruneCost =>
+        _bestCost >= double.MaxValue ? double.MaxValue : _bestCost * _pruneFactor;
     private uint _bestForward;
     private uint _bestBackward;
     // Path returned by the same-edge single-hop fast path; bypasses meeting.
@@ -80,14 +90,18 @@ internal class BidirectionalDijkstra
         HeuristicFunc? potential = null,
         bool localAccessRule = false,
         ICostFunction? forwardCostFunction = null,
-        ICostFunction? backwardCostFunction = null)
+        ICostFunction? backwardCostFunction = null,
+        double pruneFactor = 1.0,
+        RelaxedCallback? onForwardRelaxed = null,
+        RelaxedCallback? onBackwardRelaxed = null)
     {
         _forward = forward;
         _backward = backward;
 
         return await this.RunCoreAsync(network, source, target, costFunction, seedTerminals: false,
             settledCb, cancellationToken, isMainN, potential, localAccessRule,
-            forwardCostFunction, backwardCostFunction);
+            forwardCostFunction, backwardCostFunction,
+            pruneFactor, onForwardRelaxed, onBackwardRelaxed);
     }
 
     private async Task<(Path? path, double cost)> RunCoreAsync(
@@ -102,8 +116,13 @@ internal class BidirectionalDijkstra
         HeuristicFunc? potential,
         bool localAccessRule,
         ICostFunction? forwardCostFunction = null,
-        ICostFunction? backwardCostFunction = null)
+        ICostFunction? backwardCostFunction = null,
+        double pruneFactor = 1.0,
+        RelaxedCallback? onForwardRelaxed = null,
+        RelaxedCallback? onBackwardRelaxed = null)
     {
+        _pruneFactor = pruneFactor < 1.0 ? 1.0 : pruneFactor;
+
         // Each half can carry its own pocket relabelling, so the two endpoints are independent.
         var forwardCostFn = forwardCostFunction ?? costFunction;
         var backwardCostFn = backwardCostFunction ?? costFunction;
@@ -182,19 +201,21 @@ internal class BidirectionalDijkstra
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Stopping: once both heap mins combined exceed best, no improvement possible.
-            if (_bestCost <= forwardCost + backwardCost) break;
+            // Once both heap mins combined exceed the ceiling, nothing left can come in under it.
+            if (this.PruneCost <= forwardCost + backwardCost) break;
 
             if (_forward.Heap.Count > 0)
             {
-                var popped = await _forward.StepAsync(network, forwardCostFn, isMainN, localAccessRule, _bestCost,
-                    settledCb, forwardPotential, onForwardReached, cancellationToken);
+                var popped = await _forward.StepAsync(network, forwardCostFn, isMainN, localAccessRule,
+                    this.PruneCost, settledCb, forwardPotential, onForwardReached, cancellationToken,
+                    onForwardRelaxed);
                 if (popped.HasValue) forwardCost = popped.Value;
             }
             if (_backward.Heap.Count > 0)
             {
-                var popped = await _backward.StepAsync(network, backwardCostFn, isMainN, localAccessRule, _bestCost,
-                    settledCb, backwardPotential, onBackwardReached, cancellationToken);
+                var popped = await _backward.StepAsync(network, backwardCostFn, isMainN, localAccessRule,
+                    this.PruneCost, settledCb, backwardPotential, onBackwardReached, cancellationToken,
+                    onBackwardRelaxed);
                 if (popped.HasValue) backwardCost = popped.Value;
             }
 
@@ -267,7 +288,7 @@ internal class BidirectionalDijkstra
                 pathOutgoingForwardFromOther = forward;
             }
 
-            var turnCost = TurnCostAtMeeting(network, costFunction, vertex,
+            var turnCost = SearchHalf.TurnCostBetween(network.GetEdgeEnumerator(), costFunction,
                 pathIncoming, pathIncomingHeadOrder,
                 pathOutgoing, pathOutgoingForwardFromOther);
             if (turnCost is >= double.MaxValue or < 0) continue;
@@ -287,32 +308,6 @@ internal class BidirectionalDijkstra
                 _bestBackward = pointer;
             }
         }
-    }
-
-    /// <summary>
-    /// Turn cost at the meeting vertex from the path-incoming edge to the path-outgoing edge.
-    /// The backward search's enumerator visited <paramref name="pathOutgoing"/> with V as the
-    /// head; in path order V is the tail of pathOutgoing, so the path-outgoing traversal is
-    /// the opposite of the backward enumerator's direction.
-    /// </summary>
-    private static double TurnCostAtMeeting(
-        RoutingNetwork network,
-        ICostFunction costFunction,
-        VertexId vertex,
-        EdgeId pathIncoming,
-        byte? pathIncomingHeadOrder,
-        EdgeId pathOutgoing,
-        bool pathOutgoingForwardFromOther)
-    {
-        var probe = network.GetEdgeEnumerator();
-        // Position at the outgoing edge in path-outgoing direction (V is tail).
-        if (!probe.MoveTo(pathOutgoing, !pathOutgoingForwardFromOther)) return double.MaxValue;
-
-        var previous = pathIncomingHeadOrder.HasValue
-            ? PreviousEdgeEnumerable.ForEdge(pathIncoming, pathIncomingHeadOrder)
-            : default;
-        var (_, _, _, _, turnCost) = costFunction.Get(probe, tailToHead: true, previous);
-        return turnCost;
     }
 
     private static Path BuildPath(RoutingNetwork network, PathTree tree, uint pointer)

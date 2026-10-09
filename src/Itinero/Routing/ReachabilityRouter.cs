@@ -50,6 +50,33 @@ public static class ReachabilityRouter
         double searchBoxMeters,
         CancellationToken cancellationToken = default)
     {
+        var resolved = await network.ResolveAsync(settings, origin, destination, bounds,
+            searchBoxMeters, pruneFactor: 1.0, onForwardRelaxed: null, onBackwardRelaxed: null,
+            cancellationToken);
+        if (resolved.IsError) return new Result<ReachabilityRoute>(resolved.ErrorMessage);
+
+        var r = resolved.Value;
+        return new ReachabilityRoute(r.Path, r.Source, r.Target);
+    }
+
+    /// <summary>
+    /// Resolves, and keeps relaxing past the best meeting so a caller can map the region around
+    /// the route out of the same search. Collected here because a pruned transition's tail is
+    /// settled and never expanded again, so the band holding the alternatives cannot be re-found.
+    /// </summary>
+    /// <param name="pruneFactor">How far past the best meeting to go. 1.0 is an ordinary route.</param>
+    internal static async Task<Result<ResolvedRoute>> ResolveAsync(
+        this RoutingNetwork network,
+        RoutingSettings settings,
+        (double longitude, double latitude) origin,
+        (double longitude, double latitude) destination,
+        ReachabilityBounds bounds,
+        double searchBoxMeters,
+        double pruneFactor,
+        RelaxedCallback? onForwardRelaxed,
+        RelaxedCallback? onBackwardRelaxed,
+        CancellationToken cancellationToken = default)
+    {
         var profile = settings.Profile;
         var costFunction = network.GetCostFunctionFor(profile);
         if (settings.CostFunctionWrapper != null) costFunction = settings.CostFunctionWrapper(costFunction);
@@ -81,14 +108,14 @@ public static class ReachabilityRouter
         var sourceSnap = await NextSnapAsync(network, costFunction, originCandidates, deadForOrigin);
         if (sourceSnap == null)
         {
-            return new Result<ReachabilityRoute>(FormattableString.Invariant(
+            return new Result<ResolvedRoute>(FormattableString.Invariant(
                 $"Could not snap origin to connected network: {origin.longitude},{origin.latitude}"));
         }
 
         var targetSnap = await NextSnapAsync(network, costFunction, destinationCandidates, deadForDestination);
         if (targetSnap == null)
         {
-            return new Result<ReachabilityRoute>(FormattableString.Invariant(
+            return new Result<ResolvedRoute>(FormattableString.Invariant(
                 $"Could not snap destination to connected network: {destination.longitude},{destination.latitude}"));
         }
 
@@ -126,8 +153,8 @@ public static class ReachabilityRouter
                 forwardHalf ??= NewHalf(network, forwardCostFn ?? costFunction, sourceSnap.Value, true);
                 backwardHalf ??= NewHalf(network, backwardCostFn ?? costFunction, targetSnap.Value, false);
 
-                var path = await RouteAsync(forwardHalf, backwardHalf, sourceSnap.Value, targetSnap.Value,
-                    potential);
+                var (path, pathCost) = await RouteAsync(forwardHalf, backwardHalf,
+                    sourceSnap.Value, targetSnap.Value, potential);
 
                 // Settled counts are cumulative per half and a surviving half keeps growing across
                 // retries, so charge the increment rather than the total.
@@ -137,7 +164,11 @@ public static class ReachabilityRouter
                 routeSettled += settledDelta;
                 settledBefore = settledNow;
 
-                if (path != null) return new ReachabilityRoute(path, sourceSnap.Value, targetSnap.Value);
+                if (path != null)
+                {
+                    return new ResolvedRoute(path, pathCost, sourceSnap.Value, targetSnap.Value,
+                        forwardCostFn ?? costFunction, backwardCostFn ?? costFunction, routeSettled);
+                }
 
                 var originStranded = Stranded(forwardHalf, bounds.Threshold);
                 var destinationStranded = Stranded(backwardHalf, bounds.Threshold);
@@ -147,7 +178,7 @@ public static class ReachabilityRouter
                 // change that.
                 if (!originStranded && !destinationStranded)
                 {
-                    return new Result<ReachabilityRoute>("Path not found");
+                    return new Result<ResolvedRoute>("Path not found");
                 }
 
                 if (originStranded && !forwardPocketTried)
@@ -177,7 +208,7 @@ public static class ReachabilityRouter
                     sourceSnap = await NextSnapAsync(network, costFunction, originCandidates, deadForOrigin);
                     if (sourceSnap == null)
                     {
-                        return new Result<ReachabilityRoute>(FormattableString.Invariant(
+                        return new Result<ResolvedRoute>(FormattableString.Invariant(
                             $"Could not snap origin to connected network: {origin.longitude},{origin.latitude}"));
                     }
 
@@ -214,7 +245,7 @@ public static class ReachabilityRouter
                     targetSnap = await NextSnapAsync(network, costFunction, destinationCandidates, deadForDestination);
                     if (targetSnap == null)
                     {
-                        return new Result<ReachabilityRoute>(FormattableString.Invariant(
+                        return new Result<ResolvedRoute>(FormattableString.Invariant(
                             $"Could not snap destination to connected network: {destination.longitude},{destination.latitude}"));
                     }
 
@@ -242,18 +273,19 @@ public static class ReachabilityRouter
             ReachabilityCounters.CountRouteOutcome(retried, routeSettled);
         }
 
-        async Task<Path?> RouteAsync(SearchHalf fwd, SearchHalf bwd, SnapPoint from, SnapPoint to,
-            HeuristicFunc? goalDirection)
+        async Task<(Path? path, double cost)> RouteAsync(SearchHalf fwd, SearchHalf bwd,
+            SnapPoint from, SnapPoint to, HeuristicFunc? goalDirection)
         {
             ReachabilityCounters.CountSearch();
             var search = SearchPool<BidirectionalDijkstra>.Rent();
             try
             {
-                var (path, _) = await search.ContinueAsync(network, fwd, bwd, from, to, costFunction,
+                return await search.ContinueAsync(network, fwd, bwd, from, to, costFunction,
                     SettleAsync, cancellationToken, isMainN: null, potential: goalDirection,
                     localAccessRule: true,
-                    forwardCostFunction: forwardCostFn, backwardCostFunction: backwardCostFn);
-                return path;
+                    forwardCostFunction: forwardCostFn, backwardCostFunction: backwardCostFn,
+                    pruneFactor: pruneFactor,
+                    onForwardRelaxed: onForwardRelaxed, onBackwardRelaxed: onBackwardRelaxed);
             }
             finally
             {
@@ -369,3 +401,19 @@ public static class ReachabilityRouter
 /// <param name="Source">Where the origin snapped.</param>
 /// <param name="Target">Where the destination snapped.</param>
 public readonly record struct ReachabilityRoute(Path Path, SnapPoint Source, SnapPoint Target);
+
+/// <summary>
+/// A route plus what it was resolved against: the endpoints snapped to in the end, and the cost
+/// functions those searches actually ran with — not the profile's, which may have been wrapped.
+/// </summary>
+/// <param name="Cost">As the search computed it; re-summing the path would have to reapply turn
+/// costs and any wrapper in the same order.</param>
+/// <param name="Settled">States both halves settled, across candidate retries. Diagnostic.</param>
+public readonly record struct ResolvedRoute(
+    Path Path,
+    double Cost,
+    SnapPoint Source,
+    SnapPoint Target,
+    ICostFunction ForwardCostFunction,
+    ICostFunction BackwardCostFunction,
+    long Settled);
