@@ -55,7 +55,7 @@ public static class RouteCorridorSearch
         if (resolved.IsError)
             return new Result<(ResolvedRoute, RouteCorridor)>(resolved.ErrorMessage);
 
-        return Corridor(network, resolved.Value, costFactor, collector, maxLocalDetour);
+        return Corridor(network, resolved.Value, costFactor, collector, maxLocalDetour, cancellationToken);
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public static class RouteCorridorSearch
         if (resolved.IsError)
             return new Result<(ResolvedRoute, RouteCorridor)>(resolved.ErrorMessage);
 
-        return Corridor(network, resolved.Value, costFactor, collector, maxLocalDetour);
+        return Corridor(network, resolved.Value, costFactor, collector, maxLocalDetour, cancellationToken);
     }
 
     private static void Check(double costFactor, double maxLocalDetour)
@@ -99,10 +99,11 @@ public static class RouteCorridorSearch
 
     private static Result<(ResolvedRoute Route, RouteCorridor Corridor)> Corridor(
         RoutingNetwork network, ResolvedRoute route, double costFactor,
-        TransitionCollector collector, double maxLocalDetour)
+        TransitionCollector collector, double maxLocalDetour, CancellationToken cancellationToken)
     {
         return new Result<(ResolvedRoute, RouteCorridor)>((route, Assemble(network, route,
-            route.Cost * costFactor, collector.Transitions, collector.Relaxed, maxLocalDetour)));
+            route.Cost * costFactor, collector.Transitions, collector.Relaxed, maxLocalDetour,
+            cancellationToken)));
     }
 
     /// <summary>
@@ -142,7 +143,8 @@ public static class RouteCorridorSearch
         double budget,
         HashSet<(EdgeId Prev, VertexId Turn, EdgeId Next)> transitions,
         int relaxed,
-        double maxLocalDetour)
+        double maxLocalDetour,
+        CancellationToken cancellationToken = default)
     {
         var probe = network.GetEdgeEnumerator();
         var orders = network.GetEdgeEnumerator();
@@ -156,8 +158,13 @@ public static class RouteCorridorSearch
         var heads = new List<int>(transitions.Count);
         var costs = new List<double>(transitions.Count);
 
+        var priced = 0;
         foreach (var (prev, turn, next) in transitions)
         {
+            // As long as the search that produced it, so a cancelled request must not keep
+            // pricing. Masked: the check is cheap but this runs millions of times.
+            if ((priced++ & 0x3FF) == 0) cancellationToken.ThrowIfCancellationRequested();
+
             // Position on Next with Turn as its tail: that is the direction the path travels it.
             if (!probe.MoveTo(next, true)) continue;
             if (probe.Tail != turn && !(probe.MoveTo(next, false) && probe.Tail == turn)) continue;

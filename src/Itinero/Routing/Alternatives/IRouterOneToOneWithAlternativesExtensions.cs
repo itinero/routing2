@@ -50,7 +50,8 @@ public static class IRouterOneToOneWithAlternativesExtensions
         if (settings.MaxNumberOfAlternativeRoutes <= 1) return paths;
 
         paths.AddRange(network.AlternativesFor(route, corridor, settings.MaxOverlap,
-            settings.MaxNumberOfAlternativeRoutes - 1, settings.LocalDetourFactor));
+            settings.MaxNumberOfAlternativeRoutes - 1, settings.LocalDetourFactor,
+            cancellationToken));
 
         return paths;
     }

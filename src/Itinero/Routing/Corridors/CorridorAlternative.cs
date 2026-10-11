@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Itinero.Network;
 using Itinero.Routes.Paths;
 
@@ -40,7 +41,8 @@ public static class CorridorAlternative
         RouteCorridor corridor,
         double maxOverlap,
         int maxAlternatives = 1,
-        double localDetourFactor = 2.0)
+        double localDetourFactor = 2.0,
+        CancellationToken cancellationToken = default)
     {
         if (maxOverlap is < 0 or > 1) throw new ArgumentOutOfRangeException(nameof(maxOverlap),
             "An overlap share is a fraction of the candidate's length.");
@@ -86,8 +88,13 @@ public static class CorridorAlternative
         candidates.Sort((x, y) => x.Cost.CompareTo(y.Cost));
 
         var seen = new HashSet<string>();
+        var examined = 0;
         foreach (var (_, via) in candidates)
         {
+            // Every corridor edge is a candidate when the count is unbounded, and each one
+            // rebuilds a path, so this is where a cancelled request would otherwise keep going.
+            if ((examined++ & 0xFF) == 0) cancellationToken.ThrowIfCancellationRequested();
+
             if (found.Count >= maxAlternatives) break;
 
             var edges = PathThrough(via);

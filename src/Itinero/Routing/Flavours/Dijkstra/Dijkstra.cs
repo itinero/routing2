@@ -41,7 +41,7 @@ internal class Dijkstra
     public async Task<(Path? path, double cost)> RunAsync(RoutingNetwork network, SnapPoint source,
         SnapPoint target,
         DijkstraWeightFunc getDijkstraWeight,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
+        Func<(EdgeId edgeId, VertexId vertexId, double cost), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
         IsMainNFunc? isMainN = null,
@@ -57,7 +57,7 @@ internal class Dijkstra
         (SnapPoint sp, bool? direction) source,
         (SnapPoint sp, bool? direction) target,
         DijkstraWeightFunc getDijkstraWeight,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
+        Func<(EdgeId edgeId, VertexId vertexId, double cost), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
         IsMainNFunc? isMainN = null,
@@ -71,7 +71,7 @@ internal class Dijkstra
     public async Task<(Path? path, double cost)[]> RunAsync(RoutingNetwork network, SnapPoint source,
         IReadOnlyList<SnapPoint> targets,
         DijkstraWeightFunc getDijkstraWeight,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
+        Func<(EdgeId edgeId, VertexId vertexId, double cost), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
         IsMainNFunc? isMainN = null,
@@ -94,7 +94,10 @@ internal class Dijkstra
     /// <param name="source"></param>
     /// <param name="targets"></param>
     /// <param name="getDijkstraWeight"></param>
-    /// <param name="settled">This Callback is called for every edge for which the minimal cost is known. If this callback returns false, the edge will not be considered further. (Example usage: building an isochrone, and/or limiting the search to a max cost)</param>
+    /// <param name="settled">
+    /// Called once per state whose minimal cost is final, with that cost. Return true to stop
+    /// expanding from it — which is how a search is cut at a cost bound, as an isochrone does.
+    /// </param>
     /// <param name="queued">This callback is called before an edge is loaded. Should not be used to influence route planning (but e.g. to load data when needed)</param>
     /// <param name="isMainN">Optional access-aware predicate. When supplied the search tracks a
     /// sticky <c>leftMain</c> bit and rejects any relaxation back onto a main-N edge after the
@@ -105,7 +108,7 @@ internal class Dijkstra
         (SnapPoint sp, bool? direction) source,
         IReadOnlyList<(SnapPoint sp, bool? direction)> targets,
         DijkstraWeightFunc getDijkstraWeight,
-        Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? settled = null,
+        Func<(EdgeId edgeId, VertexId vertexId, double cost), Task<bool>>? settled = null,
         Func<(EdgeId edgeId, VertexId vertexId), Task<bool>>? queued = null,
         CancellationToken cancellationToken = default,
         IsMainNFunc? isMainN = null,
@@ -113,6 +116,11 @@ internal class Dijkstra
     {
         static double GetWorst((uint pointer, double cost)[] targets)
         {
+            // No targets means nothing to improve on, so there is no cost at which the search can
+            // stop early: it runs until the heap empties or `settled` prunes it. That is the
+            // isochrone case.
+            if (targets.Length == 0) return double.MaxValue;
+
             var worst = 0d;
             for (var i = 0; i < targets.Length; i++)
             {
@@ -332,7 +340,7 @@ internal class Dijkstra
                 _visits.Add((currentEntry.edgeId, currentEntry.vertexId, currentEntry.leftMain));
             }
 
-            if (settled != null && await settled((currentEntry.edgeId, currentEntry.vertexId)))
+            if (settled != null && await settled((currentEntry.edgeId, currentEntry.vertexId, currentCost)))
             {
                 // the best cost to this edge has already been found; current visit can not improve this anymore so we continue
                 continue;

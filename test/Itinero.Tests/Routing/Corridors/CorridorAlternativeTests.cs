@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
@@ -306,5 +308,21 @@ public class CorridorAlternativeTests
             var edges = path.Select(x => x.edge).ToList();
             Assert.Equal(edges.Count, edges.Distinct().Count());
         }
+    }
+
+    [Fact]
+    public async Task ACancelledRequest_StopsTheSelection()
+    {
+        // The selection runs after the search, over every corridor edge when the count is
+        // unbounded. Without a check here a cancelled request keeps a core busy to the end.
+        var (db, origin, destination, _, _, _) = Diamond();
+        var (route, corridor) = await Searched(db, new FlatProfile(), origin, destination, 3.5);
+
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        Assert.Throws<OperationCanceledException>(() => db.Latest.AlternativesFor(route, corridor,
+            maxOverlap: 0.8, maxAlternatives: int.MaxValue, localDetourFactor: 6.0,
+            cancellationToken: cancelled.Token));
     }
 }
