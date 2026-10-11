@@ -1,190 +1,73 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Itinero.Geo;
-using Itinero.Network;
 using Itinero.Routes;
 using Itinero.Routes.Paths;
-using Itinero.Routing.Costs;
-using Itinero.Routing.Flavours.Dijkstra;
+using Itinero.Routing.Corridors;
 
 namespace Itinero.Routing.Alternatives;
 
+/// <summary>
+/// One to one with alternatives extensions.
+/// </summary>
 public static class IRouterOneToOneWithAlternativesExtensions
 {
-    internal static async Task<Result<IReadOnlyList<Path>>> CalculatePathsAsync(
-        this IRouterOneToOneWithAlternatives alternativeRouter, CancellationToken cancellationToken)
-    {
-        var settings = alternativeRouter.Settings;
-        var altSettings = alternativeRouter.AlternativeRouteSettings;
-        var routingNetwork = alternativeRouter.Network;
-
-        if (routingNetwork == null)
-        {
-            throw new NullReferenceException(
-                "RoutingNetwork is null, cannot do route planning without a routing network");
-        }
-
-        var profile = settings.Profile;
-        var costFunction = routingNetwork.GetCostFunctionFor(profile);
-        if (settings.CostFunctionWrapper != null) costFunction = settings.CostFunctionWrapper(costFunction);
-
-
-        var maxBox = settings.MaxBoxFor(routingNetwork, [alternativeRouter.Source.sp, alternativeRouter.Target.sp]);
-
-        bool CheckMaxDistance(VertexId v)
-        {
-            if (maxBox == null)
-            {
-                return false;
-            }
-
-            if (routingNetwork == null)
-            {
-                throw new Exception("Router cannot be null here.");
-            }
-
-            var vertex = routingNetwork.GetVertex(v);
-            if (!maxBox.Value.Overlaps(vertex))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        var isMainN = routingNetwork.GetIsMainNFunc(profile);
-
-        async Task<(Path? path, double cost)> RunDijkstraAsync(ICostFunction costFunction, CancellationToken cancellationToken)
-        {
-            var source = alternativeRouter.Source;
-            var target = alternativeRouter.Target;
-
-            if (source.direction == null && target.direction == null)
-            {
-                // Run the undirected dijkstra
-                return await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routingNetwork, source.sp, target.sp,
-                    costFunction.GetDijkstraWeightFunc(),
-                    async v =>
-                    {
-                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
-                        if (cancellationToken.IsCancellationRequested) return false;
-                        return CheckMaxDistance(v.vertexId);
-                    }, cancellationToken: cancellationToken, isMainN: isMainN);
-            }
-
-            // Run directed dijkstra
-            return await Flavours.Dijkstra.Dijkstra.Default.RunAsync(routingNetwork, source, target,
-                costFunction.GetDijkstraWeightFunc(),
-                async v =>
-                {
-                    if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v.vertexId))
-                    {
-                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
-                    }
-                    if (cancellationToken.IsCancellationRequested) return false;
-                    return CheckMaxDistance(v.vertexId);
-                }, cancellationToken: cancellationToken, isMainN: isMainN);
-        }
-
-        var (initialPath, initialCost) = await RunDijkstraAsync(costFunction, cancellationToken);
-        if (initialPath == null)
-        {
-            return new Result<IReadOnlyList<Path>>("Not a single path found!");
-        }
-
-        var results = new List<Path>(altSettings.MaxNumberOfAlternativeRoutes) {
-                initialPath
-            };
-
-        if (altSettings.MaxNumberOfAlternativeRoutes == 1) return results;
-
-        var costThreshold = initialCost * altSettings.MaxWeightIncreasePercentage;
-
-        var seenEdges = new Dictionary<EdgeId, int>();
-        foreach (var (edge, _, _, _) in initialPath)
-        {
-            var count = seenEdges.GetValueOrDefault(edge, 0);
-            seenEdges[edge] = count + 1;
-        }
-
-        var maxTries = altSettings.MaxNumberOfAlternativeRoutes * 5;
-        while (results.Count < altSettings.MaxNumberOfAlternativeRoutes && maxTries > 0)
-        {
-            if (cancellationToken.IsCancellationRequested) break;
-
-            maxTries--;
-            var altCostFunction = new AlternativeRouteCostFunction(costFunction, seenEdges,
-                altSettings.PenaltyFactor);
-            var (altPath, altCost) = await RunDijkstraAsync(altCostFunction, cancellationToken);
-
-            if (altCost > costThreshold)
-            {
-                // No more alternative routes can be found
-                break;
-            }
-
-            if (altPath == null)
-            {
-                // No more alternative routes can be found
-                break;
-            }
-
-            var totalEdges = 0;
-            var alreadyKnownEdges = 0;
-
-            foreach (var (edge, _, _, _) in altPath)
-            {
-                totalEdges++;
-                if (seenEdges.TryGetValue(edge, out var count))
-                {
-                    seenEdges[edge] = count + 1;
-
-                    // Already seen!
-                    alreadyKnownEdges++;
-                }
-                else
-                {
-                    seenEdges[edge] = 1;
-                }
-            }
-
-            var overlapPercentage = (double)alreadyKnownEdges / totalEdges;
-
-            if (overlapPercentage > altSettings.MaxPercentageOfEqualEdges)
-            {
-                continue;
-            }
-
-            results.Add(altPath);
-        }
-
-        return results;
-    }
-
+    /// <summary>
+    /// Calculates the fastest path and its alternatives.
+    /// </summary>
+    /// <returns>
+    /// The fastest path first, then the alternatives cheapest-first. Never empty unless the
+    /// endpoints are not connected, in which case an error comes back.
+    /// </returns>
+    /// <remarks>
+    /// One search: the alternatives come out of the cost ellipse around the fastest route, which
+    /// the route's own search maps on the way past.
+    /// </remarks>
     public static async Task<Result<IReadOnlyList<Path>>> PathsAsync(
-        this IRouterOneToOneWithAlternatives withAlternatives, CancellationToken cancellationToken = default)
+        this IRouterOneToOneWithAlternatives withAlternatives,
+        CancellationToken cancellationToken = default)
     {
-        return await withAlternatives.CalculatePathsAsync(cancellationToken);
-    }
-
-    public static async Task<Result<IReadOnlyList<Route>>> CalculateAsync(this IRouterOneToOneWithAlternatives withAlternatives, CancellationToken cancellationToken = default)
-    {
-        var paths = await withAlternatives.CalculatePathsAsync(cancellationToken);
-
-        if (paths.IsError)
+        if (withAlternatives.Source.direction != null || withAlternatives.Target.direction != null)
         {
-            return new Result<IReadOnlyList<Route>>(paths.ErrorMessage);
+            return new Result<IReadOnlyList<Path>>(
+                "Alternatives are not supported for directed endpoints");
         }
 
+        var settings = withAlternatives.AlternativeRouteSettings;
+        var network = withAlternatives.Network;
+        var source = withAlternatives.Source.sp;
+        var target = withAlternatives.Target.sp;
 
-        var routes = paths.Value.Select(path =>
-            withAlternatives.Settings.RouteBuilder.Build(withAlternatives.Network,
-                withAlternatives.Settings.Profile, path).Value
-        ).ToList();
+        // The budget IS the cost constraint, so every path in the corridor satisfies it by
+        // construction and only overlap and the detour bound are left to apply.
+        var searched = await network.RouteCorridorAsync(withAlternatives.Settings, source, target,
+            settings.MaxCostFactor, cancellationToken);
+        if (searched.IsError) return new Result<IReadOnlyList<Path>>(searched.ErrorMessage);
+
+        var (route, corridor) = searched.Value;
+        var paths = new List<Path>(settings.MaxNumberOfAlternativeRoutes) { route.Path };
+        if (settings.MaxNumberOfAlternativeRoutes <= 1) return paths;
+
+        paths.AddRange(network.AlternativesFor(route, corridor, settings.MaxOverlap,
+            settings.MaxNumberOfAlternativeRoutes - 1, settings.LocalDetourFactor));
+
+        return paths;
+    }
+
+    /// <summary>
+    /// Calculates the fastest route and its alternatives.
+    /// </summary>
+    /// <returns>The fastest route first, then the alternatives cheapest-first.</returns>
+    public static async Task<Result<IReadOnlyList<Route>>> CalculateAsync(
+        this IRouterOneToOneWithAlternatives withAlternatives,
+        CancellationToken cancellationToken = default)
+    {
+        var paths = await withAlternatives.PathsAsync(cancellationToken);
+        if (paths.IsError) return new Result<IReadOnlyList<Route>>(paths.ErrorMessage);
+
+        var routes = paths.Value.Select(path => withAlternatives.Settings.RouteBuilder.Build(
+            withAlternatives.Network, withAlternatives.Settings.Profile, path).Value).ToList();
 
         return new Result<IReadOnlyList<Route>>(routes);
     }

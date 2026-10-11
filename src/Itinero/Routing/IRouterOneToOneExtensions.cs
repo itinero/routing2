@@ -74,48 +74,74 @@ public static class IRouterOneToOneExtensions
     internal static async Task<Result<Path>> CalculateAsync(this IRouterOneToOne oneToOneRouter,
         SnapPoint source, SnapPoint target, CancellationToken cancellationToken)
     {
-        var settings = oneToOneRouter.Settings;
-        var routingNetwork = oneToOneRouter.Network;
+        var resolved = await oneToOneRouter.Network.SearchAsync(oneToOneRouter.Settings, source, target,
+            pruneFactor: 1.0, onForwardRelaxed: null, onBackwardRelaxed: null, cancellationToken);
+        if (resolved.IsError) return new Result<Path>(resolved.ErrorMessage);
 
+        return resolved.Value.Path;
+    }
+
+    /// <summary>
+    /// Routes between two points already snapped, optionally relaxing past the best meeting so a
+    /// caller can map the region around the route out of the same search.
+    /// </summary>
+    /// <param name="pruneFactor">How far past the best meeting to go. 1.0 is an ordinary route.</param>
+    /// <returns>The route, or an error if the two points are not connected.</returns>
+    /// <remarks>
+    /// <see cref="ResolvedRoute.Settled"/> comes back 0: this engine does not count it, only
+    /// <see cref="ReachabilityRouter"/> does.
+    /// </remarks>
+    internal static async Task<Result<ResolvedRoute>> SearchAsync(
+        this RoutingNetwork network,
+        RoutingSettings settings,
+        SnapPoint source,
+        SnapPoint target,
+        double pruneFactor,
+        RelaxedCallback? onForwardRelaxed,
+        RelaxedCallback? onBackwardRelaxed,
+        CancellationToken cancellationToken)
+    {
         var profile = settings.Profile;
-        var costFunction = routingNetwork.GetCostFunctionFor(profile);
+        var costFunction = network.GetCostFunctionFor(profile);
         if (settings.CostFunctionWrapper != null) costFunction = settings.CostFunctionWrapper(costFunction);
 
-        var maxBox = settings.MaxBoxFor(routingNetwork, [source, target]);
+        var maxBox = settings.MaxBoxFor(network, [source, target]);
 
-        var isMainN = routingNetwork.GetIsMainNFunc(profile);
-        var potential = BuildBalancedPotential(routingNetwork, profile, source, target);
+        var isMainN = network.GetIsMainNFunc(profile);
+        var potential = BuildBalancedPotential(network, profile, source, target);
         // Rented for this call, returned in the finally.
         var search = SearchPool<BidirectionalDijkstra>.Rent();
         Path? result;
+        double cost;
         try
         {
-            (result, _) = await search.RunAsync(routingNetwork, source, target, costFunction,
+            (result, cost) = await search.RunAsync(network, source, target, costFunction,
                 async v =>
                 {
-                    if (!routingNetwork.UsageNotifier.IsVertexDataReady(routingNetwork, v))
+                    if (!network.UsageNotifier.IsVertexDataReady(network, v))
                     {
-                        await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v, cancellationToken);
+                        await network.UsageNotifier.NotifyVertex(network, v, cancellationToken);
                     }
                     if (cancellationToken.IsCancellationRequested) return false;
                     return CheckMaxDistance(v);
-                }, cancellationToken: cancellationToken, isMainN: isMainN, potential: potential);
+                }, cancellationToken: cancellationToken, isMainN: isMainN, potential: potential,
+                pruneFactor: pruneFactor, onForwardRelaxed: onForwardRelaxed,
+                onBackwardRelaxed: onBackwardRelaxed);
         }
         finally
         {
             SearchPool<BidirectionalDijkstra>.Return(search);
         }
 
-        if (result == null) return new Result<Path>("Path not found");
+        if (result == null) return new Result<ResolvedRoute>("Path not found");
 
-        return result;
+        return new ResolvedRoute(result, cost, source, target, costFunction, costFunction, 0);
 
         bool CheckMaxDistance(VertexId v)
         {
-            if (routingNetwork == null) throw new Exception("Router cannot be null here.");
             if (maxBox == null) return false;
 
-            var vertex = routingNetwork.GetVertex(v);
+            var vertex = network.GetVertex(v);
             if (!maxBox.Value.Overlaps(vertex))
             {
                 return true;

@@ -47,38 +47,90 @@ public static class RouteCorridorSearch
         CancellationToken cancellationToken = default,
         double maxLocalDetour = double.MaxValue)
     {
+        Check(costFactor, maxLocalDetour);
+
+        var collector = new TransitionCollector();
+        var resolved = await network.ResolveAsync(settings, origin, destination, bounds,
+            searchBoxMeters, costFactor, collector.OnForward, collector.OnBackward, cancellationToken);
+        if (resolved.IsError)
+            return new Result<(ResolvedRoute, RouteCorridor)>(resolved.ErrorMessage);
+
+        return Corridor(network, resolved.Value, costFactor, collector, maxLocalDetour);
+    }
+
+    /// <summary>
+    /// Extracts the corridor around a route between two points already snapped, in one search.
+    /// </summary>
+    /// <param name="costFactor">
+    /// The budget as a multiple of the optimum. 1.0 admits only optimal paths.
+    /// </param>
+    /// <returns>The route and the corridor around it.</returns>
+    /// <remarks>
+    /// Takes the same engine the ordinary one-to-one route takes, so the corridor is around the
+    /// route the router itself would return. Snapping is the caller's.
+    /// </remarks>
+    public static async Task<Result<(ResolvedRoute Route, RouteCorridor Corridor)>> RouteCorridorAsync(
+        this RoutingNetwork network,
+        RoutingSettings settings,
+        SnapPoint source,
+        SnapPoint target,
+        double costFactor,
+        CancellationToken cancellationToken = default,
+        double maxLocalDetour = double.MaxValue)
+    {
+        Check(costFactor, maxLocalDetour);
+
+        var collector = new TransitionCollector();
+        var resolved = await network.SearchAsync(settings, source, target, costFactor,
+            collector.OnForward, collector.OnBackward, cancellationToken);
+        if (resolved.IsError)
+            return new Result<(ResolvedRoute, RouteCorridor)>(resolved.ErrorMessage);
+
+        return Corridor(network, resolved.Value, costFactor, collector, maxLocalDetour);
+    }
+
+    private static void Check(double costFactor, double maxLocalDetour)
+    {
         if (costFactor < 1.0) throw new ArgumentOutOfRangeException(nameof(costFactor),
             "A corridor cannot be tighter than the optimum it is measured against.");
         if (maxLocalDetour < 1.0) throw new ArgumentOutOfRangeException(nameof(maxLocalDetour),
             "A detour cannot be required to beat the stretch it replaces.");
+    }
 
-        // Arrive at Turn over Prev, then traverse Next. Neither half reports in that convention,
-        // so take the state triple only and price it below; the halves' overlap then dedupes free.
-        var transitions = new HashSet<(EdgeId Prev, VertexId Turn, EdgeId Next)>();
-        var relaxed = 0;
+    private static Result<(ResolvedRoute Route, RouteCorridor Corridor)> Corridor(
+        RoutingNetwork network, ResolvedRoute route, double costFactor,
+        TransitionCollector collector, double maxLocalDetour)
+    {
+        return new Result<(ResolvedRoute, RouteCorridor)>((route, Assemble(network, route,
+            route.Cost * costFactor, collector.Transitions, collector.Relaxed, maxLocalDetour)));
+    }
 
-        void OnForward(EdgeId fromEdge, VertexId turnVertex, EdgeId toEdge)
+    /// <summary>
+    /// Collects the states the two halves relaxed, in path order.
+    /// </summary>
+    /// <remarks>
+    /// Arrive at Turn over Prev, then traverse Next. Neither half reports in that convention, so
+    /// take the state triple only and price it later; the halves' overlap then dedupes free.
+    /// </remarks>
+    private sealed class TransitionCollector
+    {
+        public HashSet<(EdgeId Prev, VertexId Turn, EdgeId Next)> Transitions { get; } = new();
+
+        public int Relaxed { get; private set; }
+
+        public void OnForward(EdgeId fromEdge, VertexId turnVertex, EdgeId toEdge)
         {
-            relaxed++;
-            transitions.Add((fromEdge, turnVertex, toEdge));
+            this.Relaxed++;
+            this.Transitions.Add((fromEdge, turnVertex, toEdge));
         }
 
-        void OnBackward(EdgeId fromEdge, VertexId turnVertex, EdgeId toEdge)
+        public void OnBackward(EdgeId fromEdge, VertexId turnVertex, EdgeId toEdge)
         {
             // Against travel the roles swap: in path order the route arrives at turnVertex over
             // the edge being relaxed onto, and leaves over the one the half arrived by.
-            relaxed++;
-            transitions.Add((toEdge, turnVertex, fromEdge));
+            this.Relaxed++;
+            this.Transitions.Add((toEdge, turnVertex, fromEdge));
         }
-
-        var resolved = await network.ResolveAsync(settings, origin, destination, bounds,
-            searchBoxMeters, costFactor, OnForward, OnBackward, cancellationToken);
-        if (resolved.IsError)
-            return new Result<(ResolvedRoute, RouteCorridor)>(resolved.ErrorMessage);
-
-        var route = resolved.Value;
-        return new Result<(ResolvedRoute, RouteCorridor)>((route,
-            Assemble(network, route, route.Cost * costFactor, transitions, relaxed, maxLocalDetour)));
     }
 
     /// <summary>

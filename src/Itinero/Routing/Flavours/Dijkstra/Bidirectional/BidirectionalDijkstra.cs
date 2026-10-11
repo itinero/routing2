@@ -61,13 +61,18 @@ internal class BidirectionalDijkstra
         CancellationToken cancellationToken = default,
         IsMainNFunc? isMainN = null,
         HeuristicFunc? potential = null,
-        bool localAccessRule = false)
+        bool localAccessRule = false,
+        double pruneFactor = 1.0,
+        RelaxedCallback? onForwardRelaxed = null,
+        RelaxedCallback? onBackwardRelaxed = null)
     {
         _forward = new SearchHalf(isForwardHalf: true);
         _backward = new SearchHalf(isForwardHalf: false);
 
         return await this.RunCoreAsync(network, source, target, costFunction, seedTerminals: true,
-            settledCb, cancellationToken, isMainN, potential, localAccessRule);
+            settledCb, cancellationToken, isMainN, potential, localAccessRule,
+            forwardCostFunction: null, backwardCostFunction: null,
+            pruneFactor, onForwardRelaxed, onBackwardRelaxed);
     }
 
     /// <summary>
