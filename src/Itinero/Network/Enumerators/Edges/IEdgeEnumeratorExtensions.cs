@@ -38,7 +38,17 @@ public static class IEdgeEnumeratorExtensions
     {
         if (enumerator.Length != null) return enumerator.Length.Value / 100.0;
 
-        return enumerator.GetCompleteShape().DistanceEstimateInMeter();
+        var length = enumerator.GetCompleteShape().DistanceEstimateInMeter();
+
+        // Workaround a problem where 2 nodes in OSM are so close together
+        // that after encoding/decoding their coordinates become same
+        // if we return cost 0, it indicates this is one way road
+        // hence routing doesn't go over it
+        if (length == 0)
+        {
+            length = 0.01; // 1 centimeter
+        }
+        return length;
     }
 
     /// <summary>
