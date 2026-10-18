@@ -230,28 +230,6 @@ public static class RouterDbExtensions
                 factor.Value.ForwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
             attributes.AddOrReplace($"_{profileName}_speed_backward",
                 factor.Value.BackwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
-
-            if (!routingNetwork.IslandManager.TryGetIslandsFor(profileName, out var islands)) continue;
-
-            if (factor.Value.ForwardFactor > 0 || factor.Value.BackwardFactor > 0)
-            {
-                if (islands.GetTileDone(enumerator.Tail.TileId))
-                {
-                    attributes.AddOrReplace($"_{profileName}_island",
-                        islands.IsEdgeOnIsland(enumerator.EdgeId).ToString().ToLowerInvariant());
-                }
-                else
-                {
-                    var status = routingNetwork.IslandManager.IsEdgeOnIsland(profileName, enumerator.EdgeId);
-                    attributes.AddOrReplace($"_{profileName}_island",
-                        status switch
-                        {
-                            true => "true",
-                            false => "false",
-                            null => "unknown"
-                        });
-                }
-            }
         }
 
         jsonWriter.WriteProperties(attributes);

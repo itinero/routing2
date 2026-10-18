@@ -50,7 +50,7 @@ public static class ReachabilityCounters
     /// Pockets that outgrew their budget, so the candidate got no relabelling.
     /// </summary>
     /// <remarks>
-    /// Should stay at zero: a local-access region larger than the island threshold means the
+    /// Should stay at zero: a local-access region larger than the pocket bound means the
     /// tagging or the bound is wrong, not that the route is unusual.
     /// </remarks>
     public static long PocketsAbandoned => Interlocked.Read(ref _pocketsAbandoned);

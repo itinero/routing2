@@ -1,6 +1,5 @@
 ﻿using Itinero.Data.Usage;
 using Itinero.Network.DataStructures;
-using Itinero.Network.Search.Islands;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Mutation;
@@ -8,8 +7,6 @@ namespace Itinero.Network.Mutation;
 internal interface IRoutingNetworkMutable
 {
     int Zoom { get; }
-
-    RoutingNetworkIslandManager IslandManager { get; }
 
     RouterDb RouterDb { get; }
 

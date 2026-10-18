@@ -8,7 +8,6 @@ using Itinero.Geo;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Search.Edges;
-using Itinero.Network.Search.Islands;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
 
@@ -26,18 +25,8 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
     private readonly double _offsetInMeter;
     private readonly double _offsetInMeterMax;
     private readonly double _maxDistance;
-    private readonly Islands[] _islands;
     private readonly ICostFunction[] _costFunctions;
     private readonly Profile[] _profiles;
-
-    // One directed-graph pair per profile, for the lifetime of this snapper
-    private readonly IslandDirectedGraph?[] _islandDgFull;
-    private readonly IslandDirectedGraph?[] _islandDgNonLocal;
-
-    // Whether a candidate has to be connected to the wider network, or only usable by the
-    // profile. Off means access and can-stop-on still apply but nothing asks where the edge
-    // leads — the caller has taken that question on itself.
-    private readonly bool _checkConnectivity;
 
     public Snapper(RoutingNetwork routingNetwork, IEnumerable<Profile> profiles, SnapperSettings settings)
     {
@@ -47,15 +36,9 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         _offsetInMeter = settings.OffsetInMeter;
         _offsetInMeterMax = settings.OffsetInMeterMax;
         _maxDistance = settings.MaxDistance;
-        _checkConnectivity = settings.CheckIslands;
         _profiles = profiles.ToArray();
 
         _costFunctions = _profiles.Select(_routingNetwork.GetCostFunctionFor).ToArray();
-        _islands = !_checkConnectivity || routingNetwork.IslandManager.MaxIslandSize == 0
-            ? []
-            : _profiles.Select(p => _routingNetwork.IslandManager.GetIslandsFor(p)).ToArray();
-        _islandDgFull = new IslandDirectedGraph?[_profiles.Length];
-        _islandDgNonLocal = new IslandDirectedGraph?[_profiles.Length];
     }
 
     /// <inheritdoc/>
@@ -304,45 +287,6 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
                 }
             }
 
-            // check if the edge is on an island.
-            if (_checkConnectivity && _islands.Length > 0)
-            {
-                var tailTileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
-                var islands = _islands[p];
-
-                // fast path: if the tile is fully done, just check _islandEdges.
-                if (islands.GetTileDone(tailTileId))
-                {
-                    if (islands.IsEdgeOnIsland(edgeEnumerator.EdgeId))
-                    {
-                        allOk = false;
-                        continue;
-                    }
-                    // tile done + not in island set → not island.
-                }
-                else
-                {
-                    // Tile not done — ask this request's own graph, which is the only
-                    // thing that can answer "not an island" for an unfinished tile.
-                    var onIsland = this.IsEdgeOnIslandInRequest(p, edgeEnumerator.EdgeId);
-                    if (onIsland == true)
-                    {
-                        allOk = false;
-                        continue;
-                    }
-
-                    if (onIsland == false)
-                    {
-                        // confirmed not island.
-                    }
-                    else
-                    {
-                        // not yet resolved — return null to trigger async resolution.
-                        return null;
-                    }
-                }
-            }
-
             // any profile is good for a positive result.
             if (_anyProfile) return true;
         }
@@ -355,47 +299,10 @@ internal sealed class Snapper : ISnapper, IEdgeChecker
         return this.IsAcceptable(edgeEnumerator);
     }
 
-    /// <summary>
-    /// Island verdict from state this request owns: the durable set says island, this
-    /// request's graph says not-island, otherwise unknown and the caller resolves.
-    /// </summary>
-    private bool? IsEdgeOnIslandInRequest(int profileIndex, EdgeId edgeId)
+    // Access and can-stop-on are all IsAcceptable consults, and both are answerable from the edge
+    // itself, so it is always definitive. Connectivity is the search's question now, not snapping's.
+    Task<bool> IEdgeChecker.RunCheckAsync(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, CancellationToken cancellationToken)
     {
-        if (_islands[profileIndex].IsEdgeOnIsland(edgeId)) return true;
-
-        // No graph yet means nothing has been classified in this request,
-        // do not create one just to ask.
-        var dg = _islandDgFull[profileIndex];
-        if (dg != null && dg.IsNotIsland(edgeId)) return false;
-
-        return null;
-    }
-
-    async Task<bool> IEdgeChecker.RunCheckAsync(IEdgeEnumerator<RoutingNetwork> edgeEnumerator, CancellationToken cancellationToken)
-    {
-        // Nothing to resolve: without a connectivity question IsAcceptable never returns null,
-        // so arriving here at all means the answer is already in.
-        if (!_checkConnectivity) return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? true;
-
-        // Build the edge's tile first so every traversable edge in the tile
-        // gets a definitive Island / NotIsland verdict via ClassifyAsync.
-        // Subsequent snap candidates in the same tile then short-circuit on
-        // the per-profile Islands set / dg fast-paths. The IslandManager
-        // deduplicates concurrent builds for the same (profile, tile).
-        var tailTileId = edgeEnumerator.Forward ? edgeEnumerator.Tail.TileId : edgeEnumerator.Head.TileId;
-        for (var p = 0; p < _profiles.Length; p++)
-        {
-            var profile = _profiles[p];
-            await _routingNetwork.IslandManager.BuildForTileAsync(_routingNetwork, profile, tailTileId,
-                _islandDgFull[p] ??= new IslandDirectedGraph(),
-                _islandDgNonLocal[p] ??= new IslandDirectedGraph(), cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return true;
-
-            var islands = _routingNetwork.IslandManager.GetIslandsFor(profile);
-            if (islands.IsEdgeOnIsland(edgeEnumerator.EdgeId)) return false;
-            // tile DONE + not in Islands set → NotIsland → acceptable for this profile.
-        }
-
-        return (this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? true;
+        return Task.FromResult((this as IEdgeChecker).IsAcceptable(edgeEnumerator) ?? true);
     }
 }

@@ -10,7 +10,7 @@ namespace Itinero.Network.Search.Reachability;
 /// is genuinely on the network.
 /// </summary>
 /// <remarks>
-/// Reconstructs, lazily and around one endpoint, the class island detection precomputed per tile:
+/// Reconstructs, lazily and around one endpoint, the class that was once precomputed per tile:
 /// local-access edges plus the untagged segments enclosed by them.
 /// </remarks>
 internal static class LocalPocket

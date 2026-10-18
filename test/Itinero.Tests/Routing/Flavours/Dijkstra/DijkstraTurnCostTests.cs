@@ -39,7 +39,7 @@ public class DijkstraTurnCostTests
 
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
-                return (w, tcs, false);
+                return (w, tcs);
             });
 
         Assert.NotNull(path);
@@ -87,7 +87,7 @@ public class DijkstraTurnCostTests
 
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
-                return (w, tcs, false);
+                return (w, tcs);
             });
         Assert.NotNull(path);
         path.Trim();
@@ -127,7 +127,7 @@ public class DijkstraTurnCostTests
                 var tcs = e.GetTurnCostTo(ep)
                     .Select(x => (double)x.cost).Sum();
                 if (tcs > 0) tcs = -1;
-                return (1, tcs, false);
+                return (1, tcs);
             });
         Assert.Null(path);
     }
@@ -152,7 +152,7 @@ public class DijkstraTurnCostTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex3).FirstAsync(), null),
-            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0, false));
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
 
         Assert.Null(path);
     }
@@ -181,7 +181,7 @@ public class DijkstraTurnCostTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex5).FirstAsync(), null),
-            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0, false));
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
 
         Assert.Null(path);
     }
@@ -210,7 +210,7 @@ public class DijkstraTurnCostTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex5).FirstAsync(), null),
-            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0, false));
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
 
         Assert.Null(path);
     }
@@ -239,7 +239,7 @@ public class DijkstraTurnCostTests
         var (path, _) = await Itinero.Routing.Flavours.Dijkstra.Dijkstra.Default.RunAsync(latest,
             (await latest.Snap().ToAsync(vertex1).FirstAsync(), null),
             (await latest.Snap().ToAsync(vertex4).FirstAsync(), null),
-            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0, false));
+            (e, _) => (1, barriers.Contains(e.Tail) ? -1 : 0));
 
         Assert.Null(path);
     }

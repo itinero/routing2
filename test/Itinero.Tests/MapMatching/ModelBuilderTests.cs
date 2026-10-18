@@ -14,7 +14,7 @@ public class ModelBuilderTests
     private static (RoutingNetwork network, List<EdgeId> edgeIds) CreateNetwork(
         (double lon, double lat)[] vertices, (int from, int to)[] edges)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration() { MaxIslandSize = 0 });
+        var routerDb = new RouterDb(new RouterDbConfiguration());
         var writer = routerDb.Latest.GetWriter();
         var vertexIds = new List<VertexId>();
         foreach (var (lon, lat) in vertices)

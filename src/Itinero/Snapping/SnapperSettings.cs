@@ -30,14 +30,5 @@ public class SnapperSettings
     /// </summary>
     public double OffsetInMeterMax { get; set; } = 500;
 
-    /// <summary>
-    /// Whether a candidate has to be connected to the wider network to be acceptable.
-    /// </summary>
-    /// <remarks>
-    /// Off means nearest usable edge with no connectivity question asked; access and can-stop-on
-    /// still apply. Snapping both ways identifies locations where connectivity actually matters.
-    /// </remarks>
-    public bool CheckIslands { get; set; } = true;
-
 
 }

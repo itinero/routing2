@@ -35,7 +35,7 @@ public sealed partial class RouterDb : IRouterDbMutable
     {
         configuration ??= RouterDbConfiguration.Default();
 
-        this.Latest = new RoutingNetwork(this, configuration.Zoom, configuration.MaxIslandSize);
+        this.Latest = new RoutingNetwork(this, configuration.Zoom);
         _edgeTypeIndex = configuration.EdgeTypeIndex;
         this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default();
         _turnCostTypeIndex = configuration.TurnCostTypeIndex;

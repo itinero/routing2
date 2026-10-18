@@ -16,7 +16,7 @@ namespace Itinero.Tests.Routing;
 /// </summary>
 /// <remarks>
 /// Hand-built networks, so these pin the wiring only. Whether bounded expansion agrees with
-/// island detection on real data is a corpus question.
+/// behaviour on real data is a corpus question.
 /// </remarks>
 public class ReachabilityRouterTests
 {

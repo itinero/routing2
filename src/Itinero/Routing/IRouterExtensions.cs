@@ -128,7 +128,6 @@ public static class IRouterExtensions
         }
 
         var heuristic = BuildHeuristic(routingNetwork, profile, targets);
-        var isMainN = routingNetwork.GetIsMainNFunc(profile);
         var results = new IReadOnlyList<Result<Path>>[sources.Count];
         for (var s = 0; s < sources.Count; s++)
         {
@@ -146,7 +145,7 @@ public static class IRouterExtensions
                             await routingNetwork.UsageNotifier.NotifyVertex(routingNetwork, v.vertexId, cancellationToken);
                         }
                         return CheckMaxDistance(v.vertexId);
-                    }, isMainN: isMainN, heuristic: heuristic);
+                    }, heuristic: heuristic);
             }
             finally
             {
@@ -208,7 +207,6 @@ public static class IRouterExtensions
         }
 
         var heuristic = BuildHeuristic(routerDb, profile, targets);
-        var isMainN = routerDb.GetIsMainNFunc(profile);
         var results = new IReadOnlyList<Result<Path>>[sources.Count];
         for (var s = 0; s < sources.Count; s++)
         {
@@ -226,7 +224,7 @@ public static class IRouterExtensions
                             await routerDb.UsageNotifier.NotifyVertex(routerDb, e.vertexId);
                         }
                         return CheckMaxDistance(e.vertexId);
-                    }, isMainN: isMainN, heuristic: heuristic);
+                    }, heuristic: heuristic);
             }
             finally
             {

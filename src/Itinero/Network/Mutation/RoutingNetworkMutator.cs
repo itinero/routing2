@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Itinero.Geo;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
-using Itinero.Network.Search.Islands;
 using Itinero.Network.Tiles;
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -23,7 +22,6 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     private readonly SparseArray<bool> _modified;
     private readonly SparseArray<NetworkTile?> _tiles;
     private readonly IRoutingNetworkMutable _network;
-    private readonly RoutingNetworkIslandManager _islandManager;
 
     internal RoutingNetworkMutator(IRoutingNetworkMutable network)
     {
@@ -31,8 +29,6 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
 
         _tiles = _network.Tiles.Clone();
         _modified = new SparseArray<bool>(_tiles.Length);
-
-        _islandManager = network.IslandManager.Clone();
     }
 
     NetworkTile? IEdgeEnumerable.GetTileForRead(uint localTileId)
@@ -169,11 +165,6 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// The zoom level.
     /// </summary>
     public int Zoom => _network.Zoom;
-
-    /// <summary>
-    /// The max island size.
-    /// </summary>
-    internal RoutingNetworkIslandManager IslandManager => _network.IslandManager;
 
     /// <summary>
     /// Adds a new vertex.
@@ -346,7 +337,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         }
 
         // create the new network.
-        var routingNetwork = new RoutingNetwork(_network.RouterDb, _tiles, _network.Zoom, _islandManager);
+        var routingNetwork = new RoutingNetwork(_network.RouterDb, _tiles, _network.Zoom);
 
         // check if listeners need to be cloned/copied over.
         foreach (var listener in _network.UsageNotifier.RegisteredListeners)

@@ -5,7 +5,6 @@ using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Enumerators.Vertices;
 using Itinero.Network.Mutation;
-using Itinero.Network.Search.Islands;
 using Itinero.Network.Tiles;
 using Itinero.Network.Writer;
 
@@ -23,21 +22,18 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     /// </summary>
     /// <param name="routerDb"></param>
     /// <param name="zoom"></param>
-    /// <param name="maxIslandSize"></param>
-    public RoutingNetwork(RouterDb routerDb, int zoom = 14, int maxIslandSize = 1024)
+    public RoutingNetwork(RouterDb routerDb, int zoom = 14)
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
 
-        IslandManager = new RoutingNetworkIslandManager(maxIslandSize);
         _tiles = new SparseArray<NetworkTile?>(0);
     }
 
-    internal RoutingNetwork(RouterDb routerDb, SparseArray<NetworkTile?> tiles, int zoom, RoutingNetworkIslandManager islandManager)
+    internal RoutingNetwork(RouterDb routerDb, SparseArray<NetworkTile?> tiles, int zoom)
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
-        IslandManager = islandManager;
         _tiles = tiles;
     }
 

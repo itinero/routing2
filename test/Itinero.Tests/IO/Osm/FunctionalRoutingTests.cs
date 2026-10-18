@@ -19,7 +19,7 @@ public class FunctionalRoutingTests
 {
     private static RouterDb LoadOsmData(OsmGeo[] os, Profile profile)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 0 });
+        var routerDb = new RouterDb(new RouterDbConfiguration());
         routerDb.PrepareFor(profile);
         routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
         {

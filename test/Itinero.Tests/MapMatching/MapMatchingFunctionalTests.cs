@@ -57,8 +57,7 @@ public class MapMatchingFunctionalTests
 
         var routerDb = new RouterDb(new RouterDbConfiguration
         {
-            EdgeTypeMap = new SimpleAttributesSetMapMock(),
-            MaxIslandSize = 0
+            EdgeTypeMap = new SimpleAttributesSetMapMock()
         });
         await using (var stream = File.OpenRead(osmFile))
         {

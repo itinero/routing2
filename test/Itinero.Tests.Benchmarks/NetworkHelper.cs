@@ -77,7 +77,7 @@ internal static class NetworkHelper
             }
         }
 
-        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 0 });
+        var routerDb = new RouterDb(new RouterDbConfiguration());
         routerDb.PrepareFor(profile);
         routerDb.UseOsmData(new OsmEnumerableStreamSource(osm), s =>
         {

@@ -73,9 +73,7 @@ public class IsochroneSearchTests
             }
         }
 
-        // CheckIslands off: a lattice this small is an island by any sensible threshold, and
-        // the fixture is deliberately small.
-        var snapped = db.Latest.Snap([new MetreProfile()], s => { s.CheckIslands = false; })
+        var snapped = db.Latest.Snap([new MetreProfile()])
             .ToAsync((lon + 5 * step, lat + 5 * step, (float?)null)).GetAwaiter().GetResult();
         Assert.False(snapped.IsError, snapped.IsError ? snapped.ErrorMessage : null);
 

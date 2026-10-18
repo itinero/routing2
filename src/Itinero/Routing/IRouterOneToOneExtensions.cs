@@ -107,7 +107,6 @@ public static class IRouterOneToOneExtensions
 
         var maxBox = settings.MaxBoxFor(network, [source, target]);
 
-        var isMainN = network.GetIsMainNFunc(profile);
         var potential = BuildBalancedPotential(network, profile, source, target);
         // Rented for this call, returned in the finally.
         var search = SearchPool<BidirectionalDijkstra>.Rent();
@@ -124,7 +123,7 @@ public static class IRouterOneToOneExtensions
                     }
                     if (cancellationToken.IsCancellationRequested) return false;
                     return CheckMaxDistance(v);
-                }, cancellationToken: cancellationToken, isMainN: isMainN, potential: potential,
+                }, cancellationToken: cancellationToken, potential: potential,
                 pruneFactor: pruneFactor, onForwardRelaxed: onForwardRelaxed,
                 onBackwardRelaxed: onBackwardRelaxed);
         }

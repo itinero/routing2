@@ -17,7 +17,7 @@ public class FunctionalSnappingTests
 {
     private static RouterDb CreateRouterDb(OsmGeo[] os, Profile? profile = null)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration { MaxIslandSize = 0 });
+        var routerDb = new RouterDb(new RouterDbConfiguration());
         if (profile != null) routerDb.PrepareFor(profile);
         routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
         {

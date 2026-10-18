@@ -83,7 +83,6 @@ public static class ReachabilityRouter
 
         var accessChecker = (IEdgeChecker)network.Snap([profile], s =>
         {
-            s.CheckIslands = false;
             s.CheckCanStopOn = false;
             s.OffsetInMeter = searchBoxMeters;
             s.OffsetInMeterMax = searchBoxMeters;
@@ -128,12 +127,12 @@ public static class ReachabilityRouter
         ICostFunction? backwardCostFn = null;
         var forwardPocketTried = false;
         var backwardPocketTried = false;
-        var pocketBound = network.IslandManager.MaxIslandSize;
+        var pocketBound = bounds.PocketBound;
 
         var maxBox = settings.MaxBoxFor(network, [sourceSnap.Value, targetSnap.Value]);
 
-        // Goal direction, the same balanced potential the island-detection router uses. It depends
-        // on both snap locations, so a candidate advance invalidates it and it is rebuilt below.
+        // Goal direction, the same balanced potential the ordinary router uses. It depends on both
+        // snap locations, so a candidate advance invalidates it and it is rebuilt below.
         var potential = IRouterOneToOneExtensions.BuildBalancedPotential(
             network, profile, sourceSnap.Value, targetSnap.Value);
 
@@ -281,7 +280,7 @@ public static class ReachabilityRouter
             try
             {
                 return await search.ContinueAsync(network, fwd, bwd, from, to, costFunction,
-                    SettleAsync, cancellationToken, isMainN: null, potential: goalDirection,
+                    SettleAsync, cancellationToken, potential: goalDirection,
                     localAccessRule: true,
                     forwardCostFunction: forwardCostFn, backwardCostFunction: backwardCostFn,
                     pruneFactor: pruneFactor,

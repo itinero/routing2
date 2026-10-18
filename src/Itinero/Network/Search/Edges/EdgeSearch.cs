@@ -24,7 +24,7 @@ internal static class EdgeSearch
     /// <returns>The closest acceptable edge to the center of the box inside the given box.</returns>
     /// <remarks>
     /// Geometry first, acceptability second: the old single pass asked the checker on every
-    /// transient best, which is free for an island lookup and not for a bounded expansion.
+    /// transient best, which is free for a precomputed lookup and not for a bounded expansion.
     /// </remarks>
     public static async Task<SnapPoint> SnapInBoxAsync(this RoutingNetwork network,
         ((double longitude, double, float? e) topLeft, (double longitude, double latitude, float? e) bottomRight)

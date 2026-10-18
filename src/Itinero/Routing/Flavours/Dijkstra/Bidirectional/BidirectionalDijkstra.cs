@@ -19,11 +19,6 @@ namespace Itinero.Routing.Flavours.Dijkstra.Bidirectional;
 /// a vertex retain distinct best-cost state. They meet wherever a forward-settled
 /// <c>(E_f, V)</c> shares a vertex V with a backward-settled <c>(E_b, V)</c> and the
 /// turn at V from E_f to E_b is allowed.
-///
-/// When <c>isMainN</c> is supplied each half applies the same per-half access rule
-/// in its own search direction: reject relaxations where the previous edge is main-N
-/// and the candidate next edge is not. The two halves combined admit exactly the
-/// five valid path shapes the unidirectional state-bit Dijkstra admits.
 /// </summary>
 internal class BidirectionalDijkstra
 {
@@ -59,7 +54,6 @@ internal class BidirectionalDijkstra
         ICostFunction costFunction,
         Func<VertexId, Task<bool>>? settledCb = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null,
         HeuristicFunc? potential = null,
         bool localAccessRule = false,
         double pruneFactor = 1.0,
@@ -70,7 +64,7 @@ internal class BidirectionalDijkstra
         _backward = new SearchHalf(isForwardHalf: false);
 
         return await this.RunCoreAsync(network, source, target, costFunction, seedTerminals: true,
-            settledCb, cancellationToken, isMainN, potential, localAccessRule,
+            settledCb, cancellationToken, potential, localAccessRule,
             forwardCostFunction: null, backwardCostFunction: null,
             pruneFactor, onForwardRelaxed, onBackwardRelaxed);
     }
@@ -91,7 +85,6 @@ internal class BidirectionalDijkstra
         ICostFunction costFunction,
         Func<VertexId, Task<bool>>? settledCb = null,
         CancellationToken cancellationToken = default,
-        IsMainNFunc? isMainN = null,
         HeuristicFunc? potential = null,
         bool localAccessRule = false,
         ICostFunction? forwardCostFunction = null,
@@ -104,7 +97,7 @@ internal class BidirectionalDijkstra
         _backward = backward;
 
         return await this.RunCoreAsync(network, source, target, costFunction, seedTerminals: false,
-            settledCb, cancellationToken, isMainN, potential, localAccessRule,
+            settledCb, cancellationToken, potential, localAccessRule,
             forwardCostFunction, backwardCostFunction,
             pruneFactor, onForwardRelaxed, onBackwardRelaxed);
     }
@@ -117,7 +110,6 @@ internal class BidirectionalDijkstra
         bool seedTerminals,
         Func<VertexId, Task<bool>>? settledCb,
         CancellationToken cancellationToken,
-        IsMainNFunc? isMainN,
         HeuristicFunc? potential,
         bool localAccessRule,
         ICostFunction? forwardCostFunction = null,
@@ -211,14 +203,14 @@ internal class BidirectionalDijkstra
 
             if (_forward.Heap.Count > 0)
             {
-                var popped = await _forward.StepAsync(network, forwardCostFn, isMainN, localAccessRule,
+                var popped = await _forward.StepAsync(network, forwardCostFn, localAccessRule,
                     this.PruneCost, settledCb, forwardPotential, onForwardReached, cancellationToken,
                     onForwardRelaxed);
                 if (popped.HasValue) forwardCost = popped.Value;
             }
             if (_backward.Heap.Count > 0)
             {
-                var popped = await _backward.StepAsync(network, backwardCostFn, isMainN, localAccessRule,
+                var popped = await _backward.StepAsync(network, backwardCostFn, localAccessRule,
                     this.PruneCost, settledCb, backwardPotential, onBackwardReached, cancellationToken,
                     onBackwardRelaxed);
                 if (popped.HasValue) backwardCost = popped.Value;

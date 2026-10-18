@@ -4,7 +4,6 @@ using System.Linq;
 using Itinero.IO;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Mutation;
-using Itinero.Network.Search.Islands;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Serialization;
@@ -14,13 +13,10 @@ internal static class RoutingNetworkSerializer
     public static void WriteTo(this RoutingNetworkMutator routingNetworkMutator, Stream stream)
     {
         // write version #.
-        stream.WriteVarInt32(2);
+        stream.WriteVarInt32(3);
 
         // write zoom.
         stream.WriteVarInt32(routingNetworkMutator.Zoom);
-
-        // write max island size.
-        stream.WriteVarInt32(routingNetworkMutator.IslandManager.MaxIslandSize);
 
         // write tiles.
         stream.WriteVarUInt32((uint)routingNetworkMutator.GetTiles().Count());
@@ -35,16 +31,13 @@ internal static class RoutingNetworkSerializer
     {
         // check version #.
         var version = stream.ReadVarInt32();
-        if (version != 2)
+        if (version != 3)
         {
             throw new InvalidDataException("Unknown version #.");
         }
 
         // read zoom.
         var zoom = stream.ReadVarInt32();
-
-        // read max island size.
-        var maxIslandSize = stream.ReadVarInt32();
 
         var tileCount = stream.ReadVarUInt32();
         var tiles = new SparseArray<NetworkTile?>(tileCount);
@@ -55,6 +48,6 @@ internal static class RoutingNetworkSerializer
             tiles[tile.TileId] = tile;
         }
 
-        return new RoutingNetwork(routerDb, tiles, zoom, new RoutingNetworkIslandManager(maxIslandSize));
+        return new RoutingNetwork(routerDb, tiles, zoom);
     }
 }

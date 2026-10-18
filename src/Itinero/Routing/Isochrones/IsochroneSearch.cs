@@ -83,8 +83,7 @@ public static class IsochroneSearch
                     // True stops expansion from this state, which is what bounds the search.
                     return state.cost > cut;
                 },
-                cancellationToken: cancellationToken,
-                isMainN: network.GetIsMainNFunc(profile));
+                cancellationToken: cancellationToken);
         }
         finally
         {

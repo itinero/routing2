@@ -90,7 +90,7 @@ internal sealed class SearchHalf
     private (uint pointer, EdgeId edge, VertexId vertex, double g) PopCounted(out double key)
     {
         var entry = Heap.Pop(out key);
-        var (_, _, _, _, localAccess, _, _) = Tree.GetVisitWithState(entry.pointer);
+        var (_, _, _, localAccess, _, _) = Tree.GetVisitWithState(entry.pointer);
         if (localAccess) this.LocalOnHeap--;
         return entry;
     }
@@ -124,7 +124,7 @@ internal sealed class SearchHalf
                 ? cost * (1 - snap.OffsetFactor())
                 : cost * snap.OffsetFactor();
             this.SawLocalAccess |= localAccess;
-            var p = Tree.AddVisit(enumerator, leftMain: false, localAccess: localAccess, uint.MaxValue);
+            var p = Tree.AddVisit(enumerator, localAccess, uint.MaxValue);
             this.PushCounted((p, enumerator.EdgeId, enumerator.Head, offsetCost),
                 offsetCost + Potential(potential, enumerator), localAccess);
 
@@ -188,7 +188,7 @@ internal sealed class SearchHalf
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await this.StepAsync(network, costFunction, isMainN: null, localAccessRule: true,
+            await this.StepAsync(network, costFunction, localAccessRule: true,
                 bestCost: double.MaxValue, settledCb: LoadTileFor, potential: null,
                 onReached: null, cancellationToken);
 
@@ -241,7 +241,7 @@ internal sealed class SearchHalf
 
             // The same access rule the search itself applies, and it has to be: these states
             // become the search's frontier, so anything allowed here the finished route may do.
-            await this.StepAsync(network, costFunction, isMainN: null, localAccessRule: true,
+            await this.StepAsync(network, costFunction, localAccessRule: true,
                 bestCost: double.MaxValue, settledCb: LoadTileFor, potential: null,
                 onReached: null, cancellationToken);
 
@@ -300,7 +300,6 @@ internal sealed class SearchHalf
     public async ValueTask<double?> StepAsync(
         RoutingNetwork network,
         ICostFunction costFunction,
-        IsMainNFunc? isMainN,
         bool localAccessRule,
         double bestCost,
         Func<VertexId, Task<bool>>? settledCb,
@@ -322,7 +321,7 @@ internal sealed class SearchHalf
 
         var cost = entry.g;
 
-        var (vertex, edge, forward, _, localAccess, headOrder, _) = Tree.GetVisitWithState(entry.pointer);
+        var (vertex, edge, forward, localAccess, headOrder, _) = Tree.GetVisitWithState(entry.pointer);
         this.SawLocalAccess |= localAccess;
 
         if (this.OtherEndpointEdge.HasValue && edge == this.OtherEndpointEdge.Value)
@@ -370,18 +369,11 @@ internal sealed class SearchHalf
                 // enters another, so the composed path is pocket, network, pocket.
                 if (neighbourLocalAccess && !localAccess) continue;
             }
-            // Per-half access-aware rule: reject prev_main && !curr_main in this half's direction.
-            else if (isMainN != null)
-            {
-                var prevMain = IsMain(edge, localAccess, isMainN);
-                var currMain = IsMain(neighbourEdge, neighbourLocalAccess, isMainN);
-                if (prevMain && !currMain) continue;
-            }
 
             var totalCost = cost + neighbourCost + turnCost;
             if (totalCost >= bestCost) continue;
 
-            var neighbourPointer = Tree.AddVisit(probe, leftMain: false, localAccess: neighbourLocalAccess, entry.pointer);
+            var neighbourPointer = Tree.AddVisit(probe, neighbourLocalAccess, entry.pointer);
 
             // Meeting check against the other half's settled set BEFORE pushing — mirrors the
             // existing vertex-based pattern's OnQueued hook.
@@ -426,14 +418,6 @@ internal sealed class SearchHalf
             : default;
         var (_, _, _, _, turnCost) = costFunction.Get(enumerator, tailToHead: true, previous);
         return turnCost;
-    }
-
-    private static bool IsMain(EdgeId edgeId, bool localAccess, IsMainNFunc isMainN)
-    {
-        var verdict = isMainN(edgeId, localAccess);
-        // Without a leftMain state-bit the bidirectional defaults unknown to "main": the per-half
-        // rule then doesn't spuriously reject across edges we know nothing about.
-        return verdict ?? true;
     }
 }
 
