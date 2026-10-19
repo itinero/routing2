@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Indexes;
 using Itinero.Network;
+using Itinero.Network.Enumerators.Edges;
 
 namespace Itinero.Data.Providers;
 
@@ -136,7 +137,7 @@ public class DefaultDataProvider : DataProviderBase
         /// <summary>
         /// Gets an enumerator over what has been written so far.
         /// </summary>
-        public NetworkBuilder.Enumerator GetEdgeEnumerator()
+        public NetworkBuilderEdgeEnumerator GetEdgeEnumerator()
         {
             return _builder.GetEdgeEnumerator();
         }

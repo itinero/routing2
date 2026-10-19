@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Itinero.Indexes;
 using Itinero.Network;
-using Itinero.Network.Mutation;
 
 namespace Itinero.Data.Providers;
 
@@ -40,7 +39,7 @@ public abstract class DataProviderBase
     /// </remarks>
     protected NetworkBuilder BeginWriting()
     {
-        return new NetworkBuilder(this.RouterDb.GetMutableNetwork());
+        return this.RouterDb.GetMutableNetwork();
     }
 
     /// <summary>

@@ -27,19 +27,16 @@ public class RoutingNetworkWriterTests
     {
         // when adding a vertex to a tile the network should always generate an id in the same tile.
 
+        // adding the same location twice in one scope should give the same tile and a new local id.
+
         var provider = TestProvider.New();
         var (vertices, _) = provider.Write(new (double longitude, double latitude, float? e)[] {
+            (4.7868, 51.2643, (float?) null),
             (4.7868, 51.2643, (float?) null)
         });
 
-        // when adding the vertex a second time it should generate the same tile but a new local id.
-
-        (vertices, _) = provider.Write(new (double longitude, double latitude, float? e)[] {
-            (4.7868, 51.2643, (float?) null)
-        });
-
-        Assert.Equal((uint)89546969, vertices[0].TileId);
-        Assert.Equal((uint)1, vertices[0].LocalId);
+        Assert.Equal((uint)89546969, vertices[1].TileId);
+        Assert.Equal((uint)1, vertices[1].LocalId);
     }
 
     [Fact]

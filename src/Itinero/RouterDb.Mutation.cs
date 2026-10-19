@@ -1,43 +1,36 @@
 ﻿using System;
+using Itinero.Data.Providers;
 using Itinero.Network;
-using Itinero.Network.Mutation;
 
 namespace Itinero;
 
 public sealed partial class RouterDb
 {
-    private RoutingNetworkMutator? _mutable;
+    // the one-open-transaction guard, and the whole of what publishing needs to track.
+    private NetworkBuilder? _open;
 
     /// <summary>
-    /// Returns true if there is already a writer.
+    /// Opens a transaction against the newest network, to be published when it is disposed.
     /// </summary>
-    internal bool HasMutableNetwork => _mutable != null;
+    internal NetworkBuilder GetMutableNetwork()
+    {
+        if (_open != null)
+        {
+            throw new InvalidOperationException("Only one open transaction is allowed at a time.");
+        }
+
+        _open = new NetworkBuilder(this.Latest);
+
+        return _open;
+    }
 
     /// <summary>
-    /// Gets a mutable version of the latest network.
+    /// Publishes the network the given transaction wrote, and closes it.
     /// </summary>
-    /// <returns>The mutable version.</returns>
-    internal RoutingNetworkMutator GetMutableNetwork()
-    {
-        if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
-                                                $"Check {nameof(this.HasMutableNetwork)} to check for a current mutable.");
-
-        return this.Latest.GetAsMutable();
-    }
-
-    internal RoutingNetworkMutator SetAsMutable(RoutingNetworkMutator mutable)
-    {
-        if (_mutable != null) throw new InvalidOperationException($"Only one mutable version is allowed at one time." +
-                                                                  $"Check {nameof(this.HasMutableNetwork)} to check for a current mutable.");
-
-        _mutable = mutable;
-        return _mutable;
-    }
-
-    void IRouterDbMutable.Finish(RoutingNetwork newNetwork)
+    internal void Finish(RoutingNetwork newNetwork)
     {
         this.Latest = newNetwork;
 
-        _mutable = null;
+        _open = null;
     }
 }

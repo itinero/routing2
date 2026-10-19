@@ -84,17 +84,6 @@ internal partial class NetworkTile
     }
 
     /// <summary>
-    /// Clones this graph tile.
-    /// </summary>
-    /// <returns>The copy of this tile.</returns>
-    public NetworkTile Clone()
-    {
-        return new(_zoom, _tileId, _nextCrossTileId, (uint[])_pointers.Clone(), (byte[])_edges.Clone(),
-            (uint[])_crossEdgePointers.Clone(), (byte[])_coordinates.Clone(),
-            (byte[])_turnCosts.Clone(), _nextVertexId, _nextEdgeId);
-    }
-
-    /// <summary>
     /// Gets the tile id.
     /// </summary>
     public uint TileId => _tileId;

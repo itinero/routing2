@@ -4,7 +4,6 @@ using Itinero.Data.Usage;
 using Itinero.Data.Providers;
 using Itinero.Indexes;
 using Itinero.Network;
-using Itinero.Network.Mutation;
 using Itinero.Profiles;
 
 [assembly: InternalsVisibleTo("Itinero.Tests")]
@@ -20,7 +19,7 @@ namespace Itinero;
 /// Holds and publishes networks: a rotation replaces the newest one atomically. A request takes
 /// the newest, holds its own reference and finishes on it, so a rotation leaves it alone.
 /// </remarks>
-public sealed partial class RouterDb : IRouterDbMutable
+public sealed partial class RouterDb
 {
     /// <summary>
     /// Creates a new router db for the given provider.

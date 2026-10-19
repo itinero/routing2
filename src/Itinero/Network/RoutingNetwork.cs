@@ -4,7 +4,6 @@ using Itinero.Data.Usage;
 using Itinero.Network.DataStructures;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Enumerators.Vertices;
-using Itinero.Network.Mutation;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network;
@@ -12,9 +11,13 @@ namespace Itinero.Network;
 /// <summary>
 /// The routing network.
 /// </summary>
-public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable
+public sealed partial class RoutingNetwork : IEdgeEnumerable
 {
     private readonly SparseArray<NetworkTile?> _tiles;
+
+    /// The tiles a transaction carries over, by reference. Internal because only a transaction
+    /// reads it, and it must never be written through.
+    internal SparseArray<NetworkTile?> Tiles => _tiles;
 
     /// <summary>
     /// Creates a new routing network.

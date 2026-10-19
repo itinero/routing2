@@ -6,7 +6,6 @@ using Itinero.IO.Osm.Restrictions.Barriers;
 using Itinero.IO.Osm.Restrictions.Turns;
 using Itinero.Network;
 using Itinero.Data.Providers;
-using Itinero.Network.Mutation;
 using Itinero.IO.Osm.Restrictions;
 using OsmSharp;
 using OsmSharp.Streams;

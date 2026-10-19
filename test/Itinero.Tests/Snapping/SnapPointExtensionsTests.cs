@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Itinero.Geo;
 using Itinero.Geo.Directions;
 using Itinero.Network;
-using Itinero.Network.Mutation;
 using Itinero.Snapping;
 using Xunit;
 

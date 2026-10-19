@@ -11,31 +11,32 @@ namespace Itinero.Tests.Network.TurnCosts;
 /// tile build down with it.
 public class TurnCostOrderBudgetTests
 {
-    private static (DefaultDataProvider provider, VertexId centre, EdgeId[] edges) Star(int spokes)
+    /// Returns the writer still open: a tile is written whole, so turn costs on this star have to
+    /// be added in the same scope that wrote it.
+    private static (DefaultDataProvider provider, DefaultDataProvider.Writer writer, VertexId centre,
+        EdgeId[] edges) Star(int spokes)
     {
         var provider = TestProvider.New();
-        VertexId centre;
+        var writer = provider.BeginWrite();
         var edges = new EdgeId[spokes];
-        using (var mutable = provider.BeginWrite())
+
+        var centre = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+        for (var i = 0; i < spokes; i++)
         {
-            centre = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
-            for (var i = 0; i < spokes; i++)
-            {
-                var outer = mutable.AddVertex(
-                    4.792613983154297 + ((i + 1) * 0.0001), 51.26535213392538, (float?)null);
-                edges[i] = mutable.AddEdge(centre, outer);
-            }
+            var outer = writer.AddVertex(
+                4.792613983154297 + ((i + 1) * 0.0001), 51.26535213392538, (float?)null);
+            edges[i] = writer.AddEdge(centre, outer);
         }
 
-        return (provider, centre, edges);
+        return (provider, writer, centre, edges);
     }
 
     [Fact]
     public void AddTurnCosts_WithinOrderBudget_IsAdded()
     {
-        var (provider, centre, edges) = Star(4);
+        var (_, writer, centre, edges) = Star(4);
 
-        using var mutable = provider.BeginWrite();
+        using var mutable = writer;
         var added = mutable.AddTurnCosts(centre, Enumerable.Empty<(string key, string value)>(),
             new[] { edges[0], edges[1] }, new uint[,] { { 0, 1 }, { 0, 0 } });
 
@@ -45,9 +46,9 @@ public class TurnCostOrderBudgetTests
     [Fact]
     public void AddTurnCosts_ExceedingOrderBudgetInOneCall_IsSkippedNotThrown()
     {
-        var (provider, centre, edges) = Star(20);
+        var (_, writer, centre, edges) = Star(20);
 
-        using var mutable = provider.BeginWrite();
+        using var mutable = writer;
         var costs = new uint[20, 20];
         var added = mutable.AddTurnCosts(centre,
             Enumerable.Empty<(string key, string value)>(), edges, costs);
@@ -60,9 +61,9 @@ public class TurnCostOrderBudgetTests
     {
         // The toll plaza shape: each call is small enough to pass any per-call check, but
         // orders accumulate per vertex, so the budget runs out partway through.
-        var (provider, centre, edges) = Star(20);
+        var (_, writer, centre, edges) = Star(20);
 
-        using var mutable = provider.BeginWrite();
+        using var mutable = writer;
         var results = new bool[edges.Length - 1];
         for (var i = 0; i < edges.Length - 1; i++)
         {
@@ -79,9 +80,9 @@ public class TurnCostOrderBudgetTests
     public void AddTurnCosts_SkippedCall_LeavesEarlierTurnCostsIntact()
     {
         // A skip must not half-write: whatever fit before it still has to read back.
-        var (provider, centre, edges) = Star(20);
+        var (provider, writer, centre, edges) = Star(20);
 
-        using (var mutable = provider.BeginWrite())
+        using (var mutable = writer)
         {
             Assert.True(mutable.AddTurnCosts(centre,
                 Enumerable.Empty<(string key, string value)>(),
