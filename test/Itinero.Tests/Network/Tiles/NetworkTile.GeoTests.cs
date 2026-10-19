@@ -52,7 +52,7 @@ public class NetworkTile_GeoTests
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849);
 
-        var edge = networkTile.AddEdge(vertex1, vertex2,
+        var edge = networkTile.AddEdge(vertex1, vertex2, 0,
             System.Array.Empty<(double longitude, double latitude, float? e)>());
         Assert.Equal((uint)0, edge.LocalId);
     }
@@ -65,7 +65,7 @@ public class NetworkTile_GeoTests
         var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, new[] {
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, new[] {
                 (4.86786,
                     51.26909, (float?) null)
             });
@@ -90,7 +90,7 @@ public class NetworkTile_GeoTests
         var vertex1 = graphTile.AddVertex(4.86638, 51.269728, 100);
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849, 101);
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, new[] {
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, new[] {
                 (4.86786,
                     51.26909, (float?) 102f)
             });
@@ -116,7 +116,7 @@ public class NetworkTile_GeoTests
         var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, new[] {
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, new[] {
                 (
                     4.867324233055115,
                     51.269695361396586, (float?) null
@@ -156,7 +156,7 @@ public class NetworkTile_GeoTests
         var vertex1 = graphTile.AddVertex(4.86638, 51.269728, 100);
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849, 110);
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, new[] {
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, new[] {
                 (
                     4.867324233055115,
                     51.269695361396586, (float?) 101
@@ -213,7 +213,7 @@ public class NetworkTile_GeoTests
             shapePoints.Add((last.longitude + 0.001, last.latitude + 0.001, null));
         }
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, shapePoints);
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, shapePoints);
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(graphTile);

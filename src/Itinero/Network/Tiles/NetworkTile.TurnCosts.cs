@@ -278,7 +278,7 @@ internal partial class NetworkTile
         }
 
         // skip over length/type.
-        size = this.DecodeEdgePointerId(pointer, out _);
+        size = this.DecodeEdgeTypeId(pointer, out _);
         pointer += size;
         size = this.DecodeEdgePointerId(pointer, out _);
         pointer += size;

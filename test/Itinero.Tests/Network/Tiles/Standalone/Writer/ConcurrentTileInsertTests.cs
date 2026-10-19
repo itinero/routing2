@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Itinero.Data;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
+using Itinero.Data.Providers;
 using Itinero.Network;
 using Itinero.Network.Tiles;
 using Itinero.Network.Tiles.Standalone;
@@ -88,20 +89,16 @@ public class ConcurrentTileInsertTests
         return (osm, tiles);
     }
 
-    private static RouterDb NewRouterDb() => new(new RouterDbConfiguration
-    {
-        Zoom = 14,
-        EdgeTypeMap = new OsmEdgeTypeMap()
-    });
+    private static DefaultDataProvider NewProvider() => TestProvider.New(new OsmEdgeTypeMap());
 
-    private static List<StandaloneNetworkTile> BuildTiles(RouterDb routerDb,
+    private static List<StandaloneNetworkTile> BuildTiles(DefaultDataProvider provider,
         IEnumerable<(uint x, uint y)> tiles, OsmGeo[] osm)
     {
         var built = new List<StandaloneNetworkTile>();
         foreach (var (x, y) in tiles)
         {
-            var w = routerDb.Latest.GetStandaloneTileWriter(x, y);
-            w.AddTileData(osm);
+            var w = provider.RouterDb.Latest.GetStandaloneTileWriter(x, y);
+            w.AddTileData(osm, provider);
             built.Add(w.GetResultingTile());
         }
 
@@ -167,33 +164,33 @@ public class ConcurrentTileInsertTests
             $"expected the corridor to span several tiles, got {tiles.Count}");
 
         // Serial reference, built once.
-        var serialDb = NewRouterDb();
+        var serialDb = NewProvider();
         var serialTiles = BuildTiles(serialDb, tiles, osm);
         var serialIds = new GlobalNetworkManager();
         foreach (var t in serialTiles)
         {
-            using var writer = serialDb.Latest.GetWriter();
+            using var writer = serialDb.RouterDb.Latest.GetWriter();
             writer.AddStandaloneTile(t, serialIds);
         }
 
-        var expected = CanonicalEdges(serialDb.Latest);
-        var expectedTurnCostVertices = CountTurnCostVertices(serialDb.Latest);
+        var expected = CanonicalEdges(serialDb.RouterDb.Latest);
+        var expectedTurnCostVertices = CountTurnCostVertices(serialDb.RouterDb.Latest);
         Assert.NotEmpty(expected);
 
         for (var repeat = 0; repeat < Repeats; repeat++)
         {
-            var db = NewRouterDb();
+            var db = NewProvider();
             var built = BuildTiles(db, tiles, osm);
             var ids = new GlobalNetworkManager();
 
             Parallel.ForEach(built, t =>
             {
-                using var writer = db.Latest.GetTileInsertWriter();
+                using var writer = db.RouterDb.Latest.GetTileInsertWriter();
                 writer.AddStandaloneTile(t, ids);
             });
 
-            Assert.Equal(expected, CanonicalEdges(db.Latest));
-            Assert.Equal(expectedTurnCostVertices, CountTurnCostVertices(db.Latest));
+            Assert.Equal(expected, CanonicalEdges(db.RouterDb.Latest));
+            Assert.Equal(expectedTurnCostVertices, CountTurnCostVertices(db.RouterDb.Latest));
             Assert.Equal(serialIds.PendingBoundaryCrossingCount, ids.PendingBoundaryCrossingCount);
             Assert.Equal(serialIds.PendingRestrictionCount, ids.PendingRestrictionCount);
         }
@@ -218,7 +215,7 @@ public class ConcurrentTileInsertTests
         {
             for (var round = 0; round < 60; round++)
             {
-                var db = NewRouterDb();
+                var db = NewProvider();
                 // Two adjacent tiles only, so both threads contend on the same boundary.
                 var adjacent = tiles.Take(2).ToList();
                 var built = BuildTiles(db, adjacent, osm);
@@ -227,12 +224,12 @@ public class ConcurrentTileInsertTests
                 // Opposite orders, started together.
                 var forward = Task.Run(() =>
                 {
-                    using var w = db.Latest.GetTileInsertWriter();
+                    using var w = db.RouterDb.Latest.GetTileInsertWriter();
                     w.AddStandaloneTile(built[0], ids);
                 });
                 var backward = Task.Run(() =>
                 {
-                    using var w = db.Latest.GetTileInsertWriter();
+                    using var w = db.RouterDb.Latest.GetTileInsertWriter();
                     w.AddStandaloneTile(built[1], ids);
                 });
                 Task.WaitAll(forward, backward);
@@ -259,7 +256,7 @@ public class ConcurrentTileInsertTests
         {
             for (var repeat = 0; repeat < Repeats; repeat++)
             {
-                var db = NewRouterDb();
+                var db = NewProvider();
                 var built = BuildTiles(db, tiles, osm);
                 var ids = new GlobalNetworkManager();
 
@@ -269,7 +266,7 @@ public class ConcurrentTileInsertTests
                 var backward = built.Skip(built.Count / 2).Reverse().ToList();
                 Parallel.ForEach(forward.Concat(backward), t =>
                 {
-                    using var writer = db.Latest.GetTileInsertWriter();
+                    using var writer = db.RouterDb.Latest.GetTileInsertWriter();
                     writer.AddStandaloneTile(t, ids);
                 });
             }

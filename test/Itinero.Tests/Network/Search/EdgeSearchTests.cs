@@ -12,8 +12,9 @@ public class EdgeSearchTests
     [Fact]
     public void EdgeSearch_SearchEdgesInBox_ShouldReturnNothingWhenNoEdges()
     {
-        var routerDb = new RouterDb();
-        using (var writer = routerDb.GetMutableNetwork())
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
+        using (var writer = provider.BeginWrite())
         {
             writer.AddVertex(4.792613983154297, 51.26535213392538);
             writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -27,10 +28,11 @@ public class EdgeSearchTests
     [Fact]
     public void EdgeSearch_SearchEdgesInBox_ShouldReturnEdgeWhenOneVertexInBox()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1, vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -47,10 +49,11 @@ public class EdgeSearchTests
     [Fact]
     public async Task EdgeSearch_SnapInBox_ShouldSnapToVertex1WhenVertex1Closest()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1, vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -66,10 +69,11 @@ public class EdgeSearchTests
     [Fact]
     public async Task EdgeSearch_SnapInBox_ShouldSnapToVertex2WhenVertex2Closest()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1, vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -85,10 +89,11 @@ public class EdgeSearchTests
     [Fact]
     public async Task EdgeSearch_SnapInBox_ShouldSnapToSegmentWhenMiddleIsClosest()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1, vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -104,10 +109,11 @@ public class EdgeSearchTests
     [Fact]
     public async Task EdgeSearch_SnapInBox_ShouldSnapToClosestSegment()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2;
         VertexId vertex1, vertex2, vertex3, vertex4;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.796154499053955, 51.26912479079087);
             vertex2 = writer.AddVertex(4.799630641937256, 51.27015852526688);
@@ -125,10 +131,11 @@ public class EdgeSearchTests
     [Fact]
     public async Task EdgeSearch_SnapAllInBox_NonOrthogonal_ShouldSnapToAll()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2, edge3;
         VertexId vertex1, vertex2, vertex3, vertex4, vertex5, vertex6;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.796154499053955, 51.26912479079087);
             vertex2 = writer.AddVertex(4.799630641937256, 51.27015852526688);
@@ -151,10 +158,11 @@ public class EdgeSearchTests
     [Fact]
     public async Task EdgeSearch_SnapAllInBox_ShouldSnapToOrthogonal()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2, edge3;
         VertexId vertex1, vertex2, vertex3, vertex4, vertex5, vertex6;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.796154499053955, 51.26912479079087);
             vertex2 = writer.AddVertex(4.799630641937256, 51.27015852526688);

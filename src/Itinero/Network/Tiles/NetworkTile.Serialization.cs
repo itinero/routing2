@@ -8,13 +8,12 @@ internal partial class NetworkTile
 {
     public void WriteTo(Stream stream)
     {
-        const int version = 1;
+        const int version = 2;
         stream.WriteVarInt32(version);
 
         // write tile id/zoom.
         stream.WriteVarInt32(_zoom);
         stream.WriteVarUInt32(_tileId);
-        stream.WriteGuid(_edgeTypeMapId);
 
         // write vertices and edges.
         this.WriteEdgesAndVerticesTo(stream);
@@ -32,7 +31,7 @@ internal partial class NetworkTile
     public static NetworkTile ReadFrom(Stream stream)
     {
         var version = stream.ReadVarInt32();
-        if (version != 1)
+        if (version != 2)
         {
             throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
         }
@@ -40,10 +39,9 @@ internal partial class NetworkTile
         // read tile id.
         var zoom = stream.ReadVarInt32();
         var tileId = stream.ReadVarUInt32();
-        var edgeTypeMapId = stream.ReadGuid();
 
         // create the tile.
-        var graphTile = new NetworkTile(zoom, tileId, edgeTypeMapId);
+        var graphTile = new NetworkTile(zoom, tileId);
 
         // read vertices and edges.
         graphTile.ReadEdgesAndVerticesFrom(stream);
@@ -63,16 +61,15 @@ internal partial class NetworkTile
     internal static NetworkTile ReadFromBuffer(byte[] data, ref int offset)
     {
         var version = BitCoderBuffer.GetVarInt32(data, ref offset);
-        if (version != 1)
+        if (version != 2)
         {
             throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
         }
 
         var zoom = BitCoderBuffer.GetVarInt32(data, ref offset);
         var tileId = BitCoderBuffer.GetVarUInt32(data, ref offset);
-        var edgeTypeMapId = BitCoderBuffer.GetGuid(data, ref offset);
 
-        var graphTile = new NetworkTile(zoom, tileId, edgeTypeMapId);
+        var graphTile = new NetworkTile(zoom, tileId);
 
         graphTile.ReadEdgesAndVerticesFrom(data, ref offset);
         graphTile.ReadAttributesFrom(data, ref offset);
@@ -101,11 +98,10 @@ internal partial class NetworkTile
 
     internal void WriteToBuffer(byte[] data, ref int offset)
     {
-        const int version = 1;
+        const int version = 2;
         BitCoderBuffer.SetVarInt32(data, ref offset, version);
         BitCoderBuffer.SetVarInt32(data, ref offset, _zoom);
         BitCoderBuffer.SetVarUInt32(data, ref offset, _tileId);
-        BitCoderBuffer.SetGuid(data, ref offset, _edgeTypeMapId);
 
         this.WriteEdgesAndVerticesTo(data, ref offset);
         this.WriteAttributesTo(data, ref offset);

@@ -15,7 +15,7 @@ public sealed partial class RoutingNetwork
     /// </summary>
     /// <returns>The mutable version.</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public RoutingNetworkMutator GetAsMutable()
+    internal RoutingNetworkMutator GetAsMutable()
     {
         lock (_mutatorSync)
         {

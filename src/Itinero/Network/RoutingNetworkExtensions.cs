@@ -79,22 +79,6 @@ public static class RoutingNetworkSnapshotExtensions
     }
 
     /// <summary>
-    /// Gets a cached version of the given profile.
-    /// </summary>
-    /// <param name="network">The network.</param>
-    /// <param name="profile">The profile.</param>
-    /// <returns>The cached profile.</returns>
-    public static ProfileCached GetCachedProfile(this RoutingNetwork network, Profile profile)
-    {
-        if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile.Name, out var cache, out var turnCostFactorCache))
-        {
-            return new ProfileCached(profile, new EdgeFactorCache(), new TurnCostFactorCache());
-        }
-
-        return new ProfileCached(profile, cache ?? new EdgeFactorCache(), turnCostFactorCache ?? new TurnCostFactorCache());
-    }
-
-    /// <summary>
     /// Gets the cost function for the given profile.
     /// </summary>
     /// <param name="network">The network.</param>
@@ -102,12 +86,7 @@ public static class RoutingNetworkSnapshotExtensions
     /// <returns>The cost function.</returns>
     public static ICostFunction GetCostFunctionFor(this RoutingNetwork network, Profile profile)
     {
-        if (!network.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profile.Name, out var cache, out var turnCostFactorCache))
-        {
-            return new ProfileCostFunction(profile);
-        }
-
-        return new ProfileCostFunctionCached(profile, cache ?? new EdgeFactorCache(), turnCostFactorCache ?? new TurnCostFactorCache());
+        return network.RouterDb.GetCostFunction(profile);
     }
 
     internal static IEnumerable<(string key, string value)>

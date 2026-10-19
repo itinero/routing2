@@ -14,10 +14,11 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_TwoHopsShortest_WithoutTurnCost_ShouldFindTwoHopPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2, edge3;
         VertexId vertex1, vertex2, vertex3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -59,10 +60,11 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_OneHopsShortest_OnlyWithTurnCost_ShouldFindOneHopPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2, edge3;
         VertexId vertex1, vertex2, vertex3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -102,10 +104,11 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_TwoHopsShortest_InfiniteTurnCost_ShouldFindNoPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2;
         VertexId vertex1, vertex2, vertex3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085);
@@ -135,9 +138,10 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_TwoHops_WithBarrier_ShouldNotFindPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId vertex1, vertex2, vertex3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -160,9 +164,10 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_FourHops_WithBarrier2_ShouldNotFindPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -189,9 +194,10 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_FourHops_WithBarrier3_ShouldNotFindPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -218,9 +224,10 @@ public class DijkstraTurnCostTests
     [Fact]
     public async Task Dijkstra_OneToOne_FourHops_WithBarrier4_ShouldNotFindPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId vertex1, vertex2, vertex3, vertex4, vertex5;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085);

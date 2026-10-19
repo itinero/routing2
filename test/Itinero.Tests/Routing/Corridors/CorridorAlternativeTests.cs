@@ -43,9 +43,10 @@ public class CorridorAlternativeTests
     {
         const double lon = 4.79;
         const double lat = 51.26;
-        var db = new RouterDb();
+        var provider = TestProvider.New();
+        var db = provider.RouterDb;
         EdgeId cheap1, cheap2, detour;
-        using (var writer = db.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var w0 = writer.AddVertex(lon, lat);
             var w1 = writer.AddVertex(lon + 0.0005, lat);
@@ -193,9 +194,10 @@ public class CorridorAlternativeTests
     {
         const double lon = 4.79;
         const double lat = 51.26;
-        var db = new RouterDb();
+        var provider = TestProvider.New();
+        var db = provider.RouterDb;
         EdgeId cheap, near, far;
-        using (var writer = db.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var w0 = writer.AddVertex(lon, lat);
             var w1 = writer.AddVertex(lon + 0.0010, lat);

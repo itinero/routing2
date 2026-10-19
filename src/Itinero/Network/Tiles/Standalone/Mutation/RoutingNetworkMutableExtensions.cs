@@ -4,7 +4,7 @@ using Itinero.Network.Mutation;
 
 namespace Itinero.Network.Tiles.Standalone.Mutation;
 
-public static class RoutingNetworkMutableExtensions
+internal static class RoutingNetworkMutableExtensions
 {
     /// <summary>
     /// Adds or updates the given tiles.

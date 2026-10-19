@@ -77,9 +77,7 @@ internal static class NetworkHelper
             }
         }
 
-        var routerDb = new RouterDb(new RouterDbConfiguration());
-        routerDb.PrepareFor(profile);
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(osm), s =>
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new OsmEnumerableStreamSource(osm), s =>
         {
             s.TagsFilter.Filter = null;
             s.TagsFilter.CompleteFilter = null;

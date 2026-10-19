@@ -15,7 +15,7 @@ internal interface IRoutingNetworkWritable
 
     internal RoutingNetworkEdgeEnumerator GetEdgeEnumerator();
 
-    (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) GetTileForWrite(uint localTileId);
+    NetworkTile GetTileForWrite(uint localTileId);
 
     void SetTile(NetworkTile tile);
 

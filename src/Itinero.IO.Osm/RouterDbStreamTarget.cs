@@ -6,6 +6,7 @@ using Itinero.IO.Osm.Restrictions.Barriers;
 using Itinero.IO.Osm.Restrictions.Turns;
 using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
+using Itinero.Data.Providers;
 using Itinero.Network.Mutation;
 using Itinero.Network.Tiles.Standalone.Global;
 using OsmSharp;
@@ -17,7 +18,7 @@ namespace Itinero.IO.Osm;
 public class RouterDbStreamTarget : OsmStreamTarget
 {
     private readonly Dictionary<long, VertexId> _vertices = new();
-    private readonly RoutingNetworkMutator _mutableRouterDb;
+    private readonly NetworkBuilder _mutableRouterDb;
     private readonly IElevationHandler? _elevationHandler;
     private readonly OsmTurnRestrictionParser _restrictionParser = new();
     private readonly Dictionary<long, Way?> _restrictionMembers = new();
@@ -28,11 +29,15 @@ public class RouterDbStreamTarget : OsmStreamTarget
     private readonly HashSet<long> _usedNodes = new();
     private readonly Dictionary<GlobalEdgeId, EdgeId> _globalEdgeIds = new();
 
+    private readonly DefaultDataProvider _provider;
+
     /// <inheritdoc />
-    public RouterDbStreamTarget(RoutingNetworkMutator mutableRouterDb,
+    public RouterDbStreamTarget(NetworkBuilder mutableRouterDb,
+        DefaultDataProvider provider,
         IElevationHandler? elevationHandler = null)
     {
         _mutableRouterDb = mutableRouterDb;
+        _provider = provider;
         _elevationHandler = elevationHandler;
     }
 
@@ -59,7 +64,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
             if (!_barrierNodeObjects.TryGetValue(nodeId, out var node)) continue;
             if (!_barrierParser.TryParse(node, ways, out var barrier)) continue;
 
-            this.ResolveAndAddTurnCosts(barrier.ToGlobalNetworkRestrictions());
+            this.ResolveAndAddTurnCosts(barrier.ToGlobalNetworkRestrictions(_provider.AddTurnCostType));
         }
 
         return false;
@@ -170,8 +175,10 @@ public class RouterDbStreamTarget : OsmStreamTarget
             }
 
             // add edge.
-            var filteredTags = way.Tags?.Select(x => (x.Key, x.Value));
+            var filteredTags = way.Tags?.Select(x => (x.Key, x.Value)) ??
+                               Enumerable.Empty<(string, string)>();
             var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
+                _provider.AddEdgeType(filteredTags),
                 shape,
                 filteredTags);
 
@@ -217,7 +224,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (restriction == null)
             throw new Exception("restriction parsing was successful but restriction is null");
 
-        this.ResolveAndAddTurnCosts(restriction.ToGlobalNetworkRestrictions());
+        this.ResolveAndAddTurnCosts(restriction.ToGlobalNetworkRestrictions(_provider.AddTurnCostType));
     }
 
     /// The turn cost order is packed into 4 bits, so a vertex with more edges than that can
@@ -254,6 +261,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                 if (!_mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                         new[] { secondToLast.edge, last.edge }, costs,
+                        networkRestriction.TurnCostType,
                         networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
                 {
                     LogTurnCostBudgetExceeded(turnCostVertex);
@@ -273,6 +281,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                     if (!_mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                             new[] { secondToLast.edge, enumerator.EdgeId }, costs,
+                            networkRestriction.TurnCostType,
                             networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
                     {
                         LogTurnCostBudgetExceeded(turnCostVertex);

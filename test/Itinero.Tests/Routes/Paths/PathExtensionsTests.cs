@@ -10,10 +10,11 @@ public class PathExtensionsTests
     [Fact]
     public void PathExtensions_InvertDirection_SingleEdge_ShouldInvertForwardAndOffsets()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -35,12 +36,13 @@ public class PathExtensionsTests
     [Fact]
     public void PathExtensions_InvertDirection_TwoEdgesForward_ShouldReorderAndInvertEdges()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1;
         EdgeId edge2;
         VertexId vertex1;
         VertexId vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -71,12 +73,13 @@ public class PathExtensionsTests
     [Fact]
     public void PathExtensions_InvertDirection_TwoEdgesBackwardForward_ShouldReorderAndInvertEdges()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1;
         EdgeId edge2;
         VertexId vertex1;
         VertexId vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -107,10 +110,11 @@ public class PathExtensionsTests
     [Fact]
     public void PathExtensions_InvertDirection_SingleEdge_OffsetsShouldInvert()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -134,12 +138,13 @@ public class PathExtensionsTests
     [Fact]
     public void PathExtensions_InvertDirection_TwoEdgesOffsets_OffsetsShouldInvert()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1;
         EdgeId edge2;
         VertexId vertex1;
         VertexId vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);

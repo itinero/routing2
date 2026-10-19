@@ -19,8 +19,10 @@ public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
     /// </summary>
     /// <param name="sequence">The sequence that is either prohibited or mandatory.</param>
     /// <param name="isProhibitory">Flag to set the restriction to prohibited or mandatory.</param>
+    /// <param name="turnCostType">The turn cost type id, assigned by the provider.</param>
     /// <param name="attributes">The attributes.</param>
     public NetworkRestriction(IEnumerable<(EdgeId edge, bool forward)> sequence, bool isProhibitory,
+        uint turnCostType,
         IEnumerable<(string key, string value)> attributes)
     {
         _sequence = new List<(EdgeId edge, bool forward)>(sequence);
@@ -28,6 +30,7 @@ public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
 
         this.IsProhibitory = isProhibitory;
         this.Attributes = attributes;
+        this.TurnCostType = turnCostType;
     }
 
     /// <summary>
@@ -50,6 +53,11 @@ public class NetworkRestriction : IEnumerable<(EdgeId edge, bool forward)>
     /// The attributes associated with the restriction.
     /// </summary>
     public IEnumerable<(string key, string value)> Attributes { get; }
+
+    /// <summary>
+    /// The turn cost type id for this restriction.
+    /// </summary>
+    public uint TurnCostType { get; }
 
     public IEnumerator<(EdgeId edge, bool forward)> GetEnumerator()
     {

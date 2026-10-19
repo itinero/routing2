@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Itinero.Data.Providers;
 using Itinero.IO.Osm;
 using Itinero.Network;
 using Itinero.Profiles;
@@ -180,10 +181,9 @@ public class SnappingBenchmarks
         {
             Console.WriteLine($"[SnappingBenchmarks] loading RouterDb from {routerDbPath}");
             using var stream = File.OpenRead(routerDbPath);
-            var loaded = RouterDb.ReadFrom(stream);
-            loaded.EdgeTypeMap = new OsmEdgeTypeMap();
-            loaded.PrepareFor(profile);
-            return loaded;
+            var loadedProvider = new DefaultDataProvider(new OsmEdgeTypeMap());
+            loadedProvider.LoadFrom(stream);
+            return loadedProvider.RouterDb;
         }
 
         var pbfPath = ResolvePath("belgium-latest.osm.pbf");
@@ -197,15 +197,10 @@ public class SnappingBenchmarks
         }
 
         Console.WriteLine($"[SnappingBenchmarks] building RouterDb from {pbfPath} (slow, one-time)");
-        var built = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
-        built.PrepareFor(profile);
+        RouterDb built;
         using (var osmStream = File.OpenRead(pbfPath))
         {
-            built.UseOsmData(new PBFOsmStreamSource(osmStream));
+            built = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new PBFOsmStreamSource(osmStream));
         }
 
         Console.WriteLine($"[SnappingBenchmarks] saving RouterDb to {routerDbPath}");

@@ -177,7 +177,7 @@ public abstract class EdgeEnumerator<T> :
     /// <summary>
     /// Gets the edge profile id.
     /// </summary>
-    public uint? EdgeTypeId => _tileEnumerator.EdgeTypeId;
+    public uint EdgeTypeId => _tileEnumerator.EdgeTypeId;
 
     /// <summary>
     /// Gets the length in centimeters, if any.

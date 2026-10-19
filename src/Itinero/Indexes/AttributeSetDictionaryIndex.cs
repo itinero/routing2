@@ -13,10 +13,8 @@ namespace Itinero.Indexes;
 /// A default attribute set index using a dictionary internally.
 /// </summary>
 /// <remarks>
-/// Safe for concurrent use. <see cref="Get"/> is called while tiles are inserted from several
-/// threads — it is reached indirectly, through the <c>Func</c> handed out by
-/// <c>RouterDb.GetEdgeTypeMap()</c>, which makes it easy to miss that it is shared mutable state
-/// at all: the call site reads as a pure lookup but interning an unseen set appends here.
+/// Safe for concurrent use. <see cref="Get"/> appends on a miss, so only a provider calls it,
+/// while reading data: nothing in Itinero can reach it, which is what keeps ids stable.
 ///
 /// In a production run nothing is ever appended, because the tiles were preprocessed against
 /// this same index and every type already exists. So the design optimises the hit: a lock-free

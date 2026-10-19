@@ -21,10 +21,11 @@ public class BidirectionalDijkstraTests
     [Fact]
     public async Task OneHop_FindsPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId v1, v2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             v1 = writer.AddVertex(4.792613983154297, 51.26535213392538);
             v2 = writer.AddVertex(4.797506332397461, 51.26674845584085);
@@ -47,10 +48,11 @@ public class BidirectionalDijkstraTests
     [Fact]
     public async Task TwoHops_FindsPath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var edges = new List<EdgeId>();
         VertexId v1, v3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             v1 = writer.AddVertex(4.792, 51.265);
             var v2 = writer.AddVertex(4.794, 51.266);
@@ -76,9 +78,10 @@ public class BidirectionalDijkstraTests
     [Fact]
     public async Task DisconnectedComponents_ReturnsNull()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId v1, v3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             v1 = writer.AddVertex(4.792, 51.265);
             var v2 = writer.AddVertex(4.794, 51.266);
@@ -105,10 +108,11 @@ public class BidirectionalDijkstraTests
     {
         // Snap points in the middle of source and target edges. Exercises the offset-aware
         // initial pushes in both halves and the meeting at the shared vertex.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var edges = new List<EdgeId>();
         VertexId v1, v3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             v1 = writer.AddVertex(4.792, 51.265);
             var v2 = writer.AddVertex(4.794, 51.266);
@@ -167,10 +171,11 @@ public class BidirectionalDijkstraTests
     [Fact]
     public async Task SameEdge_SameOffset_ReturnsZeroCost()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId v1, v2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             v1 = writer.AddVertex(4.792, 51.265);
             v2 = writer.AddVertex(4.797, 51.266);

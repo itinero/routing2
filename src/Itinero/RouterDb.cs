@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Itinero.Data;
 using Itinero.Data.Usage;
+using Itinero.Data.Providers;
 using Itinero.Indexes;
 using Itinero.IO;
 using Itinero.Network;
@@ -28,23 +29,24 @@ namespace Itinero;
 public sealed partial class RouterDb : IRouterDbMutable
 {
     /// <summary>
-    /// Creates a new router db.
+    /// Creates a new router db for the given provider.
     /// </summary>
-    /// <param name="configuration">The configuration.</param>
-    public RouterDb(RouterDbConfiguration? configuration = null)
+    /// <remarks>
+    /// Internal: a db is created by its provider, which is the only thing that can fill one.
+    /// </remarks>
+    internal RouterDb(DataProviderBase provider,
+        IAttributeSetIndex edgeTypeIndex, IAttributeSetIndex turnCostTypeIndex)
     {
-        configuration ??= RouterDbConfiguration.Default();
-
-        this.Latest = new RoutingNetwork(this, configuration.Zoom);
-        _edgeTypeIndex = configuration.EdgeTypeIndex;
-        this.EdgeTypeMap = configuration.EdgeTypeMap ?? AttributeSetMap.Default();
-        _turnCostTypeIndex = configuration.TurnCostTypeIndex;
-        _turnCostTypeMap = configuration.TurnCostTypeMap ?? AttributeSetMap.Default();
-
-        this.ProfileConfiguration = new RouterDbProfileConfiguration();
+        this.Provider = provider;
+        this.EdgeTypeIndex = edgeTypeIndex;
+        this.TurnCostTypeIndex = turnCostTypeIndex;
+        this.Latest = new RoutingNetwork(this);
     }
 
-    private RouterDb(Stream stream, RouterDbReadSettings settings)
+    /// <summary>
+    /// Replaces this db's network with one read from the given stream.
+    /// </summary>
+    internal void LoadFrom(Stream stream)
     {
         // check version #.
         var version = stream.ReadVarInt32();
@@ -56,18 +58,8 @@ public sealed partial class RouterDb : IRouterDbMutable
         // read network.
         this.Latest = stream.ReadFrom(this);
 
-        // read edge type map data.
-        _edgeTypeIndex = settings.EdgeTypeAttributeSetIndex;
-        _edgeTypeIndex.ReadFrom(stream);
-        _turnCostTypeIndex = settings.TurnCostAttributeSetIndex;
-        _turnCostTypeIndex.ReadFrom(stream);
-
         // read attributes.
         this.Meta = new List<(string key, string value)>(this.ReadAttributesFrom(stream));
-
-        this.EdgeTypeMap = AttributeSetMap.Default();
-        _turnCostTypeMap = AttributeSetMap.Default();
-        this.ProfileConfiguration = new RouterDbProfileConfiguration();
     }
 
     /// <summary>

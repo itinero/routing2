@@ -1,4 +1,5 @@
 using System.Linq;
+using Itinero.Data.Providers;
 using Itinero.Network;
 using Xunit;
 
@@ -10,12 +11,12 @@ namespace Itinero.Tests.Network.TurnCosts;
 /// tile build down with it.
 public class TurnCostOrderBudgetTests
 {
-    private static (RouterDb routerDb, VertexId centre, EdgeId[] edges) Star(int spokes)
+    private static (DefaultDataProvider provider, VertexId centre, EdgeId[] edges) Star(int spokes)
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
         VertexId centre;
         var edges = new EdgeId[spokes];
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             centre = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             for (var i = 0; i < spokes; i++)
@@ -26,15 +27,15 @@ public class TurnCostOrderBudgetTests
             }
         }
 
-        return (routerDb, centre, edges);
+        return (provider, centre, edges);
     }
 
     [Fact]
     public void AddTurnCosts_WithinOrderBudget_IsAdded()
     {
-        var (routerDb, centre, edges) = Star(4);
+        var (provider, centre, edges) = Star(4);
 
-        using var mutable = routerDb.GetMutableNetwork();
+        using var mutable = provider.BeginWrite();
         var added = mutable.AddTurnCosts(centre, Enumerable.Empty<(string key, string value)>(),
             new[] { edges[0], edges[1] }, new uint[,] { { 0, 1 }, { 0, 0 } });
 
@@ -44,9 +45,9 @@ public class TurnCostOrderBudgetTests
     [Fact]
     public void AddTurnCosts_ExceedingOrderBudgetInOneCall_IsSkippedNotThrown()
     {
-        var (routerDb, centre, edges) = Star(20);
+        var (provider, centre, edges) = Star(20);
 
-        using var mutable = routerDb.GetMutableNetwork();
+        using var mutable = provider.BeginWrite();
         var costs = new uint[20, 20];
         var added = mutable.AddTurnCosts(centre,
             Enumerable.Empty<(string key, string value)>(), edges, costs);
@@ -59,9 +60,9 @@ public class TurnCostOrderBudgetTests
     {
         // The toll plaza shape: each call is small enough to pass any per-call check, but
         // orders accumulate per vertex, so the budget runs out partway through.
-        var (routerDb, centre, edges) = Star(20);
+        var (provider, centre, edges) = Star(20);
 
-        using var mutable = routerDb.GetMutableNetwork();
+        using var mutable = provider.BeginWrite();
         var results = new bool[edges.Length - 1];
         for (var i = 0; i < edges.Length - 1; i++)
         {
@@ -78,9 +79,9 @@ public class TurnCostOrderBudgetTests
     public void AddTurnCosts_SkippedCall_LeavesEarlierTurnCostsIntact()
     {
         // A skip must not half-write: whatever fit before it still has to read back.
-        var (routerDb, centre, edges) = Star(20);
+        var (provider, centre, edges) = Star(20);
 
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             Assert.True(mutable.AddTurnCosts(centre,
                 Enumerable.Empty<(string key, string value)>(),
@@ -92,7 +93,7 @@ public class TurnCostOrderBudgetTests
         }
 
         // centre is the tail of every spoke, so the order assigned there is the tail order.
-        var enumerator = routerDb.Latest.GetEdgeEnumerator();
+        var enumerator = provider.RouterDb.Latest.GetEdgeEnumerator();
         enumerator.MoveTo(edges[0], true);
         Assert.NotNull(enumerator.TailOrder);
 

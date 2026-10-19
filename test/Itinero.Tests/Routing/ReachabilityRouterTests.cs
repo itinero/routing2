@@ -42,9 +42,10 @@ public class ReachabilityRouterTests
     {
         // A chain long enough that an expansion from either end clears a small ceiling, so both
         // endpoints are accepted and the halves meet in the middle.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var verts = new VertexId[40];
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             for (var i = 0; i < verts.Length; i++)
             {
@@ -68,9 +69,10 @@ public class ReachabilityRouterTests
     {
         // Why the reconciliation pass exists: each expansion settles the other endpoint on its
         // way, with no partner to check against, so adoption must reconcile the settled sets.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var verts = new VertexId[40];
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             for (var i = 0; i < verts.Length; i++)
             {
@@ -93,8 +95,9 @@ public class ReachabilityRouterTests
     {
         // A dead-end fragment is nearest; the expansion from it runs out below the ceiling and
         // the next candidate is tried. Same outcome as classification, without classifying.
-        var routerDb = new RouterDb();
-        using (var writer = routerDb.GetMutableNetwork())
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
+        using (var writer = provider.BeginWrite())
         {
             // The fragment: two edges going nowhere, right next to the query point.
             var f0 = writer.AddVertex(4.7900, 51.2600);
@@ -126,8 +129,9 @@ public class ReachabilityRouterTests
     {
         // Nothing within reach leads anywhere. Reported at the endpoint that caused it, from a
         // bounded walk, rather than after the router exhausts its tile budget.
-        var routerDb = new RouterDb();
-        using (var writer = routerDb.GetMutableNetwork())
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
+        using (var writer = provider.BeginWrite())
         {
             var a = writer.AddVertex(4.7900, 51.2600);
             var b = writer.AddVertex(4.7901, 51.2600);
@@ -165,9 +169,10 @@ public class ReachabilityRouterTests
         // Both endpoints in the same access=destination pocket, and the pocket is closed — far
         // smaller than the threshold. It routes because the halves meet before anything asks
         // whether the pocket is connected to anything; L to L is never restricted.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var verts = new VertexId[12];
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             for (var i = 0; i < verts.Length; i++)
             {

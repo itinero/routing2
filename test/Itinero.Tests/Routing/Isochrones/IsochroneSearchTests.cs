@@ -51,9 +51,10 @@ public class IsochroneSearchTests
         const double step = 0.0009; // ~100 m in latitude at this latitude.
         const int n = 11;
 
-        var db = new RouterDb();
+        var provider = TestProvider.New();
+        var db = provider.RouterDb;
         var ids = new VertexId[n, n];
-        using (var writer = db.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             for (var y = 0; y < n; y++)
             {

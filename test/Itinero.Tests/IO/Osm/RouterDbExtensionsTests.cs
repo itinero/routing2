@@ -28,9 +28,8 @@ public class RouterDbExtensionsTests
             }
         };
 
-        var routerDb = new RouterDb();
         // include all the data.
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = null;
             s.TagsFilter.CompleteFilter = null;
@@ -79,9 +78,8 @@ public class RouterDbExtensionsTests
             }
         };
 
-        var routerDb = new RouterDb();
         // include all the data.
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = o =>
             {
@@ -142,9 +140,8 @@ public class RouterDbExtensionsTests
             }
         };
 
-        var routerDb = new RouterDb();
         // include all the data.
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = o =>
             {

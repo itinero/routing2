@@ -41,7 +41,7 @@ public class RouteBuilder : IRouteBuilder
     public Result<Route> Build(RoutingNetwork routingNetwork, Profile profile, Path path)
     {
         var edgeEnumerator = routingNetwork.GetEdgeEnumerator();
-        var profileCached = routingNetwork.GetCachedProfile(profile);
+        var costFunction = routingNetwork.RouterDb.GetCostFunction(profile);
 
         // SpareEnumerator is used in the branch-calculation. IT offers no guarantees about the state
         var spareEnumerator = routingNetwork.GetEdgeEnumerator();
@@ -82,7 +82,7 @@ public class RouteBuilder : IRouteBuilder
             edgeEnumerator.MoveTo(edge, direction);
 
             var attributes = edgeEnumerator.Attributes;
-            var factor = profileCached.Factor(edgeEnumerator);
+            var factor = costFunction.GetDirectedFactor(edgeEnumerator);
             var distance = edgeEnumerator.EdgeLength();
             distance = (offset2 - offset1) / (double)ushort.MaxValue * distance;
             route.TotalDistance += distance;

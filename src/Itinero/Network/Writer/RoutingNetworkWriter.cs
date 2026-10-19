@@ -19,9 +19,10 @@ namespace Itinero.Network.Writer;
 ///
 /// This writer cannot mutate existing data, only add new.
 /// </summary>
-public class RoutingNetworkWriter : IDisposable
+internal class RoutingNetworkWriter : IDisposable
 {
     private readonly IRoutingNetworkWritable _network;
+
 
     /// <summary>
     /// Whether this writer holds the network's exclusive write slot.
@@ -144,7 +145,7 @@ public class RoutingNetworkWriter : IDisposable
         var localTileId = TileStatic.ToLocalId(x, y, _network.Zoom);
 
         // get the tile (or create it).
-        var (tile, _) = _network.GetTileForWrite(localTileId);
+        var tile = _network.GetTileForWrite(localTileId);
 
         return tile.AddVertex(longitude, latitude, elevation);
     }
@@ -176,40 +177,37 @@ public class RoutingNetworkWriter : IDisposable
     /// <param name="head">The head vertex.</param>
     /// <param name="shape">The shape, if any.</param>
     /// <param name="attributes">The attributes, if any.</param>
-    /// <param name="edgeTypeId">The edge type id, if any.</param>
+    /// <param name="edgeTypeId">The edge type id, assigned by the provider.</param>
     /// <param name="length">The length in centimeters. Use <see cref="ComputeEdgeLength"/> if not known.</param>
     /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public EdgeId AddEdge(VertexId tail, VertexId head,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape,
-        IEnumerable<(string key, string value)>? attributes, uint? edgeTypeId,
-        uint length, GlobalEdgeId? globalEdgeId = null)
+    public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId, uint length,
+        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
+        IEnumerable<(string key, string value)>? attributes = null,
+        GlobalEdgeId? globalEdgeId = null)
     {
         // get the tile (or create it).
-        var (tile, edgeTypeMap) = _network.GetTileForWrite(tail.TileId);
+        var tile = _network.GetTileForWrite(tail.TileId);
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
-        // get the edge type id.
-        edgeTypeId ??= attributes != null ? edgeTypeMap(attributes) : null;
-
-        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length, globalEdgeId);
+        var edge1 = tile.AddEdge(tail, head, edgeTypeId, shape, attributes, null, length, globalEdgeId);
         if (tail.TileId == head.TileId)
         {
             return edge1;
         }
 
         // this edge crosses tiles, also add an extra edge to the other tile.
-        (tile, _) = _network.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length, globalEdgeId);
+        tile = _network.GetTileForWrite(head.TileId);
+        tile.AddEdge(tail, head, edgeTypeId, shape, attributes, edge1, length, globalEdgeId);
 
         return edge1;
     }
 
     /// Returns false when the vertex has no order budget left, see OrderCoder.
     public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
-        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix, uint? turnCostType = null)
+        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix, uint turnCostType)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
 
@@ -220,7 +218,7 @@ public class RoutingNetworkWriter : IDisposable
         // could not order them, and ordering is the whole deadlock argument.
         var tileIds = new List<uint> { vertex.TileId };
         {
-            var (vertexTile, _) = _network.GetTileForWrite(vertex.TileId);
+            var vertexTile = _network.GetTileForWrite(vertex.TileId);
             if (vertexTile == null)
             {
                 throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
@@ -249,21 +247,17 @@ public class RoutingNetworkWriter : IDisposable
 
     /// The turn-cost write itself. Caller holds every tile lock it touches.
     private bool AddTurnCostsCore(VertexId vertex, IEnumerable<(string key, string value)> attributes,
-        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId> prefix, uint? turnCostType)
+        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId> prefix, uint turnCostType)
     {
         // get the tile (or create it).
-        var (tile, _) = _network.GetTileForWrite(vertex.TileId);
+        var tile = _network.GetTileForWrite(vertex.TileId);
         if (tile == null)
         {
             throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
         }
 
-        // get the turn cost type id.
-        var turnCostMap = _network.RouterDb.GetTurnCostTypeMap();
-        turnCostType ??= turnCostMap.func(attributes);
-
         // add the turn cost table using the type id.
-        if (!tile.AddTurnCosts(vertex, turnCostType.Value, edges, costs, attributes, prefix))
+        if (!tile.AddTurnCosts(vertex, turnCostType, edges, costs, attributes, prefix))
         {
             return false;
         }
@@ -280,7 +274,7 @@ public class RoutingNetworkWriter : IDisposable
                 if (enumerator.Tail.TileId == enumerator.Head.TileId) continue;
 
                 // Head is always the other vertex (Tail = turn cost vertex we enumerated from).
-                var (otherTile, _) = _network.GetTileForWrite(enumerator.Head.TileId);
+                var otherTile = _network.GetTileForWrite(enumerator.Head.TileId);
                 if (otherTile == null) continue;
 
                 // find the same edge in the other tile by iterating from the other vertex.
@@ -315,7 +309,7 @@ public class RoutingNetworkWriter : IDisposable
     internal void TrimTile(uint localTileId)
     {
         using var scope = this.LockTiles(stackalloc[] { localTileId });
-        var (tile, _) = _network.GetTileForWrite(localTileId);
+        var tile = _network.GetTileForWrite(localTileId);
         tile?.Trim();
     }
 

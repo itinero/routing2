@@ -54,11 +54,11 @@ public class TurnCostBlockingTests
         // baseline scenario: 3 vertices in a line, 2 edges. A turn cost at the
         // middle vertex forbids edge1→edge2. Routing from start of edge1 to
         // end of edge2 must fail (no alternative).
-        var routerDb = new RouterDb();
-        routerDb.PrepareFor(BlockingProfile());
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, b;
         EdgeId edge1, edge2;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.270);
             mid = mutable.AddVertex(4.801, 51.270);
@@ -97,11 +97,11 @@ public class TurnCostBlockingTests
         //                                           irrelevant to the turn cost itself.
         // turn cost at the bollard vertex forbids [edge_w1, edge_w2a] in both
         // directions. Routing from a to c must fail (no alternative).
-        var routerDb = new RouterDb();
-        routerDb.PrepareFor(BlockingProfile());
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, bollard, j2, c, x;
         EdgeId w1, w2a, w2b, w3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             bollard = mutable.AddVertex(4.801, 51.269);
@@ -143,11 +143,11 @@ public class TurnCostBlockingTests
         //   a — edge1 — mid — edge2 — j2 — edge3 — c
         // turn cost at mid forbids edge1→edge2.
         // routing a → c must fail.
-        var routerDb = new RouterDb();
-        routerDb.PrepareFor(BlockingProfile());
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, j2, c;
         EdgeId edge1, edge2, edge3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             mid = mutable.AddVertex(4.801, 51.269);
@@ -186,11 +186,11 @@ public class TurnCostBlockingTests
         // If this passes while the version with TurnCostFactorEnabled=false
         // fails, the bug is in the simple bidirectional Dijkstra path
         // (ignoring turn costs when TurnCostFactorEnabled is false).
-        var routerDb = new RouterDb();
-        routerDb.PrepareFor(BlockingProfile());
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, b;
         EdgeId edge1, edge2;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.270);
             mid = mutable.AddVertex(4.801, 51.270);
@@ -227,10 +227,11 @@ public class TurnCostBlockingTests
         // at mid forbids edge1↔edge2. This is the exact scenario that exposed
         // the BidirectionalDijkstra OnQueued bug; here we run it via the
         // edge-based router instead to verify it has no equivalent bug.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, j2, c;
         EdgeId edge1, edge2, edge3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             mid = mutable.AddVertex(4.801, 51.269);
@@ -279,11 +280,11 @@ public class TurnCostBlockingTests
         // remains free (only-right-turn permits it).
         // Routing a -> b_straight must fail.
         // Profile uses TurnCostFactorEnabled=true (matches publish-api).
-        var routerDb = new RouterDb();
-        routerDb.PrepareFor(BlockingProfile(turnCostFactorEnabled: true));
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, via, bRight, bStraight;
         EdgeId eFrom, eRight, eStraight;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.270);
             via = mutable.AddVertex(4.802, 51.270);
@@ -332,10 +333,11 @@ public class TurnCostBlockingTests
         // (way2,0,1); without that, the turn cost lands on j2 instead of the
         // bollard and the router happily routes a→bollard→j2→c.
 
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, bollard, j2, c, x;
         EdgeId w1, w2a, w2b, w3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             bollard = mutable.AddVertex(4.801, 51.269);
@@ -375,9 +377,10 @@ public class TurnCostBlockingTests
         // If this fails, the one-to-many machinery has issues unrelated to
         // turn costs and the next test's failure can't be attributed to
         // turn-cost handling.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, j2, c;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             mid = mutable.AddVertex(4.801, 51.269);
@@ -414,10 +417,11 @@ public class TurnCostBlockingTests
         // From a, we ask for routes to mid (reachable, no turn-cost issue) AND
         // to c (requires the forbidden edge1→edge2 turn). The first should
         // succeed, the second should fail.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, j2, c;
         EdgeId edge1, edge2, edge3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             mid = mutable.AddVertex(4.801, 51.269);
@@ -457,10 +461,11 @@ public class TurnCostBlockingTests
         // Many-to-many also runs through the edge-based engine. Sources={a,j2},
         // targets={mid,c}: a→mid and a→c involve the forbidden turn at mid;
         // j2→mid and j2→c don't. Verifies turn costs hold across all pairs.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId a, mid, j2, c;
         EdgeId edge1, edge2, edge3;
-        using (var mutable = routerDb.GetMutableNetwork())
+        using (var mutable = provider.BeginWrite())
         {
             a = mutable.AddVertex(4.800, 51.269);
             mid = mutable.AddVertex(4.801, 51.269);

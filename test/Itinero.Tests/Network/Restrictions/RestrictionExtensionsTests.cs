@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Itinero.Network;
 using Itinero.Network.Restrictions;
 using Xunit;
@@ -10,18 +10,20 @@ public class RestrictionExtensionsTests
     [Fact]
     public void Invert_NoInvertPossible_ShouldReturnEmpty()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        EdgeId edge1, edge2;
+        using (var writer = provider.BeginWrite())
+        {
+            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
-        using var mutable = routerDb.GetMutableNetwork();
-        var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
-        var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-
-        var edge1 = mutable.AddEdge(vertex1, vertex2);
-        var edge2 = mutable.AddEdge(vertex2, vertex3);
+            edge1 = writer.AddEdge(vertex1, vertex2);
+            edge2 = writer.AddEdge(vertex2, vertex3);
+        }
 
         var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, true) };
-        var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
+        var inverse = sequence.Invert(provider.RouterDb.Latest.GetEdgeEnumerator()).ToList();
 
         Assert.Empty(inverse);
     }
@@ -29,20 +31,22 @@ public class RestrictionExtensionsTests
     [Fact]
     public void Invert_OneInvertPossible_ForwardForward_ShouldReturnSingle()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        EdgeId edge1, edge2, edge3;
+        using (var writer = provider.BeginWrite())
+        {
+            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
-        using var mutable = routerDb.GetMutableNetwork();
-        var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
-        var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-
-        var edge1 = mutable.AddEdge(vertex1, vertex2);
-        var edge2 = mutable.AddEdge(vertex2, vertex3);
-        var edge3 = mutable.AddEdge(vertex2, vertex4);
+            edge1 = writer.AddEdge(vertex1, vertex2);
+            edge2 = writer.AddEdge(vertex2, vertex3);
+            edge3 = writer.AddEdge(vertex2, vertex4);
+        }
 
         var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, true) };
-        var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
+        var inverse = sequence.Invert(provider.RouterDb.Latest.GetEdgeEnumerator()).ToList();
 
         Assert.Single(inverse);
         var first = inverse.First().ToList();
@@ -55,20 +59,22 @@ public class RestrictionExtensionsTests
     [Fact]
     public void Invert_OneInvertPossible_BackwardForward_ShouldReturnSingle()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        EdgeId edge1, edge2, edge3;
+        using (var writer = provider.BeginWrite())
+        {
+            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
-        using var mutable = routerDb.GetMutableNetwork();
-        var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
-        var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-
-        var edge1 = mutable.AddEdge(vertex2, vertex1);
-        var edge2 = mutable.AddEdge(vertex2, vertex3);
-        var edge3 = mutable.AddEdge(vertex2, vertex4);
+            edge1 = writer.AddEdge(vertex2, vertex1);
+            edge2 = writer.AddEdge(vertex2, vertex3);
+            edge3 = writer.AddEdge(vertex2, vertex4);
+        }
 
         var sequence = new (EdgeId edge, bool forward)[] { (edge1, false), (edge2, true) };
-        var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
+        var inverse = sequence.Invert(provider.RouterDb.Latest.GetEdgeEnumerator()).ToList();
 
         Assert.Single(inverse);
         var first = inverse.First().ToList();
@@ -81,20 +87,22 @@ public class RestrictionExtensionsTests
     [Fact]
     public void Invert_OneInvertPossible_ForwardBackward_ShouldReturnSingle()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        EdgeId edge1, edge2, edge3;
+        using (var writer = provider.BeginWrite())
+        {
+            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
-        using var mutable = routerDb.GetMutableNetwork();
-        var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
-        var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-
-        var edge1 = mutable.AddEdge(vertex1, vertex2);
-        var edge2 = mutable.AddEdge(vertex3, vertex2);
-        var edge3 = mutable.AddEdge(vertex2, vertex4);
+            edge1 = writer.AddEdge(vertex1, vertex2);
+            edge2 = writer.AddEdge(vertex3, vertex2);
+            edge3 = writer.AddEdge(vertex2, vertex4);
+        }
 
         var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, false) };
-        var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
+        var inverse = sequence.Invert(provider.RouterDb.Latest.GetEdgeEnumerator()).ToList();
 
         Assert.Single(inverse);
         var first = inverse.First().ToList();
@@ -107,22 +115,24 @@ public class RestrictionExtensionsTests
     [Fact]
     public void Invert_OneForwardInvertPossibleShouldReturnSingle()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        EdgeId edge1, edge2, edge3, edge4;
+        using (var writer = provider.BeginWrite())
+        {
+            var vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
+            var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex3 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex4 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
+            var vertex5 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
 
-        using var mutable = routerDb.GetMutableNetwork();
-        var vertex1 = mutable.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
-        var vertex2 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex3 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex4 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-        var vertex5 = mutable.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
-
-        var edge1 = mutable.AddEdge(vertex1, vertex2);
-        var edge2 = mutable.AddEdge(vertex2, vertex3);
-        var edge3 = mutable.AddEdge(vertex4, vertex2);
-        var edge4 = mutable.AddEdge(vertex2, vertex5);
+            edge1 = writer.AddEdge(vertex1, vertex2);
+            edge2 = writer.AddEdge(vertex2, vertex3);
+            edge3 = writer.AddEdge(vertex4, vertex2);
+            edge4 = writer.AddEdge(vertex2, vertex5);
+        }
 
         var sequence = new (EdgeId edge, bool forward)[] { (edge1, true), (edge2, true) };
-        var inverse = sequence.Invert(mutable.GetEdgeEnumerator()).ToList();
+        var inverse = sequence.Invert(provider.RouterDb.Latest.GetEdgeEnumerator()).ToList();
 
         Assert.Equal(2, inverse.Count);
         var inverse1 = inverse[0].ToList();

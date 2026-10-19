@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Itinero.IO.Json.GeoJson;
+using Itinero.Data.Providers;
 using Itinero.IO.Osm;
 
 using Itinero.Profiles;
@@ -28,9 +29,9 @@ internal static class Program
     {
         Console.WriteLine("Loading from file " + filepath);
         using var routerDbStream = File.OpenRead(filepath);
-        var routerDb = RouterDb.ReadFrom(routerDbStream);
-        routerDb.EdgeTypeMap = new OsmEdgeTypeMap();
-        return routerDb;
+        var provider = new DefaultDataProvider(new OsmEdgeTypeMap());
+        provider.LoadFrom(routerDbStream);
+        return provider.RouterDb;
     }
 
     private static void ToFile(string path, RouterDb routerDb)
@@ -44,21 +45,12 @@ internal static class Program
     private static RouterDb FromUrl(Profile p, string url, string localFile = "latest.osm.pbf")
     {
         Console.WriteLine("Loading from URL " + url);
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
-
-        routerDb.PrepareFor(p);
         using var osmStream = File.OpenRead(Staging.Download.Get(localFile, url));
         var progress = new OsmStreamFilterProgress();
         var osmPbfStream = new PBFOsmStreamSource(osmStream);
         progress.RegisterSource(osmPbfStream);
 
-        routerDb.UseOsmData(progress);
-
-        return routerDb;
+        return Itinero.IO.Osm.RouterDbExtensions.FromOsmData(progress);
     }
 
     private static RouterDb GetOrCreate(Profile p, string url, string localFile = "latest.osm.pbf")
@@ -85,7 +77,6 @@ internal static class Program
         Directory.CreateDirectory("results");
 
         var routerDb = GetOrCreate(car, BelgiumUrl, "belgium-latest.osm.pbf");
-        routerDb.PrepareFor(car);
         var latest = routerDb.Latest;
 
         // all test locations

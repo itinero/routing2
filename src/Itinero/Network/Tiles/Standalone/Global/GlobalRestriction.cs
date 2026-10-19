@@ -31,15 +31,22 @@ public class GlobalRestriction : IReadOnlyList<GlobalEdgeId>
     /// <param name="sequence">The sequence that is either prohibited or mandatory.</param>
     /// <param name="isProhibitory">Flag to set the restriction to prohibited or mandatory.</param>
     /// <param name="attributes">The attributes.</param>
+    /// <param name="turnCostType">The turn cost type id, assigned by the provider.</param>
     public GlobalRestriction(IEnumerable<GlobalEdgeId> sequence, bool isProhibitory,
-        IEnumerable<(string key, string value)> attributes)
+        IEnumerable<(string key, string value)> attributes, uint turnCostType)
     {
         _edges = sequence.ToList();
         if (_edges.Count < 2) throw new ArgumentException("A restriction has to have at least 2 edges");
 
         this.IsProhibitory = isProhibitory;
         this.Attributes = attributes;
+        this.TurnCostType = turnCostType;
     }
+
+    /// <summary>
+    /// The turn cost type id for this restriction.
+    /// </summary>
+    public uint TurnCostType { get; }
 
     /// <summary>
     /// Returns true if the restriction is negative.

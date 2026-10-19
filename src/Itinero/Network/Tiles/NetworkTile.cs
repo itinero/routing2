@@ -29,7 +29,6 @@ internal partial class NetworkTile
 
     private readonly uint _tileId;
     private readonly int _zoom; // the zoom level.
-    private readonly Guid _edgeTypeMapId; // the edge type index id.
 
     private uint _nextVertexId = 0; // the next vertex id.
 
@@ -51,13 +50,11 @@ internal partial class NetworkTile
     /// </summary>
     /// <param name="zoom">The zoom level.</param>
     /// <param name="tileId">The tile id.</param>
-    /// <param name="edgeTypeMapId">The edge type index id.</param>
-    public NetworkTile(int zoom, uint tileId, Guid? edgeTypeMapId = null)
+    public NetworkTile(int zoom, uint tileId)
     {
         _zoom = zoom;
         _tileId = tileId;
         (_boxLeft, _boxTop, _boxLonStep, _boxLatStep) = this.ComputeBox();
-        _edgeTypeMapId = edgeTypeMapId ?? Guid.Empty;
         _nextCrossTileId = 0;
 
         _pointers = new uint[0];
@@ -70,7 +67,7 @@ internal partial class NetworkTile
         _strings = new string[0];
     }
 
-    private NetworkTile(int zoom, uint tileId, Guid edgeTypeMapId, uint nextCrossTileId, uint[] pointers,
+    private NetworkTile(int zoom, uint tileId, uint nextCrossTileId, uint[] pointers,
         byte[] edges,
         uint[] crossEdgePointers, byte[] coordinates, byte[] shapes,
         byte[] attributes,
@@ -81,7 +78,6 @@ internal partial class NetworkTile
         _zoom = zoom;
         _tileId = tileId;
         (_boxLeft, _boxTop, _boxLonStep, _boxLatStep) = this.ComputeBox();
-        _edgeTypeMapId = edgeTypeMapId;
         _nextCrossTileId = nextCrossTileId;
         _pointers = pointers;
         _edges = edges;
@@ -106,7 +102,7 @@ internal partial class NetworkTile
     /// <returns>The copy of this tile.</returns>
     public NetworkTile Clone()
     {
-        return new(_zoom, _tileId, _edgeTypeMapId, _nextCrossTileId, (uint[])_pointers.Clone(), (byte[])_edges.Clone(),
+        return new(_zoom, _tileId, _nextCrossTileId, (uint[])_pointers.Clone(), (byte[])_edges.Clone(),
             (uint[])_crossEdgePointers.Clone(),
             (byte[])_coordinates.Clone(), (byte[])_shapes.Clone(), (byte[])_attributes.Clone(), (string[])_strings.Clone(), (byte[])_turnCosts.Clone(),
             _nextVertexId,
@@ -122,11 +118,6 @@ internal partial class NetworkTile
     /// Gets the number of vertices.
     /// </summary>
     public uint VertexCount => _nextVertexId;
-
-    /// <summary>
-    /// Gets the edge type map id.
-    /// </summary>
-    public Guid EdgeTypeMapId => _edgeTypeMapId;
 
     /// <summary>
     /// Adds a new vertex and returns its id.
@@ -199,9 +190,9 @@ internal partial class NetworkTile
     /// <param name="length">The length in centimeters.</param>
     /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns>The new edge id.</returns>
-    public EdgeId AddEdge(VertexId vertex1, VertexId vertex2,
+    public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, uint edgeTypeId,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null, uint? edgeTypeId = null,
+        IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null,
         uint? length = null, GlobalEdgeId? globalEdgeId = null)
     {
         // Edge set changed → cached MaxLonDiff/MaxLatDiff are now stale.
@@ -277,7 +268,7 @@ internal partial class NetworkTile
         }
 
         // write edge profile id.
-        _nextEdgeId += SetDynamicUIn32Nullable(ref _edges, _nextEdgeId, edgeTypeId);
+        _nextEdgeId += SetDynamicUIn32(ref _edges, _nextEdgeId, edgeTypeId);
 
         // write length.
         _nextEdgeId += SetDynamicUIn32Nullable(ref _edges, _nextEdgeId, length);
@@ -307,208 +298,6 @@ internal partial class NetworkTile
         _nextEdgeId += size;
 
         return edgeId.Value;
-    }
-
-    private HashSet<EdgeId>? _deletedEdges;
-
-    /// <summary>
-    /// Marks the given edge as deleted.
-    /// </summary>
-    /// <param name="edge">The edge to delete.</param>
-    internal void DeleteEdge(EdgeId edge)
-    {
-        _deletedEdges ??= [];
-        _deletedEdges.Add(edge);
-        this.InvalidateDiffs();
-    }
-
-    /// <summary>
-    /// Returns true if the edge is deleted.
-    /// </summary>
-    /// <param name="edge">The edge.</param>
-    /// <returns>True if the edge was deleted.</returns>
-    internal bool IsEdgeDeleted(EdgeId edge)
-    {
-        if (_deletedEdges == null) return false;
-
-        return _deletedEdges.Contains(edge);
-    }
-
-    /// <summary>
-    /// Returns true if there are deleted edges.
-    /// </summary>
-    internal bool HasDeletedEdges => _deletedEdges != null;
-
-    /// <summary>
-    /// Removes all the deleted edges.
-    /// </summary>
-    /// <remarks>This changes all the edges if all edges written after a deleted edge.</remarks>
-    internal void RemoveDeletedEdges()
-    {
-        if (_deletedEdges == null) return;
-        this.InvalidateDiffs();
-
-        // reset vertex pointers.
-        for (var i = 0; i < _pointers.Length; i++)
-        {
-            _pointers[i] = 0;
-        }
-
-        // redo edges, skipping deleted edges.
-        var nextEdgeId = _nextEdgeId;
-        var p = 0U;
-        var newP = 0U;
-        while (p < nextEdgeId)
-        {
-            // read edge data.
-            var currentEdgeId = p;
-            p += this.DecodeVertex(p, out var local1Id, out var tile1Id);
-            var vertex1 = new VertexId(tile1Id, local1Id);
-            p += this.DecodeVertex(p, out var local2Id, out var tile2Id);
-            var vertex2 = new VertexId(tile2Id, local2Id);
-            p += this.DecodePointer(p, out _);
-            p += this.DecodePointer(p, out _);
-            uint? crossEdgeId = null;
-            if (tile1Id != tile2Id)
-            {
-                p += _edges.GetDynamicUInt32(p, out var c);
-                crossEdgeId = c;
-            }
-
-            p += _edges.GetDynamicUInt32Nullable(p, out var edgeTypeId);
-            p += _edges.GetDynamicUInt32Nullable(p, out var length);
-            var tailHeadOrder = _edges[p];
-            p++;
-            p += this.DecodePointer(p, out var shapePointer);
-            p += this.DecodePointer(p, out var attributePointer);
-
-            // check if edge was deleted.
-            if (_deletedEdges.Contains(new EdgeId(_tileId, currentEdgeId))) continue;
-            if (crossEdgeId.HasValue)
-            {
-                if (_deletedEdges.Contains(EdgeId.CrossEdgeId(vertex1.TileId, crossEdgeId.Value))) continue;
-            }
-
-            // no need to overwrite identical data.
-            if (p == newP) continue;
-
-            // write edge data again.
-            var newEdgePointer = newP;
-            newP += EncodeVertex(ref _edges, _tileId, newP, vertex1);
-            newP += EncodeVertex(ref _edges, _tileId, newP, vertex2);
-            uint? v1p = null;
-            if (vertex1.TileId == _tileId)
-            {
-                v1p = _pointers[vertex1.LocalId].DecodeNullableData();
-                _pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
-            }
-
-            uint? v2P = null;
-            if (vertex2.TileId == _tileId)
-            {
-                v2P = _pointers[vertex2.LocalId].DecodeNullableData();
-                _pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
-            }
-
-            newP += EncodePointer(ref _edges, newP, v1p);
-            newP += EncodePointer(ref _edges, newP, v2P);
-            if (crossEdgeId != null)
-            {
-                newP += (uint)_edges.SetDynamicUInt32(newP, crossEdgeId.Value);
-                if (vertex1.TileId == _tileId)
-                {
-                    _crossEdgePointers[crossEdgeId.Value] = newEdgePointer;
-                }
-            }
-
-            newP += _edges.SetDynamicUInt32Nullable(newP, edgeTypeId);
-            newP += _edges.SetDynamicUInt32Nullable(newP, length);
-            _edges[newP] = tailHeadOrder;
-            newP++;
-            newP += EncodePointer(ref _edges, newP, shapePointer);
-            newP += EncodePointer(ref _edges, newP, attributePointer);
-        }
-
-        _nextEdgeId = newP;
-        _deletedEdges = null;
-    }
-
-    internal NetworkTile CloneForEdgeTypeMap(
-        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap)
-    {
-        var edges = new byte[_edges.Length];
-        var pointers = new uint[_pointers.Length];
-        var crossEdgePointers = new uint[_crossEdgePointers.Length];
-        var nextEdgeId = _nextEdgeId;
-        var p = 0U;
-        var newP = 0U;
-        while (p < nextEdgeId)
-        {
-            // read edge data.
-            p += this.DecodeVertex(p, out var local1Id, out var tile1Id);
-            var vertex1 = new VertexId(tile1Id, local1Id);
-            p += this.DecodeVertex(p, out var local2Id, out var tile2Id);
-            var vertex2 = new VertexId(tile2Id, local2Id);
-            p += this.DecodePointer(p, out _);
-            p += this.DecodePointer(p, out _);
-            uint? crossEdgeId = null;
-            if (tile1Id != tile2Id)
-            {
-                p += (uint)_edges.GetDynamicUInt32(p, out var c);
-                crossEdgeId = c;
-            }
-
-            p += _edges.GetDynamicUInt32Nullable(p, out var _);
-            p += _edges.GetDynamicUInt32Nullable(p, out var length);
-            var tailHeadOrder = _edges[p];
-            p++;
-            p += this.DecodePointer(p, out var shapePointer);
-            p += this.DecodePointer(p, out var attributePointer);
-
-            // generate new edge type id.
-            var newEdgeTypeId = edgeTypeMap.func(this.GetAttributes(attributePointer));
-
-            // write edge data again.
-            var newEdgePointer = newP;
-            newP += EncodeVertex(ref edges, _tileId, newP, vertex1);
-            newP += EncodeVertex(ref edges, _tileId, newP, vertex2);
-            uint? v1p = null;
-            if (vertex1.TileId == _tileId)
-            {
-                v1p = pointers[vertex1.LocalId].DecodeNullableData();
-                pointers[vertex1.LocalId] = newEdgePointer.EncodeToNullableData();
-            }
-
-            uint? v2p = null;
-            if (vertex2.TileId == _tileId)
-            {
-                v2p = pointers[vertex2.LocalId].DecodeNullableData();
-                pointers[vertex2.LocalId] = newEdgePointer.EncodeToNullableData();
-            }
-
-            newP += EncodePointer(ref edges, newP, v1p);
-            newP += EncodePointer(ref edges, newP, v2p);
-            if (crossEdgeId != null)
-            {
-                newP += edges.SetDynamicUInt32(newP, crossEdgeId.Value);
-                if (vertex1.TileId == _tileId)
-                {
-                    crossEdgePointers[crossEdgeId.Value] = newEdgePointer;
-                }
-            }
-
-            newP += edges.SetDynamicUInt32Nullable(newP, newEdgeTypeId);
-            newP += edges.SetDynamicUInt32Nullable(newP, length);
-            edges[newP] = tailHeadOrder;
-            newP++;
-            newP += EncodePointer(ref edges, newP, shapePointer);
-            newP += EncodePointer(ref edges, newP, attributePointer);
-        }
-
-        return new NetworkTile(_zoom, _tileId, edgeTypeMap.id, _nextCrossTileId, pointers, edges, crossEdgePointers,
-            _coordinates,
-            _shapes, _attributes, _strings, _turnCosts, _nextVertexId, _nextEdgeId,
-            _nextAttributePointer, _nextShapePointer, _nextStringId);
     }
 
     /// <summary>
@@ -596,6 +385,13 @@ internal partial class NetworkTile
         return size;
     }
 
+    internal static byte SetDynamicUIn32(ref byte[] edges, uint pointer, uint data)
+    {
+        EnsureCapacity(ref edges, pointer + 6L, DefaultSizeIncrease);
+
+        return edges.SetDynamicUInt32(pointer, data);
+    }
+
     internal static byte SetDynamicUIn32Nullable(ref byte[] edges, uint pointer, uint? data)
     {
         EnsureCapacity(ref edges, pointer + 6L, DefaultSizeIncrease);
@@ -606,6 +402,11 @@ internal partial class NetworkTile
     internal void GetTailHeadOrder(uint location, ref byte? tail, ref byte? head)
     {
         _edges.GetTailHeadOrder(location, ref tail, ref head);
+    }
+
+    internal byte DecodeEdgeTypeId(uint location, out uint edgeTypeId)
+    {
+        return _edges.GetDynamicUInt32(location, out edgeTypeId);
     }
 
     internal byte DecodeEdgePointerId(uint location, out uint? edgeProfileId)

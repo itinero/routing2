@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.IO.Osm.Restrictions.Barriers;
 using Itinero.IO.Osm.Restrictions.Turns;
+using Itinero.Data.Providers;
 using Itinero.IO.Osm.Streams;
 using Itinero.Network;
 using Itinero.Network.Tiles.Standalone;
@@ -26,6 +27,7 @@ public static class StandaloneNetworkTileWriterExtensions
     /// <param name="configure">The configure function.</param>
     /// <exception cref="Exception"></exception>
     public static void AddTileData(this StandaloneNetworkTileWriter writer, IEnumerable<OsmGeo> tileData,
+        DefaultDataProvider provider,
         Action<DataProviderSettings>? configure = null)
     {
         static uint ToLocalId(uint x, uint y, int zoom)
@@ -60,8 +62,9 @@ public static class StandaloneNetworkTileWriterExtensions
             data = data.ApplyFilter(settings.TagsFilter.Filter);
         }
 
-        // setup the edge type map.
-        var edgeTypeMap = writer.EdgeTypeMap.func;
+        // ids are minted provider-side; this builder is provider-side too.
+        var edgeTypeMap = provider.AddEdgeType;
+        var turnCostTypeMap = provider.AddTurnCostType;
         var emptyEdgeType = edgeTypeMap(ArraySegment<(string key, string value)>.Empty);
 
         // keep all node locations.
@@ -225,7 +228,7 @@ public static class StandaloneNetworkTileWriterExtensions
                         {
                             if (!barrierParser.TryParse(node, barrierWays, out var barrier))
                                 throw new Exception("node in the barriers list is not a barrier");
-                            globalRestrictions.AddRange(barrier.ToGlobalNetworkRestrictions());
+                            globalRestrictions.AddRange(barrier.ToGlobalNetworkRestrictions(turnCostTypeMap));
                         }
                     }
 
@@ -319,7 +322,7 @@ public static class StandaloneNetworkTileWriterExtensions
                     if (osmTurnRestriction == null)
                         throw new Exception("Parsing restriction was successful but not returned");
 
-                    globalRestrictions.AddRange(osmTurnRestriction.ToGlobalNetworkRestrictions());
+                    globalRestrictions.AddRange(osmTurnRestriction.ToGlobalNetworkRestrictions(turnCostTypeMap));
                     break;
             }
         }
@@ -364,7 +367,7 @@ public static class StandaloneNetworkTileWriterExtensions
                 // easy, we only add a single cost.
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                 if (!writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                        [secondToLast.edge, last.edge], costs,
+                        [secondToLast.edge, last.edge], costs, networkRestriction.TurnCostType,
                         networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
                 {
                     LogTurnCostBudgetExceeded(writer, turnCostVertex);
@@ -396,7 +399,7 @@ public static class StandaloneNetworkTileWriterExtensions
                     // easy, we only add a single cost.
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                     if (!writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
-                            [secondToLast.edge, tileEnumerator.EdgeId], costs,
+                            [secondToLast.edge, tileEnumerator.EdgeId], costs, networkRestriction.TurnCostType,
                             networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
                     {
                         LogTurnCostBudgetExceeded(writer, turnCostVertex);
@@ -420,7 +423,7 @@ public static class StandaloneNetworkTileWriterExtensions
             }
 
             writer.AddGlobalRestriction(edges, globalNetworkRestriction.IsProhibitory,
-                globalNetworkRestriction.Attributes);
+                globalNetworkRestriction.Attributes, globalNetworkRestriction.TurnCostType);
         }
 
         return;

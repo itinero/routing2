@@ -10,7 +10,8 @@ public class PathTests
     [Fact]
     public void Path_New_Offsets_ShouldIncludeByDefault()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var path = new Path(routerDb.Latest);
 
         Assert.Equal(0, path.Offset1);
@@ -20,10 +21,11 @@ public class PathTests
     [Fact]
     public void Path_Append_OneEdge_ShouldBeOneEdgePath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge;
         VertexId vertex1;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             var vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -41,12 +43,13 @@ public class PathTests
     [Fact]
     public void Path_Append_SecondEdge_ShouldBeSecondEdge()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1;
         EdgeId edge2;
         VertexId vertex1;
         VertexId vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -68,12 +71,13 @@ public class PathTests
     [Fact]
     public void Path_Enumerate_TwoEdges_ShouldEnumerateEdges()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1;
         EdgeId edge2;
         VertexId vertex1;
         VertexId vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -96,11 +100,12 @@ public class PathTests
     [Fact]
     public void Path_Prepend_OneEdge_ShouldBeOneEdgePath()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1;
         VertexId vertex1;
         VertexId vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -118,10 +123,11 @@ public class PathTests
     [Fact]
     public void Path_Prepend_SecondEdge_ShouldBeSecondEdge()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2;
         VertexId vertex1, vertex2, vertex3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -143,10 +149,11 @@ public class PathTests
     [Fact]
     public void Path_Trim_NormalOffset_ShouldNotTrim()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2;
         VertexId vertex1, vertex2, vertex3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -170,10 +177,11 @@ public class PathTests
     [Fact]
     public void Path_Trim_Offset1Max_ShouldRemoveFirst()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2;
         VertexId vertex1, vertex2, vertex3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);
@@ -199,10 +207,11 @@ public class PathTests
     [Fact]
     public void Path_Trim_Offset2Is0_ShouldRemoveLast()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId edge1, edge2;
         VertexId vertex1, vertex2, vertex3;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Itinero.Data;
 using Itinero.IO.Osm;
 using Itinero.IO.Osm.Tiles;
+using Itinero.Data.Providers;
 using Itinero.Network;
 using Itinero.Network.Tiles;
 using Itinero.Network.Tiles.Standalone.Writer;
@@ -29,11 +30,8 @@ public class RoutingNetworkWriterExtensionsTests
         // the routing network should carry a turn cost at the bollard's
         // vertex that blocks through-traversal.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         // three coords inside one zoom-14 tile.
         const double lonStart = 4.86638, latStart = 51.269728;
@@ -64,7 +62,7 @@ public class RoutingNetworkWriterExtensionsTests
 
         // build the standalone tile.
         var tileWriter = routerDb.Latest.GetStandaloneTileWriter(tileX, tileY);
-        tileWriter.AddTileData(osm);
+        tileWriter.AddTileData(osm, provider);
         var standaloneTile = tileWriter.GetResultingTile();
 
         // merge into the routing network.
@@ -103,11 +101,8 @@ public class RoutingNetworkWriterExtensionsTests
         // the lookup, exact-match still works, so this should pass — it's
         // the canonical baseline for the cross-way restriction shape.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lat = 51.269400;
         const double lonStart = 4.86638;   // start of way A (vertex)
@@ -140,7 +135,7 @@ public class RoutingNetworkWriterExtensionsTests
             }
         };
 
-        var tile = BuildStandaloneTile(routerDb, tileX, tileY, osm);
+        var tile = BuildStandaloneTile(provider, tileX, tileY, osm);
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
         {
@@ -170,11 +165,8 @@ public class RoutingNetworkWriterExtensionsTests
         // the (way_A, 0, 1) edge gets registered globally, and the retry
         // loop resolves the restriction. Turn cost lands at the bollard.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lat = 51.269;
         const double lonStart = 4.96082;   // tile A
@@ -209,8 +201,8 @@ public class RoutingNetworkWriterExtensionsTests
             }
         };
 
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -252,11 +244,8 @@ public class RoutingNetworkWriterExtensionsTests
         //    crossing edge is created, retry resolves the restriction, turn
         //    cost is added at the bollard vertex
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         // tile boundary between zoom-14 tiles (8417,5465) and (8418,5465)
         // sits at lon 4.9658203125. Pick coords spanning it.
@@ -288,8 +277,8 @@ public class RoutingNetworkWriterExtensionsTests
 
         // build standalone tiles for both tiles independently from the same
         // OSM input — the writer's IsInTile filter selects the right subset.
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -334,11 +323,8 @@ public class RoutingNetworkWriterExtensionsTests
         // of which exists as a registered edge — only `way_0->1` (boundary
         // crossing), `way_1->5` (in tile B) and `way_5->10` (in tile B) do.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         // way nodes 0..10. Node 0 in tile A, nodes 1..10 in tile B (boundary
         // at lon 4.965820 between zoom-14 tiles 8417 and 8418). Bollard at
@@ -377,8 +363,8 @@ public class RoutingNetworkWriterExtensionsTests
         };
         var osm = new List<OsmGeo>(nodes) { way }.ToArray();
 
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -413,11 +399,8 @@ public class RoutingNetworkWriterExtensionsTests
         // crossing), then tile B. The bollard restriction must still resolve
         // when tile B arrives, regardless of merge order.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lat = 51.269;
         var lons = new[]
@@ -444,8 +427,8 @@ public class RoutingNetworkWriterExtensionsTests
         };
         var osm = new List<OsmGeo>(nodes) { way }.ToArray();
 
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -492,11 +475,8 @@ public class RoutingNetworkWriterExtensionsTests
         // up the boundary-crossing edge `way_4->5` to apply the turn cost
         // at the bollard vertex.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lat = 51.269;
         var lons = new[]
@@ -523,8 +503,8 @@ public class RoutingNetworkWriterExtensionsTests
         };
         var osm = new List<OsmGeo>(nodes) { way }.ToArray();
 
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
@@ -550,11 +530,8 @@ public class RoutingNetworkWriterExtensionsTests
         // B. Until tile B loads, the to-edge is a half-loaded boundary
         // crossing and the bollard restriction can't resolve.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lonStart = 4.95582, latStart = 51.269;     // tile (8417, 5465)
         const double lonBollard = 4.96082, latBollard = 51.269; // tile (8417, 5465)
@@ -582,8 +559,8 @@ public class RoutingNetworkWriterExtensionsTests
             }
         };
 
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -630,11 +607,8 @@ public class RoutingNetworkWriterExtensionsTests
         // the bollard vertex, NOT on 'j'. It is expected to FAIL on the
         // current resolver, demonstrating the bug.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
         const double lonA = 4.86620, latA = 51.269700;
         const double lonJ = 4.86660, latJ = 51.269500;
         const double lonBollard = 4.86700, latBollard = 51.269300;
@@ -661,7 +635,7 @@ public class RoutingNetworkWriterExtensionsTests
                 Tags = new TagsCollection(new Tag("highway", "residential")) }
         };
 
-        var tile = BuildStandaloneTile(routerDb, tx, ty, osm);
+        var tile = BuildStandaloneTile(provider, tx, ty, osm);
 
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
@@ -704,11 +678,8 @@ public class RoutingNetworkWriterExtensionsTests
         //     Last-edge.Tail = vertex(a).
         // Net effect: turn cost at j2 and a, none at the bollard.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lonA = 4.95582, latA = 51.269;        // tile A
         const double lonBollard = 4.96682, latBollard = 51.269;  // tile B
@@ -738,8 +709,8 @@ public class RoutingNetworkWriterExtensionsTests
                 Tags = new TagsCollection(new Tag("highway", "residential")) }
         };
 
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -778,11 +749,8 @@ public class RoutingNetworkWriterExtensionsTests
         // pending after tile A, retries after tile B loads. The bug is
         // load-order-independent — the resolver mis-picks regardless.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
 
         const double lonA = 4.95582, latA = 51.269;
         const double lonBollard = 4.96682, latBollard = 51.269;
@@ -811,8 +779,8 @@ public class RoutingNetworkWriterExtensionsTests
                 Tags = new TagsCollection(new Tag("highway", "residential")) }
         };
 
-        var tileAStandalone = BuildStandaloneTile(routerDb, tileAx, tileAy, osm);
-        var tileBStandalone = BuildStandaloneTile(routerDb, tileBx, tileBy, osm);
+        var tileAStandalone = BuildStandaloneTile(provider, tileAx, tileAy, osm);
+        var tileBStandalone = BuildStandaloneTile(provider, tileBx, tileBy, osm);
 
         var globalIdSet = new GlobalNetworkManager();
 
@@ -861,11 +829,8 @@ public class RoutingNetworkWriterExtensionsTests
         // finds (200, 1, 2) — the b-side sub-edge, NOT the bollard-adjacent
         // (200, 0, 1). Turn cost lands on j2 instead of bollard.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
         const double lonA = 4.86620, latA = 51.269700;
         const double lonBollard = 4.86660, latBollard = 51.269500;
         const double lonJ2 = 4.86700, latJ2 = 51.269300;
@@ -892,7 +857,7 @@ public class RoutingNetworkWriterExtensionsTests
                 Tags = new TagsCollection(new Tag("highway", "residential")) }
         };
 
-        var tile = BuildStandaloneTile(routerDb, tx, ty, osm);
+        var tile = BuildStandaloneTile(provider, tx, ty, osm);
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
         {
@@ -921,11 +886,8 @@ public class RoutingNetworkWriterExtensionsTests
         // wrong-end fwd-default. Turn costs should still land only on the
         // bollard vertex; this test asserts NO spurious turn cost at j1 or j2.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
         const double lonA = 4.86600, latA = 51.269800;
         const double lonJ1 = 4.86640, latJ1 = 51.269600;
         const double lonBollard = 4.86680, latBollard = 51.269400;
@@ -958,7 +920,7 @@ public class RoutingNetworkWriterExtensionsTests
                 Tags = new TagsCollection(new Tag("highway", "residential")) }
         };
 
-        var tile = BuildStandaloneTile(routerDb, tx, ty, osm);
+        var tile = BuildStandaloneTile(provider, tx, ty, osm);
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
         {
@@ -996,11 +958,8 @@ public class RoutingNetworkWriterExtensionsTests
         // last-edge (200, 1, 2) forward=true → Tail = j2. Turn cost at j2,
         // not at via.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
         const double lonA = 4.86620, latA = 51.269700;
         const double lonVia = 4.86660, latVia = 51.269500;
         const double lonJ2 = 4.86700, latJ2 = 51.269300;
@@ -1036,7 +995,7 @@ public class RoutingNetworkWriterExtensionsTests
             }
         };
 
-        var tile = BuildStandaloneTile(routerDb, tx, ty, osm);
+        var tile = BuildStandaloneTile(provider, tx, ty, osm);
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
         {
@@ -1074,11 +1033,8 @@ public class RoutingNetworkWriterExtensionsTests
         // bug never affects the turn-cost vertex selection. This test is
         // a control / sanity check — it should already pass.
 
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
         const double lonA = 4.86620, latA = 51.269700;
         const double lonJ = 4.86660, latJ = 51.269500;
         const double lonVia = 4.86700, latVia = 51.269300;
@@ -1114,7 +1070,7 @@ public class RoutingNetworkWriterExtensionsTests
             }
         };
 
-        var tile = BuildStandaloneTile(routerDb, tx, ty, osm);
+        var tile = BuildStandaloneTile(provider, tx, ty, osm);
         var globalIdSet = new GlobalNetworkManager();
         using (var writer = routerDb.Latest.GetWriter())
         {
@@ -1134,10 +1090,10 @@ public class RoutingNetworkWriterExtensionsTests
     }
 
     private static Itinero.Network.Tiles.Standalone.StandaloneNetworkTile BuildStandaloneTile(
-        RouterDb routerDb, uint x, uint y, OsmGeo[] osm)
+        DefaultDataProvider provider, uint x, uint y, OsmGeo[] osm)
     {
-        var w = routerDb.Latest.GetStandaloneTileWriter(x, y);
-        w.AddTileData(osm);
+        var w = provider.RouterDb.Latest.GetStandaloneTileWriter(x, y);
+        w.AddTileData(osm, provider);
         return w.GetResultingTile();
     }
 

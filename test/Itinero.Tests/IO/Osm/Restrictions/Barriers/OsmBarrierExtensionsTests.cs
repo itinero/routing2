@@ -20,7 +20,7 @@ public class OsmBarrierExtensionsTests
             new Way { Id = 1, Nodes = new long[] { 1, 2 } }
         };
 
-        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions().ToList();
+        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Empty(results);
     }
@@ -36,7 +36,7 @@ public class OsmBarrierExtensionsTests
             new Way { Id = 1, Nodes = new long[] { 1, 2, 3 } }
         };
 
-        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions().ToList();
+        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Equal(2, results.Count);
 
@@ -66,7 +66,7 @@ public class OsmBarrierExtensionsTests
             new Way { Id = 2, Nodes = new long[] { 2, 3 } }
         };
 
-        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions().ToList();
+        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Equal(2, results.Count);
 
@@ -94,7 +94,7 @@ public class OsmBarrierExtensionsTests
             new Way { Id = 2, Nodes = new long[] { 99, 20, 3 } }
         };
 
-        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions().ToList();
+        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Equal(2, results.Count);
 
@@ -119,7 +119,7 @@ public class OsmBarrierExtensionsTests
             new Way { Id = 3, Nodes = new long[] { 3, 0 } }
         };
 
-        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions().ToList();
+        var results = OsmBarrier.Create(bollard, ways).ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Equal(6, results.Count);
         AssertChainConnectivity(results, ways);

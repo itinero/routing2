@@ -14,15 +14,9 @@ public class StandaloneNetworkTileWriter
 {
     private readonly StandaloneNetworkTile _tile;
     private readonly int _zoom;
-    private readonly (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) _turnCostTypeMap;
-
-    internal StandaloneNetworkTileWriter(StandaloneNetworkTile tile, int zoom,
-        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) edgeTypeMap,
-        (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) turnCostTypeMap)
+    internal StandaloneNetworkTileWriter(StandaloneNetworkTile tile, int zoom)
     {
         _tile = tile;
-        this.EdgeTypeMap = edgeTypeMap;
-        _turnCostTypeMap = turnCostTypeMap;
         _zoom = zoom;
     }
 
@@ -39,11 +33,6 @@ public class StandaloneNetworkTileWriter
         edge.MoveTo(edgeId, forward);
         return edge;
     }
-
-    /// <summary>
-    /// Gets the edge type map.
-    /// </summary>
-    public (Guid id, Func<IEnumerable<(string key, string value)>, uint> func) EdgeTypeMap { get; }
 
     /// <summary>
     /// Returns true if the given coordinates are inside the tile boundaries.
@@ -118,7 +107,7 @@ public class StandaloneNetworkTileWriter
         var length = (uint)(vertex1Location.DistanceEstimateInMeterShape(
             vertex2Location, shape) * 100);
 
-        return _tile.NetworkTile.AddEdge(vertex1, vertex2, shape, attributes, null, edgeTypeId, length, globalEdgeId);
+        return _tile.NetworkTile.AddEdge(vertex1, vertex2, edgeTypeId, shape, attributes, null, length, globalEdgeId);
     }
 
     /// <summary>
@@ -127,13 +116,10 @@ public class StandaloneNetworkTileWriter
     /// <param name="sequence">The sequence of global edge ids with local edge ids if they are already known.</param>
     /// <param name="isProhibitory">The type of restriction.</param>
     /// <param name="attributes">The raw attributes of the restriction.</param>
+    /// <param name="turnCostTypeId">The turn cost type id, assigned by the provider.</param>
     public void AddGlobalRestriction(IEnumerable<(GlobalEdgeId globalEdgeId, EdgeId? edge)> sequence,
-        bool isProhibitory, IEnumerable<(string key, string value)> attributes)
+        bool isProhibitory, IEnumerable<(string key, string value)> attributes, uint turnCostTypeId)
     {
-        // get the turn cost type id.
-        var turnCostTypeId = _turnCostTypeMap.func(attributes);
-
-        // write to tile.
         _tile.AddGlobalRestriction(sequence, isProhibitory, turnCostTypeId, attributes);
     }
 
@@ -145,15 +131,12 @@ public class StandaloneNetworkTileWriter
     /// <param name="edges">The edges involved in the costs.</param>
     /// <param name="costs">The costs.</param>
     /// <param name="prefix">When the costs are only valid after first traversing a sequence of edges.</param>
+    /// <param name="turnCostTypeId">The turn cost type id, assigned by the provider.</param>
     public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
-        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+        EdgeId[] edges, uint[,] costs, uint turnCostTypeId, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
 
-        // get the turn cost type id.
-        var turnCostTypeId = _turnCostTypeMap.func(attributes);
-
-        // add the turn cost table using the type id.
         return _tile.NetworkTile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
     }
 

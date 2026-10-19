@@ -42,20 +42,7 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
         if (_tiles.Length <= localTileId) return null;
 
         // get tile, if any.
-        var tile = _tiles[localTileId];
-        if (tile == null) return null;
-
-        // Id only: this runs on every tile access and the full map carries a delegate that is
-        // only needed for the clone below.
-        if (tile.EdgeTypeMapId == this.RouterDb.EdgeTypeMap.Id) return tile;
-
-        // tile.EdgeTypeMapId indicates the version of the used edgeTypeMap
-        // If the id is different, the loaded tile needs updating; e.g. because a cost function has been changed
-        var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
-        tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
-        _tiles[localTileId] = tile;
-
-        return tile;
+        return _tiles[localTileId];
     }
 
     /// <summary>

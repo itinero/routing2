@@ -43,7 +43,7 @@ public static class GlobalRestrictionExtensions
         }
 
         networkRestriction = new NetworkRestriction(edges, globalNetworkRestriction.IsProhibitory,
-            globalNetworkRestriction.Attributes);
+            globalNetworkRestriction.TurnCostType, globalNetworkRestriction.Attributes);
         return true;
     }
 

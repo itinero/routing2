@@ -63,7 +63,7 @@ public interface IEdgeEnumerator
     /// <summary>
     /// Gets the edge profile id.
     /// </summary>
-    uint? EdgeTypeId { get; }
+    uint EdgeTypeId { get; }
 
     /// <summary>
     /// Gets the length in centimeters, if any.

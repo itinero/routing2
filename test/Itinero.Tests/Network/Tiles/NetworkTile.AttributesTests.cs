@@ -14,7 +14,7 @@ public class NetworkTile_AttributesTests
         var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] {
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, attributes: new (string key, string value)[] {
                     ("a_key", "A value")
                 }
         );
@@ -38,7 +38,7 @@ public class NetworkTile_AttributesTests
         var vertex1 = graphTile.AddVertex(4.86638, 51.269728);
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
 
-        var edge = graphTile.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] {
+        var edge = graphTile.AddEdge(vertex1, vertex2, 0, attributes: new (string key, string value)[] {
                     ("a_key", "A value"),
                     ("a_second_key", "Another value"),
                     ("a_last_key", "A last value")

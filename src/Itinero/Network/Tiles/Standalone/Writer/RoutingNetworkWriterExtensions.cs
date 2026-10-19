@@ -11,7 +11,7 @@ namespace Itinero.Network.Tiles.Standalone.Writer;
 /// <summary>
 /// Extension methods related to writing standalone tiles to a network.
 /// </summary>
-public static class RoutingNetworkWriterExtensions
+internal static class RoutingNetworkWriterExtensions
 {
     /// <summary>
     /// Per-thread scratch for the global edge ids one insert registers.
@@ -211,8 +211,8 @@ public static class RoutingNetworkWriterExtensions
         var head = crossing.IsIncoming ? crossing.OtherVertex : crossing.Vertex;
 
         var length = writer.ComputeEdgeLength(tail, head);
-        var newEdge = writer.AddEdge(tail, head, null, crossing.Attributes,
-            crossing.EdgeTypeId, length, crossing.GlobalEdgeId);
+        var newEdge = writer.AddEdge(tail, head, crossing.EdgeTypeId, length,
+            attributes: crossing.Attributes, globalEdgeId: crossing.GlobalEdgeId);
 
         // register boundary edge's GlobalEdgeId → EdgeId mapping.
         globalIdSet.EdgeIdSet.Set(crossing.GlobalEdgeId, newEdge);
@@ -229,7 +229,8 @@ public static class RoutingNetworkWriterExtensions
             var globalRestriction = new GlobalRestriction(
                 edges.Select(e => e.globalEdgeId),
                 isProhibitory,
-                restrictionAttributes.ToArray());
+                restrictionAttributes.ToArray(),
+                turnCostTypeId);
 
             seen++;
             if (!TryResolveRestriction(globalRestriction, globalIdSet, writer))
@@ -270,7 +271,8 @@ public static class RoutingNetworkWriterExtensions
             var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
             writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                 [secondToLast.edge, last.edge], costs,
-                networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge),
+                networkRestriction.TurnCostType);
 
         }
         else
@@ -289,7 +291,8 @@ public static class RoutingNetworkWriterExtensions
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
                 writer.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
                     [secondToLast.edge, edgeEnumerator.EdgeId], costs,
-                    networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge));
+                    networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge),
+                    networkRestriction.TurnCostType);
             }
         }
 

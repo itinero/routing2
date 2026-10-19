@@ -85,7 +85,8 @@ public class AsStreamTest
     [Fact]
     public void EmptyRouterDb_AsStream_AllFeaturesAreEnumerated()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
 
         var stream = routerDb.AsStream().ToList();
         Assert.Empty(stream);

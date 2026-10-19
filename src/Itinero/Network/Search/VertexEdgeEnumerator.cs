@@ -86,7 +86,7 @@ internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork>
     public EdgeId EdgeId => this.RoutingNetworkEdgeEnumerator.EdgeId;
     public IEnumerable<(double longitude, double latitude, float? e)> Shape => this.RoutingNetworkEdgeEnumerator.Shape;
     public IEnumerable<(string key, string value)> Attributes => this.RoutingNetworkEdgeEnumerator.Attributes;
-    public uint? EdgeTypeId => this.RoutingNetworkEdgeEnumerator.EdgeTypeId;
+    public uint EdgeTypeId => this.RoutingNetworkEdgeEnumerator.EdgeTypeId;
     public uint? Length => this.RoutingNetworkEdgeEnumerator.Length;
     public byte? HeadOrder => this.RoutingNetworkEdgeEnumerator.HeadOrder;
     public byte? TailOrder => this.RoutingNetworkEdgeEnumerator.TailOrder;

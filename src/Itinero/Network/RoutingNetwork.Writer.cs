@@ -74,7 +74,7 @@ public sealed partial class RoutingNetwork
     /// Gets a writer.
     /// </summary>
     /// <returns>The writer.</returns>
-    public RoutingNetworkWriter GetWriter()
+    internal RoutingNetworkWriter GetWriter()
     {
         lock (_writeSync)
         {
@@ -106,7 +106,7 @@ public sealed partial class RoutingNetwork
     /// continuously and from many threads. Anything that mutates existing data still wants the
     /// exclusive writer.
     /// </remarks>
-    public RoutingNetworkWriter GetTileInsertWriter()
+    internal RoutingNetworkWriter GetTileInsertWriter()
     {
         lock (_writeSync)
         {
@@ -139,8 +139,7 @@ public sealed partial class RoutingNetwork
 
     object IRoutingNetworkWritable.GetTileLockByIndex(int index) => _tileLocks[index];
 
-    (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) IRoutingNetworkWritable.
-        GetTileForWrite(uint localTileId)
+    NetworkTile IRoutingNetworkWritable.GetTileForWrite(uint localTileId)
     {
         // No lock here. Every caller already holds this tile's stripe — the write methods on
         // RoutingNetworkWriter all go through WithTileLocks, which is where the ordering invariant
@@ -150,36 +149,24 @@ public sealed partial class RoutingNetwork
         // ensure minimum size.
         _tiles.EnsureMinimumSize(localTileId);
 
-        var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
         var tile = _tiles[localTileId];
         if (tile != null)
         {
-            if (tile.EdgeTypeMapId != edgeTypeMap.id)
-            {
-                tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
-                _tiles[localTileId] = tile;
-            }
-            else
-            {
-                // check if there is a mutable graph.
-                this.CloneTileIfNeededForMutator(tile);
-            }
+            // check if there is a mutable graph.
+            this.CloneTileIfNeededForMutator(tile);
 
-            return (tile, edgeTypeMap.func);
+            return tile;
         }
 
         // create a new tile.
-        tile = new NetworkTile(this.Zoom, localTileId, edgeTypeMap.id);
+        tile = new NetworkTile(this.Zoom, localTileId);
         _tiles[localTileId] = tile;
 
-        return (tile, edgeTypeMap.func);
+        return tile;
     }
 
     void IRoutingNetworkWritable.SetTile(NetworkTile tile)
     {
-        var edgeTypeMap = this.RouterDb.GetEdgeTypeMap();
-        if (tile.EdgeTypeMapId != edgeTypeMap.id) throw new ArgumentException("Cannot add an entire tile without a matching edge type map");
-
         // No lock: the caller holds this tile's stripe for the whole write session. Check-then-set
         // is still one step under that lock, which is what keeps two inserts of the same tile from
         // losing one — though the caller also dedupes in-flight loads per tile, so it should not

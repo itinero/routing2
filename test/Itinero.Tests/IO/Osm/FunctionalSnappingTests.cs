@@ -17,9 +17,7 @@ public class FunctionalSnappingTests
 {
     private static RouterDb CreateRouterDb(OsmGeo[] os, Profile? profile = null)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration());
-        if (profile != null) routerDb.PrepareFor(profile);
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = null;
             s.TagsFilter.CompleteFilter = null;

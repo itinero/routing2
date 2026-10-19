@@ -75,15 +75,8 @@ public class PbfBuildBenchmarks
 
     private long Build(string pbfPath)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
-        routerDb.PrepareFor(_profile);
-
         using var osmStream = File.OpenRead(pbfPath);
-        routerDb.UseOsmData(new PBFOsmStreamSource(osmStream));
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new PBFOsmStreamSource(osmStream));
 
         // Return a value derived from the built db so the JIT can't dead-code-
         // eliminate the build. The exact value doesn't matter; we just need

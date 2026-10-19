@@ -16,7 +16,8 @@ public static class OsmBarrierExtensions
     /// <param name="osmBarrier">The OSM barrier.</param>
     /// <returns>The restrictions using network edges and vertices.</returns>
     public static IEnumerable<GlobalRestriction> ToGlobalNetworkRestrictions(
-        this OsmBarrier osmBarrier)
+        this OsmBarrier osmBarrier,
+        Func<IEnumerable<(string key, string value)>, uint> turnCostTypeFor)
     {
         var attributes = osmBarrier.Node.Tags?.Select(tag => (tag.Key, tag.Value)).ToArray() ??
                          ArraySegment<(string key, string value)>.Empty;
@@ -28,7 +29,8 @@ public static class OsmBarrierExtensions
 
                 var headHop = otherHop.GetInverted();
 
-                yield return new GlobalRestriction([tailHop, headHop], true, attributes);
+                yield return new GlobalRestriction([tailHop, headHop], true, attributes,
+                    turnCostTypeFor(attributes));
             }
     }
 

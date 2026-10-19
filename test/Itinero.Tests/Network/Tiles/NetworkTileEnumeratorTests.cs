@@ -26,7 +26,7 @@ public class NetworkTile_EnumeratorTests
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
-        var edge = networkTile.AddEdge(vertex1, vertex2);
+        var edge = networkTile.AddEdge(vertex1, vertex2, 0);
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(networkTile);
@@ -47,7 +47,7 @@ public class NetworkTile_EnumeratorTests
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
-        var edge = networkTile.AddEdge(vertex1, vertex2);
+        var edge = networkTile.AddEdge(vertex1, vertex2, 0);
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(networkTile);
@@ -68,7 +68,7 @@ public class NetworkTile_EnumeratorTests
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
-        var edge = networkTile.AddEdge(vertex1, vertex2, new[] {
+        var edge = networkTile.AddEdge(vertex1, vertex2, 0, new[] {
                 (
                     4.867324233055115,
                     51.269695361396586, (float?) null
@@ -110,7 +110,7 @@ public class NetworkTile_EnumeratorTests
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
-        var edge = networkTile.AddEdge(vertex1, vertex2);
+        var edge = networkTile.AddEdge(vertex1, vertex2, 0);
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(networkTile);
@@ -130,7 +130,7 @@ public class NetworkTile_EnumeratorTests
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728, (float?)null);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849, (float?)null);
 
-        var edge = networkTile.AddEdge(vertex1, vertex2);
+        var edge = networkTile.AddEdge(vertex1, vertex2, 0);
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(networkTile);

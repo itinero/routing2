@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Itinero;
+using Itinero.Data.Providers;
 using Itinero.Geo;
 using Itinero.IO.Osm;
 using Itinero.Network;
@@ -24,9 +25,6 @@ internal static class SnapDiagnostic
         var car = OsmProfiles.Car;
 
         Console.WriteLine("Loading Belgium from PBF...");
-        var routerDb = new RouterDb(new RouterDbConfiguration { Zoom = 14 });
-        routerDb.PrepareFor(car);
-
         var pbfPath = "belgium-latest.osm.pbf";
         if (!File.Exists(pbfPath))
         {
@@ -39,9 +37,10 @@ internal static class SnapDiagnostic
             return;
         }
 
+        RouterDb routerDb;
         using (var osmStream = File.OpenRead(pbfPath))
         {
-            routerDb.UseOsmData(new PBFOsmStreamSource(osmStream));
+            routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new PBFOsmStreamSource(osmStream));
         }
 
         var network = routerDb.Latest;
@@ -217,11 +216,12 @@ internal static class SnapDiagnostic
         RouterDb reloaded;
         using (var inStream = File.OpenRead(tmpPath))
         {
-            reloaded = RouterDb.ReadFrom(inStream);
+            var reloadedProvider = new DefaultDataProvider(new OsmEdgeTypeMap());
+            reloadedProvider.LoadFrom(inStream);
+            reloaded = reloadedProvider.RouterDb;
         }
         File.Delete(tmpPath);
 
-        reloaded.PrepareFor(car);
         var reloadedNetwork = reloaded.Latest;
         var reloadedSnap = reloadedNetwork.Snap(car).ToAsync(lon, lat).Result;
         Console.WriteLine($"After round-trip snap: {(reloadedSnap.IsError ? "FAILED - " + reloadedSnap.ErrorMessage : "OK - EdgeId=" + reloadedSnap.Value.EdgeId)}");

@@ -54,7 +54,7 @@ public class NetworkTile_SerializationTests
             TileStatic.ToLocalId(4.86638, 51.269728, 14));
         var vertex1 = expected.AddVertex(4.86638, 51.269728);
         var vertex2 = expected.AddVertex(4.86737, 51.267849);
-        var edge = expected.AddEdge(vertex1, vertex2);
+        var edge = expected.AddEdge(vertex1, vertex2, 0);
 
         var memoryStream = new MemoryStream();
         expected.WriteTo(memoryStream);
@@ -84,7 +84,7 @@ public class NetworkTile_SerializationTests
             TileStatic.ToLocalId(4.86638, 51.269728, 14));
         var vertex1 = expected.AddVertex(4.86638, 51.269728);
         var vertex2 = expected.AddVertex(4.86737, 51.267849);
-        var edge = expected.AddEdge(vertex1, vertex2, new[] {
+        var edge = expected.AddEdge(vertex1, vertex2, 0, new[] {
                 (
                     4.867324233055115,
                     51.269695361396586, (float?) null
@@ -139,7 +139,7 @@ public class NetworkTile_SerializationTests
             TileStatic.ToLocalId(4.86638, 51.269728, 14));
         var vertex1 = expected.AddVertex(4.86638, 51.269728, 100);
         var vertex2 = expected.AddVertex(4.86737, 51.267849, 110);
-        var edge = expected.AddEdge(vertex1, vertex2, new[] {
+        var edge = expected.AddEdge(vertex1, vertex2, 0, new[] {
                 (
                     4.867324233055115,
                     51.269695361396586, (float?) 105
@@ -205,7 +205,7 @@ public class NetworkTile_SerializationTests
             TileStatic.ToLocalId(4.86638, 51.269728, 14));
         var vertex1 = expected.AddVertex(4.86638, 51.269728);
         var vertex2 = expected.AddVertex(4.86737, 51.267849);
-        var edge = expected.AddEdge(vertex1, vertex2, attributes: new (string key, string value)[] {
+        var edge = expected.AddEdge(vertex1, vertex2, 0, attributes: new (string key, string value)[] {
                     ("a_key", "A value"),
                     ("a_second_key", "Another value"),
                     ("a_last_key", "A last value")

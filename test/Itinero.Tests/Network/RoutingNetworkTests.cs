@@ -12,13 +12,10 @@ public class NetworkTests
     [Fact]
     public void RoutingNetwork_SetEdgeTypeMap_AddEdge_NewType_ShouldAdd()
     {
-        var routerDb = new RouterDb();
-        var network = new RoutingNetwork(routerDb);
-
         var attributeSetMap = new AttributeSetMapMock(Guid.NewGuid(), a => { return a.Where(x => x.key == "highway"); });
-        routerDb.EdgeTypeMap = attributeSetMap;
+        var provider = TestProvider.New(attributeSetMap);
 
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null)
             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
@@ -27,6 +24,7 @@ public class NetworkTests
                         new (string key, string value)[] {("highway", "residential")})
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         enumerator.MoveTo(edges[0]);
 
@@ -36,13 +34,10 @@ public class NetworkTests
     [Fact]
     public void RoutingNetwork_EdgeType_AddEdge_ExistingType_ShouldGet()
     {
-        var routerDb = new RouterDb();
-        var network = new RoutingNetwork(routerDb);
-
         var attributeSetMap = new AttributeSetMapMock(Guid.NewGuid(), a => { return a.Where(x => x.key == "highway"); });
-        routerDb.EdgeTypeMap = attributeSetMap;
+        var provider = TestProvider.New(attributeSetMap);
 
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null)
@@ -54,6 +49,7 @@ public class NetworkTests
                         new (string key, string value)[] {("highway", "residential")})
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         enumerator.MoveTo(edges[1]);
 
@@ -63,13 +59,10 @@ public class NetworkTests
     [Fact]
     public void RoutingNetwork_EdgeType_AddEdge_SecondType_ShouldAdd()
     {
-        var routerDb = new RouterDb();
-        var network = new RoutingNetwork(routerDb);
-
         var attributeSetMap = new AttributeSetMapMock(Guid.NewGuid(), a => { return a.Where(x => x.key == "highway"); });
-        routerDb.EdgeTypeMap = attributeSetMap;
+        var provider = TestProvider.New(attributeSetMap);
 
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null)
@@ -81,47 +74,11 @@ public class NetworkTests
                         new (string key, string value)[] {("highway", "primary")})
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         enumerator.MoveTo(edges[1]);
 
         Assert.Equal(2U, enumerator.EdgeTypeId);
     }
 
-    [Fact]
-    public void RoutingNetwork_EdgeType_AddEdge_NewEdgeTypeFunc_ShouldUpdateEdgeTypeId()
-    {
-        var routerDb = new RouterDb();
-        var network = new RoutingNetwork(routerDb);
-
-        // first don't include maxspeed.
-        var attributeSetMap = new AttributeSetMapMock(Guid.NewGuid(), a => { return a.Where(x => x.key == "highway"); });
-        routerDb.EdgeTypeMap = attributeSetMap;
-        network = routerDb.Latest;
-
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
-                (4.800467491149902, 51.26896368721961, (float?) null),
-                (4.801111221313477, 51.26676859478893, (float?) null)
-            }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
-            IEnumerable<(string key, string value)>? attributes)[] {
-                    (0, 1, Array.Empty<(double longitude, double latitude, float? e)>(), new (string key, string value)[] {
-                        ("highway", "residential"),
-                        ("maxspeed", "50")
-                    })
-            });
-
-        var enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveTo(edges[0]);
-        Assert.Equal(1U, enumerator.EdgeTypeId);
-
-        // update edge type func to include maxspeed.
-        attributeSetMap = new AttributeSetMapMock(Guid.NewGuid(),
-            a => { return a.Where(x => x.key == "highway" || x.key == "maxspeed"); });
-        routerDb.EdgeTypeMap = attributeSetMap;
-        network = routerDb.Latest;
-
-        enumerator = network.GetEdgeEnumerator();
-        enumerator.MoveTo(edges[0]);
-
-        Assert.Equal(2U, enumerator.EdgeTypeId);
-    }
 }

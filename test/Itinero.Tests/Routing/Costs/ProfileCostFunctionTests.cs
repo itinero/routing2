@@ -2,6 +2,7 @@
 using Itinero.Network;
 using Itinero.Profiles;
 using Itinero.Routing.Costs;
+using Itinero.Tests.Indexes;
 using Itinero.Tests.Network;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class ProfileCostFunctionTests
     {
         // stage.
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
@@ -33,7 +34,7 @@ public class ProfileCostFunctionTests
     {
         // stage.
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
@@ -52,7 +53,7 @@ public class ProfileCostFunctionTests
     {
         // stage.
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, false, 24));
         edgeEnumerator.MoveNext();
 
@@ -71,7 +72,7 @@ public class ProfileCostFunctionTests
     {
         // stage.
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
@@ -89,7 +90,7 @@ public class ProfileCostFunctionTests
     public void ProfileCostFunction_NonLocalAccessEdge_ShouldReportLocalAccessFalse()
     {
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1, isLocalAccess: false));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
@@ -102,7 +103,7 @@ public class ProfileCostFunctionTests
     public void ProfileCostFunction_LocalAccessEdge_ShouldReportLocalAccessTrue()
     {
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1, isLocalAccess: true));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 
@@ -116,7 +117,7 @@ public class ProfileCostFunctionTests
     {
         // localAccess is a property of the way, not direction — should match in both directions.
         var profile = new DefaultProfile(getEdgeFactor: (_) => new EdgeFactor(10, 1, 10, 1, isLocalAccess: true));
-        var costFunction = new ProfileCostFunction(profile);
+        var costFunction = new ProfileCostFunction(profile, new AttributeSetIndexMock());
         var edgeEnumerator = new EdgeEnumeratorMock((new EdgeId(42, 42), 100, true, 24));
         edgeEnumerator.MoveNext();
 

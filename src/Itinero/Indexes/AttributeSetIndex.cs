@@ -17,11 +17,12 @@ namespace Itinero.Indexes;
 /// - Can only grow
 /// - 0 represents an empty non-null set.
 /// </remarks>
-public abstract class AttributeSetIndex
+public abstract class AttributeSetIndex : IAttributeSetIndex
 {
     /// <summary>
     /// Gets the number of distinct sets.
     /// </summary>
+    /// <inheritdoc/>
     public abstract uint Count { get; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public abstract class AttributeSetIndex
     /// </summary>
     /// <param name="id">The id.</param>
     /// <returns>The attributes in the type.</returns>
+    /// <inheritdoc/>
     public abstract IEnumerable<(string key, string value)> GetById(uint id);
 
     /// <summary>

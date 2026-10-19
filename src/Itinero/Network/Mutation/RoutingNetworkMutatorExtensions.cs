@@ -3,7 +3,7 @@ using Itinero.Profiles;
 
 namespace Itinero.Network.Mutation;
 
-public static class RoutingNetworkMutatorExtensions
+internal static class RoutingNetworkMutatorExtensions
 {
     /// <summary>
     /// Gets the location of the given vertex.

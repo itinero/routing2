@@ -9,7 +9,8 @@ public class RouterDb_MetaTests
     [Fact]
     public void RouterDb_Meta_Add1_ShouldAdd1()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
 
         routerDb.Meta.Add(("source", "OpenStreetMap"));
 
@@ -20,7 +21,8 @@ public class RouterDb_MetaTests
     [Fact]
     public void RouterDb_Meta_WriteRead_1Attribute_ShouldHaveMetaAfter()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
 
         routerDb.Meta.Add(("source", "OpenStreetMap"));
 
@@ -30,7 +32,9 @@ public class RouterDb_MetaTests
 
         // read.
         stream.Seek(0, SeekOrigin.Begin);
-        var read = RouterDb.ReadFrom(stream);
+        var readProvider = TestProvider.New();
+        readProvider.LoadFrom(stream);
+        var read = readProvider.RouterDb;
 
         Assert.Single(read.Meta);
         Assert.Equal(("source", "OpenStreetMap"), read.Meta.First());

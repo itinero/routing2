@@ -22,9 +22,10 @@ public class EscapeLocalTests
 {
     private static (RouterDb db, EdgeId[] edges) BuildChain(int edgeCount)
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var edges = new EdgeId[edgeCount];
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var verts = new VertexId[edgeCount + 1];
             for (var i = 0; i < verts.Length; i++)
@@ -89,9 +90,10 @@ public class EscapeLocalTests
     {
         // A private estate with no exit at all. Nothing to escape to, and running out of
         // network is the answer.
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         EdgeId first;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var a = writer.AddVertex(4.790, 51.260);
             var b = writer.AddVertex(4.791, 51.260);

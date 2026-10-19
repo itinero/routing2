@@ -85,7 +85,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
         if (this.TileId != edge.TileId) throw new ArgumentOutOfRangeException(nameof(edge),
                 "Cannot move to edge not in current tile, move to the tile first.");
 
-        if (this.Tile.IsEdgeDeleted(edge)) return false;
 
         _headLocation = null;
         _tailLocation = null;
@@ -118,7 +117,7 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
         }
 
         // get edge profile id.
-        size = this.Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+        size = this.Tile.DecodeEdgeTypeId(_nextEdgePointer.Value, out var edgeProfileId);
         _nextEdgePointer += size;
         this.EdgeTypeId = edgeProfileId;
 
@@ -236,7 +235,7 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
             }
 
             // get edge profile id.
-            size = this.Tile.DecodeEdgePointerId(_nextEdgePointer.Value, out var edgeProfileId);
+            size = this.Tile.DecodeEdgeTypeId(_nextEdgePointer.Value, out var edgeProfileId);
             _nextEdgePointer += size;
             this.EdgeTypeId = edgeProfileId;
 
@@ -267,11 +266,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
                 this.Forward = false;
 
                 (_headOrder, _tailOrder) = (_tailOrder, _headOrder);
-            }
-
-            if (this.Tile.IsEdgeDeleted(this.EdgeId))
-            {
-                continue;
             }
 
             return true;
@@ -406,7 +400,7 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
     /// <summary>
     /// Gets the edge profile id, if any.
     /// </summary>
-    public uint? EdgeTypeId { get; private set; }
+    public uint EdgeTypeId { get; private set; }
 
     /// <summary>
     /// Gets the length in centimeters, if any.

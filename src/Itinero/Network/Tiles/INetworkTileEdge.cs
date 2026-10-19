@@ -44,7 +44,7 @@ public interface INetworkTileEdge
     /// <summary>
     /// Gets the edge profile id, if any.
     /// </summary>
-    uint? EdgeTypeId { get; }
+    uint EdgeTypeId { get; }
 
     /// <summary>
     /// Gets the length in centimeters, if any.

@@ -57,14 +57,6 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         var tile = _tiles[localTileId];
         if (tile == null) return null;
 
-        // check edge type map.
-        var edgeTypeMap = _network.RouterDb.GetEdgeTypeMap();
-        if (tile.EdgeTypeMapId == edgeTypeMap.id) return tile;
-
-        // tile.EdgeTypeMapId indicates the version of the used edgeTypeMap
-        // If the id is different, the loaded tile needs updating; e.g. because a cost function has been changed
-        tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
-        _tiles[localTileId] = tile;
         return tile;
     }
 
@@ -76,7 +68,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// <returns>The edge details.</returns>
     public INetworkTileEdge GetEdge(EdgeId edgeId, bool forward)
     {
-        var (tile, _) = this.GetTileForWrite(edgeId.TileId);
+        var tile = this.GetTileForWrite(edgeId.TileId);
 
         var edge = new NetworkTileEnumerator();
         edge.MoveTo(tile);
@@ -92,11 +84,8 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// <remarks>
     /// This makes sure tiles are first cloned before being written to.
     /// </remarks>
-    private (NetworkTile tile, Func<IEnumerable<(string key, string value)>, uint> func) GetTileForWrite(
-        uint localTileId)
+    private NetworkTile GetTileForWrite(uint localTileId)
     {
-        var edgeTypeMap = _network.RouterDb.GetEdgeTypeMap();
-
         // ensure minimum size.
         _tiles.EnsureMinimumSize(localTileId);
         _modified.EnsureMinimumSize(localTileId);
@@ -105,40 +94,31 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         var tile = _tiles[localTileId];
         if (tile != null)
         {
-            // if edge types map doesn't match, clone and mark as modified.
-            if (tile.EdgeTypeMapId != edgeTypeMap.id)
-            {
-                tile = tile.CloneForEdgeTypeMap(edgeTypeMap);
-                _modified[localTileId] = true;
-                _tiles[localTileId] = tile;
-                return (tile, edgeTypeMap.func);
-            }
-
             // if already modified, just return.
             var modified = _modified[localTileId];
-            if (modified) return (tile, edgeTypeMap.func);
+            if (modified) return tile;
 
             // make sure all tiles being written to are cloned.
             tile = tile.Clone();
             _modified[localTileId] = true;
             _tiles[localTileId] = tile;
-            return (tile, edgeTypeMap.func);
+            return tile;
         }
 
         // there is no tile, create a new one.
-        tile = new NetworkTile(_network.Zoom, localTileId, edgeTypeMap.id);
+        tile = new NetworkTile(_network.Zoom, localTileId);
 
         // store in the local tiles.
         _tiles[localTileId] = tile;
         _modified[localTileId] = true;
-        return (tile, edgeTypeMap.func);
+        return tile;
     }
 
     /// <summary>
     /// Gets the edge enumerator.
     /// </summary>
     /// <returns></returns>
-    public RoutingNetworkMutatorEdgeEnumerator GetEdgeEnumerator()
+    internal RoutingNetworkMutatorEdgeEnumerator GetEdgeEnumerator()
     {
         return new(this);
     }
@@ -167,6 +147,11 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     public int Zoom => _network.Zoom;
 
     /// <summary>
+    /// The db being written to.
+    /// </summary>
+    public RouterDb RouterDb => _network.RouterDb;
+
+    /// <summary>
     /// Adds a new vertex.
     /// </summary>
     /// <param name="longitude">The longitude.</param>
@@ -183,7 +168,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         _tiles.EnsureMinimumSize(localTileId);
 
         // get the tile (or create it).
-        var (tile, _) = this.GetTileForWrite(localTileId);
+        var tile = this.GetTileForWrite(localTileId);
 
         // add the vertex.
         return tile.AddVertex(longitude, latitude, elevation);
@@ -219,16 +204,15 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// <param name="head">The head vertex.</param>
     /// <param name="shape">The shape points, if any.</param>
     /// <param name="attributes">The attributes, if any.</param>
+    /// <param name="edgeTypeId">The edge type id, assigned by the provider.</param>
     /// <returns>An edge id.</returns>
     /// <exception cref="ArgumentException"></exception>
-    public EdgeId AddEdge(VertexId tail, VertexId head,
+    public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
         IEnumerable<(string key, string value)>? attributes = null)
     {
-        var (tile, edgeTypeFunc) = this.GetTileForWrite(tail.TileId);
+        var tile = this.GetTileForWrite(tail.TileId);
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-
-        var edgeTypeId = attributes != null ? (uint?)edgeTypeFunc(attributes) : null;
 
         // compute edge length in centimeters.
         if (!this.TryGetVertex(tail, out var lon1, out var lat1, out var e1))
@@ -238,42 +222,16 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         var length = (uint)((lon1, lat1, e1).DistanceEstimateInMeterShape(
             (lon2, lat2, e2), shape) * 100);
 
-        var edge1 = tile.AddEdge(tail, head, shape, attributes, null, edgeTypeId, length);
+        var edge1 = tile.AddEdge(tail, head, edgeTypeId, shape, attributes, null, length);
         if (tail.TileId == head.TileId) return edge1;
 
         // this edge crosses tiles, also add an extra edge to the other tile.
-        (tile, _) = this.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, shape, attributes, edge1, edgeTypeId, length);
+        tile = this.GetTileForWrite(head.TileId);
+        tile.AddEdge(tail, head, edgeTypeId, shape, attributes, edge1, length);
 
         return edge1;
     }
 
-    /// <summary>
-    /// Deletes the given edge.
-    /// </summary>
-    /// <param name="edgeId">The edge id.</param>
-    /// <returns>True if the edge was found and deleted, false otherwise.</returns>
-    public bool DeleteEdge(EdgeId edgeId)
-    {
-        var edgeEnumerator = this.GetEdgeEnumerator();
-        if (!edgeEnumerator.MoveTo(edgeId)) return false;
-
-        var vertex1 = edgeEnumerator.Tail;
-        var vertex2 = edgeEnumerator.Head;
-
-        var (tile, _) = this.GetTileForWrite(vertex1.TileId);
-        if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
-
-        tile.DeleteEdge(edgeId);
-
-        if (vertex1.TileId == vertex2.TileId) return true;
-
-        // vertex2 is in different tile, delete edge from both.
-        (tile, _) = this.GetTileForWrite(vertex2.TileId);
-        tile.DeleteEdge(edgeId);
-
-        return true;
-    }
 
     /// <summary>
     /// Adds turn costs.
@@ -294,25 +252,22 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// <param name="edges">The edges, the edge should match the ordering in the costs matrix.</param>
     /// <param name="costs">The costs as a matrix, [fromEdge, toEdge].</param>
     /// <param name="prefix">A path prefix, if any.</param>
+    /// <param name="turnCostType">The turn cost type id, assigned by the provider.</param>
     /// <exception cref="ArgumentException"></exception>
     public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
-        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
+        EdgeId[] edges, uint[,] costs, uint turnCostType, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
 
         // get the tile (or create it).
-        var (tile, _) = this.GetTileForWrite(vertex.TileId);
+        var tile = this.GetTileForWrite(vertex.TileId);
         if (tile == null)
         {
             throw new ArgumentException($"Cannot add turn costs to a vertex that doesn't exist.");
         }
 
-        // get the turn cost type id.
-        var turnCostFunc = _network.RouterDb.GetTurnCostTypeMap();
-        var turnCostTypeId = turnCostFunc.func(attributes);
-
         // add the turn cost table using the type id.
-        return tile.AddTurnCosts(vertex, turnCostTypeId, edges, costs, attributes, prefix);
+        return tile.AddTurnCosts(vertex, turnCostType, edges, costs, attributes, prefix);
     }
 
     /// <summary>
@@ -326,16 +281,6 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
 
     internal RoutingNetwork ToRoutingNetwork()
     {
-        foreach (var tile in _tiles)
-        {
-            if (tile.value is { HasDeletedEdges: true })
-            {
-                // at this point edge ids change but it right when the mutator is disposed.
-                // for a user perspective this is not that strange.
-                tile.value.RemoveDeletedEdges();
-            }
-        }
-
         // create the new network.
         var routingNetwork = new RoutingNetwork(_network.RouterDb, _tiles, _network.Zoom);
 

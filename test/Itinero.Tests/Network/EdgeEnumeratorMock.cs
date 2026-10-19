@@ -8,15 +8,15 @@ namespace Itinero.Tests.Network;
 
 public class EdgeEnumeratorMock : IEdgeEnumerator<RoutingNetwork>
 {
-    private readonly IEnumerator<(EdgeId edge, uint? length, bool forward, uint? edgeTypeId)> _edges;
+    private readonly IEnumerator<(EdgeId edge, uint? length, bool forward, uint edgeTypeId)> _edges;
 
     public EdgeEnumeratorMock(params EdgeId[] edges)
     {
-        _edges = edges.Select<EdgeId, (EdgeId edge, uint? length, bool forward, uint? edgeTypeId)>(
-            x => (x, null, true, null)).GetEnumerator();
+        _edges = edges.Select<EdgeId, (EdgeId edge, uint? length, bool forward, uint edgeTypeId)>(
+            x => (x, null, true, 0U)).GetEnumerator();
     }
 
-    public EdgeEnumeratorMock(params (EdgeId edge, uint? length, bool forward, uint? edgeTypeId)[] edges)
+    public EdgeEnumeratorMock(params (EdgeId edge, uint? length, bool forward, uint edgeTypeId)[] edges)
     {
         _edges = edges.ToList().GetEnumerator();
     }
@@ -40,7 +40,7 @@ public class EdgeEnumeratorMock : IEdgeEnumerator<RoutingNetwork>
     public EdgeId EdgeId => _edges.Current.edge;
     public IEnumerable<(double longitude, double latitude, float? e)> Shape { get; }
     public IEnumerable<(string key, string value)> Attributes { get; }
-    public uint? EdgeTypeId => _edges.Current.edgeTypeId;
+    public uint EdgeTypeId => _edges.Current.edgeTypeId;
     public uint? Length => _edges.Current.length;
     public byte? HeadOrder { get; }
     public byte? TailOrder { get; }

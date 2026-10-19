@@ -50,7 +50,7 @@ internal partial class NetworkTile
 
     /// <summary>
     /// Reset the cached diffs. Call from any mutation that could change
-    /// the tile's edge set (AddEdge, DeleteEdge, RemoveDeletedEdges).
+    /// the tile's edge set.
     /// </summary>
     private void InvalidateDiffs()
     {

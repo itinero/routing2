@@ -71,7 +71,8 @@ public class SnapPointExtensionsTests
     [Fact]
     public async Task Snap_Empty_ShouldFail()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
 
         var result = await routerDb.Latest.Snap().ToAsync(new VertexId(0, 1)).ToArrayAsync();
         Assert.Empty(result);

@@ -10,12 +10,13 @@ public class RoutingNetworkEdgeEnumeratorTests
     [Fact]
     public void RoutingNetworkEdgeEnumerator_NoEdges_ShouldEnumerateNoEdges()
     {
-        var network = new RoutingNetwork(new RouterDb());
+        var provider = TestProvider.New();
 
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.7868, 51.2643, (float?) null)
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         enumerator.MoveTo(vertices[0]);
         Assert.False(enumerator.MoveNext());
@@ -24,14 +25,15 @@ public class RoutingNetworkEdgeEnumeratorTests
     [Fact]
     public void RoutingNetworkEdgeEnumerator_OneEdge_ShouldEnumerateOneEdge()
     {
-        var network = new RoutingNetwork(new RouterDb());
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var provider = TestProvider.New();
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.792613983154297, 51.26535213392538, (float?) null),
                 (4.797506332397461, 51.26674845584085, (float?) null)
             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
                 (0, 1, null)
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         enumerator.MoveTo(vertices[0]);
         Assert.True(enumerator.MoveNext());
@@ -43,8 +45,8 @@ public class RoutingNetworkEdgeEnumeratorTests
     [Fact]
     public void RoutingEdgeNetworkEnumerator_OneEdge_WithShape_ShouldEnumerateShapeForward()
     {
-        var network = new RoutingNetwork(new RouterDb());
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var provider = TestProvider.New();
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null)
             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
@@ -54,6 +56,7 @@ public class RoutingNetworkEdgeEnumeratorTests
                 })
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         Assert.True(enumerator.MoveTo(vertices[0]));
         Assert.True(enumerator.MoveNext());
@@ -69,8 +72,8 @@ public class RoutingNetworkEdgeEnumeratorTests
     [Fact]
     public void RoutingEdgeNetworkEnumerator_OneEdge_WithShape_ShouldEnumerateShapeBackward()
     {
-        var network = new RoutingNetwork(new RouterDb());
-        var (vertices, edges) = network.Write(new (double longitude, double latitude, float? e)[] {
+        var provider = TestProvider.New();
+        var (vertices, edges) = provider.Write(new (double longitude, double latitude, float? e)[] {
                 (4.800467491149902, 51.26896368721961, (float?) null),
                 (4.801111221313477, 51.26676859478893, (float?) null)
             }, new (int @from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape)[] {
@@ -80,6 +83,7 @@ public class RoutingNetworkEdgeEnumeratorTests
                 })
             });
 
+        var network = provider.RouterDb.Latest;
         var enumerator = network.GetEdgeEnumerator();
         Assert.True(enumerator.MoveTo(vertices[1]));
         Assert.True(enumerator.MoveNext());

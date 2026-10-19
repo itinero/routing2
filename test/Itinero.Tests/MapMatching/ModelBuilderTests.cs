@@ -14,20 +14,23 @@ public class ModelBuilderTests
     private static (RoutingNetwork network, List<EdgeId> edgeIds) CreateNetwork(
         (double lon, double lat)[] vertices, (int from, int to)[] edges)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration());
-        var writer = routerDb.Latest.GetWriter();
-        var vertexIds = new List<VertexId>();
-        foreach (var (lon, lat) in vertices)
-        {
-            vertexIds.Add(writer.AddVertex(lon, lat));
-        }
+        var provider = TestProvider.New();
         var edgeIds = new List<EdgeId>();
-        foreach (var (from, to) in edges)
+        using (var writer = provider.BeginWrite())
         {
-            edgeIds.Add(writer.AddEdge(vertexIds[from], vertexIds[to], null, null, null, writer.ComputeEdgeLength(vertexIds[from], vertexIds[to])));
+            var vertexIds = new List<VertexId>();
+            foreach (var (lon, lat) in vertices)
+            {
+                vertexIds.Add(writer.AddVertex(lon, lat));
+            }
+
+            foreach (var (from, to) in edges)
+            {
+                edgeIds.Add(writer.AddEdge(vertexIds[from], vertexIds[to]));
+            }
         }
-        writer.Dispose();
-        return (routerDb.Latest, edgeIds);
+
+        return (provider.RouterDb.Latest, edgeIds);
     }
 
     private static List<(int id, GraphNode node)> GetNodesForTrackPoint(GraphModel model, int trackPointIndex)

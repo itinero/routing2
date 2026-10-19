@@ -26,10 +26,10 @@ public class SnappingFilteringTests
             List<(string, string)> attributes)[] edges,
         out VertexId[] vertexIds, out EdgeId[] edgeIds)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration());
-        routerDb.PrepareFor(profile);
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
 
-        using var writer = routerDb.GetMutableNetwork();
+        using var writer = provider.BeginWrite();
         vertexIds = new VertexId[vertices.Length];
         for (var v = 0; v < vertices.Length; v++)
         {

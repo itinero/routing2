@@ -19,9 +19,7 @@ public class FunctionalRoutingTests
 {
     private static RouterDb LoadOsmData(OsmGeo[] os, Profile profile)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration());
-        routerDb.PrepareFor(profile);
-        routerDb.UseOsmData(new OsmEnumerableStreamSource(os), s =>
+        var routerDb = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new OsmEnumerableStreamSource(os), s =>
         {
             s.TagsFilter.Filter = null;
             s.TagsFilter.CompleteFilter = null;

@@ -10,9 +10,10 @@ public class VertexSearchTests
     [Fact]
     public void VertexSearch_SearchVertexInBox_ShouldReturnOnlyVertexInBox()
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         VertexId vertex1, vertex2;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             vertex1 = writer.AddVertex(4.792613983154297, 51.26535213392538, (float?)null);
             vertex2 = writer.AddVertex(4.797506332397461, 51.26674845584085, (float?)null);

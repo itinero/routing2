@@ -11,9 +11,10 @@ internal static class RouterDbScaffolding
         (int from, int to, IEnumerable<(double longitude, double latitude, float? e)>? shape,
             List<(string, string)> attributes)[] edges)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration());
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
 
-        using var writer = routerDb.GetMutableNetwork();
+        using var writer = provider.BeginWrite();
         var vertexIds = new VertexId[vertices.Length];
         for (var v = 0; v < vertices.Length; v++)
         {

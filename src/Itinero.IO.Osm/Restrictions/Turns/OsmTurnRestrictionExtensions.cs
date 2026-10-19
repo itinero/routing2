@@ -12,7 +12,8 @@ public static class OsmTurnRestrictionExtensions
     /// </summary>
     /// <param name="osmTurnRestriction">The OSM turn restriction.</param>
     /// <returns>The restriction using network edges and vertices.</returns>
-    public static IEnumerable<GlobalRestriction> ToGlobalNetworkRestrictions(this OsmTurnRestriction osmTurnRestriction)
+    public static IEnumerable<GlobalRestriction> ToGlobalNetworkRestrictions(this OsmTurnRestriction osmTurnRestriction,
+        Func<IEnumerable<(string key, string value)>, uint> turnCostTypeFor)
     {
         var viaSequences = osmTurnRestriction.GetViaHops();
         if (viaSequences == null) yield break;
@@ -24,7 +25,8 @@ public static class OsmTurnRestrictionExtensions
                 edges = edges.Concat(viaSequences).Concat([headEdge]);
 
                 yield return new GlobalRestriction(edges,
-                    osmTurnRestriction.IsProbibitory, osmTurnRestriction.Attributes);
+                    osmTurnRestriction.IsProbibitory, osmTurnRestriction.Attributes,
+                    turnCostTypeFor(osmTurnRestriction.Attributes));
             }
     }
 

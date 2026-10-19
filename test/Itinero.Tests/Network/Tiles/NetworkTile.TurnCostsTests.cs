@@ -16,8 +16,8 @@ public class NetworkTile_TurnCostsTests
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
         var vertex3 = graphTile.AddVertex(4.865891933441162, 51.267741966756304);
 
-        var edge1 = graphTile.AddEdge(vertex1, vertex2);
-        var edge2 = graphTile.AddEdge(vertex2, vertex3);
+        var edge1 = graphTile.AddEdge(vertex1, vertex2, 0);
+        var edge2 = graphTile.AddEdge(vertex2, vertex3, 0);
 
         graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
             new uint[,] { { 0, 100 }, { 100, 0 } }, ArraySegment<(string key, string value)>.Empty);
@@ -50,8 +50,8 @@ public class NetworkTile_TurnCostsTests
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
         var vertex3 = graphTile.AddVertex(4.865891933441162, 51.267741966756304);
 
-        var edge1 = graphTile.AddEdge(vertex1, vertex2);
-        var edge2 = graphTile.AddEdge(vertex2, vertex3);
+        var edge1 = graphTile.AddEdge(vertex1, vertex2, 0);
+        var edge2 = graphTile.AddEdge(vertex2, vertex3, 0);
 
         graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
             new uint[,] { { 0, 145454 }, { 79878, 0 } }, ArraySegment<(string key, string value)>.Empty);
@@ -92,8 +92,8 @@ public class NetworkTile_TurnCostsTests
         var vertex2 = graphTile.AddVertex(4.86737, 51.267849);
         var vertex3 = graphTile.AddVertex(4.865891933441162, 51.267741966756304);
 
-        var edge1 = graphTile.AddEdge(vertex1, vertex2);
-        var edge2 = graphTile.AddEdge(vertex2, vertex3);
+        var edge1 = graphTile.AddEdge(vertex1, vertex2, 0);
+        var edge2 = graphTile.AddEdge(vertex2, vertex3, 0);
 
         graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
             new uint[,] { { 0, 145454 }, { 79878, 0 } }, ArraySegment<(string key, string value)>.Empty);

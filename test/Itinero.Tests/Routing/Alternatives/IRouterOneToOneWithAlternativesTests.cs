@@ -39,9 +39,10 @@ public class IRouterOneToOneWithAlternativesTests
     {
         const double lon = 4.79;
         const double lat = 51.26;
-        var db = new RouterDb();
+        var provider = TestProvider.New();
+        var db = provider.RouterDb;
         EdgeId detour;
-        using (var writer = db.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var w0 = writer.AddVertex(lon, lat);
             var w1 = writer.AddVertex(lon + 0.0005, lat);

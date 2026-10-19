@@ -18,7 +18,7 @@ public class OsmTurnRestrictionExtensionsTests
             2,
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 2L, 3 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         var globalRestriction = results[0];
@@ -40,7 +40,7 @@ public class OsmTurnRestrictionExtensionsTests
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 2L, 3 }, Tags = new TagsCollection(new Tag("highway", "residential")) } },
             isProhibitory: false);
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         Assert.False(results[0].IsProhibitory);
@@ -55,7 +55,7 @@ public class OsmTurnRestrictionExtensionsTests
             2,
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 2L, 3 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         // from way: nodes [2,1], via=2 → first node matches via → GlobalEdgeId(1, 1, 0) (reversed)
@@ -73,7 +73,7 @@ public class OsmTurnRestrictionExtensionsTests
             2,
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 3L, 2 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         // from: unchanged
@@ -90,7 +90,7 @@ public class OsmTurnRestrictionExtensionsTests
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 2L, 3 }, Tags = new TagsCollection(new Tag("highway", "residential")) } },
             new[] { new Way { Id = 3, Version = 1, Nodes = new[] { 3L, 4, 11 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         var globalRestriction = results[0];
@@ -113,7 +113,7 @@ public class OsmTurnRestrictionExtensionsTests
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 3L, 2 }, Tags = new TagsCollection(new Tag("highway", "residential")) } },
             new[] { new Way { Id = 3, Version = 1, Nodes = new[] { 3L, 4, 11 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         var globalRestriction = results[0];
@@ -140,7 +140,7 @@ public class OsmTurnRestrictionExtensionsTests
             2,
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 2L, 3 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Equal(2, results.Count);
 
@@ -165,7 +165,7 @@ public class OsmTurnRestrictionExtensionsTests
                 new Way { Id = 20, Version = 1, Nodes = new[] { 2L, 20 }, Tags = new TagsCollection(new Tag("highway", "residential")) }
             });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Equal(2, results.Count);
 
@@ -187,7 +187,7 @@ public class OsmTurnRestrictionExtensionsTests
             2,
             new[] { new Way { Id = 2, Version = 1, Nodes = new[] { 2L, 3 }, Tags = new TagsCollection(new Tag("highway", "residential")) } });
 
-        var results = restriction.ToGlobalNetworkRestrictions().ToList();
+        var results = restriction.ToGlobalNetworkRestrictions(_ => 0).ToList();
 
         Assert.Single(results);
         // from way: nodes [10,11,12,2], via=2 → last node matches → GlobalEdgeId(1, 0, 3)

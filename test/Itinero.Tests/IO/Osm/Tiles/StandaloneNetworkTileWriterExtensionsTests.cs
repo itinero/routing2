@@ -171,13 +171,10 @@ public class StandaloneNetworkTileWriterExtensionsTests
 
     private static Itinero.Network.Tiles.Standalone.StandaloneNetworkTile BuildTile(uint x, uint y, OsmGeo[] osm)
     {
-        var routerDb = new RouterDb(new RouterDbConfiguration
-        {
-            Zoom = 14,
-            EdgeTypeMap = new OsmEdgeTypeMap()
-        });
+        var provider = TestProvider.New(new OsmEdgeTypeMap());
+        var routerDb = provider.RouterDb;
         var w = routerDb.Latest.GetStandaloneTileWriter(x, y);
-        w.AddTileData(osm);
+        w.AddTileData(osm, provider);
         return w.GetResultingTile();
     }
 

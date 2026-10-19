@@ -31,15 +31,11 @@ public static class RouterDbStreamTargetTests
     /// <returns>A loaded router db</returns>
     public static RouterDb LoadFrom(string osmPbfFile)
     {
-        var routerDb = new RouterDb();
-
         using var stream = File.OpenRead(osmPbfFile);
         var source = new OsmSharp.Streams.PBFOsmStreamSource(stream);
         var progress = new OsmSharp.Streams.Filters.OsmStreamFilterProgress();
         progress.RegisterSource(source);
 
-        routerDb.UseOsmData(progress);
-
-        return routerDb;
+        return Itinero.IO.Osm.RouterDbExtensions.FromOsmData(progress);
     }
 }

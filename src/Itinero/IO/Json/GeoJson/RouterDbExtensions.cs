@@ -211,27 +211,6 @@ public static class RouterDbExtensions
         if (enumerator.TailOrder.HasValue) attributes.AddOrReplace("_tail_order", enumerator.TailOrder.Value.ToString());
         if (enumerator.HeadOrder.HasValue) attributes.AddOrReplace("_head_order", enumerator.HeadOrder.Value.ToString());
 
-        foreach (var profileName in routingNetwork.RouterDb.ProfileConfiguration.GetProfileNames())
-        {
-            if (!routingNetwork.RouterDb.ProfileConfiguration.TryGetProfileHandlerEdgeTypesCache(profileName, out var edgeFactorCache,
-                out _)) continue;
-
-            if (edgeFactorCache == null) continue;
-            if (!enumerator.EdgeTypeId.HasValue) continue;
-
-            var factor = edgeFactorCache.Get(enumerator.EdgeTypeId.Value);
-            if (factor == null) continue;
-
-            attributes.AddOrReplace($"_{profileName}_factor_forward",
-                factor.Value.ForwardFactor.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            attributes.AddOrReplace($"_{profileName}_factor_backward",
-                factor.Value.ForwardFactor.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            attributes.AddOrReplace($"_{profileName}_speed_forward",
-                factor.Value.ForwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            attributes.AddOrReplace($"_{profileName}_speed_backward",
-                factor.Value.BackwardSpeedMeterPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        }
-
         jsonWriter.WriteProperties(attributes);
         jsonWriter.WritePropertyName("geometry");
         jsonWriter.WriteLineString(enumerator.GetCompleteShape());

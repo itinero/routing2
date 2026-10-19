@@ -17,12 +17,10 @@ public static class RoutingNetworkExtensions
     {
         var zoom = network.Zoom;
         var localTileId = TileStatic.ToLocalId(x, y, zoom);
-        var edgeTypeMap = network.RouterDb.GetEdgeTypeMap();
-        var turnCostTypeMap = network.RouterDb.GetTurnCostTypeMap();
 
-        var tile = new NetworkTile(zoom, localTileId, edgeTypeMap.id);
+        var tile = new NetworkTile(zoom, localTileId);
         var standaloneTile = new StandaloneNetworkTile(tile);
 
-        return new StandaloneNetworkTileWriter(standaloneTile, zoom, edgeTypeMap, turnCostTypeMap);
+        return new StandaloneNetworkTileWriter(standaloneTile, zoom);
     }
 }

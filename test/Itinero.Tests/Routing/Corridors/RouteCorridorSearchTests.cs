@@ -52,9 +52,10 @@ public class RouteCorridorSearchTests
     {
         const double lon = 4.79;
         const double lat = 51.26;
-        var db = new RouterDb();
+        var provider = TestProvider.New();
+        var db = provider.RouterDb;
         EdgeId cheap1, cheap2, detour;
-        using (var writer = db.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var w0 = writer.AddVertex(lon, lat);
             var w1 = writer.AddVertex(lon + 0.0005, lat);
@@ -211,8 +212,9 @@ public class RouteCorridorSearchTests
         // error, so the caller can tell it from a destination it could not reach.
         const double lon = 4.79;
         const double lat = 51.26;
-        var db = new RouterDb();
-        using (var writer = db.GetMutableNetwork())
+        var provider = TestProvider.New();
+        var db = provider.RouterDb;
+        using (var writer = provider.BeginWrite())
         {
             var a = writer.AddVertex(lon, lat);
             var b = writer.AddVertex(lon + 0.002, lat);

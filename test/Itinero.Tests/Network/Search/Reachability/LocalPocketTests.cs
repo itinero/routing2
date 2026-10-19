@@ -24,9 +24,10 @@ public class LocalPocketTests
     /// A chain of `count` edges along a line; edges[i] joins vertex i to i+1.
     private static (RouterDb db, EdgeId[] edges) Chain(int count, bool oneWay = false)
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var edges = new EdgeId[count];
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var verts = new VertexId[count + 1];
             for (var i = 0; i < verts.Length; i++)
@@ -43,10 +44,11 @@ public class LocalPocketTests
     /// A chain with a spur hanging off vertex `at`, returned as the last edge.
     private static (RouterDb db, EdgeId[] edges, EdgeId spur) ChainWithSpur(int count, int at)
     {
-        var routerDb = new RouterDb();
+        var provider = TestProvider.New();
+        var routerDb = provider.RouterDb;
         var edges = new EdgeId[count];
         EdgeId spur;
-        using (var writer = routerDb.GetMutableNetwork())
+        using (var writer = provider.BeginWrite())
         {
             var verts = new VertexId[count + 1];
             for (var i = 0; i < verts.Length; i++)
