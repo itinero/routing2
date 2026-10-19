@@ -26,6 +26,7 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
+        this.Provider = routerDb.Provider;
 
         _tiles = new SparseArray<NetworkTile?>(0);
     }
@@ -34,8 +35,23 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
+        this.Provider = routerDb.Provider;
         _tiles = tiles;
     }
+
+    /// <summary>
+    /// What resolves this network's edge ids to everything the tiles do not hold.
+    /// </summary>
+    /// <remarks>
+    /// Held by the network rather than reached through the db: an <see cref="EdgeId"/> is only
+    /// meaningful in the network that issued it — a tile rewritten by a later generation reuses
+    /// local ids — so resolving one against whatever the db currently points at is asking the
+    /// wrong map. The network points at its provider and never the reverse, which is also what
+    /// lets a retired network be collected.
+    /// </remarks>
+    Data.Providers.DataProviderBase IEdgeEnumerable.Provider => this.Provider;
+
+    internal Data.Providers.DataProviderBase Provider { get; }
 
     internal NetworkTile? GetTileForRead(uint localTileId)
     {

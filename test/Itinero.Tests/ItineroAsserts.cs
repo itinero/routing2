@@ -19,10 +19,7 @@ internal static class ItineroAsserts
 
     public static void Equal(NetworkTileEnumerator enumerator, EdgeId? edge = null, VertexId? vertex1 = null,
         VertexId? vertex2 = null,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null,
-        uint? edgeType = uint.MaxValue,
-        IEqualityComparer<(double longitude, double latitude, float? e)>? coordinateComparer = null)
+        uint? edgeType = uint.MaxValue)
     {
         if (edge != null)
         {
@@ -42,17 +39,6 @@ internal static class ItineroAsserts
         if (edgeType != uint.MaxValue)
         {
             Assert.Equal(edgeType, enumerator.EdgeTypeId);
-        }
-
-        if (attributes != null)
-        {
-            Assert.Equal(attributes, enumerator.Attributes);
-        }
-
-        if (shape != null)
-        {
-            coordinateComparer ??= GetCoordinateComparer();
-            Assert.Equal(shape, enumerator.Shape, coordinateComparer);
         }
     }
 

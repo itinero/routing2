@@ -85,7 +85,7 @@ public interface IEdgeEnumerator
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
         byte sourceOrder);
 
     /// <summary>
@@ -93,7 +93,7 @@ public interface IEdgeEnumerator
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
         byte targetOrder);
 
     /// <summary>
@@ -101,7 +101,7 @@ public interface IEdgeEnumerator
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
         byte sourceOrder);
 
     /// <summary>
@@ -109,7 +109,7 @@ public interface IEdgeEnumerator
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
         byte targetOrder);
 }
 

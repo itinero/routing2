@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Itinero.Network.Tiles;
 
 /// <summary>
@@ -76,6 +78,11 @@ internal partial class NetworkTile
         double maxLon = 0;
         double maxLat = 0;
 
+        // the shape is the provider's now, and this is the one place a tile still has to know how
+        // far an edge strays from its endpoints: an under-estimate here prunes a real candidate.
+        var provider = network.Provider;
+        var shape = new List<(double longitude, double latitude, float? e)>();
+
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(this);
 
@@ -136,7 +143,9 @@ internal partial class NetworkTile
                 }
 
                 // Shape points (intermediate).
-                foreach (var (sLon, sLat, _) in enumerator.Shape)
+                shape.Clear();
+                provider.GetShape(enumerator.EdgeId, shape);
+                foreach (var (sLon, sLat, _) in shape)
                 {
                     if (sLon < minLon) minLon = sLon;
                     else if (sLon > maxLonE) maxLonE = sLon;

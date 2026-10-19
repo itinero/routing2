@@ -18,9 +18,6 @@ internal partial class NetworkTile
         // write vertices and edges.
         this.WriteEdgesAndVerticesTo(stream);
 
-        // write attributes.
-        this.WriteAttributesTo(stream);
-
         // write shapes.
         this.WriteGeoTo(stream);
 
@@ -47,7 +44,6 @@ internal partial class NetworkTile
         graphTile.ReadEdgesAndVerticesFrom(stream);
 
         // read attributes.
-        graphTile.ReadAttributesFrom(stream);
 
         // read shapes.
         graphTile.ReadGeoFrom(stream);
@@ -72,7 +68,6 @@ internal partial class NetworkTile
         var graphTile = new NetworkTile(zoom, tileId);
 
         graphTile.ReadEdgesAndVerticesFrom(data, ref offset);
-        graphTile.ReadAttributesFrom(data, ref offset);
         graphTile.ReadGeoFrom(data, ref offset);
         graphTile.ReadTurnCostsFrom(data, ref offset);
 
@@ -104,7 +99,6 @@ internal partial class NetworkTile
         BitCoderBuffer.SetVarUInt32(data, ref offset, _tileId);
 
         this.WriteEdgesAndVerticesTo(data, ref offset);
-        this.WriteAttributesTo(data, ref offset);
         this.WriteGeoTo(data, ref offset);
         this.WriteTurnCostsTo(data, ref offset);
     }
@@ -117,18 +111,10 @@ internal partial class NetworkTile
         size += 5 + (int)_nextEdgeId;
         size += 5 + (int)_nextCrossTileId * 5;
 
-        size += 5 + (int)_nextAttributePointer;
-        size += 5;
-        for (var i = 0; i < _nextStringId; i++)
-        {
-            size += 8 + System.Text.Encoding.Unicode.GetByteCount(_strings[i]);
-        }
-
         size += 5;
         var coordinateSize = CoordinateSizeInBytes * 2;
         if (_elevation != null) coordinateSize += ElevationSizeInBytes;
         size += (int)(_nextVertexId * coordinateSize);
-        size += 5 + (int)_nextShapePointer;
 
         size += 5 + _turnCostPointers.Length * 5;
         size += 5 + (int)_turnCostPointer;

@@ -16,8 +16,7 @@ internal partial class NetworkTile
 
     /// Returns false when the vertex has no order budget left, see OrderCoder.
     internal bool AddTurnCosts(VertexId vertex, uint turnCostType,
-        EdgeId[] edges, uint[,] costs, IEnumerable<(string key, string value)> attributes,
-        IEnumerable<EdgeId>? prefix = null)
+        EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
 
@@ -121,10 +120,6 @@ internal partial class NetworkTile
         // write turn cost types.
         _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
 
-        // write attributes.
-        var a = this.SetAttributes(attributes);
-        _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, a);
-
         // write prefix sequence.
         // Use Int64 so the same-tile/foreign-tile signal (sign of the encoded value) round-trips
         // correctly for any uint LocalId, including CrossEdgeIds where LocalId >= 0x7FFFFFFF.
@@ -174,8 +169,7 @@ internal partial class NetworkTile
         return true;
     }
 
-    internal IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost,
-            IEnumerable<EdgeId> prefixEdges)>
+    internal IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>
         GetTurnCosts(VertexId vertex, byte fromOrder, byte toOrder)
     {
         if (_turnCostPointers.Length <= vertex.LocalId)
@@ -194,10 +188,6 @@ internal partial class NetworkTile
         {
             // return turn cost type.
             pointer += (uint)_turnCosts.GetDynamicUInt32(pointer, out var turnCostType);
-
-            // read attributes.
-            pointer += (uint)_turnCosts.GetDynamicUInt32(pointer, out var a);
-            var attributes = this.GetAttributes(a);
 
             // read prefix edges.
             // Pair with the Int64 writer above; Int32 would mis-decode the sign for CrossEdgeIds.
@@ -241,7 +231,7 @@ internal partial class NetworkTile
 
                     if (cost != 0)
                     {
-                        yield return (turnCostType, attributes, cost, prefixEdges);
+                        yield return (turnCostType, cost, prefixEdges);
                     }
                 }
             }

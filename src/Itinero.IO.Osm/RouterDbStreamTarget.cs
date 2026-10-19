@@ -273,7 +273,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
             if (networkRestriction.IsProhibitory)
             {
                 var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-                if (!_mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                if (!_mutableRouterDb.AddTurnCosts(turnCostVertex,
                         new[] { secondToLast.edge, last.edge }, costs,
                         networkRestriction.TurnCostType,
                         networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))
@@ -293,7 +293,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
                         enumerator.EdgeId == last.edge) continue;
 
                     var costs = new uint[,] { { 0, 1 }, { 0, 0 } };
-                    if (!_mutableRouterDb.AddTurnCosts(turnCostVertex, networkRestriction.Attributes,
+                    if (!_mutableRouterDb.AddTurnCosts(turnCostVertex,
                             new[] { secondToLast.edge, enumerator.EdgeId }, costs,
                             networkRestriction.TurnCostType,
                             networkRestriction.Take(networkRestriction.Count - 2).Select(x => x.edge)))

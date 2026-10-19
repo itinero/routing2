@@ -102,7 +102,7 @@ public class RoutingNetworkWriterTests
             (0, 2, null)
         });
 
-        Assert.Equal((uint)11, edges[1].LocalId);
+        Assert.Equal((uint)9, edges[1].LocalId);
     }
 
     [Fact]

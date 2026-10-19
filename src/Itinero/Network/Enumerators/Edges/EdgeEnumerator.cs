@@ -175,7 +175,7 @@ public abstract class EdgeEnumerator<T> :
         get
         {
             var shape = new List<(double longitude, double latitude, float? e)>();
-            this.Network.RouterDb.Provider.GetShape(this.EdgeId, shape);
+            this.Network.Provider.GetShape(this.EdgeId, shape);
 
             if (!this.Forward) shape.Reverse();
 
@@ -192,7 +192,7 @@ public abstract class EdgeEnumerator<T> :
     /// </remarks>
     /// <returns>The attributes.</returns>
     public IEnumerable<(string key, string value)> Attributes =>
-        this.Network.RouterDb.Provider.GetAttributes(this.EdgeId)
+        this.Network.Provider.GetAttributes(this.EdgeId)
             .Concat(this.Network.RouterDb.EdgeTypeIndex.GetById(this.EdgeTypeId));
 
     /// <summary>
@@ -221,7 +221,7 @@ public abstract class EdgeEnumerator<T> :
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
         byte sourceOrder)
     {
         return _tileEnumerator.GetTurnCostToTail(sourceOrder);
@@ -232,7 +232,7 @@ public abstract class EdgeEnumerator<T> :
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
         byte targetOrder)
     {
         return _tileEnumerator.GetTurnCostFromTail(targetOrder);
@@ -243,7 +243,7 @@ public abstract class EdgeEnumerator<T> :
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
         byte sourceOrder)
     {
         return _tileEnumerator.GetTurnCostToHead(sourceOrder);
@@ -254,7 +254,7 @@ public abstract class EdgeEnumerator<T> :
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
         byte targetOrder)
     {
         return _tileEnumerator.GetTurnCostFromHead(targetOrder);

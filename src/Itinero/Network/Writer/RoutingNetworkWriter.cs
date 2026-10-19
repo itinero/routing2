@@ -174,22 +174,18 @@ internal class RoutingNetworkWriter : IDisposable
     /// </summary>
     /// <param name="tail">The tail vertex.</param>
     /// <param name="head">The head vertex.</param>
-    /// <param name="shape">The shape, if any.</param>
-    /// <param name="attributes">The attributes, if any.</param>
     /// <param name="edgeTypeId">The edge type id, assigned by the provider.</param>
     /// <param name="length">The length in centimeters. Use <see cref="ComputeEdgeLength"/> if not known.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId, uint length,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null)
+    public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId, uint length)
     {
         // get the tile (or create it).
         var tile = _network.GetTileForWrite(tail.TileId);
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
-        var edge1 = tile.AddEdge(tail, head, edgeTypeId, shape, attributes, null, length);
+        var edge1 = tile.AddEdge(tail, head, edgeTypeId, null, length);
         if (tail.TileId == head.TileId)
         {
             return edge1;
@@ -197,13 +193,13 @@ internal class RoutingNetworkWriter : IDisposable
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         tile = _network.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, edgeTypeId, shape, attributes, edge1, length);
+        tile.AddEdge(tail, head, edgeTypeId, edge1, length);
 
         return edge1;
     }
 
     /// Returns false when the vertex has no order budget left, see OrderCoder.
-    public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    public bool AddTurnCosts(VertexId vertex,
         EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix, uint turnCostType)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
@@ -239,11 +235,11 @@ internal class RoutingNetworkWriter : IDisposable
         using var scope = this.LockTiles(System.Runtime.InteropServices.CollectionsMarshal
             .AsSpan(tileIds));
 
-        return this.AddTurnCostsCore(vertex, attributes, edges, costs, prefix, turnCostType);
+        return this.AddTurnCostsCore(vertex, edges, costs, prefix, turnCostType);
     }
 
     /// The turn-cost write itself. Caller holds every tile lock it touches.
-    private bool AddTurnCostsCore(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    private bool AddTurnCostsCore(VertexId vertex,
         EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId> prefix, uint turnCostType)
     {
         // get the tile (or create it).
@@ -254,7 +250,7 @@ internal class RoutingNetworkWriter : IDisposable
         }
 
         // add the turn cost table using the type id.
-        if (!tile.AddTurnCosts(vertex, turnCostType, edges, costs, attributes, prefix))
+        if (!tile.AddTurnCosts(vertex, turnCostType, edges, costs, prefix))
         {
             return false;
         }

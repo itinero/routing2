@@ -17,8 +17,6 @@ internal partial class NetworkTile
     private int? _elevation; // the tile elevation.
 
     // the shapes.
-    private uint _nextShapePointer = 0;
-    private byte[] _shapes;
 
     private void SetCoordinate(uint localId, double longitude, double latitude, float? e)
     {
@@ -130,155 +128,6 @@ internal partial class NetworkTile
     private (int x, int y) ToLocalCoordinates(double longitude, double latitude) =>
         ((int)((longitude - _boxLeft) / _boxLonStep), (int)((_boxTop - latitude) / _boxLatStep));
 
-    private uint SetShape(IEnumerable<(double longitude, double latitude, float? e)> shape)
-    {
-        const int resolution = (1 << TileResolutionInBits) - 1;
-        var originalPointer = _nextShapePointer;
-        var blockPointer = originalPointer;
-        var pointer = blockPointer + 1;
-
-        // make sure there is space for the block pointer.
-        ArrayBaseExtensions.EnsureMinimumSize(ref _shapes, blockPointer);
-
-        var coordinateBlockSize = 8;
-        if (_elevation != null)
-        {
-            coordinateBlockSize += 4;
-        }
-
-        using var enumerator = shape.GetEnumerator();
-        var count = 0;
-        (int x, int y, int? eOffset) previous = (int.MaxValue, int.MaxValue, null);
-        while (enumerator.MoveNext())
-        {
-            var current = enumerator.Current;
-            var (x, y) =
-                this.ToLocalCoordinates(current.longitude, current.latitude);
-            int? eOffset = null;
-            var e = current.e ?? 0;
-            if (_elevation != null)
-            {
-                eOffset = (int)(e * 10) - _elevation.Value;
-            }
-
-            // make sure there is space for this coordinate.
-            ArrayBaseExtensions.EnsureMinimumSize(ref _shapes, pointer + coordinateBlockSize);
-
-            // store coordinate.
-            if (count == 0)
-            {
-                // first coordinate.
-                pointer += (uint)_shapes.SetDynamicInt32(pointer, x);
-                pointer += (uint)_shapes.SetDynamicInt32(pointer, y);
-                if (eOffset != null)
-                {
-                    pointer += (uint)_shapes.SetDynamicInt32(pointer, eOffset.Value);
-                }
-            }
-            else
-            {
-                // calculate diff and then store.
-                var diffX = x - previous.x;
-                var diffY = y - previous.y;
-                pointer += (uint)_shapes.SetDynamicInt32(pointer, diffX);
-                pointer += (uint)_shapes.SetDynamicInt32(pointer, diffY);
-                if (eOffset != null)
-                {
-                    if (previous.eOffset == null)
-                    {
-                        throw new ArgumentException("Not all points have elevation set.");
-                    }
-
-                    var diffE = eOffset.Value - previous.eOffset.Value;
-                    pointer += (uint)_shapes.SetDynamicInt32(pointer, diffE);
-                }
-            }
-
-            count++;
-
-            if (count == 255)
-            {
-                // start a new block, assign 255.
-                _shapes[(int)blockPointer] = 255;
-                blockPointer = pointer;
-                pointer = blockPointer + 1;
-                count = 0;
-            }
-
-            previous = (x, y, eOffset);
-        }
-
-        // a block is still open, close it.
-        _shapes[(int)blockPointer] = (byte)count;
-        _nextShapePointer = pointer;
-
-        return originalPointer;
-    }
-
-    internal IEnumerable<(double longitude, double latitude, float? e)> GetShape(uint? pointer)
-    {
-        if (pointer == null)
-        {
-            yield break;
-        }
-
-        var p = pointer.Value;
-
-        const int resolution = (1 << TileResolutionInBits) - 1;
-        var count = -1;
-        (int x, int y, int? eOffset) previous = (int.MaxValue, int.MaxValue, null);
-        while (true)
-        {
-            count = _shapes[(int)p];
-            p++;
-
-            for (var i = 0; i < count; i++)
-            {
-                p += (uint)_shapes.GetDynamicInt32(p, out var x);
-                p += (uint)_shapes.GetDynamicInt32(p, out var y);
-                int? eOffset = null;
-                if (_elevation != null)
-                {
-                    p += (uint)_shapes.GetDynamicInt32(p, out var e);
-                    eOffset = e;
-                }
-
-                if (i > 0)
-                {
-                    x = previous.x + x;
-                    y = previous.y + y;
-                    if (_elevation != null)
-                    {
-                        if (previous.eOffset == null)
-                        {
-                            throw new ArgumentException("Not all points have elevation set.");
-                        }
-
-                        eOffset = previous.eOffset.Value + eOffset;
-                    }
-                }
-
-                int? elevation = null;
-                if (_elevation != null)
-                {
-                    if (eOffset == null)
-                    {
-                        throw new ArgumentException("Not all points have elevation set.");
-                    }
-
-                    elevation = _elevation.Value + eOffset.Value;
-                }
-
-                this.FromLocalCoordinates(x, y, out var longitude,
-                    out var latitude);
-                yield return (longitude, latitude, elevation / 10.0f);
-
-                previous = (x, y, eOffset);
-            }
-
-            if (count < 255) break;
-        }
-    }
 
     private void WriteGeoTo(Stream stream)
     {
@@ -295,13 +144,6 @@ internal partial class NetworkTile
         for (var i = 0; i < coordinateBytes; i++)
         {
             stream.WriteByte(_coordinates[i]);
-        }
-
-        // write shape locations.
-        stream.WriteVarUInt32(_nextShapePointer);
-        for (var i = 0; i < _nextShapePointer; i++)
-        {
-            stream.WriteByte(_shapes[i]);
         }
     }
 
@@ -322,13 +164,6 @@ internal partial class NetworkTile
         {
             _coordinates[i] = (byte)stream.ReadByte();
         }
-
-        _nextShapePointer = stream.ReadVarUInt32();
-        Array.Resize(ref _shapes, (int)_nextShapePointer);
-        for (var i = 0; i < _nextShapePointer; i++)
-        {
-            _shapes[i] = (byte)stream.ReadByte();
-        }
     }
 
     private void ReadGeoFrom(byte[] data, ref int offset)
@@ -345,11 +180,6 @@ internal partial class NetworkTile
         Array.Resize(ref _coordinates, coordinateBytes);
         Buffer.BlockCopy(data, offset, _coordinates, 0, coordinateBytes);
         offset += coordinateBytes;
-
-        _nextShapePointer = BitCoderBuffer.GetVarUInt32(data, ref offset);
-        Array.Resize(ref _shapes, (int)_nextShapePointer);
-        Buffer.BlockCopy(data, offset, _shapes, 0, (int)_nextShapePointer);
-        offset += (int)_nextShapePointer;
     }
 
     private void WriteGeoTo(byte[] data, ref int offset)
@@ -365,15 +195,5 @@ internal partial class NetworkTile
         var coordinateBytes = (int)(_nextVertexId * coordinateSize);
         Buffer.BlockCopy(_coordinates, 0, data, offset, coordinateBytes);
         offset += coordinateBytes;
-
-        BitCoderBuffer.SetVarUInt32(data, ref offset, _nextShapePointer);
-        Buffer.BlockCopy(_shapes, 0, data, offset, (int)_nextShapePointer);
-        offset += (int)_nextShapePointer;
-    }
-
-    /// Shrinks the shape buffer to what it holds. See NetworkTile.Trim.
-    private void TrimShapes()
-    {
-        if (_shapes.Length > _nextShapePointer) Array.Resize(ref _shapes, (int)_nextShapePointer);
     }
 }

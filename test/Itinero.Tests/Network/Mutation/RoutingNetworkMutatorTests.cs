@@ -46,7 +46,7 @@ public class RoutingNetworkMutatorTests
             edge1 = mutable.AddEdge(vertex1, vertex2, 0);
             edge2 = mutable.AddEdge(vertex2, vertex3, 0);
 
-            mutable.AddTurnCosts(vertex2, Enumerable.Empty<(string key, string value)>(),
+            mutable.AddTurnCosts(vertex2,
                 new[] { edge1, edge2 }, new uint[,] { { 1, 2 }, { 3, 4 } }, 0);
         }
 

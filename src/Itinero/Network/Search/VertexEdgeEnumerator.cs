@@ -96,7 +96,7 @@ internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork>
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
         byte sourceOrder)
     {
         return this.RoutingNetworkEdgeEnumerator.GetTurnCostToTail(sourceOrder);
@@ -107,7 +107,7 @@ internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork>
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
         byte targetOrder)
     {
         return this.RoutingNetworkEdgeEnumerator.GetTurnCostFromTail(targetOrder);
@@ -118,7 +118,7 @@ internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork>
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
         byte sourceOrder)
     {
         return this.RoutingNetworkEdgeEnumerator.GetTurnCostToHead(sourceOrder);
@@ -129,7 +129,7 @@ internal class VertexEdgeEnumerator : IEdgeEnumerator<RoutingNetwork>
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
         byte targetOrder)
     {
         return this.RoutingNetworkEdgeEnumerator.GetTurnCostFromHead(targetOrder);

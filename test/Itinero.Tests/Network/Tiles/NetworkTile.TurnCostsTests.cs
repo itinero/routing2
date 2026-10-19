@@ -20,7 +20,7 @@ public class NetworkTile_TurnCostsTests
         var edge2 = graphTile.AddEdge(vertex2, vertex3, 0);
 
         graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
-            new uint[,] { { 0, 100 }, { 100, 0 } }, ArraySegment<(string key, string value)>.Empty);
+            new uint[,] { { 0, 100 }, { 100, 0 } });
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(graphTile);
@@ -54,7 +54,7 @@ public class NetworkTile_TurnCostsTests
         var edge2 = graphTile.AddEdge(vertex2, vertex3, 0);
 
         graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
-            new uint[,] { { 0, 145454 }, { 79878, 0 } }, ArraySegment<(string key, string value)>.Empty);
+            new uint[,] { { 0, 145454 }, { 79878, 0 } });
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(graphTile);
@@ -96,9 +96,9 @@ public class NetworkTile_TurnCostsTests
         var edge2 = graphTile.AddEdge(vertex2, vertex3, 0);
 
         graphTile.AddTurnCosts(vertex2, 145, new[] { edge1, edge2 },
-            new uint[,] { { 0, 145454 }, { 79878, 0 } }, ArraySegment<(string key, string value)>.Empty);
+            new uint[,] { { 0, 145454 }, { 79878, 0 } });
         graphTile.AddTurnCosts(vertex2, 456, new[] { edge1, edge2 },
-            new uint[,] { { 0, 13144 }, { 46823, 0 } }, ArraySegment<(string key, string value)>.Empty);
+            new uint[,] { { 0, 13144 }, { 46823, 0 } });
 
         var enumerator = new NetworkTileEnumerator();
         enumerator.MoveTo(graphTile);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Itinero.Network.Storage;
 
 namespace Itinero.Network.Tiles;
@@ -9,11 +8,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge
 {
     private uint _localId;
     private uint? _nextEdgePointer;
-    private uint? _shapePointer;
-    private bool _shapePointerDecoded;
-    private uint? _attributesPointer;
-    private bool _attributesPointerDecoded;
-    private uint _shapeAttributeStart; // byte position where shape/attribute pointers are encoded.
     private byte? _tailOrder;
     private byte? _headOrder;
 
@@ -128,11 +122,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge
         this.Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
         _nextEdgePointer++;
 
-        // store position of shape/attribute pointers for lazy decoding.
-        _shapeAttributeStart = _nextEdgePointer.Value;
-        _shapePointerDecoded = false;
-        _attributesPointerDecoded = false;
-
         if (forward)
         {
             this.Tail = vertex1;
@@ -192,8 +181,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge
             _tailLocation = null;
             _headOrder = null;
             _tailOrder = null;
-            _shapePointerDecoded = false;
-            _attributesPointerDecoded = false;
             this.EdgePointer = uint.MaxValue;
 
             if (this.Tile == null) throw new InvalidOperationException("Move to graph tile first.");
@@ -246,9 +233,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge
             this.Tile.GetTailHeadOrder(_nextEdgePointer.Value, ref _tailOrder, ref _headOrder);
             _nextEdgePointer++;
 
-            // store position of shape/attribute pointers for lazy decoding.
-            _shapeAttributeStart = _nextEdgePointer.Value;
-
             if (vertex1.TileId == this.Tile.TileId && vertex1.LocalId == _localId)
             {
                 _nextEdgePointer = vp1;
@@ -268,63 +252,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge
 
             return true;
         }
-    }
-
-    /// <summary>
-    /// Gets the shape of the given edge (not including vertex locations).
-    /// </summary>
-    public IEnumerable<(double longitude, double latitude, float? e)> Shape
-    {
-        get
-        {
-            if (this.Tile == null)
-            {
-                throw new InvalidOperationException("Move to graph tile first.");
-            }
-
-            this.EnsureShapePointerDecoded();
-
-            if (!this.Forward)
-            {
-                return this.Tile.GetShape(_shapePointer).Reverse();
-            }
-
-            return this.Tile.GetShape(_shapePointer);
-        }
-    }
-
-    /// <summary>
-    /// Gets the attributes of the given edge.
-    /// </summary>
-    public IEnumerable<(string key, string value)> Attributes
-    {
-        get
-        {
-            if (this.Tile == null)
-            {
-                throw new InvalidOperationException("Move to graph tile first.");
-            }
-
-            this.EnsureAttributesPointerDecoded();
-
-            return this.Tile.GetAttributes(_attributesPointer);
-        }
-    }
-
-    private void EnsureShapePointerDecoded()
-    {
-        if (_shapePointerDecoded) return;
-        this.Tile!.DecodePointer(_shapeAttributeStart, out _shapePointer);
-        _shapePointerDecoded = true;
-    }
-
-    private void EnsureAttributesPointerDecoded()
-    {
-        if (_attributesPointerDecoded) return;
-        this.EnsureShapePointerDecoded();
-        var size = this.Tile!.DecodePointer(_shapeAttributeStart, out _shapePointer);
-        this.Tile.DecodePointer(_shapeAttributeStart + (uint)size, out _attributesPointer);
-        _attributesPointerDecoded = true;
     }
 
     /// <summary>
@@ -401,15 +328,15 @@ internal class NetworkTileEnumerator : INetworkTileEdge
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
         byte sourceOrder)
     {
         if (this.Tile == null)
-            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+            return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
         var order = _tailOrder;
         return order == null
-            ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+            ? ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
             : this.Tile.GetTurnCosts(this.Tail, sourceOrder, order.Value);
     }
 
@@ -418,15 +345,15 @@ internal class NetworkTileEnumerator : INetworkTileEdge
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
         byte targetOrder)
     {
         if (this.Tile == null)
-            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+            return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
         var order = _tailOrder;
         return order == null
-            ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+            ? ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
             : this.Tile.GetTurnCosts(this.Tail, order.Value, targetOrder);
     }
 
@@ -435,15 +362,15 @@ internal class NetworkTileEnumerator : INetworkTileEdge
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
         byte sourceOrder)
     {
         if (this.Tile == null)
-            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+            return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
         var order = _headOrder;
         return order == null
-            ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+            ? ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
             : this.Tile.GetTurnCosts(this.Head, sourceOrder, order.Value);
     }
 
@@ -452,15 +379,15 @@ internal class NetworkTileEnumerator : INetworkTileEdge
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
         byte targetOrder)
     {
         if (this.Tile == null)
-            return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+            return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
 
         var order = _headOrder;
         return order == null
-            ? ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
+            ? ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty
             : this.Tile.GetTurnCosts(this.Head, order.Value, targetOrder);
     }
 

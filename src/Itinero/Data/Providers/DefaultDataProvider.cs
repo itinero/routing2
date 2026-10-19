@@ -129,7 +129,7 @@ public class DefaultDataProvider : DataProviderBase
         public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
             EdgeId[] edges, uint[,] costs, IEnumerable<EdgeId>? prefix = null)
         {
-            return _builder.AddTurnCosts(vertex, attributes, edges, costs,
+            return _builder.AddTurnCosts(vertex, edges, costs,
                 _provider.AddTurnCostType(attributes), prefix);
         }
 

@@ -61,18 +61,18 @@ public class NetworkTileTests
     }
 
     [Fact]
-    public void NetworkTile_AddEdge1_VerticesExist_ShouldReturn9()
+    public void NetworkTile_AddEdge1_VerticesExist_ShouldReturn7()
     {
         var networkTile = new NetworkTile(14,
             TileStatic.ToLocalId(4.86638, 51.269728, 14));
         var vertex1 = networkTile.AddVertex(4.86638, 51.269728);
         var vertex2 = networkTile.AddVertex(4.86737, 51.267849);
 
-        // the first edge takes 4 bytes.
+        // the first edge takes 7 bytes: two vertices, the type id, the length and the orders.
         networkTile.AddEdge(vertex1, vertex2, 0);
         // the second edge get the pointer as id.
         var edge = networkTile.AddEdge(vertex2, vertex1, 0);
-        Assert.Equal((uint)9, edge.LocalId);
+        Assert.Equal((uint)7, edge.LocalId);
     }
 
     [Fact]

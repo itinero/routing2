@@ -272,7 +272,8 @@ public static class RouterDbExtensions
                         var shape = edgeEnumerator.GetCompleteShape()
                             .Concat(secondEdgeEnumerator.GetCompleteShape());
                         jsonWriter.WriteTurnCostFeature(edgeEnumerator.EdgeId, secondEdgeEnumerator.EdgeId,
-                            turnCost, OffsetRight(shape, 5.0));
+                            turnCost, routingNetwork.RouterDb.TurnCostTypeIndex
+                                .GetById(turnCost.turnCostType), OffsetRight(shape, 5.0));
                     }
                 }
             }
@@ -294,7 +295,8 @@ public static class RouterDbExtensions
                         var shape = edgeEnumerator.GetCompleteShape().Reverse()
                             .Concat(secondEdgeEnumerator.GetCompleteShape());
                         jsonWriter.WriteTurnCostFeature(edgeEnumerator.EdgeId, secondEdgeEnumerator.EdgeId,
-                            turnCost, OffsetRight(shape, 5.0));
+                            turnCost, routingNetwork.RouterDb.TurnCostTypeIndex
+                                .GetById(turnCost.turnCostType), OffsetRight(shape, 5.0));
                     }
                 }
             }
@@ -303,12 +305,12 @@ public static class RouterDbExtensions
 
     private static void WriteTurnCostFeature(this Utf8JsonWriter jsonWriter,
         EdgeId fromEdge, EdgeId toEdge,
-        (uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost,
-            IEnumerable<EdgeId> prefixEdges) turnCost,
+        (uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges) turnCost,
+        IEnumerable<(string key, string value)> turnCostAttributes,
         IEnumerable<(double longitude, double latitude, float? e)> shape)
     {
         jsonWriter.WriteFeatureStart();
-        var attributes = turnCost.attributes.ToList();
+        var attributes = turnCostAttributes.ToList();
         attributes.AddRange(new (string key, string value)[]
         {
             ("_type", "turn_cost"),

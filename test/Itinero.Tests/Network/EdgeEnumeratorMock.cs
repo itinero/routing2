@@ -44,23 +44,23 @@ public class EdgeEnumeratorMock : IEdgeEnumerator<RoutingNetwork>
     public uint? Length => _edges.Current.length;
     public byte? HeadOrder { get; }
     public byte? TailOrder { get; }
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(byte sourceOrder)
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(byte sourceOrder)
     {
-        return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+        return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
     }
 
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(byte targetOrder)
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(byte targetOrder)
     {
-        return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+        return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
     }
 
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(byte sourceOrder)
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(byte sourceOrder)
     {
-        return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+        return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
     }
 
-    public IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(byte targetOrder)
+    public IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(byte targetOrder)
     {
-        return ArraySegment<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
+        return ArraySegment<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)>.Empty;
     }
 }

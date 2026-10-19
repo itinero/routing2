@@ -151,6 +151,10 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// </summary>
     public RouterDb RouterDb => _network.RouterDb;
 
+    /// What resolves the ids being written, which is the provider doing the writing.
+    Data.Providers.DataProviderBase Enumerators.Edges.IEdgeEnumerable.Provider =>
+        _network.RouterDb.Provider;
+
     /// <summary>
     /// Adds a new vertex.
     /// </summary>
@@ -203,13 +207,11 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// <param name="tail">The tail vertex.</param>
     /// <param name="head">The head vertex.</param>
     /// <param name="shape">The shape points, if any.</param>
-    /// <param name="attributes">The attributes, if any.</param>
     /// <param name="edgeTypeId">The edge type id, assigned by the provider.</param>
     /// <returns>An edge id.</returns>
     /// <exception cref="ArgumentException"></exception>
     public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null)
+        IEnumerable<(double longitude, double latitude, float? e)>? shape = null)
     {
         var tile = this.GetTileForWrite(tail.TileId);
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
@@ -222,12 +224,12 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         var length = (uint)((lon1, lat1, e1).DistanceEstimateInMeterShape(
             (lon2, lat2, e2), shape) * 100);
 
-        var edge1 = tile.AddEdge(tail, head, edgeTypeId, shape, attributes, null, length);
+        var edge1 = tile.AddEdge(tail, head, edgeTypeId, null, length);
         if (tail.TileId == head.TileId) return edge1;
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         tile = this.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, edgeTypeId, shape, attributes, edge1, length);
+        tile.AddEdge(tail, head, edgeTypeId, edge1, length);
 
         return edge1;
     }
@@ -248,13 +250,12 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
     /// - The actual cost is interpreted by the vehicle profile, the vehicle profile is free to interpret the data being added here.
     /// </summary>
     /// <param name="vertex">The vertex.</param>
-    /// <param name="attributes">The attributes.</param>
     /// <param name="edges">The edges, the edge should match the ordering in the costs matrix.</param>
     /// <param name="costs">The costs as a matrix, [fromEdge, toEdge].</param>
     /// <param name="prefix">A path prefix, if any.</param>
     /// <param name="turnCostType">The turn cost type id, assigned by the provider.</param>
     /// <exception cref="ArgumentException"></exception>
-    public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    public bool AddTurnCosts(VertexId vertex,
         EdgeId[] edges, uint[,] costs, uint turnCostType, IEnumerable<EdgeId>? prefix = null)
     {
         prefix ??= ArraySegment<EdgeId>.Empty;
@@ -267,7 +268,7 @@ public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
         }
 
         // add the turn cost table using the type id.
-        return tile.AddTurnCosts(vertex, turnCostType, edges, costs, attributes, prefix);
+        return tile.AddTurnCosts(vertex, turnCostType, edges, costs, prefix);
     }
 
     /// <summary>

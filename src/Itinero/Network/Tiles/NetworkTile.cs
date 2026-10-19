@@ -61,18 +61,12 @@ internal partial class NetworkTile
         _crossEdgePointers = new uint[0];
 
         _coordinates = new byte[0];
-        _shapes = new byte[0];
-        _attributes = new byte[0];
-        _strings = new string[0];
     }
 
     private NetworkTile(int zoom, uint tileId, uint nextCrossTileId, uint[] pointers,
         byte[] edges,
-        uint[] crossEdgePointers, byte[] coordinates, byte[] shapes,
-        byte[] attributes,
-        string[] strings, byte[] turnCosts, uint nextVertexId, uint nextEdgeId,
-        uint nextAttributePointer,
-        uint nextShapePointer, uint nextStringId)
+        uint[] crossEdgePointers, byte[] coordinates,
+        byte[] turnCosts, uint nextVertexId, uint nextEdgeId)
     {
         _zoom = zoom;
         _tileId = tileId;
@@ -83,16 +77,10 @@ internal partial class NetworkTile
         _crossEdgePointers = crossEdgePointers;
 
         _coordinates = coordinates;
-        _shapes = shapes;
-        _attributes = attributes;
-        _strings = strings;
         _turnCosts = turnCosts;
 
         _nextVertexId = nextVertexId;
         _nextEdgeId = nextEdgeId;
-        _nextAttributePointer = nextAttributePointer;
-        _nextShapePointer = nextShapePointer;
-        _nextStringId = nextStringId;
     }
 
     /// <summary>
@@ -102,10 +90,8 @@ internal partial class NetworkTile
     public NetworkTile Clone()
     {
         return new(_zoom, _tileId, _nextCrossTileId, (uint[])_pointers.Clone(), (byte[])_edges.Clone(),
-            (uint[])_crossEdgePointers.Clone(),
-            (byte[])_coordinates.Clone(), (byte[])_shapes.Clone(), (byte[])_attributes.Clone(), (string[])_strings.Clone(), (byte[])_turnCosts.Clone(),
-            _nextVertexId,
-            _nextEdgeId, _nextAttributePointer, _nextShapePointer, _nextStringId);
+            (uint[])_crossEdgePointers.Clone(), (byte[])_coordinates.Clone(),
+            (byte[])_turnCosts.Clone(), _nextVertexId, _nextEdgeId);
     }
 
     /// <summary>
@@ -189,9 +175,7 @@ internal partial class NetworkTile
     /// <param name="length">The length in centimeters.</param>
     /// <returns>The new edge id.</returns>
     public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, uint edgeTypeId,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null,
-        uint? length = null)
+        EdgeId? edgeId = null, uint? length = null)
     {
         // Edge set changed → cached MaxLonDiff/MaxLatDiff are now stale.
         this.InvalidateDiffs();
@@ -275,26 +259,6 @@ internal partial class NetworkTile
         _edges.SetTailHeadOrder(_nextEdgeId, null, null);
         _nextEdgeId++;
 
-        // take care of shape if any.
-        uint? shapePointer = null;
-        if (shape != null)
-        {
-            shapePointer = this.SetShape(shape);
-        }
-
-        size = EncodePointer(ref _edges, _nextEdgeId, shapePointer);
-        _nextEdgeId += size;
-
-        // take care of attributes if any.
-        uint? attributesPointer = null;
-        if (attributes != null)
-        {
-            attributesPointer = this.SetAttributes(attributes);
-        }
-
-        size = EncodePointer(ref _edges, _nextEdgeId, attributesPointer);
-        _nextEdgeId += size;
-
         return edgeId.Value;
     }
 
@@ -314,8 +278,6 @@ internal partial class NetworkTile
             Array.Resize(ref _crossEdgePointers, (int)_nextCrossTileId);
         }
 
-        this.TrimAttributes();
-        this.TrimShapes();
         this.TrimTurnCosts();
     }
 

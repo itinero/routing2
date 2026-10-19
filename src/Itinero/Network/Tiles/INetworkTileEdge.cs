@@ -12,16 +12,6 @@ public interface INetworkTileEdge
     bool IsEmpty { get; }
 
     /// <summary>
-    /// Gets the shape of the given edge (not including vertex locations).
-    /// </summary>
-    IEnumerable<(double longitude, double latitude, float? e)> Shape { get; }
-
-    /// <summary>
-    /// Gets the attributes of the given edge.
-    /// </summary>
-    IEnumerable<(string key, string value)> Attributes { get; }
-
-    /// <summary>
     /// Gets the first vertex.
     /// </summary>
     VertexId Tail { get; }
@@ -66,7 +56,7 @@ public interface INetworkTileEdge
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToTail(
         byte sourceOrder);
 
     /// <summary>
@@ -74,7 +64,7 @@ public interface INetworkTileEdge
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromTail(
         byte targetOrder);
 
     /// <summary>
@@ -82,7 +72,7 @@ public interface INetworkTileEdge
     /// </summary>
     /// <param name="sourceOrder">The order of the source edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostToHead(
         byte sourceOrder);
 
     /// <summary>
@@ -90,6 +80,6 @@ public interface INetworkTileEdge
     /// </summary>
     /// <param name="targetOrder">The order of the target edge.</param>
     /// <returns>The turn costs if any.</returns>
-    IEnumerable<(uint turnCostType, IEnumerable<(string key, string value)> attributes, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
+    IEnumerable<(uint turnCostType, uint cost, IEnumerable<EdgeId> prefixEdges)> GetTurnCostFromHead(
         byte targetOrder);
 }

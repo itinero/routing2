@@ -19,13 +19,16 @@ internal class ProfileCostFunction : ICostFunction
 {
     private readonly Profile _profile;
     private readonly IAttributeSetIndex _edgeTypes;
+    private readonly IAttributeSetIndex _turnCostTypes;
     private readonly EdgeFactorCache _edgeFactorCache = new();
     private readonly TurnCostFactorCache _turnCostFactorCache = new();
 
-    internal ProfileCostFunction(Profile profile, IAttributeSetIndex edgeTypes)
+    internal ProfileCostFunction(Profile profile, IAttributeSetIndex edgeTypes,
+        IAttributeSetIndex turnCostTypes)
     {
         _profile = profile;
         _edgeTypes = edgeTypes;
+        _turnCostTypes = turnCostTypes;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,13 +43,14 @@ internal class ProfileCostFunction : ICostFunction
         return factor;
     }
 
-    private TurnCostFactor GetTurnCostFactor(uint turnCostType,
-        System.Collections.Generic.IEnumerable<(string key, string value)> attributes)
+    private TurnCostFactor GetTurnCostFactor(uint turnCostType)
     {
         var cached = _turnCostFactorCache.Get(turnCostType);
         if (cached != null) return cached.Value;
 
-        var factor = _profile.TurnCostFactor(attributes);
+        // the attributes are fetched on a miss rather than carried along every turn cost: there
+        // are as many misses as there are turn cost types.
+        var factor = _profile.TurnCostFactor(_turnCostTypes.GetById(turnCostType));
         _turnCostFactorCache.Set(turnCostType, factor);
 
         return factor;
@@ -87,10 +91,10 @@ internal class ProfileCostFunction : ICostFunction
             ? edgeEnumerator.GetTurnCostToTail(turn.Value)
             : edgeEnumerator.GetTurnCostFromTail(turn.Value);
 
-        foreach (var (turnCostType, attributes, turnCost, _) in turnCosts)
+        foreach (var (turnCostType, turnCost, _) in turnCosts)
         {
             // TODO: compare prefix edges with the previous edges.
-            var turnCostFactor = this.GetTurnCostFactor(turnCostType, attributes);
+            var turnCostFactor = this.GetTurnCostFactor(turnCostType);
 
             if (turnCostFactor.IsBinary && turnCost > 0)
             {

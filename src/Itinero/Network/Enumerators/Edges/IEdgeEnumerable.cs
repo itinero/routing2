@@ -7,8 +7,13 @@ public interface IEdgeEnumerable
     internal NetworkTile? GetTileForRead(uint tileId);
 
     /// <summary>
-    /// The db this is a network of, which is how an edge's data is reached: the tile holds routing
-    /// data only, so everything else comes from the db's provider.
+    /// The db this is a network of, for what is stable across generations: the type indexes.
     /// </summary>
     internal RouterDb RouterDb { get; }
+
+    /// <summary>
+    /// What resolves this network's edge ids, which is the only thing that can: ids belong to the
+    /// network that issued them, not to the db.
+    /// </summary>
+    internal Data.Providers.DataProviderBase Provider { get; }
 }

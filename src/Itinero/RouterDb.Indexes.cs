@@ -49,7 +49,7 @@ public sealed partial class RouterDb
         {
             Interlocked.Increment(ref _memoisedProfiles);
 
-            return new ProfileCostFunction(p, this.EdgeTypeIndex);
+            return new ProfileCostFunction(p, this.EdgeTypeIndex, this.TurnCostTypeIndex);
         });
     }
 

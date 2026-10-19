@@ -58,21 +58,22 @@ public sealed class NetworkBuilder : IDisposable
     /// <remarks>
     /// Returns the <see cref="EdgeId"/>, which is the only thing a provider is asked about an edge
     /// later, so recording it against whatever the provider kept back needs no id in the tile.
+    /// The shape is measured and discarded: an edge's geometry is the provider's, and its length
+    /// is all the search needs.
     /// </remarks>
     public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId,
-        IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null)
+        IEnumerable<(double longitude, double latitude, float? e)>? shape = null)
     {
-        return _writer.AddEdge(tail, head, edgeTypeId, shape, attributes);
+        return _writer.AddEdge(tail, head, edgeTypeId, shape);
     }
 
     /// <summary>
     /// Adds turn costs, with the turn cost type id the provider assigned them.
     /// </summary>
-    public bool AddTurnCosts(VertexId vertex, IEnumerable<(string key, string value)> attributes,
+    public bool AddTurnCosts(VertexId vertex,
         EdgeId[] edges, uint[,] costs, uint turnCostType, IEnumerable<EdgeId>? prefix = null)
     {
-        return _writer.AddTurnCosts(vertex, attributes, edges, costs, turnCostType, prefix);
+        return _writer.AddTurnCosts(vertex, edges, costs, turnCostType, prefix);
     }
 
     /// <summary>
