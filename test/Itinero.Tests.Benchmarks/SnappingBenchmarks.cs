@@ -176,16 +176,6 @@ public class SnappingBenchmarks
 
     private static RouterDb LoadOrBuild(Profile profile)
     {
-        var routerDbPath = ResolvePath("belgium-latest.osm.routerdb");
-        if (File.Exists(routerDbPath))
-        {
-            Console.WriteLine($"[SnappingBenchmarks] loading RouterDb from {routerDbPath}");
-            using var stream = File.OpenRead(routerDbPath);
-            var loadedProvider = new DefaultDataProvider(new OsmEdgeTypeMap());
-            loadedProvider.LoadFrom(stream);
-            return loadedProvider.RouterDb;
-        }
-
         var pbfPath = ResolvePath("belgium-latest.osm.pbf");
         if (!File.Exists(pbfPath))
         {
@@ -201,12 +191,6 @@ public class SnappingBenchmarks
         using (var osmStream = File.OpenRead(pbfPath))
         {
             built = Itinero.IO.Osm.RouterDbExtensions.FromOsmData(new PBFOsmStreamSource(osmStream));
-        }
-
-        Console.WriteLine($"[SnappingBenchmarks] saving RouterDb to {routerDbPath}");
-        using (var outStream = File.Create(routerDbPath))
-        {
-            built.WriteTo(outStream);
         }
 
         return built;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using Itinero.IO;
 using Itinero.Network.Storage;
-using Itinero.Network.Tiles.Standalone.Global;
 using Itinero.Network.TurnCosts;
 
 namespace Itinero.Network.Tiles;
@@ -188,12 +187,11 @@ internal partial class NetworkTile
     /// <param name="edgeId">The edge id if this edge is a part of another tile.</param>
     /// <param name="edgeTypeId">The edge type id, if any.</param>
     /// <param name="length">The length in centimeters.</param>
-    /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns>The new edge id.</returns>
     public EdgeId AddEdge(VertexId vertex1, VertexId vertex2, uint edgeTypeId,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
         IEnumerable<(string key, string value)>? attributes = null, EdgeId? edgeId = null,
-        uint? length = null, GlobalEdgeId? globalEdgeId = null)
+        uint? length = null)
     {
         // Edge set changed → cached MaxLonDiff/MaxLatDiff are now stale.
         this.InvalidateDiffs();
@@ -289,9 +287,9 @@ internal partial class NetworkTile
 
         // take care of attributes if any.
         uint? attributesPointer = null;
-        if (attributes != null || globalEdgeId != null)
+        if (attributes != null)
         {
-            attributesPointer = this.SetAttributes(attributes ?? [], globalEdgeId);
+            attributesPointer = this.SetAttributes(attributes);
         }
 
         size = EncodePointer(ref _edges, _nextEdgeId, attributesPointer);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Itinero.Network;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Mutation;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Data.Providers;
 
@@ -56,6 +55,10 @@ public sealed class NetworkBuilder : IDisposable
     /// <summary>
     /// Adds a new edge, with the edge type id the provider assigned it.
     /// </summary>
+    /// <remarks>
+    /// Returns the <see cref="EdgeId"/>, which is the only thing a provider is asked about an edge
+    /// later, so recording it against whatever the provider kept back needs no id in the tile.
+    /// </remarks>
     public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
         IEnumerable<(string key, string value)>? attributes = null)

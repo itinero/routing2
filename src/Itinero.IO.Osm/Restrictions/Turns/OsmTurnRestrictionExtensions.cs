@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.IO.Osm.Restrictions.Turns;
 

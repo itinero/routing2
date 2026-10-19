@@ -122,7 +122,7 @@ internal partial class NetworkTile
         _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, turnCostType);
 
         // write attributes.
-        var a = this.SetAttributes(attributes, null);
+        var a = this.SetAttributes(attributes);
         _turnCostPointer += _turnCosts.SetDynamicUInt32(_turnCostPointer, a);
 
         // write prefix sequence.

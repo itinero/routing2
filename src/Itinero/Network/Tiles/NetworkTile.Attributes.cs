@@ -4,7 +4,6 @@ using System.IO;
 using Itinero.Data;
 using Itinero.IO;
 using Itinero.Network.Storage;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Network.Tiles;
 
@@ -35,24 +34,9 @@ internal partial class NetworkTile
         if (_strings.Length > _nextStringId) Array.Resize(ref _strings, (int)_nextStringId);
     }
 
-    private uint SetAttributes(IEnumerable<(string key, string value)> attributes, GlobalEdgeId? globalEdgeId)
+    private uint SetAttributes(IEnumerable<(string key, string value)> attributes)
     {
-        // ensure enough space for the globalEdgeId header (up to 20 bytes).
-        EnsureCapacity(ref _attributes, _nextAttributePointer + 21L, 256);
-
-        // save position before globalEdgeId — GetAttributes/GetGlobalEdgeId read from here.
         var start = _nextAttributePointer;
-
-        if (globalEdgeId == null)
-        {
-            _nextAttributePointer += _attributes.SetDynamicInt64Nullable(_nextAttributePointer, null);
-        }
-        else
-        {
-            _nextAttributePointer += _attributes.SetDynamicInt64Nullable(_nextAttributePointer, globalEdgeId.Value.EdgeId);
-            _nextAttributePointer += _attributes.SetDynamicUInt32(_nextAttributePointer, globalEdgeId.Value.Tail);
-            _nextAttributePointer += _attributes.SetDynamicUInt32(_nextAttributePointer, globalEdgeId.Value.Head);
-        }
 
         long cPos = _nextAttributePointer;
         long p = _nextAttributePointer + 1;
@@ -85,30 +69,11 @@ internal partial class NetworkTile
         return start;
     }
 
-    internal GlobalEdgeId? GetGlobalEdgeId(uint? pointer)
-    {
-        if (pointer == null) return null;
-
-        var p = pointer.Value;
-        p += _attributes.GetDynamicInt64Nullable(p, out var edgeId);
-        if (edgeId == null) return null;
-        p += _attributes.GetDynamicUInt32(p, out var tail);
-        p += _attributes.GetDynamicUInt32(p, out var head);
-
-        return GlobalEdgeId.Create(edgeId.Value, tail, head);
-    }
-
     internal IEnumerable<(string key, string value)> GetAttributes(uint? pointer)
     {
         if (pointer == null) yield break;
 
         var p = pointer.Value;
-        p += _attributes.GetDynamicInt64Nullable(p, out var edgeId);
-        if (edgeId != null)
-        {
-            p += _attributes.GetDynamicUInt32(p, out _);
-            p += _attributes.GetDynamicUInt32(p, out _);
-        }
 
         int count;
         do

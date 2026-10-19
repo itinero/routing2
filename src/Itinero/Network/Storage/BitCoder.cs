@@ -1,5 +1,4 @@
 using System;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Network.Storage;
 
@@ -455,37 +454,4 @@ internal static class BitCoder
         }
     }
 
-    public static byte SetGlobalEdgeId(this byte[] data, long p, GlobalEdgeId globalEdgeId)
-    {
-        var c = data.SetDynamicInt64(p, globalEdgeId.EdgeId);
-        c += data.SetDynamicUInt32(p + c, globalEdgeId.Tail);
-        c += data.SetDynamicUInt32(p + c, globalEdgeId.Head);
-        return c;
-    }
-
-    public static byte GetGlobalEdgeId(this byte[] data, long p, out GlobalEdgeId globalEdgeId)
-    {
-        var c = data.GetDynamicInt64(p, out var edgeId);
-        c += data.GetDynamicUInt32(p + c, out var tail);
-        c += data.GetDynamicUInt32(p + c, out var head);
-
-        globalEdgeId = GlobalEdgeId.Create(edgeId, tail, head);
-
-        return c;
-    }
-
-    public static byte SetGlobalEdgeIdNullable(this byte[] data, long p, GlobalEdgeId? globalEdgeId)
-    {
-        if (globalEdgeId == null)
-        {
-            return data.SetDynamicInt64Nullable(p, null);
-        }
-        else
-        {
-            var c = data.SetDynamicInt64Nullable(p, globalEdgeId.Value.EdgeId);
-            c += data.SetDynamicUInt32(p + c, globalEdgeId.Value.Tail);
-            c += data.SetDynamicUInt32(p + c, globalEdgeId.Value.Head);
-            return c;
-        }
-    }
 }

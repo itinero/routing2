@@ -1,8 +1,8 @@
+using Itinero.Network;
 using System;
-using Itinero.Network.Tiles.Standalone.Global;
 using OsmSharp;
 
-namespace Itinero.IO.Osm.Tiles;
+namespace Itinero.IO.Osm.Restrictions;
 
 internal static class GlobalEdgeIdExtensions
 {

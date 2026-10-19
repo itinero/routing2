@@ -5,7 +5,6 @@ using System.Threading;
 using Itinero.Geo;
 using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Tiles;
-using Itinero.Network.Tiles.Standalone.Global;
 // ReSharper disable PossibleMultipleEnumeration
 
 namespace Itinero.Network.Writer;
@@ -179,20 +178,18 @@ internal class RoutingNetworkWriter : IDisposable
     /// <param name="attributes">The attributes, if any.</param>
     /// <param name="edgeTypeId">The edge type id, assigned by the provider.</param>
     /// <param name="length">The length in centimeters. Use <see cref="ComputeEdgeLength"/> if not known.</param>
-    /// <param name="globalEdgeId">The global edge id, if any.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public EdgeId AddEdge(VertexId tail, VertexId head, uint edgeTypeId, uint length,
         IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
-        IEnumerable<(string key, string value)>? attributes = null,
-        GlobalEdgeId? globalEdgeId = null)
+        IEnumerable<(string key, string value)>? attributes = null)
     {
         // get the tile (or create it).
         var tile = _network.GetTileForWrite(tail.TileId);
         if (tile == null) throw new ArgumentException($"Cannot add edge with a vertex that doesn't exist.");
 
-        var edge1 = tile.AddEdge(tail, head, edgeTypeId, shape, attributes, null, length, globalEdgeId);
+        var edge1 = tile.AddEdge(tail, head, edgeTypeId, shape, attributes, null, length);
         if (tail.TileId == head.TileId)
         {
             return edge1;
@@ -200,7 +197,7 @@ internal class RoutingNetworkWriter : IDisposable
 
         // this edge crosses tiles, also add an extra edge to the other tile.
         tile = _network.GetTileForWrite(head.TileId);
-        tile.AddEdge(tail, head, edgeTypeId, shape, attributes, edge1, length, globalEdgeId);
+        tile.AddEdge(tail, head, edgeTypeId, shape, attributes, edge1, length);
 
         return edge1;
     }

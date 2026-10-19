@@ -14,6 +14,10 @@
     <PackageReference Include="OsmSharp" Version="7.0.0-pre018" />
   </ItemGroup>
   <ItemGroup>
+    <!-- here rather than on a type, where deleting that type silently takes it with it. -->
+    <InternalsVisibleTo Include="Itinero.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Itinero.Geo\Itinero.Geo.csproj" />
   </ItemGroup>
 </Project>

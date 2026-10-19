@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Itinero.Network.Tiles;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Network.Enumerators.Edges;
 
@@ -184,10 +183,6 @@ public abstract class EdgeEnumerator<T> :
     /// </summary>
     public uint? Length => _tileEnumerator.Length;
 
-    /// <summary>
-    /// Gets the global edge id, if any.
-    /// </summary>
-    public GlobalEdgeId? GlobalEdgeId => _tileEnumerator.GlobalEdgeId;
 
     /// <summary>
     /// Gets the head index.

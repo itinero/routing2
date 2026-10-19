@@ -25,23 +25,6 @@ internal static class Program
     private static readonly string BelgiumUrl =
         "http://planet.anyways.eu/planet/europe/belgium/belgium-latest.osm.pbf";
 
-    private static RouterDb FromFile(string filepath)
-    {
-        Console.WriteLine("Loading from file " + filepath);
-        using var routerDbStream = File.OpenRead(filepath);
-        var provider = new DefaultDataProvider(new OsmEdgeTypeMap());
-        provider.LoadFrom(routerDbStream);
-        return provider.RouterDb;
-    }
-
-    private static void ToFile(string path, RouterDb routerDb)
-    {
-        Console.WriteLine("Writing to file " + path);
-
-        using var outputStream = File.Open(path, FileMode.Create);
-        routerDb.WriteTo(outputStream);
-    }
-
     private static RouterDb FromUrl(Profile p, string url, string localFile = "latest.osm.pbf")
     {
         Console.WriteLine("Loading from URL " + url);
@@ -55,15 +38,8 @@ internal static class Program
 
     private static RouterDb GetOrCreate(Profile p, string url, string localFile = "latest.osm.pbf")
     {
-        var routerDbFile = Path.ChangeExtension(localFile, ".routerdb");
-        if (File.Exists(routerDbFile))
-        {
-            return FromFile(routerDbFile);
-        }
-
-        var routerDb = FromUrl(p, url, localFile);
-        ToFile(routerDbFile, routerDb);
-        return routerDb;
+        // no db format to cache a build into: a provider builds its own data.
+        return FromUrl(p, url, localFile);
     }
 
 

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Itinero.IO.Osm.Restrictions.Turns;
-using Itinero.Network.Tiles.Standalone.Global;
+using Itinero.IO.Osm.Restrictions;
 using OsmSharp;
 using OsmSharp.Tags;
 using Xunit;

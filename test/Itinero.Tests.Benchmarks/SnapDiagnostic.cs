@@ -205,49 +205,7 @@ internal static class SnapDiagnostic
 
         Console.WriteLine($"\nEdges: {total} total, {accessible} accessible, {inaccessible} inaccessible");
 
-        // 4. Test round-trip: save to routerdb, reload, snap again
-        Console.WriteLine("\nTesting routerdb round-trip...");
-        var tmpPath = Path.GetTempFileName();
-        using (var outStream = File.Create(tmpPath))
-        {
-            routerDb.WriteTo(outStream);
-        }
-
-        RouterDb reloaded;
-        using (var inStream = File.OpenRead(tmpPath))
-        {
-            var reloadedProvider = new DefaultDataProvider(new OsmEdgeTypeMap());
-            reloadedProvider.LoadFrom(inStream);
-            reloaded = reloadedProvider.RouterDb;
-        }
-        File.Delete(tmpPath);
-
-        var reloadedNetwork = reloaded.Latest;
-        var reloadedSnap = reloadedNetwork.Snap(car).ToAsync(lon, lat).Result;
-        Console.WriteLine($"After round-trip snap: {(reloadedSnap.IsError ? "FAILED - " + reloadedSnap.ErrorMessage : "OK - EdgeId=" + reloadedSnap.Value.EdgeId)}");
-
-        // Check edge count near point after reload
-        var reloadedEdgeEnum = reloadedNetwork.GetEdgeEnumerator();
-        var reloadedVertEnum = reloadedNetwork.GetVertexEnumerator();
-        var reloadedVertices = new List<VertexId>();
-        while (reloadedVertEnum.MoveNext())
-        {
-            var v = reloadedNetwork.GetVertex(reloadedVertEnum.Current);
-            if (Math.Abs(v.longitude - lon) < searchRadius && Math.Abs(v.latitude - lat) < searchRadius)
-                reloadedVertices.Add(reloadedVertEnum.Current);
-        }
-        var reloadedEdgeCount = 0;
-        foreach (var v in reloadedVertices)
-        {
-            reloadedEdgeEnum.MoveTo(v);
-            while (reloadedEdgeEnum.MoveNext())
-            {
-                if (reloadedEdgeEnum.Forward) reloadedEdgeCount++;
-            }
-        }
-        Console.WriteLine($"After round-trip: {reloadedVertices.Count} vertices, {reloadedEdgeCount} edges near point");
-
-        // 5. Check if the tile at the location is loaded
+        // 4. Check if the tile at the location is loaded
         var tileX = (uint)((lon + 180.0) / 360.0 * (1 << 14));
         var tileY = (uint)((1.0 - Math.Log(Math.Tan(lat * Math.PI / 180.0) + 1.0 / Math.Cos(lat * Math.PI / 180.0)) / Math.PI) / 2.0 * (1 << 14));
         var tileId = (uint)(tileX + tileY * (1 << 14));

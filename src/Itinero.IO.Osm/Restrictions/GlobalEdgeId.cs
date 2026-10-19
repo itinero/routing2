@@ -1,6 +1,7 @@
+using Itinero.Network;
 using System;
 
-namespace Itinero.Network.Tiles.Standalone.Global;
+namespace Itinero.IO.Osm.Restrictions;
 
 /// <summary>
 /// A global edge id.

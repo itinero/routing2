@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Itinero.Indexes;
 using Itinero.Network;
 using Itinero.Network.Mutation;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Data.Providers;
 
@@ -33,14 +32,6 @@ public abstract class DataProviderBase
     public RouterDb RouterDb { get; }
 
     /// <summary>
-    /// Replaces the db's network with one read from the given stream.
-    /// </summary>
-    public void LoadFrom(System.IO.Stream stream)
-    {
-        this.RouterDb.LoadFrom(stream);
-    }
-
-    /// <summary>
     /// Opens the means to write. Disposing what it returns publishes the result.
     /// </summary>
     /// <remarks>
@@ -55,9 +46,12 @@ public abstract class DataProviderBase
     /// <summary>
     /// Gets the attributes the edge type map dropped, if any.
     /// </summary>
-    /// <param name="edge">The edge, which carries the tile a tile-keyed provider needs.</param>
-    /// <param name="globalId">The global id, the stable key.</param>
-    public abstract IEnumerable<(string key, string value)> GetAttributes(EdgeId edge, GlobalEdgeId globalId);
+    /// <remarks>
+    /// The <see cref="EdgeId"/> is the only key: the tile holds nothing to identify an edge by, so
+    /// what is behind the id is the provider's own business and nobody else's.
+    /// </remarks>
+    /// <param name="edge">The edge, as this provider's network numbered it.</param>
+    public abstract IEnumerable<(string key, string value)> GetAttributes(EdgeId edge);
 
     /// <summary>
     /// Appends the edge's shape points to the given list, in the edge's own direction.
@@ -66,9 +60,8 @@ public abstract class DataProviderBase
     /// Into a caller-supplied list rather than returned: snapping asks for every candidate near an
     /// endpoint and discards most of them, so a returned enumerable is an allocation per discard.
     /// </remarks>
-    /// <param name="edge">The edge, which carries the tile a tile-keyed provider needs.</param>
-    /// <param name="globalId">The global id, the stable key.</param>
+    /// <param name="edge">The edge, as this provider's network numbered it.</param>
     /// <param name="into">The list to append to. Not cleared.</param>
-    public abstract void GetShape(EdgeId edge, GlobalEdgeId globalId,
+    public abstract void GetShape(EdgeId edge,
         List<(double longitude, double latitude, float? e)> into);
 }

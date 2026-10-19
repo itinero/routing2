@@ -24,8 +24,8 @@ internal static class RouterDbScaffolding
         var edgeIds = new EdgeId[edges.Length];
         for (var e = 0; e < edges.Length; e++)
         {
-            edgeIds[e] = writer.AddEdge(vertexIds[edges[e].from], vertexIds[edges[e].to], edges[e].shape,
-                edges[e].attributes);
+            edgeIds[e] = writer.AddEdge(vertexIds[edges[e].from], vertexIds[edges[e].to],
+                shape: edges[e].shape, attributes: edges[e].attributes);
         }
 
         return (routerDb, vertexIds, edgeIds);

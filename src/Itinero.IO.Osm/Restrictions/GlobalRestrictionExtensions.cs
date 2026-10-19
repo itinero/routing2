@@ -1,8 +1,9 @@
+using Itinero.Network;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Itinero.Network.Tiles.Standalone.Global;
+namespace Itinero.IO.Osm.Restrictions;
 
 public static class GlobalRestrictionExtensions
 {

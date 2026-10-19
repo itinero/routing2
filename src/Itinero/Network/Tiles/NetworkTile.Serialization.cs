@@ -8,7 +8,7 @@ internal partial class NetworkTile
 {
     public void WriteTo(Stream stream)
     {
-        const int version = 2;
+        const int version = 3;
         stream.WriteVarInt32(version);
 
         // write tile id/zoom.
@@ -31,7 +31,7 @@ internal partial class NetworkTile
     public static NetworkTile ReadFrom(Stream stream)
     {
         var version = stream.ReadVarInt32();
-        if (version != 2)
+        if (version != 3)
         {
             throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
         }
@@ -61,7 +61,7 @@ internal partial class NetworkTile
     internal static NetworkTile ReadFromBuffer(byte[] data, ref int offset)
     {
         var version = BitCoderBuffer.GetVarInt32(data, ref offset);
-        if (version != 2)
+        if (version != 3)
         {
             throw new InvalidDataException("Cannot deserialize tiles: Invalid version #.");
         }
@@ -98,7 +98,7 @@ internal partial class NetworkTile
 
     internal void WriteToBuffer(byte[] data, ref int offset)
     {
-        const int version = 2;
+        const int version = 3;
         BitCoderBuffer.SetVarInt32(data, ref offset, version);
         BitCoderBuffer.SetVarInt32(data, ref offset, _zoom);
         BitCoderBuffer.SetVarUInt32(data, ref offset, _tileId);

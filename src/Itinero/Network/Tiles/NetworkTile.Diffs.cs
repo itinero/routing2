@@ -26,8 +26,8 @@ namespace Itinero.Network.Tiles;
 ///
 /// <para>
 /// Invalidated to <see cref="double.NaN"/> whenever an edge is added or
-/// removed, so late boundary edges added by neighbouring tiles'
-/// <c>AddStandaloneTile</c> calls don't leave stale values.
+/// removed, so a boundary edge written later by a neighbouring tile does
+/// not leave a stale value behind.
 /// </para>
 /// </summary>
 internal partial class NetworkTile

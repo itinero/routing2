@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Itinero.Network.Storage;
-using Itinero.Network.Tiles.Standalone;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Network.Tiles;
 
-internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileEnumerator
+internal class NetworkTileEnumerator : INetworkTileEdge
 {
     private uint _localId;
     private uint? _nextEdgePointer;
@@ -310,25 +308,6 @@ internal class NetworkTileEnumerator : INetworkTileEdge, IStandaloneNetworkTileE
             this.EnsureAttributesPointerDecoded();
 
             return this.Tile.GetAttributes(_attributesPointer);
-        }
-    }
-
-    /// <summary>
-    /// Gets the global edge id, if any.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    public GlobalEdgeId? GlobalEdgeId
-    {
-        get
-        {
-            if (this.Tile == null)
-            {
-                throw new InvalidOperationException("Move to graph tile first.");
-            }
-
-            this.EnsureAttributesPointerDecoded();
-
-            return this.Tile.GetGlobalEdgeId(_attributesPointer);
         }
     }
 

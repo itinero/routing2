@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Itinero.Indexes;
 using Itinero.Network;
-using Itinero.Network.Tiles.Standalone.Global;
 
 namespace Itinero.Data.Providers;
 
@@ -25,6 +24,9 @@ public class DefaultDataProvider : DataProviderBase
     // keyed per way, so a way split across tiles or at junctions has one copy.
     private readonly Dictionary<long, (string key, string value)[]> _complement = new();
     private readonly Dictionary<long, (double longitude, double latitude, float? e)[]> _geometry = new();
+
+    // what an EdgeId resolves to, per tile. This is the whole of what the tile used to carry.
+    private readonly Dictionary<uint, TileSegments> _segments = new();
 
     /// <summary>
     /// Creates a new provider.
@@ -152,6 +154,25 @@ public class DefaultDataProvider : DataProviderBase
     }
 
     /// <summary>
+    /// Records which way segment an edge came from, so the edge's own data can be found again.
+    /// </summary>
+    /// <remarks>
+    /// Called with the <see cref="EdgeId"/> the builder just returned. Edges are appended in
+    /// increasing <c>LocalId</c> within a tile, so the array is sorted by construction and a read
+    /// is a binary search rather than a hash lookup.
+    /// </remarks>
+    public void SetEdgeSegment(EdgeId edge, long wayId, ushort tailIndex, ushort headIndex)
+    {
+        if (!_segments.TryGetValue(edge.TileId, out var segments))
+        {
+            segments = new TileSegments();
+            _segments[edge.TileId] = segments;
+        }
+
+        segments.Append(edge.LocalId, wayId, tailIndex, headIndex);
+    }
+
+    /// <summary>
     /// Records a way's attributes, keeping only what the edge type map dropped.
     /// </summary>
     /// <remarks>
@@ -176,21 +197,26 @@ public class DefaultDataProvider : DataProviderBase
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<(string key, string value)> GetAttributes(EdgeId edge, GlobalEdgeId globalId)
+    public override IEnumerable<(string key, string value)> GetAttributes(EdgeId edge)
     {
-        return _complement.TryGetValue(globalId.EdgeId, out var attributes)
+        if (!this.TryGetSegment(edge, out var wayId, out _, out _))
+        {
+            return Enumerable.Empty<(string key, string value)>();
+        }
+
+        return _complement.TryGetValue(wayId, out var attributes)
             ? attributes
             : Enumerable.Empty<(string key, string value)>();
     }
 
     /// <inheritdoc/>
-    public override void GetShape(EdgeId edge, GlobalEdgeId globalId,
+    public override void GetShape(EdgeId edge,
         List<(double longitude, double latitude, float? e)> into)
     {
-        if (!_geometry.TryGetValue(globalId.EdgeId, out var nodes)) return;
+        if (!this.TryGetSegment(edge, out var wayId, out var from, out var to)) return;
+        if (!_geometry.TryGetValue(wayId, out var nodes)) return;
 
         // the shape is the way's nodes strictly between the edge's two, in the edge's direction.
-        var (from, to) = (globalId.Tail, globalId.Head);
         if (from <= to)
         {
             for (var n = from + 1; n < to && n < nodes.Length; n++) into.Add(nodes[n]);
@@ -198,6 +224,71 @@ public class DefaultDataProvider : DataProviderBase
         else
         {
             for (var n = from - 1; n > to && n < nodes.Length; n--) into.Add(nodes[n]);
+        }
+    }
+
+    private bool TryGetSegment(EdgeId edge, out long wayId, out ushort tailIndex, out ushort headIndex)
+    {
+        wayId = default;
+        tailIndex = default;
+        headIndex = default;
+
+        return _segments.TryGetValue(edge.TileId, out var segments) &&
+               segments.TryGet(edge.LocalId, out wayId, out tailIndex, out headIndex);
+    }
+
+    /// One tile's edges, in the order they were written.
+    private sealed class TileSegments
+    {
+        private uint[] _localIds = new uint[16];
+        private long[] _ways = new long[16];
+        private ushort[] _tails = new ushort[16];
+        private ushort[] _heads = new ushort[16];
+        private int _count;
+
+        public void Append(uint localId, long wayId, ushort tailIndex, ushort headIndex)
+        {
+            // sorted by construction is the whole reason this is an array: an out-of-order append
+            // would make the search below miss silently, so it is a fault rather than a resort.
+            if (_count > 0 && localId <= _localIds[_count - 1])
+            {
+                throw new ArgumentOutOfRangeException(nameof(localId),
+                    $"Edges have to be recorded in the order they were written: {localId} came " +
+                    $"after {_localIds[_count - 1]}.");
+            }
+
+            if (_count == _localIds.Length)
+            {
+                Array.Resize(ref _localIds, _count * 2);
+                Array.Resize(ref _ways, _count * 2);
+                Array.Resize(ref _tails, _count * 2);
+                Array.Resize(ref _heads, _count * 2);
+            }
+
+            _localIds[_count] = localId;
+            _ways[_count] = wayId;
+            _tails[_count] = tailIndex;
+            _heads[_count] = headIndex;
+            _count++;
+        }
+
+        public bool TryGet(uint localId, out long wayId, out ushort tailIndex, out ushort headIndex)
+        {
+            var found = Array.BinarySearch(_localIds, 0, _count, localId);
+            if (found < 0)
+            {
+                wayId = default;
+                tailIndex = default;
+                headIndex = default;
+
+                return false;
+            }
+
+            wayId = _ways[found];
+            tailIndex = _tails[found];
+            headIndex = _heads[found];
+
+            return true;
         }
     }
 }

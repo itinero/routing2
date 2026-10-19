@@ -4,11 +4,10 @@ using System.Linq;
 using Itinero.Geo.Elevation;
 using Itinero.IO.Osm.Restrictions.Barriers;
 using Itinero.IO.Osm.Restrictions.Turns;
-using Itinero.IO.Osm.Tiles;
 using Itinero.Network;
 using Itinero.Data.Providers;
 using Itinero.Network.Mutation;
-using Itinero.Network.Tiles.Standalone.Global;
+using Itinero.IO.Osm.Restrictions;
 using OsmSharp;
 using OsmSharp.Streams;
 
@@ -137,9 +136,16 @@ public class RouterDbStreamTarget : OsmStreamTarget
         if (saveEdge) _restrictionMembers[way.Id.Value] = way;
 
         // process the way into edges.
+        var tags = way.Tags?.Select(x => (x.Key, x.Value)).ToArray() ??
+                   Array.Empty<(string, string)>();
         var vertex1 = VertexId.Empty;
         var vertex1Idx = -1;
+        var edges = 0;
         var shape = new List<(double longitude, double latitude, float? e)>();
+
+        // the way's nodes, by index, which is how an edge's segment names them. Short of the way's
+        // length when the source is incomplete, but no edge names a node past the break.
+        var geometry = new List<(double longitude, double latitude, float? e)>(way.Nodes.Length);
         for (var n = 0; n < way.Nodes.Length; n++)
         {
             var node = way.Nodes[n];
@@ -149,11 +155,13 @@ public class RouterDbStreamTarget : OsmStreamTarget
                 break;
             }
 
+            var coordinate = location.AddElevation(
+                elevationHandler: _elevationHandler);
+            geometry.Add(coordinate);
+
             if (!_vertices.TryGetValue(node, out var vertex2))
             {
                 // node is shape.
-                var coordinate = location.AddElevation(
-                    elevationHandler: _elevationHandler);
                 shape.Add(coordinate);
                 continue;
             }
@@ -161,8 +169,6 @@ public class RouterDbStreamTarget : OsmStreamTarget
             if (vertex2.IsEmpty())
             {
                 // node is core and not present yet.
-                var coordinate = location.AddElevation(
-                    elevationHandler: _elevationHandler);
                 vertex2 = _mutableRouterDb.AddVertex(coordinate);
                 _vertices[node] = vertex2;
             }
@@ -175,18 +181,19 @@ public class RouterDbStreamTarget : OsmStreamTarget
             }
 
             // add edge.
-            var filteredTags = way.Tags?.Select(x => (x.Key, x.Value)) ??
-                               Enumerable.Empty<(string, string)>();
             var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
-                _provider.AddEdgeType(filteredTags),
+                _provider.AddEdgeType(tags),
                 shape,
-                filteredTags);
+                tags);
+            edges++;
+
+            // what this edge resolves to: the way it came from and the two nodes it spans.
+            _provider.SetEdgeSegment(edgeId, way.Id.Value, (ushort)vertex1Idx, (ushort)n);
 
             // register GlobalEdgeId → EdgeId for restriction resolution.
             if (saveEdge)
             {
-                var globalEdgeId = way.CreateGlobalEdgeId(vertex1Idx, n);
-                _globalEdgeIds[globalEdgeId] = edgeId;
+                _globalEdgeIds[way.CreateGlobalEdgeId(vertex1Idx, n)] = edgeId;
             }
 
             // move to next part.
@@ -194,6 +201,12 @@ public class RouterDbStreamTarget : OsmStreamTarget
             vertex1Idx = n;
             shape.Clear();
         }
+
+        if (edges == 0) return;
+
+        // record what the edges above do not carry themselves, addressed by this way's id.
+        _provider.SetWayAttributes(way.Id.Value, tags);
+        _provider.SetWayGeometry(way.Id.Value, geometry);
     }
 
     /// <inheritdoc />
@@ -299,7 +312,7 @@ public class RouterDbStreamTarget : OsmStreamTarget
             if (_globalEdgeIds.TryGetValue(geid.GetInverted(), out edgeId))
                 return (edgeId, false);
 
-            return Itinero.Network.Tiles.Standalone.Global.GlobalRestrictionExtensions
+            return GlobalRestrictionExtensions
                 .WalkFromAnchor(geid, isFirst, TryGet);
 
             bool TryGet(GlobalEdgeId q, out EdgeId result)

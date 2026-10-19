@@ -405,7 +405,8 @@ public class DijkstraTests
 
             edge1 = writer.AddEdge(vertex1, vertex2);
             edge2 = writer.AddEdge(vertex2, vertex3);
-            edge3 = writer.AddEdge(vertex3, vertex3, new (double longitude, double latitude, float? e)[] {
+            edge3 = writer.AddEdge(vertex3, vertex3,
+                shape: new (double longitude, double latitude, float? e)[] {
                     (4.797334671020508, 51.26241166347257, (float?) null)
                 });
         }

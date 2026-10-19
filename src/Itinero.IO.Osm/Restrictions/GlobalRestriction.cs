@@ -1,9 +1,10 @@
+using Itinero.Network;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Itinero.Network.Tiles.Standalone.Global;
+namespace Itinero.IO.Osm.Restrictions;
 
 /// <summary>
 /// A global restriction.
