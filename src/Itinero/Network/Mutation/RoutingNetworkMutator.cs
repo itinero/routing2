@@ -17,7 +17,7 @@ namespace Itinero.Network.Mutation;
 /// - delete edges.
 /// 
 /// </summary>
-public class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
+internal class RoutingNetworkMutator : IDisposable, IEdgeEnumerable
 {
     private readonly SparseArray<bool> _modified;
     private readonly SparseArray<NetworkTile?> _tiles;

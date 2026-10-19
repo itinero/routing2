@@ -6,23 +6,26 @@ using Itinero.Network.Enumerators.Edges;
 using Itinero.Network.Enumerators.Vertices;
 using Itinero.Network.Mutation;
 using Itinero.Network.Tiles;
-using Itinero.Network.Writer;
 
 namespace Itinero.Network;
 
 /// <summary>
 /// The routing network.
 /// </summary>
-public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable, IRoutingNetworkWritable
+public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMutable
 {
     private readonly SparseArray<NetworkTile?> _tiles;
 
     /// <summary>
     /// Creates a new routing network.
     /// </summary>
+    /// <remarks>
+    /// Internal: a db publishes its own networks. A second one built for the same db would be
+    /// detached — written to and never seen.
+    /// </remarks>
     /// <param name="routerDb"></param>
     /// <param name="zoom"></param>
-    public RoutingNetwork(RouterDb routerDb, int zoom = 14)
+    internal RoutingNetwork(RouterDb routerDb, int zoom = 14)
     {
         this.Zoom = zoom;
         this.RouterDb = routerDb;
@@ -120,11 +123,6 @@ public sealed partial class RoutingNetwork : IEdgeEnumerable, IRoutingNetworkMut
     public RoutingNetworkEdgeEnumerator GetEdgeEnumerator()
     {
         return new RoutingNetworkEdgeEnumerator(this);
-    }
-
-    RoutingNetworkEdgeEnumerator IRoutingNetworkWritable.GetEdgeEnumerator()
-    {
-        return this.GetEdgeEnumerator();
     }
 
     /// <summary>

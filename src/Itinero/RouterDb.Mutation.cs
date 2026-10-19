@@ -11,7 +11,7 @@ public sealed partial class RouterDb
     /// <summary>
     /// Returns true if there is already a writer.
     /// </summary>
-    public bool HasMutableNetwork => _mutable != null;
+    internal bool HasMutableNetwork => _mutable != null;
 
     /// <summary>
     /// Gets a mutable version of the latest network.
