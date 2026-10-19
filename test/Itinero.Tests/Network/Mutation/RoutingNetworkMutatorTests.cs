@@ -31,63 +31,6 @@ public class RoutingNetworkMutatorTests
     }
 
     [Fact]
-    public void RouterDb_GetAsMutable_AddEdgeWithShape_ShouldStoreShape()
-    {
-        var provider = TestProvider.New();
-        var routerDb = provider.RouterDb;
-        EdgeId edge;
-        using (var mutable = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = mutable.AddVertex(
-                4.792613983154297,
-                51.26535213392538, (float?)null);
-            var vertex2 = mutable.AddVertex(
-                4.797506332397461,
-                51.26674845584085, (float?)null);
-
-            edge = mutable.AddEdge(vertex1, vertex2, 0, new[] {
-                    (4.795167446136475,
-                        51.26580191532799, (float?) null)
-                });
-        }
-
-        var routerDbLatest = routerDb.Latest;
-        var enumerator = routerDbLatest.GetEdgeEnumerator();
-        enumerator.MoveTo(edge);
-        var shape = enumerator.Shape;
-        Assert.NotNull(shape);
-        var shapeList = shape.ToList();
-        Assert.Single(shapeList);
-        Assert.Equal(4.795167446136475, shapeList[0].longitude, 4);
-        Assert.Equal(51.26580191532799, shapeList[0].latitude, 4);
-    }
-
-    [Fact]
-    public void RouterDb_GetAsMutable_AddEdgeWithAttributes_ShouldStoreAttributes()
-    {
-        var provider = TestProvider.New();
-        var routerDb = provider.RouterDb;
-        EdgeId edge;
-        using (var mutable = routerDb.GetMutableNetwork())
-        {
-            var vertex1 = mutable.AddVertex(
-                4.792613983154297,
-                51.26535213392538, (float?)null);
-            var vertex2 = mutable.AddVertex(
-                4.797506332397461,
-                51.26674845584085, (float?)null);
-
-            edge = mutable.AddEdge(vertex1, vertex2, 0, attributes: new[] { ("highway", "residential") });
-        }
-
-        var attributes = routerDb.Latest.GetAttributes(edge);
-        Assert.NotNull(attributes);
-        Assert.Single(attributes);
-        Assert.Equal("highway", attributes.First().key);
-        Assert.Equal("residential", attributes.First().value);
-    }
-
-    [Fact]
     public void RouterDb_GetAsMutable_AddTurnCosts_ShouldStoreTurnCosts()
     {
         var provider = TestProvider.New();

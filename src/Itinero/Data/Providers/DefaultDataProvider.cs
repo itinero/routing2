@@ -28,6 +28,11 @@ public class DefaultDataProvider : DataProviderBase
     // what an EdgeId resolves to, per tile. This is the whole of what the tile used to carry.
     private readonly Dictionary<uint, TileSegments> _segments = new();
 
+    // edges written one at a time rather than from a way: there is nothing to key them by and
+    // nothing to share, so they are kept as given.
+    private readonly Dictionary<EdgeId, (string key, string value)[]> _edgeAttributes = new();
+    private readonly Dictionary<EdgeId, (double longitude, double latitude, float? e)[]> _edgeShape = new();
+
     /// <summary>
     /// Creates a new provider.
     /// </summary>
@@ -105,9 +110,17 @@ public class DefaultDataProvider : DataProviderBase
             IEnumerable<(double longitude, double latitude, float? e)>? shape = null,
             IEnumerable<(string key, string value)>? attributes = null)
         {
-            attributes ??= Array.Empty<(string key, string value)>();
+            var all = attributes as ICollection<(string key, string value)> ??
+                      attributes?.ToArray() ?? Array.Empty<(string key, string value)>();
+            var points = shape as ICollection<(double longitude, double latitude, float? e)> ??
+                         shape?.ToArray();
 
-            return _builder.AddEdge(tail, head, _provider.AddEdgeType(attributes), shape, attributes);
+            // the shape still goes to the builder, which needs it to measure the edge.
+            var edge = _builder.AddEdge(tail, head, _provider.AddEdgeType(all), points);
+
+            _provider.SetEdgeData(edge, all, points);
+
+            return edge;
         }
 
         /// <summary>
@@ -151,6 +164,27 @@ public class DefaultDataProvider : DataProviderBase
     public uint AddTurnCostType(IEnumerable<(string key, string value)> attributes)
     {
         return _turnCostTypes.Get(_turnCostTypeMap.Map(attributes));
+    }
+
+    /// <summary>
+    /// Records an edge's own attributes and shape, for an edge that came from no way.
+    /// </summary>
+    /// <remarks>
+    /// Only the complement is kept, as for a way: what the edge type map took is already in the
+    /// type index, and <c>GetAttributes</c> is unioned with it.
+    /// </remarks>
+    internal void SetEdgeData(EdgeId edge, ICollection<(string key, string value)> attributes,
+        ICollection<(double longitude, double latitude, float? e)>? shape)
+    {
+        if (attributes.Count > 0)
+        {
+            var kept = new HashSet<(string key, string value)>(_edgeTypeMap.Map(attributes));
+            var complement = attributes.Where(a => !kept.Contains(a)).ToArray();
+
+            if (complement.Length > 0) _edgeAttributes[edge] = complement;
+        }
+
+        if (shape is { Count: > 0 }) _edgeShape[edge] = shape.ToArray();
     }
 
     /// <summary>
@@ -199,6 +233,8 @@ public class DefaultDataProvider : DataProviderBase
     /// <inheritdoc/>
     public override IEnumerable<(string key, string value)> GetAttributes(EdgeId edge)
     {
+        if (_edgeAttributes.TryGetValue(edge, out var own)) return own;
+
         if (!this.TryGetSegment(edge, out var wayId, out _, out _))
         {
             return Enumerable.Empty<(string key, string value)>();
@@ -213,6 +249,13 @@ public class DefaultDataProvider : DataProviderBase
     public override void GetShape(EdgeId edge,
         List<(double longitude, double latitude, float? e)> into)
     {
+        if (_edgeShape.TryGetValue(edge, out var own))
+        {
+            into.AddRange(own);
+
+            return;
+        }
+
         if (!this.TryGetSegment(edge, out var wayId, out var from, out var to)) return;
         if (!_geometry.TryGetValue(wayId, out var nodes)) return;
 

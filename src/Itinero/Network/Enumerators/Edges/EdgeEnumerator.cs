@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Itinero.Network.Tiles;
 
 namespace Itinero.Network.Enumerators.Edges;
@@ -164,14 +165,35 @@ public abstract class EdgeEnumerator<T> :
     /// <summary>
     /// Gets the shape.
     /// </summary>
+    /// <remarks>
+    /// From the provider, which answers in the direction the edge was written, so this reverses it
+    /// when the edge is being read the other way round.
+    /// </remarks>
     /// <returns>The shape.</returns>
-    public IEnumerable<(double longitude, double latitude, float? e)> Shape => _tileEnumerator.Shape;
+    public IEnumerable<(double longitude, double latitude, float? e)> Shape
+    {
+        get
+        {
+            var shape = new List<(double longitude, double latitude, float? e)>();
+            this.Network.RouterDb.Provider.GetShape(this.EdgeId, shape);
+
+            if (!this.Forward) shape.Reverse();
+
+            return shape;
+        }
+    }
 
     /// <summary>
     /// Gets the attributes.
     /// </summary>
+    /// <remarks>
+    /// The union of what the provider kept back and what the edge type already says: the provider
+    /// stores only the complement, so neither half is the whole answer on its own.
+    /// </remarks>
     /// <returns>The attributes.</returns>
-    public IEnumerable<(string key, string value)> Attributes => _tileEnumerator.Attributes;
+    public IEnumerable<(string key, string value)> Attributes =>
+        this.Network.RouterDb.Provider.GetAttributes(this.EdgeId)
+            .Concat(this.Network.RouterDb.EdgeTypeIndex.GetById(this.EdgeTypeId));
 
     /// <summary>
     /// Gets the edge profile id.

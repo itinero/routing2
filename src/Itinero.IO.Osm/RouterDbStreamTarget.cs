@@ -181,10 +181,11 @@ public class RouterDbStreamTarget : OsmStreamTarget
             }
 
             // add edge.
+            // the shape is handed over to measure the edge, not to store: both it and the
+            // attributes are read back from this provider, keyed per way.
             var edgeId = _mutableRouterDb.AddEdge(vertex1, vertex2,
                 _provider.AddEdgeType(tags),
-                shape,
-                tags);
+                shape);
             edges++;
 
             // what this edge resolves to: the way it came from and the two nodes it spans.
